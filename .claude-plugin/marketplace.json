@@ -12,10 +12,10 @@
     {
       "name": "vibe-science",
       "description": "Scientific research in serendipity mode. Infinite loops until discovery, rigorous tracking, adversarial review.",
-      "source": "../",
+      "source": "./",
       "strict": false,
       "skills": [
-        "../"
+        "./skills/vibe-science"
       ]
     }
   ]
