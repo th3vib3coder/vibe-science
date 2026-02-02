@@ -1,5 +1,5 @@
 ---
-name: vibe-science
+name: vibe
 description: Scientific research in serendipity mode. Infinite loops until discovery, rigorous tracking, adversarial review.
 license: MIT
 metadata:
