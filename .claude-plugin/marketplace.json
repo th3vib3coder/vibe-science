@@ -10,13 +10,9 @@
   },
   "plugins": [
     {
-      "name": "vibe-science",
-      "description": "Scientific research in serendipity mode. Infinite loops until discovery, rigorous tracking, adversarial review.",
-      "source": "./",
-      "strict": false,
-      "skills": [
-        "./vibe-science"
-      ]
+      "name": "vibe-plugin",
+      "source": "./plugins/vibe-plugin",
+      "description": "Scientific research in serendipity mode. Infinite loops until discovery, rigorous tracking, adversarial review."
     }
   ]
 }
