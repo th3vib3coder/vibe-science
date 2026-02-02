@@ -15,7 +15,7 @@
       "source": "./",
       "strict": false,
       "skills": [
-        "./skills/vibe-science"
+        "./vibe-science"
       ]
     }
   ]
