@@ -384,7 +384,7 @@ Fallback from TEAM → SOLO is seamless. All state lives in files (LAW 7).
 ### 1. Install
 
 ```bash
-git clone https://github.com/carminoski/vibe-science.git
+git clone https://github.com/th3vib3coder/vibe-science.git
 claude plugins add ./vibe-science
 ```
 
@@ -726,7 +726,7 @@ Apache 2.0 — see [LICENSE](LICENSE).
 
 ---
 
-**Built by [carminoski](https://github.com/carminoski)**
+**Built by [th3vib3coder](https://github.com/th3vib3coder)**
 
 *Built with Claude. Tested against Reviewer 2. Survived 21 sprints.*
 
