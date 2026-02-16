@@ -10,7 +10,6 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18663142.svg)](https://doi.org/10.5281/zenodo.18663142)
 [![Version](https://img.shields.io/badge/version-4.5.0-blue.svg)](#version-history)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](../LICENSE)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-blueviolet.svg)](https://docs.anthropic.com/en/docs/claude-code)
 [![Laws](https://img.shields.io/badge/constitutional_laws-10-orange.svg)](#10-constitutional-laws)
 [![Gates](https://img.shields.io/badge/quality_gates-25-red.svg)](#quality-gates)
@@ -507,7 +506,7 @@ vibe-science-v4.5/
 ├── SKILL.md                        # Core specification (1150 lines)
 ├── CLAUDE.md                       # Project constitution for all agents
 ├── README.md                       # This file
-├── LICENSE                         # MIT
+├── LICENSE                         # Apache 2.0
 │
 ├── commands/
 │   └── start.md                    # /start — SOLO/TEAM + session init
@@ -723,7 +722,7 @@ Vibe Science v4.5 builds on peer-reviewed research in adversarial review, tree s
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+Apache 2.0 — see [LICENSE](LICENSE).
 
 ---
 

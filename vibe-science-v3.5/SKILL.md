@@ -1,7 +1,7 @@
 ---
 name: vibe
 description: Scientific research in serendipity mode. Infinite loops until discovery, rigorous tracking, adversarial review.
-license: MIT
+license: Apache-2.0
 metadata:
     version: "3.5.1"
     codename: "TERTIUM DATUR"

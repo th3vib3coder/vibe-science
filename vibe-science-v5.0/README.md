@@ -14,7 +14,6 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](../LICENSE)
 
 [![Version](https://img.shields.io/badge/version-5.0.0-blue.svg)](README.md#version-history)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-blueviolet.svg)](https://docs.anthropic.com/en/docs/claude-code)
 [![Laws](https://img.shields.io/badge/constitutional_laws-10-orange.svg)](#10-constitutional-laws)
 [![Gates](https://img.shields.io/badge/quality_gates-27-red.svg)](#quality-gates)
@@ -636,7 +635,7 @@ vibe-science-v5.0/
 ├── SKILL.md                        # Core specification (1150 lines)
 ├── CLAUDE.md                       # Project constitution for all agents
 ├── README.md                       # This file
-├── LICENSE                         # MIT
+├── LICENSE                         # Apache 2.0
 │
 ├── commands/
 │   └── start.md                    # /start — SOLO/TEAM + session init
@@ -873,7 +872,7 @@ These papers prove the fundamental problem v5.0 solves — LLMs cannot self-corr
 | **Scaling** | More compute = more hypotheses explored | More OTAE cycles = more tree nodes explored |
 | **Verification type** | Logical (reasoning-based) | **Empirical** (tool-grounded: PubMed, Scopus, web) |
 | **Structural enforcement** | PRM weights (non-bypassable) | JSON Schema gates + SFI + R3 |
-| **Cost** | Proprietary (Google AI Ultra) | Open source (MIT, any LLM) |
+| **Cost** | Proprietary (Google AI Ultra) | Open source (Apache 2.0, any LLM) |
 | **Catches** | Logical flaws in reasoning chains | Confounded claims, known artifacts, missing controls, citation errors |
 
 **Complementary, not competing.** Deep Think catches what pure reasoning can catch. Vibe Science catches what only external empirical verification can catch. The critical architectural difference: **Vibe Science validates against external sources** (PubMed, OpenAlex, Scopus, web) rather than relying on internal self-correction. This makes it robust to the failure mode Huang et al. proved is fundamental.
@@ -923,7 +922,7 @@ These papers prove the fundamental problem v5.0 solves — LLMs cannot self-corr
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+Apache 2.0 — see [LICENSE](LICENSE).
 
 ---
 

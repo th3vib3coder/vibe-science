@@ -1,7 +1,7 @@
 ---
 name: vibe
 description: Scientific research engine with agentic tree search. Infinite loops until discovery, rigorous tracking, adversarial review, serendipity preserved.
-license: MIT
+license: Apache-2.0
 metadata:
     version: "5.0.0"
     codename: "IUDEX"
