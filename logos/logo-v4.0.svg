@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 580" style="background:#0d1117">
+  <style>
+    text { font-family: 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 14px; }
+    .stars { fill: #e3b341; }
+    .vibe { fill: #3fb950; }
+    .science { fill: #58a6ff; }
+    .tree { fill: #d2a8ff; }
+    .r2 { fill: #f85149; }
+    .seren { fill: #e3b341; }
+    .files { fill: #8b949e; }
+    .version { fill: #f0883e; }
+    .tagline { fill: #c9d1d9; }
+  </style>
+
+  <!-- Stars -->
+  <text x="30" y="28" class="stars">                        .  *  .       *    .   *</text>
+  <text x="30" y="46" class="stars">            *    .  *       .       .        *       .</text>
+  <text x="30" y="64" class="stars">       .        *       .       *       .        .       *</text>
+
+  <!-- VIBE -->
+  <text x="30" y="100" class="vibe">       ██╗   ██╗██╗██████╗ ███████╗</text>
+  <text x="30" y="118" class="vibe">       ██║   ██║██║██╔══██╗██╔════╝</text>
+  <text x="30" y="136" class="vibe">       ██║   ██║██║██████╔╝█████╗</text>
+  <text x="30" y="154" class="vibe">       ╚██╗ ██╔╝██║██╔══██╗██╔══╝</text>
+  <text x="30" y="172" class="vibe">        ╚████╔╝ ██║██████╔╝███████╗</text>
+  <text x="30" y="190" class="vibe">         ╚═══╝  ╚═╝╚═════╝ ╚══════╝</text>
+
+  <!-- SCIENCE -->
+  <text x="30" y="210" class="science">       ███████╗ ██████╗██╗███████╗███╗   ██╗ ██████╗███████╗</text>
+  <text x="30" y="228" class="science">       ██╔════╝██╔════╝██║██╔════╝████╗  ██║██╔════╝██╔════╝</text>
+  <text x="30" y="246" class="science">       ███████╗██║     ██║█████╗  ██╔██╗ ██║██║     █████╗</text>
+  <text x="30" y="264" class="science">       ╚════██║██║     ██║██╔══╝  ██║╚██╗██║██║     ██╔══╝</text>
+  <text x="30" y="282" class="science">       ███████║╚██████╗██║███████╗██║ ╚████║╚██████╗███████╗</text>
+  <text x="30" y="300" class="science">       ╚══════╝ ╚═════╝╚═╝╚══════╝╚═╝  ╚═══╝ ╚═════╝╚══════╝</text>
+
+  <!-- Tree Search -->
+  <text x="30" y="340" class="tree">                         root</text>
+  <text x="30" y="358" class="tree">                        / | \</text>
+  <text x="30" y="376" class="tree">                     A    B    C       OTAE-Tree Search</text>
+  <text x="30" y="394" class="tree">                    / \   |</text>
+  <text x="30" y="412" class="tree">                  A1  A2  B1          7 Node Types</text>
+  <text x="30" y="430" class="tree">                 /</text>
+  <text x="30" y="448" class="seren">               A1a                    ★ Serendipity Branch</text>
+
+  <!-- R2 Ensemble -->
+  <text x="30" y="480" class="r2">         ┌── R2 ENSEMBLE ──────────────────────────┐</text>
+  <text x="30" y="498" class="r2">         │  Methods · Stats · Bio · Engineering     │</text>
+  <text x="30" y="516" class="r2">         └──────────────────────────────────────────┘</text>
+
+  <!-- Tagline -->
+  <text x="30" y="546" class="tagline">          Detect  ·  Persist  ·  Demolish  ·  Discover</text>
+
+  <!-- Version -->
+  <text x="30" y="570" class="version">                     v4.0 ARBOR VITAE</text>
+</svg>

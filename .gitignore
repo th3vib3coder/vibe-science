@@ -1,0 +1,13 @@
+# Runtime research data (created during Vibe Science sessions)
+.vibe-science/
+
+# OS artifacts
+nul
+Thumbs.db
+.DS_Store
+
+# Archives
+*.zip
+
+# Internal planning docs
+UPGRADE_PLAN_V2.md
