@@ -17,6 +17,7 @@ authors:
     name-suffix: MD
 version: "5.0.0"
 date-released: "2026-02-16"
+doi: "10.5281/zenodo.18665031"
 license: Apache-2.0
 repository-code: "https://github.com/th3vib3coder/vibe-science"
 keywords:
