@@ -73,8 +73,8 @@ None of these were hallucinations. The data was real. The statistics were correc
 | Version | Codename | Architecture | Key Innovation | Laws | Gates |
 |---------|----------|-------------|----------------|:----:|:-----:|
 | [**v3.5**](vibe-science-v3.5/) | TERTIUM DATUR | OTAE Loop | R2 double-pass, typed claims, evidence formula | 7 | 12 |
-| [**v4.0**](vibe-science-v4.0/) | ARBOR SCIENTIAE | OTAE-Tree | Tree search, branch scoring, serendipity branches | 10 | 26 |
-| [**v4.5**](vibe-science-v4.5/) | COLLIGITE FRAGMENTA | OTAE-Tree + Brainstorm | Phase 0 brainstorm, R2 6 modes, 5-stage pipeline | 10 | 25 |
+| [**v4.0**](vibe-science-v4.0/) | ARBOR VITAE | OTAE-Tree | Tree search, branch scoring, serendipity branches | 10 | 26 |
+| [**v4.5**](vibe-science-v4.5/) | ARBOR VITAE (Pruned) | OTAE-Tree + Brainstorm | Phase 0 brainstorm, R2 6 modes, 5-stage pipeline | 10 | 25 |
 | [**v5.0**](vibe-science-v5.0/) | IUDEX | OTAE-Tree + Verification | SFI, blind-first pass, R3 judge, schema-validated gates | 10 | 27 |
 | [**v5.0 Codex**](vibe-science-v5.0-codex/) | IUDEX | Same as v5.0 | OpenAI Codex port (condensed SKILL.md, no hooks/TEAM) | 10 | 27 |
 
@@ -205,7 +205,7 @@ Active scanner, not passive logger. Quantitative triage (0-15 score) with schedu
 
 ---
 
-## v4.0 — ARBOR SCIENTIAE
+## v4.0 — ARBOR VITAE
 
 > *Evolves the flat OTAE loop into a branching tree search over hypotheses.*
 
@@ -291,7 +291,7 @@ Shortcuts: Literature-only: S1 → S5 | Analysis: S1 → S2 → S4 → S5
 
 ---
 
-## v4.5 — COLLIGITE FRAGMENTA
+## v4.5 — ARBOR VITAE (Pruned)
 
 > *Adds structured ideation (Phase 0) and a 5-stage research pipeline. 206 lines smaller than v4.0 while being more capable.*
 

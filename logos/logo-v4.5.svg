@@ -49,7 +49,7 @@
   <!-- Version badge -->
   <text x="350" y="175" text-anchor="middle"
         font-family="Consolas, Monaco, 'Courier New', monospace" font-size="16" fill="#f0883e"
-        font-weight="bold">v4.5 — COLLIGITE FRAGMENTA</text>
+        font-weight="bold">v4.5 — ARBOR VITAE (Pruned)</text>
 
   <!-- Separator -->
   <line x1="180" y1="188" x2="520" y2="188"
