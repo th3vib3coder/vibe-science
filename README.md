@@ -3,7 +3,6 @@
 </p>
 
 <p align="center">
-  <a href="https://doi.org/10.5281/zenodo.18663142"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.18663142.svg" alt="DOI"></a>
   <a href="vibe-science-v5.0/LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="License"></a>
   <img src="https://img.shields.io/badge/version-5.0.0-orange.svg" alt="Version">
 </p>
@@ -775,7 +774,7 @@ This repository documents the evolution of Vibe Science for the **VibeX 2026** p
 - **v3.5** is the version described in the paper (field-tested, 21 sprints)
 - **v4.0 → v4.5 → v5.0** show the progression of ideas
 - Annotated git tags (`v3.5.0`, `v4.0.0`, `v4.5.0`, `v5.0.0`) provide traceable evolution
-- Zenodo DOI provides permanent archival: [10.5281/zenodo.18663142](https://doi.org/10.5281/zenodo.18663142)
+- Annotated git tags and Zenodo archival provide permanent traceability
 
 ---
 

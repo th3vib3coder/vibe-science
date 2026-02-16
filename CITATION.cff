@@ -17,10 +17,8 @@ authors:
     name-suffix: MD
 version: "5.0.0"
 date-released: "2026-02-16"
-doi: "10.5281/zenodo.18663142"
 license: Apache-2.0
 repository-code: "https://github.com/th3vib3coder/vibe-science"
-url: "https://doi.org/10.5281/zenodo.18663142"
 keywords:
   - scientific-research
   - ai-agent

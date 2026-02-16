@@ -9,7 +9,6 @@
 > **Format**: OpenAI Codex Skill
 > **License**: Apache 2.0
 >
-> [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18663142.svg)](https://doi.org/10.5281/zenodo.18663142)
 
 An agentic scientific research engine that makes adversarial review **architecturally unbypassable**. Tree search over hypotheses, serendipity detection at every cycle, and 27 quality gates that block advancement until standards are met.
 
@@ -363,7 +362,7 @@ These papers inform the confidence formula's separation of "unknown" from "contr
 
 If you use Vibe Science in academic work, please cite:
 
-> Russo, C. & Bertelli, E. (2026). *Vibe Science: Adversarial Epistemic Architecture for LLM-Driven Scientific Research.* Available at: https://github.com/th3vib3coder/vibe-science · DOI: [10.5281/zenodo.18663142](https://doi.org/10.5281/zenodo.18663142)
+> Russo, C. & Bertelli, E. (2026). *Vibe Science: Adversarial Epistemic Architecture for LLM-Driven Scientific Research.* Available at: https://github.com/th3vib3coder/vibe-science
 
 ---
 
