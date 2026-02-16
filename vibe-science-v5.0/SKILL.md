@@ -5,7 +5,7 @@ license: Apache-2.0
 metadata:
     version: "5.0.0"
     codename: "IUDEX"
-    skill-author: carminoski
+    skill-author: th3vib3coder
     architecture: OTAE-Tree (Observe-Think-Act-Evaluate inside Tree Search)
     lineage: "v3.5 TERTIUM DATUR + AI-Scientist-v2 reverse engineering"
     sources: Ralph, GSD, BMAD, Codex unrolled loop, Anthropic bio-research, ChatGPT Spec Kit, Sakana AI-Scientist-v2 (arXiv:2504.08066v1)

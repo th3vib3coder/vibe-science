@@ -1,80 +1,99 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 502" style="background:#0d1117">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 460">
   <defs>
-    <path id="LV" d="M0,0h9v9h-9z M48,0h9v9h-9z M0,12h9v9h-9z M48,12h9v9h-9z M12,24h9v9h-9z M36,24h9v9h-9z M12,36h9v9h-9z M36,36h9v9h-9z M24,48h9v9h-9z"/>
-    <path id="LI" d="M0,0h9v9h-9z M12,0h9v9h-9z M24,0h9v9h-9z M12,12h9v9h-9z M12,24h9v9h-9z M12,36h9v9h-9z M0,48h9v9h-9z M12,48h9v9h-9z M24,48h9v9h-9z"/>
-    <path id="LB" d="M0,0h9v9h-9z M12,0h9v9h-9z M24,0h9v9h-9z M0,12h9v9h-9z M36,12h9v9h-9z M0,24h9v9h-9z M12,24h9v9h-9z M24,24h9v9h-9z M0,36h9v9h-9z M36,36h9v9h-9z M0,48h9v9h-9z M12,48h9v9h-9z M24,48h9v9h-9z"/>
-    <path id="LE" d="M0,0h9v9h-9z M12,0h9v9h-9z M24,0h9v9h-9z M36,0h9v9h-9z M0,12h9v9h-9z M0,24h9v9h-9z M12,24h9v9h-9z M24,24h9v9h-9z M0,36h9v9h-9z M0,48h9v9h-9z M12,48h9v9h-9z M24,48h9v9h-9z M36,48h9v9h-9z"/>
-    <path id="LS" d="M12,0h9v9h-9z M24,0h9v9h-9z M36,0h9v9h-9z M0,12h9v9h-9z M12,24h9v9h-9z M24,24h9v9h-9z M36,36h9v9h-9z M0,48h9v9h-9z M12,48h9v9h-9z M24,48h9v9h-9z"/>
-    <path id="LC" d="M12,0h9v9h-9z M24,0h9v9h-9z M36,0h9v9h-9z M0,12h9v9h-9z M0,24h9v9h-9z M0,36h9v9h-9z M12,48h9v9h-9z M24,48h9v9h-9z M36,48h9v9h-9z"/>
-    <path id="LN" d="M0,0h9v9h-9z M48,0h9v9h-9z M0,12h9v9h-9z M12,12h9v9h-9z M48,12h9v9h-9z M0,24h9v9h-9z M24,24h9v9h-9z M48,24h9v9h-9z M0,36h9v9h-9z M36,36h9v9h-9z M48,36h9v9h-9z M0,48h9v9h-9z M48,48h9v9h-9z"/>
-    <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0d1117"/>
+      <stop offset="100%" stop-color="#161b22"/>
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/>
     </marker>
   </defs>
 
+  <!-- Background -->
+  <rect width="700" height="460" fill="url(#bg)"/>
+
+  <!-- Top decoration -->
+  <line x1="80" y1="18" x2="620" y2="18" stroke="#30363d" stroke-width="0.5"/>
+
   <!-- Stars -->
-  <circle cx="144" cy="9" r="2.5" fill="#e3b341" opacity="0.5"/>
-  <circle cx="172" cy="14" r="1.5" fill="#e3b341" opacity="0.8"/>
-  <circle cx="62" cy="9" r="1.5" fill="#e3b341" opacity="0.5"/>
-  <circle cx="547" cy="46" r="1.5" fill="#e3b341" opacity="0.7"/>
-  <circle cx="588" cy="34" r="2" fill="#e3b341" opacity="0.7"/>
-  <circle cx="314" cy="8" r="2" fill="#e3b341" opacity="0.8"/>
-  <circle cx="378" cy="25" r="2" fill="#e3b341" opacity="0.5"/>
-  <circle cx="374" cy="14" r="1.5" fill="#e3b341" opacity="0.6"/>
-  <circle cx="397" cy="30" r="2.5" fill="#e3b341" opacity="0.9"/>
-  <circle cx="500" cy="42" r="1.5" fill="#e3b341" opacity="1.0"/>
-  <circle cx="417" cy="13" r="2.5" fill="#e3b341" opacity="0.9"/>
-  <circle cx="663" cy="31" r="2" fill="#e3b341" opacity="0.8"/>
-  <circle cx="76" cy="50" r="2" fill="#e3b341" opacity="0.9"/>
-  <circle cx="111" cy="22" r="1.5" fill="#e3b341" opacity="0.6"/>
-  <circle cx="494" cy="48" r="2.5" fill="#e3b341" opacity="0.5"/>
+  <circle cx="674" cy="12" r="1" fill="#e3b341" opacity="0.7"/>
+  <circle cx="270" cy="19" r="1.5" fill="#e3b341" opacity="0.7"/>
+  <circle cx="578" cy="10" r="2.5" fill="#e3b341" opacity="0.3"/>
+  <circle cx="115" cy="18" r="1.5" fill="#e3b341" opacity="0.6"/>
+  <circle cx="47" cy="40" r="1.5" fill="#e3b341" opacity="0.7"/>
+  <circle cx="578" cy="31" r="1.5" fill="#e3b341" opacity="0.6"/>
+  <circle cx="304" cy="5" r="1.5" fill="#e3b341" opacity="0.7"/>
+  <circle cx="368" cy="22" r="1.5" fill="#e3b341" opacity="0.4"/>
+  <circle cx="364" cy="11" r="1" fill="#e3b341" opacity="0.5"/>
+  <circle cx="387" cy="27" r="2" fill="#e3b341" opacity="0.8"/>
+  <circle cx="490" cy="39" r="1" fill="#e3b341" opacity="0.9"/>
+  <circle cx="407" cy="10" r="2" fill="#e3b341" opacity="0.8"/>
+  <circle cx="653" cy="28" r="1.5" fill="#e3b341" opacity="0.7"/>
+  <circle cx="66" cy="47" r="1.5" fill="#e3b341" opacity="0.8"/>
+  <circle cx="101" cy="19" r="1" fill="#e3b341" opacity="0.5"/>
+  <circle cx="484" cy="45" r="2" fill="#e3b341" opacity="0.4"/>
+  <circle cx="383" cy="18" r="2" fill="#e3b341" opacity="0.7"/>
+  <circle cx="93" cy="43" r="1.5" fill="#e3b341" opacity="0.6"/>
 
   <!-- VIBE -->
-  <use href="#LV" x="230" y="70" fill="#3fb950"/>
-  <use href="#LI" x="307" y="70" fill="#3fb950"/>
-  <use href="#LB" x="360" y="70" fill="#3fb950"/>
-  <use href="#LE" x="425" y="70" fill="#3fb950"/>
+  <text x="350" y="85" text-anchor="middle"
+        font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="76" font-weight="900"
+        fill="#3fb950" letter-spacing="0.25em">VIBE</text>
 
   <!-- SCIENCE -->
-  <use href="#LS" x="132" y="142" fill="#58a6ff"/>
-  <use href="#LC" x="197" y="142" fill="#58a6ff"/>
-  <use href="#LI" x="262" y="142" fill="#58a6ff"/>
-  <use href="#LE" x="315" y="142" fill="#58a6ff"/>
-  <use href="#LN" x="380" y="142" fill="#58a6ff"/>
-  <use href="#LC" x="457" y="142" fill="#58a6ff"/>
-  <use href="#LE" x="522" y="142" fill="#58a6ff"/>
+  <text x="350" y="145" text-anchor="middle"
+        font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="58" font-weight="900"
+        fill="#58a6ff" letter-spacing="0.18em">SCIENCE</text>
 
-  <!-- Version label -->
-  <text x="350" y="227" text-anchor="middle" font-family="Consolas,Monaco,monospace" font-size="16" fill="#f0883e" font-weight="bold">v4.5 COLLIGITE FRAGMENTA</text>
+  <!-- Version badge -->
+  <text x="350" y="175" text-anchor="middle"
+        font-family="Consolas, Monaco, 'Courier New', monospace" font-size="16" fill="#f0883e"
+        font-weight="bold">v4.5 — ARBOR VITAE (Pruned)</text>
+
+  <!-- Separator -->
+  <line x1="180" y1="188" x2="520" y2="188"
+        stroke="#30363d" stroke-width="0.5"/>
 
   <!-- Architecture -->
-  <g transform="translate(0,252)">
-    <rect x="290" y="0" width="120" height="30" rx="6" fill="#1a2332" stroke="#e3b341" stroke-width="1.5"/>
-    <text x="350" y="19" text-anchor="middle" font-family="Consolas,Monaco,monospace" font-size="11" fill="#e3b341" font-weight="bold">BRAINSTORM</text>
-    <line x1="350" y1="30" x2="350" y2="50" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
-    <rect x="80" y="50" width="100" height="26" rx="6" fill="#1a2332" stroke="#3fb950" stroke-width="1.5"/>
-    <text x="130" y="67" text-anchor="middle" font-family="Consolas,Monaco,monospace" font-size="9" fill="#3fb950" font-weight="bold">S1 Discovery</text>
-    <rect x="190" y="50" width="100" height="26" rx="6" fill="#1a2332" stroke="#58a6ff" stroke-width="1.5"/>
-    <text x="240" y="67" text-anchor="middle" font-family="Consolas,Monaco,monospace" font-size="9" fill="#58a6ff" font-weight="bold">S2 Analysis</text>
-    <rect x="300" y="50" width="100" height="26" rx="6" fill="#1a2332" stroke="#d2a8ff" stroke-width="1.5"/>
-    <text x="350" y="67" text-anchor="middle" font-family="Consolas,Monaco,monospace" font-size="9" fill="#d2a8ff" font-weight="bold">S3 Validate</text>
-    <rect x="410" y="50" width="100" height="26" rx="6" fill="#1a2332" stroke="#f0883e" stroke-width="1.5"/>
-    <text x="460" y="67" text-anchor="middle" font-family="Consolas,Monaco,monospace" font-size="9" fill="#f0883e" font-weight="bold">S4 Synthesis</text>
-    <rect x="520" y="50" width="100" height="26" rx="6" fill="#1a2332" stroke="#f85149" stroke-width="1.5"/>
-    <text x="570" y="67" text-anchor="middle" font-family="Consolas,Monaco,monospace" font-size="9" fill="#f85149" font-weight="bold">S5 Publish</text>
-    <line x1="180" y1="76" x2="520" y2="76" stroke="#8b949e" stroke-width="1" stroke-dasharray="3,2"/>
-    <line x1="350" y1="76" x2="350" y2="98" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
-    <rect x="295" y="98" width="110" height="28" rx="6" fill="#1a2332" stroke="#3fb950" stroke-width="1.5"/>
-    <text x="350" y="116" text-anchor="middle" font-family="Consolas,Monaco,monospace" font-size="11" fill="#3fb950" font-weight="bold">OTAE-TREE</text>
-    <rect x="450" y="98" width="120" height="28" rx="6" fill="#1a2332" stroke="#f85149" stroke-width="1.5"/>
-    <text x="510" y="116" text-anchor="middle" font-family="Consolas,Monaco,monospace" font-size="11" fill="#f85149" font-weight="bold">R2 (6 modes)</text>
-    <line x1="405" y1="112" x2="450" y2="112" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
-    <rect x="150" y="98" width="110" height="28" rx="6" fill="#1a2332" stroke="#e3b341" stroke-width="1.5"/>
-    <text x="205" y="116" text-anchor="middle" font-family="Consolas,Monaco,monospace" font-size="11" fill="#e3b341" font-weight="bold">SERENDIPITY</text>
-    <line x1="295" y1="112" x2="260" y2="112" stroke="#e3b341" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrow)"/>
-    <text x="350" y="160" text-anchor="middle" font-family="Consolas,Monaco,monospace" font-size="11" fill="#8b949e">9 Laws · Schema Validation · Auto-Experiment · Writeup Engine</text>
+  <g transform="translate(0,205)">
+    <rect x="285" y="0" width="130" height="30" rx="6" fill="#1a2332" stroke="#e3b341" stroke-width="1.5"/>
+    <text x="350" y="19" text-anchor="middle" font-family="Consolas, Monaco, 'Courier New', monospace" font-size="11" fill="#e3b341" font-weight="bold">PHASE 0: BRAINSTORM</text>
+    <line x1="350" y1="30" x2="350" y2="48" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="64" y="48" width="108" height="26" rx="6" fill="#1a2332" stroke="#3fb950" stroke-width="1.5"/>
+    <text x="118" y="65" text-anchor="middle" font-family="Consolas, Monaco, 'Courier New', monospace" font-size="9" fill="#3fb950" font-weight="bold">S1 Discover</text>
+    <line x1="172" y1="61" x2="180" y2="61" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="180" y="48" width="108" height="26" rx="6" fill="#1a2332" stroke="#58a6ff" stroke-width="1.5"/>
+    <text x="234" y="65" text-anchor="middle" font-family="Consolas, Monaco, 'Courier New', monospace" font-size="9" fill="#58a6ff" font-weight="bold">S2 Analyze</text>
+    <line x1="288" y1="61" x2="296" y2="61" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="296" y="48" width="108" height="26" rx="6" fill="#1a2332" stroke="#d2a8ff" stroke-width="1.5"/>
+    <text x="350" y="65" text-anchor="middle" font-family="Consolas, Monaco, 'Courier New', monospace" font-size="9" fill="#d2a8ff" font-weight="bold">S3 Validate</text>
+    <line x1="404" y1="61" x2="412" y2="61" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="412" y="48" width="108" height="26" rx="6" fill="#1a2332" stroke="#f0883e" stroke-width="1.5"/>
+    <text x="466" y="65" text-anchor="middle" font-family="Consolas, Monaco, 'Courier New', monospace" font-size="9" fill="#f0883e" font-weight="bold">S4 Synthesize</text>
+    <line x1="520" y1="61" x2="528" y2="61" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="528" y="48" width="108" height="26" rx="6" fill="#1a2332" stroke="#f85149" stroke-width="1.5"/>
+    <text x="582" y="65" text-anchor="middle" font-family="Consolas, Monaco, 'Courier New', monospace" font-size="9" fill="#f85149" font-weight="bold">S5 Publish</text>
+    <line x1="350" y1="74" x2="350" y2="95" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="290" y="95" width="120" height="28" rx="6" fill="#1a2332" stroke="#3fb950" stroke-width="1.5"/>
+    <text x="350" y="113" text-anchor="middle" font-family="Consolas, Monaco, 'Courier New', monospace" font-size="11" fill="#3fb950" font-weight="bold">OTAE-TREE</text>
+    <rect x="460" y="95" width="130" height="28" rx="6" fill="#1a2332" stroke="#f85149" stroke-width="1.5"/>
+    <text x="525" y="113" text-anchor="middle" font-family="Consolas, Monaco, 'Courier New', monospace" font-size="11" fill="#f85149" font-weight="bold">R2 (6 modes)</text>
+    <line x1="410" y1="109" x2="460" y2="109" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="120" y="95" width="130" height="28" rx="6" fill="#1a2332" stroke="#e3b341" stroke-width="1.5"/>
+    <text x="185" y="113" text-anchor="middle" font-family="Consolas, Monaco, 'Courier New', monospace" font-size="11" fill="#e3b341" font-weight="bold">SERENDIPITY</text>
+    <line x1="290" y1="109" x2="250" y2="109" stroke="#e3b341" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrow)"/>
+    <rect x="170" y="138" width="360" height="20" rx="4" fill="none" stroke="#30363d" stroke-width="1" stroke-dasharray="3,2"/>
+    <text x="350" y="152" text-anchor="middle" font-family="Consolas, Monaco, 'Courier New', monospace" font-size="9" fill="#8b949e">Inversion Exercise  ·  Collision-Zone  ·  Productive Tensions</text>
+    <text x="350" y="180" text-anchor="middle" font-family="Consolas, Monaco, 'Courier New', monospace" font-size="11" fill="#8b949e">10 Laws  ·  25 Gates  ·  Auto-Experiment  ·  Writeup Engine</text>
   </g>
 
   <!-- Tagline -->
-  <text x="350" y="482" text-anchor="middle" font-family="Consolas,Monaco,monospace" font-size="13" fill="#c9d1d9">Brainstorm · Tree · Review · Publish</text>
+  <text x="350" y="440" text-anchor="middle"
+        font-family="Consolas, Monaco, 'Courier New', monospace" font-size="13" fill="#8b949e"
+        font-style="italic">Brainstorm  ·  Tree  ·  Review  ·  Publish</text>
+
+  <!-- Bottom decoration -->
+  <line x1="80" y1="452" x2="620" y2="452"
+        stroke="#30363d" stroke-width="0.5"/>
 </svg>

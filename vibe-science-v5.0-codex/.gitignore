@@ -1,0 +1,19 @@
+# Runtime research data (generated during sessions, not part of the plugin)
+.vibe-science/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Backup files
+*.bak
+*.backup
+*.orig

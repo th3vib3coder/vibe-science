@@ -247,7 +247,7 @@ vibe-science-v5.0-codex/
 
 ## Origin
 
-This is the OpenAI Codex adaptation of [Vibe Science v5.0 IUDEX](https://github.com/carminoski/vibe-science), originally developed as a Claude Code skill. The architecture, constitutional laws, and all protocols are preserved; platform-specific elements (hooks, multi-agent dispatch, plugin manifest) have been adapted to the Codex skill format.
+This is the OpenAI Codex adaptation of [Vibe Science v5.0 IUDEX](https://github.com/th3vib3coder/vibe-science), originally developed as a Claude Code skill. The architecture, constitutional laws, and all protocols are preserved; platform-specific elements (hooks, multi-agent dispatch, plugin manifest) have been adapted to the Codex skill format.
 
 ---
 
@@ -359,9 +359,19 @@ These papers inform the confidence formula's separation of "unknown" from "contr
 
 ---
 
+## Citation & Attribution
+
+If you use Vibe Science in academic work, please cite:
+
+> Russo, C. & Bertelli, E. (2026). *Vibe Science: Adversarial Epistemic Architecture for LLM-Driven Scientific Research.* Available at: https://github.com/th3vib3coder/vibe-science · DOI: [10.5281/zenodo.18663142](https://doi.org/10.5281/zenodo.18663142)
+
+---
+
 ## Authors
 
-Carmine Russo, with Elisa Bertelli.
+**Carmine Russo** · **Dr. Elisa Bertelli**
+
+---
 
 ## License
 

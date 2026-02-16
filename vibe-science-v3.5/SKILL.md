@@ -5,7 +5,7 @@ license: Apache-2.0
 metadata:
     version: "3.5.1"
     codename: "TERTIUM DATUR"
-    skill-author: carminoski
+    skill-author: th3vib3coder
     architecture: OTAE-Science (Observe-Think-Act-Evaluate)
     sources: Ralph, GSD, BMAD, Codex unrolled loop, Anthropic bio-research, ChatGPT Spec Kit analysis
     changelog: "v3.5.1 — Bugfix: D0-D2 gates defined, evidence floor gate, version tracking, all file references fixed"

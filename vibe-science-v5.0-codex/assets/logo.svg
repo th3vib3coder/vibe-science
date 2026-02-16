@@ -1,52 +1,105 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 520" style="background:#0d1117">
-  <style>
-    text { font-family: 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 14px; }
-    .stars { fill: #e3b341; }
-    .vibe { fill: #3fb950; }
-    .science { fill: #58a6ff; }
-    .loop { fill: #d2a8ff; }
-    .files { fill: #8b949e; }
-    .version { fill: #f0883e; }
-    .tagline { fill: #c9d1d9; }
-    .subtitle { fill: #8b949e; }
-  </style>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 460">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0d1117"/>
+      <stop offset="100%" stop-color="#161b22"/>
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="700" height="460" fill="url(#bg)"/>
+
+  <!-- Top decoration -->
+  <line x1="80" y1="18" x2="620" y2="18" stroke="#30363d" stroke-width="0.5"/>
 
   <!-- Stars -->
-  <text x="30" y="28" class="stars">                        .  *  .       *    .   *</text>
-  <text x="30" y="46" class="stars">            *    .  *       .       .        *       .</text>
-  <text x="30" y="64" class="stars">       .        *       .       *       .        .       *</text>
+  <circle cx="674" cy="12" r="1" fill="#e3b341" opacity="0.7"/>
+  <circle cx="270" cy="19" r="1.5" fill="#e3b341" opacity="0.7"/>
+  <circle cx="578" cy="10" r="2.5" fill="#e3b341" opacity="0.3"/>
+  <circle cx="115" cy="18" r="1.5" fill="#e3b341" opacity="0.6"/>
+  <circle cx="47" cy="40" r="1.5" fill="#e3b341" opacity="0.7"/>
+  <circle cx="578" cy="31" r="1.5" fill="#e3b341" opacity="0.6"/>
+  <circle cx="304" cy="5" r="1.5" fill="#e3b341" opacity="0.7"/>
+  <circle cx="368" cy="22" r="1.5" fill="#e3b341" opacity="0.4"/>
+  <circle cx="364" cy="11" r="1" fill="#e3b341" opacity="0.5"/>
+  <circle cx="387" cy="27" r="2" fill="#e3b341" opacity="0.8"/>
+  <circle cx="490" cy="39" r="1" fill="#e3b341" opacity="0.9"/>
+  <circle cx="407" cy="10" r="2" fill="#e3b341" opacity="0.8"/>
+  <circle cx="653" cy="28" r="1.5" fill="#e3b341" opacity="0.7"/>
+  <circle cx="66" cy="47" r="1.5" fill="#e3b341" opacity="0.8"/>
+  <circle cx="101" cy="19" r="1" fill="#e3b341" opacity="0.5"/>
+  <circle cx="484" cy="45" r="2" fill="#e3b341" opacity="0.4"/>
+  <circle cx="383" cy="18" r="2" fill="#e3b341" opacity="0.7"/>
+  <circle cx="93" cy="43" r="1.5" fill="#e3b341" opacity="0.6"/>
 
   <!-- VIBE -->
-  <text x="30" y="100" class="vibe">       ██╗   ██╗██╗██████╗ ███████╗</text>
-  <text x="30" y="118" class="vibe">       ██║   ██║██║██╔══██╗██╔════╝</text>
-  <text x="30" y="136" class="vibe">       ██║   ██║██║██████╔╝█████╗</text>
-  <text x="30" y="154" class="vibe">       ╚██╗ ██╔╝██║██╔══██╗██╔══╝</text>
-  <text x="30" y="172" class="vibe">        ╚████╔╝ ██║██████╔╝███████╗</text>
-  <text x="30" y="190" class="vibe">         ╚═══╝  ╚═╝╚═════╝ ╚══════╝</text>
+  <text x="350" y="85" text-anchor="middle"
+        font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="76" font-weight="900"
+        fill="#3fb950" letter-spacing="0.25em">VIBE</text>
 
   <!-- SCIENCE -->
-  <text x="30" y="210" class="science">       ███████╗ ██████╗██╗███████╗███╗   ██╗ ██████╗███████╗</text>
-  <text x="30" y="228" class="science">       ██╔════╝██╔════╝██║██╔════╝████╗  ██║██╔════╝██╔════╝</text>
-  <text x="30" y="246" class="science">       ███████╗██║     ██║█████╗  ██╔██╗ ██║██║     █████╗</text>
-  <text x="30" y="264" class="science">       ╚════██║██║     ██║██╔══╝  ██║╚██╗██║██║     ██╔══╝</text>
-  <text x="30" y="282" class="science">       ███████║╚██████╗██║███████╗██║ ╚████║╚██████╗███████╗</text>
-  <text x="30" y="300" class="science">       ╚══════╝ ╚═════╝╚═╝╚══════╝╚═╝  ╚═══╝ ╚═════╝╚══════╝</text>
+  <text x="350" y="145" text-anchor="middle"
+        font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="58" font-weight="900"
+        fill="#58a6ff" letter-spacing="0.18em">SCIENCE</text>
 
-  <!-- Blank line -->
+  <!-- Version badge -->
+  <text x="350" y="175" text-anchor="middle"
+        font-family="Consolas, Monaco, 'Courier New', monospace" font-size="16" fill="#f0883e"
+        font-weight="bold">v5.0 — IUDEX</text>
 
-  <!-- OTAE Loop -->
-  <text x="30" y="340" class="loop">         ┌─ OBSERVE ─── THINK ─── ACT ─── EVALUATE ─┐</text>
-  <text x="30" y="358" class="loop">         │          THE  OTAE  LOOP                   │</text>
-  <text x="30" y="376" class="loop">         └── CRYSTALLIZE ◄── CHECKPOINT ◄── R2 ◄─────┘</text>
+  <!-- Codex badge -->
+  <rect x="290" y="182" width="120" height="20" rx="10" fill="none" stroke="#d2a8ff" stroke-width="1"/>
+  <text x="350" y="196" text-anchor="middle"
+        font-family="Consolas, Monaco, 'Courier New', monospace" font-size="11" fill="#d2a8ff"
+        font-weight="bold">OpenAI Codex</text>
 
-  <!-- State Files -->
-  <text x="30" y="394" class="files">                 │                 ▲</text>
-  <text x="30" y="412" class="files">                 ▼                 │</text>
-  <text x="30" y="430" class="files">            [ STATE.md ]    [ CLAIM-LEDGER ]</text>
+  <!-- Separator -->
+  <line x1="180" y1="210" x2="520" y2="210"
+        stroke="#30363d" stroke-width="0.5"/>
+
+  <!-- Architecture -->
+  <g transform="translate(0,222)">
+    <rect x="144" y="0" width="82" height="30" rx="6" fill="#1a2332" stroke="#d2a8ff" stroke-width="1.5"/>
+    <text x="185" y="19" text-anchor="middle" font-family="Consolas, Monaco, 'Courier New', monospace" font-size="11" fill="#d2a8ff" font-weight="bold">SFI</text>
+    <line x1="226" y1="15" x2="254" y2="15" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="254" y="0" width="82" height="30" rx="6" fill="#1a2332" stroke="#d2a8ff" stroke-width="1.5"/>
+    <text x="295" y="19" text-anchor="middle" font-family="Consolas, Monaco, 'Courier New', monospace" font-size="11" fill="#d2a8ff" font-weight="bold">BFP</text>
+    <line x1="336" y1="15" x2="364" y2="15" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="364" y="0" width="82" height="30" rx="6" fill="#1a2332" stroke="#f85149" stroke-width="1.5"/>
+    <text x="405" y="19" text-anchor="middle" font-family="Consolas, Monaco, 'Courier New', monospace" font-size="11" fill="#f85149" font-weight="bold">R2 4x6</text>
+    <line x1="446" y1="15" x2="474" y2="15" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="474" y="0" width="82" height="30" rx="6" fill="#1a2332" stroke="#58a6ff" stroke-width="1.5"/>
+    <text x="515" y="19" text-anchor="middle" font-family="Consolas, Monaco, 'Courier New', monospace" font-size="11" fill="#58a6ff" font-weight="bold">V0</text>
+    <line x1="515" y1="30" x2="515" y2="48" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="199" y="48" width="82" height="30" rx="6" fill="#1a2332" stroke="#f0883e" stroke-width="1.5"/>
+    <text x="240" y="67" text-anchor="middle" font-family="Consolas, Monaco, 'Courier New', monospace" font-size="10" fill="#f0883e" font-weight="bold">R3 / J0</text>
+    <line x1="281" y1="63" x2="309" y2="63" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="309" y="48" width="82" height="30" rx="6" fill="#1a2332" stroke="#58a6ff" stroke-width="1.5"/>
+    <text x="350" y="67" text-anchor="middle" font-family="Consolas, Monaco, 'Courier New', monospace" font-size="10" fill="#58a6ff" font-weight="bold">SCHEMA</text>
+    <line x1="391" y1="63" x2="419" y2="63" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="419" y="48" width="82" height="30" rx="6" fill="#1a2332" stroke="#58a6ff" stroke-width="1.5"/>
+    <text x="460" y="67" text-anchor="middle" font-family="Consolas, Monaco, 'Courier New', monospace" font-size="10" fill="#58a6ff" font-weight="bold">27 GATES</text>
+    <line x1="250" y1="78" x2="250" y2="98" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="140" y="98" width="150" height="30" rx="6" fill="#1a2332" stroke="#e3b341" stroke-width="1.5"/>
+    <text x="215" y="117" text-anchor="middle" font-family="Consolas, Monaco, 'Courier New', monospace" font-size="11" fill="#e3b341" font-weight="bold">SERENDIPITY</text>
+    <text x="215" y="144" text-anchor="middle" font-family="Consolas, Monaco, 'Courier New', monospace" font-size="9" fill="#e3b341">Salvagente · Seeds survive</text>
+    <line x1="450" y1="78" x2="450" y2="98" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="410" y="98" width="150" height="30" rx="6" fill="#1a2332" stroke="#8b949e" stroke-width="1.5"/>
+    <text x="485" y="117" text-anchor="middle" font-family="Consolas, Monaco, 'Courier New', monospace" font-size="11" fill="#8b949e" font-weight="bold">CLAIM-LEDGER</text>
+    <text x="485" y="144" text-anchor="middle" font-family="Consolas, Monaco, 'Courier New', monospace" font-size="9" fill="#8b949e">Circuit Breaker · Permission Model</text>
+    <text x="350" y="168" text-anchor="middle" font-family="Consolas, Monaco, 'Courier New', monospace" font-size="11" fill="#8b949e">10 Laws  ·  27 Gates (8 Schema-Enforced)  ·  SFI  ·  BFP  ·  R3 Judge</text>
+  </g>
 
   <!-- Tagline -->
-  <text x="30" y="468" class="tagline">          Detect  ·  Persist  ·  Demolish  ·  Discover</text>
+  <text x="350" y="440" text-anchor="middle"
+        font-family="Consolas, Monaco, 'Courier New', monospace" font-size="13" fill="#8b949e"
+        font-style="italic">Inject  ·  Blind  ·  Judge  ·  Discover</text>
 
-  <!-- Version -->
-  <text x="30" y="500" class="version">                      v5.0 IUDEX</text>
+  <!-- Bottom decoration -->
+  <line x1="80" y1="452" x2="620" y2="452"
+        stroke="#30363d" stroke-width="0.5"/>
 </svg>

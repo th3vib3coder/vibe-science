@@ -10,10 +10,8 @@
 **v5.0: R2 is structurally unbypassable. Not just prompted — architecturally enforced.**
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18663142.svg)](https://doi.org/10.5281/zenodo.18663142)
-[![Version](https://img.shields.io/badge/version-5.0.0-blue.svg)](#)
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](../LICENSE)
-
 [![Version](https://img.shields.io/badge/version-5.0.0-blue.svg)](README.md#version-history)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](../LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-blueviolet.svg)](https://docs.anthropic.com/en/docs/claude-code)
 [![Laws](https://img.shields.io/badge/constitutional_laws-10-orange.svg)](#10-constitutional-laws)
 [![Gates](https://img.shields.io/badge/quality_gates-27-red.svg)](#quality-gates)
@@ -500,7 +498,7 @@ Fallback from TEAM → SOLO is seamless. All state lives in files (LAW 7).
 ### 1. Install
 
 ```bash
-git clone https://github.com/carminoski/vibe-science.git
+git clone https://github.com/th3vib3coder/vibe-science.git
 claude plugins add ./vibe-science
 ```
 
@@ -926,7 +924,7 @@ Apache 2.0 — see [LICENSE](LICENSE).
 
 ---
 
-**Built by [carminoski](https://github.com/carminoski)**
+**Built by [th3vib3coder](https://github.com/th3vib3coder)**
 
 *Built with Claude. Tested against Reviewer 2. Survived 21 sprints. Validated by 3 models.*
 
