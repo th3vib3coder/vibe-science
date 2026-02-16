@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 520" style="background:#0d1117">
+  <style>
+    text { font-family: 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 14px; }
+    .stars { fill: #e3b341; }
+    .vibe { fill: #3fb950; }
+    .science { fill: #58a6ff; }
+    .loop { fill: #d2a8ff; }
+    .files { fill: #8b949e; }
+    .version { fill: #f0883e; }
+    .tagline { fill: #c9d1d9; }
+    .subtitle { fill: #8b949e; }
+  </style>
+
+  <!-- Stars -->
+  <text x="30" y="28" class="stars">                        .  *  .       *    .   *</text>
+  <text x="30" y="46" class="stars">            *    .  *       .       .        *       .</text>
+  <text x="30" y="64" class="stars">       .        *       .       *       .        .       *</text>
+
+  <!-- VIBE -->
+  <text x="30" y="100" class="vibe">       ██╗   ██╗██╗██████╗ ███████╗</text>
+  <text x="30" y="118" class="vibe">       ██║   ██║██║██╔══██╗██╔════╝</text>
+  <text x="30" y="136" class="vibe">       ██║   ██║██║██████╔╝█████╗</text>
+  <text x="30" y="154" class="vibe">       ╚██╗ ██╔╝██║██╔══██╗██╔══╝</text>
+  <text x="30" y="172" class="vibe">        ╚████╔╝ ██║██████╔╝███████╗</text>
+  <text x="30" y="190" class="vibe">         ╚═══╝  ╚═╝╚═════╝ ╚══════╝</text>
+
+  <!-- SCIENCE -->
+  <text x="30" y="210" class="science">       ███████╗ ██████╗██╗███████╗███╗   ██╗ ██████╗███████╗</text>
+  <text x="30" y="228" class="science">       ██╔════╝██╔════╝██║██╔════╝████╗  ██║██╔════╝██╔════╝</text>
+  <text x="30" y="246" class="science">       ███████╗██║     ██║█████╗  ██╔██╗ ██║██║     █████╗</text>
+  <text x="30" y="264" class="science">       ╚════██║██║     ██║██╔══╝  ██║╚██╗██║██║     ██╔══╝</text>
+  <text x="30" y="282" class="science">       ███████║╚██████╗██║███████╗██║ ╚████║╚██████╗███████╗</text>
+  <text x="30" y="300" class="science">       ╚══════╝ ╚═════╝╚═╝╚══════╝╚═╝  ╚═══╝ ╚═════╝╚══════╝</text>
+
+  <!-- Blank line -->
+
+  <!-- OTAE Loop -->
+  <text x="30" y="340" class="loop">         ┌─ OBSERVE ─── THINK ─── ACT ─── EVALUATE ─┐</text>
+  <text x="30" y="358" class="loop">         │          THE  OTAE  LOOP                   │</text>
+  <text x="30" y="376" class="loop">         └── CRYSTALLIZE ◄── CHECKPOINT ◄── R2 ◄─────┘</text>
+
+  <!-- State Files -->
+  <text x="30" y="394" class="files">                 │                 ▲</text>
+  <text x="30" y="412" class="files">                 ▼                 │</text>
+  <text x="30" y="430" class="files">            [ STATE.md ]    [ CLAIM-LEDGER ]</text>
+
+  <!-- Tagline -->
+  <text x="30" y="468" class="tagline">          Detect  ·  Persist  ·  Demolish  ·  Discover</text>
+
+  <!-- Version -->
+  <text x="30" y="500" class="version">                      v5.0 IUDEX</text>
+</svg>

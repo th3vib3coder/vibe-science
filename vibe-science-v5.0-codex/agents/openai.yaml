@@ -1,0 +1,7 @@
+interface:
+  display_name: "Vibe Science v5.0 IUDEX"
+  short_description: "Scientific research engine with adversarial review, tree search over hypotheses, and serendipity detection. Infinite loops until discovery."
+  brand_color: "#1B5E20"
+
+policy:
+  allow_implicit_invocation: true

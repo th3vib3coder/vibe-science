@@ -1,0 +1,159 @@
+# Vibe Science v5.0 IUDEX — Seeded Fault Injection (SFI) Taxonomy
+# Purpose: Realistic faults injected into claim sets before R2 review.
+#          R2 knows CATEGORIES but not WHICH faults hit WHICH claims.
+# Origin:  Real errors from 21 CRISPR research sprints.
+# Owner:   Human architect only — LLM MUST NOT generate or modify faults.
+
+metadata:
+  version: "5.0.0"
+  min_active_per_category: 2      # notify human if category drops below 2
+  retirement_threshold: 3         # RETIRE after 3 consecutive R2 catches
+  fault_generation: HUMAN_ONLY
+
+# Domain-specific faults (SFI-01 through SFI-08), 2+ instances each
+# Status lifecycle: ACTIVE -> RETIRED (after retirement_threshold catches)
+faults:
+  # SFI-01: Confounded claim
+  - id: SFI-01a
+    category: confounded_claim
+    description: Statistical signal that reverses under propensity matching
+    example: "OR=2.30 p<1e-100; sign reverses controlling for GC content"
+    difficulty: HARD
+    equivalence_risk: HIGH
+    status: ACTIVE
+  - id: SFI-01b
+    category: confounded_claim
+    description: Correlation driven by batch effect not biological variable
+    example: "Cell-line efficiency gap disappears after plate-batch correction"
+    difficulty: MEDIUM
+    equivalence_risk: MEDIUM
+    status: ACTIVE
+  # SFI-02: Already-known finding
+  - id: SFI-02a
+    category: already_known_finding
+    description: Established knowledge presented as novel discovery
+    example: "Mismatch-position effects presented as novel — known since Hsu 2013"
+    difficulty: EASY
+    equivalence_risk: LOW
+    status: ACTIVE
+  - id: SFI-02b
+    category: already_known_finding
+    description: Rediscovery of well-characterized mechanism without citation
+    example: "PAM-distal tolerance as new finding — textbook since Jinek 2012"
+    difficulty: EASY
+    equivalence_risk: LOW
+    status: ACTIVE
+  # SFI-03: Biological impossibility
+  - id: SFI-03a
+    category: biological_impossibility
+    description: Claim contradicts known molecular biology
+    example: "Bidirectional positional effects when mismatches monotonically reduce cleavage"
+    difficulty: MEDIUM
+    equivalence_risk: LOW
+    status: ACTIVE
+  - id: SFI-03b
+    category: biological_impossibility
+    description: Mechanism cannot operate in the described system
+    example: "Chromatin remodeling invoked for in-vitro assay with naked DNA"
+    difficulty: MEDIUM
+    equivalence_risk: LOW
+    status: ACTIVE
+  # SFI-04: Noise-as-signal
+  - id: SFI-04a
+    category: noise_as_signal
+    description: Effect size below meaningful threshold presented as finding
+    example: "Cohen's d=0.07 labeled 'regime switch' — below practical significance"
+    difficulty: EASY
+    equivalence_risk: MEDIUM
+    status: ACTIVE
+  - id: SFI-04b
+    category: noise_as_signal
+    description: Variance-dominated signal treated as deterministic pattern
+    example: "3% accuracy diff (CI spans zero) called 'robust improvement'"
+    difficulty: MEDIUM
+    equivalence_risk: MEDIUM
+    status: ACTIVE
+  # SFI-05: Non-generalizable finding
+  - id: SFI-05a
+    category: non_generalizable_finding
+    description: Assay-specific result presented as universal rule
+    example: "GUIDE-seq position rankings don't replicate in CIRCLE-seq"
+    difficulty: HARD
+    equivalence_risk: HIGH
+    status: ACTIVE
+  - id: SFI-05b
+    category: non_generalizable_finding
+    description: Single-organism result claimed across species
+    example: "Mouse hepatocyte rates generalized to human T-cells without validation"
+    difficulty: MEDIUM
+    equivalence_risk: HIGH
+    status: ACTIVE
+  # SFI-06: Citation fabrication
+  - id: SFI-06a
+    category: citation_fabrication
+    description: DOI does not resolve to any published work
+    example: "10.1038/s41587-024-02999-x — DOI returns 404"
+    difficulty: EASY
+    equivalence_risk: LOW
+    status: ACTIVE
+  - id: SFI-06b
+    category: citation_fabrication
+    description: Real paper cited but finding misattributed
+    example: "Tsai 2015 cited for PAM flexibility — paper reports GUIDE-seq method"
+    difficulty: HARD
+    equivalence_risk: MEDIUM
+    status: ACTIVE
+  # SFI-07: Statistical artifact
+  - id: SFI-07a
+    category: statistical_artifact
+    description: Multiple testing without correction inflating significance
+    example: "100 comparisons uncorrected — 5 expected significant by chance"
+    difficulty: MEDIUM
+    equivalence_risk: MEDIUM
+    status: ACTIVE
+  - id: SFI-07b
+    category: statistical_artifact
+    description: Wrong statistical test for data distribution
+    example: "Parametric t-test on skewed off-target counts — needs Mann-Whitney"
+    difficulty: MEDIUM
+    equivalence_risk: MEDIUM
+    status: ACTIVE
+  # SFI-08: Missing control
+  - id: SFI-08a
+    category: missing_control
+    description: Accuracy reported without random baseline
+    example: "87% accuracy 'high' — random baseline on imbalanced classes gives 84%"
+    difficulty: EASY
+    equivalence_risk: LOW
+    status: ACTIVE
+  - id: SFI-08b
+    category: missing_control
+    description: Treatment effect without appropriate negative control
+    example: "Efficiency boost from modified gRNA — no unmodified gRNA control"
+    difficulty: MEDIUM
+    equivalence_risk: MEDIUM
+    status: ACTIVE
+
+# Meta-faults: domain-independent structural errors (v5.0+)
+meta_faults:
+  - id: META-01
+    category: claim_type_misclassification
+    description: Causal claim labeled as descriptive, or vice versa
+    example: "'X causes Y' but evidence is correlational — labeled DESCRIPTIVE"
+    difficulty: MEDIUM
+    equivalence_risk: HIGH
+    status: ACTIVE
+  - id: META-02
+    category: cherry_picked_citation
+    description: Source exists but does not support the claim as stated
+    example: "Paper reports mouse effect; claim generalizes to human unqualified"
+    difficulty: HARD
+    equivalence_risk: HIGH
+    status: ACTIVE
+  - id: META-03
+    category: p_hacking_narrative
+    description: Multiple comparisons reframed as single pre-specified hypothesis
+    example: "20 subgroup analyses; one significant result presented as primary"
+    difficulty: HARD
+    equivalence_risk: HIGH
+    status: ACTIVE
