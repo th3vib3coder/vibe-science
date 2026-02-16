@@ -1,0 +1,46 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "agent",
+            "prompt": "You are a completion guard for a scientific research system (Vibe Science v4.0). The researcher agent is attempting to stop. You MUST check the following conditions by reading files in the .vibe-science/ directory:\n\n1. Does CLAIM-LEDGER.md have any claims with status 'promoted' that lack a confounder_harness file in 05-reviewer2/? For each promoted claim, a file CONFOUNDER-HARNESS-{claim_id}.md MUST exist.\n2. Are there any open Rev2 attacks (demands) without responses? Check 05-reviewer2/ for REV2-REVIEW files and verify each demand has a response logged.\n3. Has the researcher declared 'paper-ready' or 'investigation-complete' in STATE.md without ALL of the following being true:\n   a. Every promoted claim has passed the confounder harness (raw + conditioned + matched)\n   b. Cross-dataset/cross-assay validation attempted for generalizable claims\n   c. All previous R2 demands addressed\n   d. No claim promoted without at least 3 falsification attempts\n   e. Results crystallized to files (not just in conversation)\n\nIf the .vibe-science/ directory does not exist, this is not a Vibe Science session — allow stopping.\nIf the directory exists and ANY of conditions 1-3 are true, respond: {\"decision\": \"block\", \"reason\": \"[specific gap — name which claims, which files, which demands are missing]\"}\nIf all conditions are satisfied, respond: {\"decision\": \"allow\"}\n\nDo NOT let the researcher stop prematurely. This is the architectural solution to premature closure.",
+            "timeout": 120
+          }
+        ]
+      }
+    ],
+    "TaskCompleted": [
+      {
+        "hooks": [
+          {
+            "type": "agent",
+            "prompt": "A task was marked complete in a Vibe Science v4.0 session. Verify by reading files:\n\n1. If this is a research sprint task: does a SPRINT-{n}_REPORT.md exist in the .vibe-science/ directory with mandatory sections (findings, attacks, eliminated, next)?\n2. If this is a claim-related task: does a confounder harness file exist for each claim referenced? Check for CONFOUNDER-HARNESS-{claim_id}.md.\n3. If this is a review task: does a REV2-REVIEW file exist in 05-reviewer2/?\n4. Are all results crystallized to files? Check that any data, metrics, or intermediate results mentioned in the task output exist as files on disk (LAW 10: if it's not in a file, it doesn't exist).\n\nIf the .vibe-science/ directory does not exist, allow completion.\nIf required artifacts are missing, respond: {\"decision\": \"block\", \"reason\": \"Missing: [list specific files]\"}\nIf all artifacts exist, respond: {\"decision\": \"allow\"}",
+            "timeout": 60
+          }
+        ]
+      }
+    ],
+    "TeammateIdle": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "A teammate in a Vibe Science v4.0 Agent Team is about to stop. Check: does it have pending tasks in the shared task list? Has it completed its review/scan? If the teammate is reviewer2 and has unfinished review demands, it MUST NOT stop. If the teammate is serendipity and has unscanned nodes, it MUST NOT stop. If pending work remains, respond: {\"decision\": \"block\", \"reason\": \"pending work remains: [specifics]\"}. If all work is done, respond: {\"decision\": \"allow\"}."
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "A subagent in a Vibe Science v4.0 session is stopping. If this subagent was spawned for Rev2 review, check if it produced its expected output file (REV2-REVIEW-{sprint}.md). If no output file was produced, respond: {\"decision\": \"block\", \"reason\": \"subagent did not produce required output file\"}. Otherwise, respond: {\"decision\": \"allow\"}."
+          }
+        ]
+      }
+    ]
+  }
+}

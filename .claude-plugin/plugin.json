@@ -1,0 +1,14 @@
+{
+  "name": "vibe-science",
+  "version": "4.5.0",
+  "codename": "ARBOR VITAE (Pruned)",
+  "description": "Scientific research engine with agentic tree search. Infinite loops until discovery, rigorous tracking, adversarial review, serendipity preserved. Supports SOLO (single context) and TEAM (Agent Teams with separate adversarial reviewer) runtimes. v4.5 adds pruned tree management, improved confounder harness, and hooks enforcement.",
+  "author": "carminoski",
+  "license": "MIT",
+  "skills": [
+    "SKILL.md"
+  ],
+  "commands": [
+    "commands/start.md"
+  ]
+}
