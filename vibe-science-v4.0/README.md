@@ -7,7 +7,9 @@
 **Agentic tree search for scientific research.**<br>
 **Infinite loops until discovery. Adversarial review at every node.**
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18663142.svg)](https://doi.org/10.5281/zenodo.18663142)
 [![Version](https://img.shields.io/badge/version-4.0.0-blue.svg)](#version-history)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](../LICENSE)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-blueviolet.svg)](https://docs.anthropic.com/en/docs/claude-code)
 [![Laws](https://img.shields.io/badge/constitutional_laws-10-orange.svg)](#10-constitutional-laws)

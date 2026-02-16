@@ -2,6 +2,12 @@
   <img src="logos/logo-v5.0.svg" alt="Vibe Science" width="700">
 </p>
 
+<p align="center">
+  <a href="https://doi.org/10.5281/zenodo.18663142"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.18663142.svg" alt="DOI"></a>
+  <a href="vibe-science-v5.0/LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="License"></a>
+  <img src="https://img.shields.io/badge/version-5.0.0-orange.svg" alt="Version">
+</p>
+
 # Vibe Science
 
 > An AI-native research engine that loops until discovery — with adversarial review, quality gates, and serendipity tracking.

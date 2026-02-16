@@ -1,55 +1,78 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 580" style="background:#0d1117">
-  <style>
-    text { font-family: 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 14px; }
-    .stars { fill: #e3b341; }
-    .vibe { fill: #3fb950; }
-    .science { fill: #58a6ff; }
-    .tree { fill: #d2a8ff; }
-    .r2 { fill: #f85149; }
-    .seren { fill: #e3b341; }
-    .files { fill: #8b949e; }
-    .version { fill: #f0883e; }
-    .tagline { fill: #c9d1d9; }
-  </style>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 502" style="background:#0d1117">
+  <defs>
+    <path id="LV" d="M0,0h9v9h-9z M48,0h9v9h-9z M0,12h9v9h-9z M48,12h9v9h-9z M12,24h9v9h-9z M36,24h9v9h-9z M12,36h9v9h-9z M36,36h9v9h-9z M24,48h9v9h-9z"/>
+    <path id="LI" d="M0,0h9v9h-9z M12,0h9v9h-9z M24,0h9v9h-9z M12,12h9v9h-9z M12,24h9v9h-9z M12,36h9v9h-9z M0,48h9v9h-9z M12,48h9v9h-9z M24,48h9v9h-9z"/>
+    <path id="LB" d="M0,0h9v9h-9z M12,0h9v9h-9z M24,0h9v9h-9z M0,12h9v9h-9z M36,12h9v9h-9z M0,24h9v9h-9z M12,24h9v9h-9z M24,24h9v9h-9z M0,36h9v9h-9z M36,36h9v9h-9z M0,48h9v9h-9z M12,48h9v9h-9z M24,48h9v9h-9z"/>
+    <path id="LE" d="M0,0h9v9h-9z M12,0h9v9h-9z M24,0h9v9h-9z M36,0h9v9h-9z M0,12h9v9h-9z M0,24h9v9h-9z M12,24h9v9h-9z M24,24h9v9h-9z M0,36h9v9h-9z M0,48h9v9h-9z M12,48h9v9h-9z M24,48h9v9h-9z M36,48h9v9h-9z"/>
+    <path id="LS" d="M12,0h9v9h-9z M24,0h9v9h-9z M36,0h9v9h-9z M0,12h9v9h-9z M12,24h9v9h-9z M24,24h9v9h-9z M36,36h9v9h-9z M0,48h9v9h-9z M12,48h9v9h-9z M24,48h9v9h-9z"/>
+    <path id="LC" d="M12,0h9v9h-9z M24,0h9v9h-9z M36,0h9v9h-9z M0,12h9v9h-9z M0,24h9v9h-9z M0,36h9v9h-9z M12,48h9v9h-9z M24,48h9v9h-9z M36,48h9v9h-9z"/>
+    <path id="LN" d="M0,0h9v9h-9z M48,0h9v9h-9z M0,12h9v9h-9z M12,12h9v9h-9z M48,12h9v9h-9z M0,24h9v9h-9z M24,24h9v9h-9z M48,24h9v9h-9z M0,36h9v9h-9z M36,36h9v9h-9z M48,36h9v9h-9z M0,48h9v9h-9z M48,48h9v9h-9z"/>
+    <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/>
+    </marker>
+  </defs>
 
   <!-- Stars -->
-  <text x="30" y="28" class="stars">                        .  *  .       *    .   *</text>
-  <text x="30" y="46" class="stars">            *    .  *       .       .        *       .</text>
-  <text x="30" y="64" class="stars">       .        *       .       *       .        .       *</text>
+  <circle cx="144" cy="9" r="2.5" fill="#e3b341" opacity="0.5"/>
+  <circle cx="172" cy="14" r="1.5" fill="#e3b341" opacity="0.8"/>
+  <circle cx="62" cy="9" r="1.5" fill="#e3b341" opacity="0.5"/>
+  <circle cx="547" cy="46" r="1.5" fill="#e3b341" opacity="0.7"/>
+  <circle cx="588" cy="34" r="2" fill="#e3b341" opacity="0.7"/>
+  <circle cx="314" cy="8" r="2" fill="#e3b341" opacity="0.8"/>
+  <circle cx="378" cy="25" r="2" fill="#e3b341" opacity="0.5"/>
+  <circle cx="374" cy="14" r="1.5" fill="#e3b341" opacity="0.6"/>
+  <circle cx="397" cy="30" r="2.5" fill="#e3b341" opacity="0.9"/>
+  <circle cx="500" cy="42" r="1.5" fill="#e3b341" opacity="1.0"/>
+  <circle cx="417" cy="13" r="2.5" fill="#e3b341" opacity="0.9"/>
+  <circle cx="663" cy="31" r="2" fill="#e3b341" opacity="0.8"/>
+  <circle cx="76" cy="50" r="2" fill="#e3b341" opacity="0.9"/>
+  <circle cx="111" cy="22" r="1.5" fill="#e3b341" opacity="0.6"/>
+  <circle cx="494" cy="48" r="2.5" fill="#e3b341" opacity="0.5"/>
 
   <!-- VIBE -->
-  <text x="30" y="100" class="vibe">       ██╗   ██╗██╗██████╗ ███████╗</text>
-  <text x="30" y="118" class="vibe">       ██║   ██║██║██╔══██╗██╔════╝</text>
-  <text x="30" y="136" class="vibe">       ██║   ██║██║██████╔╝█████╗</text>
-  <text x="30" y="154" class="vibe">       ╚██╗ ██╔╝██║██╔══██╗██╔══╝</text>
-  <text x="30" y="172" class="vibe">        ╚████╔╝ ██║██████╔╝███████╗</text>
-  <text x="30" y="190" class="vibe">         ╚═══╝  ╚═╝╚═════╝ ╚══════╝</text>
+  <use href="#LV" x="230" y="70" fill="#3fb950"/>
+  <use href="#LI" x="307" y="70" fill="#3fb950"/>
+  <use href="#LB" x="360" y="70" fill="#3fb950"/>
+  <use href="#LE" x="425" y="70" fill="#3fb950"/>
 
   <!-- SCIENCE -->
-  <text x="30" y="210" class="science">       ███████╗ ██████╗██╗███████╗███╗   ██╗ ██████╗███████╗</text>
-  <text x="30" y="228" class="science">       ██╔════╝██╔════╝██║██╔════╝████╗  ██║██╔════╝██╔════╝</text>
-  <text x="30" y="246" class="science">       ███████╗██║     ██║█████╗  ██╔██╗ ██║██║     █████╗</text>
-  <text x="30" y="264" class="science">       ╚════██║██║     ██║██╔══╝  ██║╚██╗██║██║     ██╔══╝</text>
-  <text x="30" y="282" class="science">       ███████║╚██████╗██║███████╗██║ ╚████║╚██████╗███████╗</text>
-  <text x="30" y="300" class="science">       ╚══════╝ ╚═════╝╚═╝╚══════╝╚═╝  ╚═══╝ ╚═════╝╚══════╝</text>
+  <use href="#LS" x="132" y="142" fill="#58a6ff"/>
+  <use href="#LC" x="197" y="142" fill="#58a6ff"/>
+  <use href="#LI" x="262" y="142" fill="#58a6ff"/>
+  <use href="#LE" x="315" y="142" fill="#58a6ff"/>
+  <use href="#LN" x="380" y="142" fill="#58a6ff"/>
+  <use href="#LC" x="457" y="142" fill="#58a6ff"/>
+  <use href="#LE" x="522" y="142" fill="#58a6ff"/>
 
-  <!-- Tree Search -->
-  <text x="30" y="340" class="tree">                         root</text>
-  <text x="30" y="358" class="tree">                        / | \</text>
-  <text x="30" y="376" class="tree">                     A    B    C       OTAE-Tree Search</text>
-  <text x="30" y="394" class="tree">                    / \   |</text>
-  <text x="30" y="412" class="tree">                  A1  A2  B1          7 Node Types</text>
-  <text x="30" y="430" class="tree">                 /</text>
-  <text x="30" y="448" class="seren">               A1a                    ★ Serendipity Branch</text>
+  <!-- Version label -->
+  <text x="350" y="227" text-anchor="middle" font-family="Consolas,Monaco,monospace" font-size="16" fill="#f0883e" font-weight="bold">v4.0 ARBOR SCIENTIAE</text>
 
-  <!-- R2 Ensemble -->
-  <text x="30" y="480" class="r2">         ┌── R2 ENSEMBLE ──────────────────────────┐</text>
-  <text x="30" y="498" class="r2">         │  Methods · Stats · Bio · Engineering     │</text>
-  <text x="30" y="516" class="r2">         └──────────────────────────────────────────┘</text>
+  <!-- Architecture -->
+  <g transform="translate(0,252)">
+    <rect x="300" y="0" width="100" height="30" rx="6" fill="#1a2332" stroke="#3fb950" stroke-width="1.5"/>
+    <text x="350" y="19" text-anchor="middle" font-family="Consolas,Monaco,monospace" font-size="11" fill="#3fb950" font-weight="bold">ROOT (RQ)</text>
+    <line x1="320" y1="30" x2="320" y2="55" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <line x1="380" y1="30" x2="380" y2="55" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="230" y="55" width="100" height="28" rx="6" fill="#1a2332" stroke="#58a6ff" stroke-width="1.5"/>
+    <text x="280" y="73" text-anchor="middle" font-family="Consolas,Monaco,monospace" font-size="11" fill="#58a6ff" font-weight="bold">Branch A</text>
+    <rect x="370" y="55" width="100" height="28" rx="6" fill="#1a2332" stroke="#58a6ff" stroke-width="1.5"/>
+    <text x="420" y="73" text-anchor="middle" font-family="Consolas,Monaco,monospace" font-size="11" fill="#58a6ff" font-weight="bold">Branch B</text>
+    <line x1="280" y1="83" x2="280" y2="105" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="230" y="105" width="100" height="28" rx="6" fill="#1a2332" stroke="#d2a8ff" stroke-width="1.5"/>
+    <text x="280" y="123" text-anchor="middle" font-family="Consolas,Monaco,monospace" font-size="11" fill="#d2a8ff" font-weight="bold">A.1 (prune)</text>
+    <line x1="420" y1="83" x2="420" y2="105" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="370" y="105" width="100" height="28" rx="6" fill="#1a2332" stroke="#3fb950" stroke-width="1.5"/>
+    <text x="420" y="123" text-anchor="middle" font-family="Consolas,Monaco,monospace" font-size="11" fill="#3fb950" font-weight="bold">B.1 (best)</text>
+    <line x1="470" y1="69" x2="530" y2="69" stroke="#e3b341" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrow)"/>
+    <rect x="530" y="55" width="120" height="28" rx="6" fill="#1a2332" stroke="#e3b341" stroke-width="1.5"/>
+    <text x="590" y="73" text-anchor="middle" font-family="Consolas,Monaco,monospace" font-size="11" fill="#e3b341" font-weight="bold">SERENDIPITY</text>
+    <rect x="130" y="55" width="80" height="78" rx="6" fill="#1a2332" stroke="#f85149" stroke-width="1.5"/>
+    <text x="170" y="98" text-anchor="middle" font-family="Consolas,Monaco,monospace" font-size="14" fill="#f85149" font-weight="bold">R2</text>
+    <text x="170" y="100" text-anchor="middle" font-family="Consolas,Monaco,monospace" font-size="9" fill="#f85149">4 reviewers</text>
+    <text x="170" y="114" text-anchor="middle" font-family="Consolas,Monaco,monospace" font-size="9" fill="#f85149">per branch</text>
+    <text x="350" y="175" text-anchor="middle" font-family="Consolas,Monaco,monospace" font-size="11" fill="#8b949e">8 Laws · Tree Score · Branch Pruning · Knowledge Base</text>
+  </g>
 
   <!-- Tagline -->
-  <text x="30" y="546" class="tagline">          Detect  ·  Persist  ·  Demolish  ·  Discover</text>
-
-  <!-- Version -->
-  <text x="30" y="570" class="version">                     v4.0 ARBOR VITAE</text>
+  <text x="350" y="482" text-anchor="middle" font-family="Consolas,Monaco,monospace" font-size="13" fill="#c9d1d9">Branch · Score · Prune · Discover</text>
 </svg>
