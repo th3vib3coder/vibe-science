@@ -3,9 +3,47 @@ message: "If you use this software in your research, please cite it as below."
 type: software
 title: "Vibe Science"
 abstract: >-
-  An AI-native research engine that combines structured methodology (OTAE loop),
-  adversarial review (Reviewer 2 Ensemble), typed evidence tracking, quality gates,
-  and serendipity preservation for systematic scientific discovery.
+  Vibe Science v5.0 IUDEX is an AI-native research engine for Claude Code that
+  transforms LLM agents into rigorous scientific investigators through structural
+  enforcement, not just prompting. Grounded in Huang et al. (ICLR 2024), who
+  proved that LLMs cannot self-correct reasoning without external feedback, v5.0
+  introduces four architectural innovations that make adversarial review
+  structurally unbypassable: Seeded Fault Injection (SFI), which injects known
+  errors into claim sets before review to calibrate reviewer vigilance; Blind-First
+  Pass (BFP), which forces the reviewer to assess claims without seeing the
+  researcher's justifications, breaking anchoring bias; a Judge Agent (R3) that
+  meta-reviews the quality of adversarial reviews on a 6-dimension rubric; and
+  Schema-Validated Gates (SVG), where 8 of the system's 27 quality gates enforce
+  JSON Schema validation against 9 read-only schema files, making prose claims of
+  completion structurally impossible to accept. The core architecture is an
+  OTAE-Tree (Observe-Think-Act-Evaluate) loop embedded in a branching tree search
+  over hypotheses, with 7 node types, 3 tree modes, best-first selection, and
+  automatic pruning. At the center of the system sits the Reviewer 2 Ensemble, a
+  4-reviewer adversarial co-pilot operating in 6 modes (BRAINSTORM, FORCED, BATCH,
+  SHADOW, VETO, REDIRECT) with a 12-flag mandatory checklist, double-pass review
+  (Fatal Hunt then Method Repair), and mandatory counter-evidence search. Every
+  quantitative claim must survive a Confounder Harness (raw estimate, conditioned
+  estimate, propensity-matched estimate — sign change kills, collapse over 50
+  percent downgrades, survival promotes). The system is governed by 10 Constitutional
+  Laws that no agent, protocol, or user request can override, and enforced at
+  runtime by Claude Code hooks that deterministically block premature closure,
+  incomplete artifacts, and idle teammates. Additional subsystems include a
+  Serendipity Engine with active radar scoring (0-20 scale, cross-branch pattern
+  detection, escalation protocols), a Brainstorm Engine (Phase 0) with Inversion
+  Exercise, Collision-Zone Thinking, and Productive Tensions, a 5-Stage Experiment
+  Manager with iteration limits per stage, an Evidence Engine with typed claims and
+  geometric confidence formula with hard veto thresholds, a Knowledge Base for
+  cross-research-question persistence, and a Circuit Breaker that converts deadlocked
+  review loops into DISPUTED claims (frozen, not killed) with a Stage 5 poison pill
+  that blocks synthesis until disputes are resolved. An Agent Permission Model
+  enforces separation of powers: Reviewer 2 produces verdict artifacts but never
+  writes to the claim ledger; the Judge Agent scores reviews but never modifies
+  them; schemas are read-only for all agents. The system supports both SOLO mode
+  (all roles in one context window) and TEAM mode (Agent Teams with dedicated
+  context windows per role). Developed and battle-tested over 21 sprints of
+  CRISPR-Cas9 off-target research, where it caught four confounded claims that
+  would have passed conventional AI review — including one with OR=2.30 and
+  p < 10^-100 whose sign reversed under propensity matching.
 authors:
   - family-names: Russo
     given-names: Carmine
@@ -29,6 +67,16 @@ keywords:
   - scRNA-seq
   - research-methodology
   - quality-gates
+  - claude-code
+  - mutation-testing
+  - tree-search
+  - confounder-harness
+  - schema-validation
+  - blind-review
+  - judge-agent
+  - OTAE-loop
+  - fault-injection
+  - circuit-breaker
 references:
   - type: article
     title: "Vibe Science: AI-native research with adversarial review and serendipity tracking"

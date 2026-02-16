@@ -961,9 +961,19 @@ These papers prove the fundamental problem v5.0 solves — LLMs cannot self-corr
 
 <div align="center">
 
+## Citation & Attribution
+
+If you use Vibe Science in your research, please cite:
+
+> Russo, C. & Bertelli, E. (MD) (2026). *Vibe Science: an AI-native research engine with adversarial review and serendipity tracking.* https://github.com/th3vib3coder/vibe-science · DOI: [10.5281/zenodo.18665031](https://doi.org/10.5281/zenodo.18665031)
+
+---
+
 ## License
 
 Apache 2.0 — see [LICENSE](LICENSE).
+
+© 2026 Carmine Russo & Dr. Elisa Bertelli (MD)
 
 ---
 

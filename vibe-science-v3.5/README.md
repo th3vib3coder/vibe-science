@@ -7,6 +7,7 @@
 **Scientific research in serendipity mode.**<br>
 **Infinite loops until discovery. Adversarial review at every milestone.**
 
+[![DOI](https://zenodo.org/badge/1148022920.svg)](https://doi.org/10.5281/zenodo.18663141)
 [![Version](https://img.shields.io/badge/version-3.5.1-blue.svg)](#version-history)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](../LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-blueviolet.svg)](https://docs.anthropic.com/en/docs/claude-code)
@@ -668,9 +669,19 @@ All files are loaded **on-demand via progressive disclosure** — only when ente
 
 <div align="center">
 
+## Citation & Attribution
+
+If you use Vibe Science in your research, please cite:
+
+> Russo, C. & Bertelli, E. (MD) (2026). *Vibe Science: an AI-native research engine with adversarial review and serendipity tracking.* https://github.com/th3vib3coder/vibe-science · DOI: [10.5281/zenodo.18665031](https://doi.org/10.5281/zenodo.18665031)
+
+---
+
 ## License
 
 Apache 2.0 — see [LICENSE](LICENSE).
+
+© 2026 Carmine Russo & Dr. Elisa Bertelli (MD)
 
 ---
 

@@ -781,21 +781,23 @@ This repository documents the evolution of Vibe Science for the **VibeX 2026** p
 
 ## Citation & Attribution
 
-If you use Vibe Science in your research and it contributes to published results, please cite:
+If you use Vibe Science in your research, please cite:
 
-> Russo, C. & Bertelli, E. (MD) (2026). *Vibe Science: an AI-native research engine with adversarial review and serendipity tracking.* Available at: https://github.com/th3vib3coder/vibe-science
+> Russo, C. & Bertelli, E. (MD) (2026). *Vibe Science: an AI-native research engine with adversarial review and serendipity tracking.* https://github.com/th3vib3coder/vibe-science · DOI: [10.5281/zenodo.18665031](https://doi.org/10.5281/zenodo.18665031)
 
 ---
 
-Se utilizzi Vibe Science nella tua ricerca e questa contribuisce a risultati pubblicati, ti chiediamo di citare:
+Se utilizzi Vibe Science nella tua ricerca, ti chiediamo di citare:
 
-> Russo, C. & Bertelli, E. (MD) (2026). *Vibe Science: un motore di ricerca AI-nativo con revisione avversariale e tracciamento della serendipità.* Disponibile su: https://github.com/th3vib3coder/vibe-science
+> Russo, C. & Bertelli, E. (MD) (2026). *Vibe Science: un motore di ricerca AI-nativo con revisione avversariale e tracciamento della serendipità.* https://github.com/th3vib3coder/vibe-science · DOI: [10.5281/zenodo.18665031](https://doi.org/10.5281/zenodo.18665031)
 
 ---
 
 ## License
 
 Apache 2.0 — see [LICENSE](vibe-science-v5.0/LICENSE).
+
+© 2026 Carmine Russo & Dr. Elisa Bertelli (MD)
 
 ## Authors
 

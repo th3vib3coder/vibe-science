@@ -360,18 +360,18 @@ These papers inform the confidence formula's separation of "unknown" from "contr
 
 ## Citation & Attribution
 
-If you use Vibe Science in academic work, please cite:
+If you use Vibe Science in your research, please cite:
 
-> Russo, C. & Bertelli, E. (2026). *Vibe Science: Adversarial Epistemic Architecture for LLM-Driven Scientific Research.* Available at: https://github.com/th3vib3coder/vibe-science
-
----
-
-## Authors
-
-**Carmine Russo** · **Dr. Elisa Bertelli**
+> Russo, C. & Bertelli, E. (MD) (2026). *Vibe Science: an AI-native research engine with adversarial review and serendipity tracking.* https://github.com/th3vib3coder/vibe-science · DOI: [10.5281/zenodo.18665031](https://doi.org/10.5281/zenodo.18665031)
 
 ---
 
 ## License
 
-Apache 2.0 — see [LICENSE](LICENSE)
+Apache 2.0 — see [LICENSE](LICENSE).
+
+© 2026 Carmine Russo & Dr. Elisa Bertelli (MD)
+
+---
+
+**Authors**: [Carmine Russo](https://github.com/th3vib3coder) · Dr. Elisa Bertelli (MD)
