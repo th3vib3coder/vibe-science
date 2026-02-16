@@ -7,7 +7,9 @@
 > **Codename**: IUDEX (Latin: *the judge*)
 > **Lineage**: v3.5 TERTIUM DATUR → v4.0 ARBOR VITAE → v4.5 ARBOR VITAE (Pruned) → **v5.0 IUDEX**
 > **Format**: OpenAI Codex Skill
-> **License**: MIT
+> **License**: Apache 2.0
+>
+> [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18663142.svg)](https://doi.org/10.5281/zenodo.18663142)
 
 An agentic scientific research engine that makes adversarial review **architecturally unbypassable**. Tree search over hypotheses, serendipity detection at every cycle, and 27 quality gates that block advancement until standards are met.
 
@@ -159,7 +161,7 @@ Vibe Science was developed independently and concurrently with DeepMind's infere
 | **Scaling axis** | More compute = more hypotheses | More OTAE cycles = more tree nodes |
 | **Verification type** | Logical (reasoning-based) | Empirical (PubMed, Scopus, web search) |
 | **Structural enforcement** | PRM weights (non-bypassable) | JSON Schema gates + SFI + R3 |
-| **Cost** | Proprietary | Open source (MIT, any LLM) |
+| **Cost** | Proprietary | Open source (Apache 2.0, any LLM) |
 | **Catches** | Logical flaws in reasoning chains | Confounded claims, known artifacts, citation errors |
 
 Deep Think catches what pure reasoning can catch. Vibe Science catches what only external empirical verification can catch. The ideal system uses both.
@@ -194,7 +196,7 @@ $vibe-science
 vibe-science-v5.0-codex/
 ├── SKILL.md                    Main specification (~480 lines)
 ├── README.md                   This file
-├── LICENSE                     MIT License
+├── LICENSE                     Apache 2.0
 ├── agents/
 │   └── openai.yaml             Codex agent manifest
 ├── references/                 22 protocol files (loaded on demand)
@@ -363,4 +365,4 @@ Carmine Russo, with Elisa Bertelli.
 
 ## License
 
-MIT — see [LICENSE](LICENSE)
+Apache 2.0 — see [LICENSE](LICENSE)
