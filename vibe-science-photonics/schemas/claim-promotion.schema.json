@@ -1,0 +1,354 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vibe-science-v5.0/claim-promotion",
+  "title": "Claim Promotion Gate Artifact (D1)",
+  "description": "Artifact produced when a claim passes Gate D1 (Claim Promotion). Enforces verified evidence chains, geometric confidence scoring, confounder harness, and mandatory counter-evidence search.",
+  "type": "object",
+  "required": [
+    "claim_id",
+    "claim_text",
+    "claim_type",
+    "claim_type_assigned_by",
+    "claim_type_locked",
+    "evidence_chain",
+    "confidence",
+    "confounder_harness",
+    "counter_evidence_search",
+    "dependencies",
+    "assumptions",
+    "falsification_attempts",
+    "promoted_at"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "claim_id": {
+      "type": "string",
+      "pattern": "^C-\\d{3,}$",
+      "description": "Unique claim identifier (e.g. C-001, C-042)"
+    },
+    "claim_text": {
+      "type": "string",
+      "minLength": 10,
+      "description": "Full natural-language statement of the claim"
+    },
+    "claim_type": {
+      "type": "string",
+      "enum": ["descriptive", "correlative", "causal", "predictive"],
+      "description": "Epistemic category determining the evidence bar"
+    },
+    "claim_type_assigned_by": {
+      "type": "string",
+      "const": "orchestrator",
+      "description": "v5.0 lock: only the orchestrator may assign claim type"
+    },
+    "claim_type_locked": {
+      "type": "boolean",
+      "const": true,
+      "description": "Must be true at promotion time; prevents downstream reclassification"
+    },
+    "evidence_chain": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Ordered chain of evidence supporting the claim. DOI/PMID sources must be verified.",
+      "items": {
+        "$ref": "#/$defs/EvidenceItem"
+      }
+    },
+    "confidence": {
+      "$ref": "#/$defs/Confidence",
+      "description": "Five-component geometric confidence score"
+    },
+    "confounder_harness": {
+      "$ref": "#/$defs/ConfounderHarness",
+      "description": "Three-level confounder analysis: raw, conditioned, matched"
+    },
+    "counter_evidence_search": {
+      "$ref": "#/$defs/CounterEvidenceSearch",
+      "description": "Mandatory search for contradictions and alternative explanations"
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^C-\\d{3,}$"
+      },
+      "description": "Claim IDs that this claim depends on (empty array if none)"
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^A-\\d{3,}$"
+      },
+      "description": "Assumption IDs underlying this claim"
+    },
+    "falsification_attempts": {
+      "type": "array",
+      "minItems": 3,
+      "description": "At least 3 deliberate attempts to falsify the claim",
+      "items": {
+        "$ref": "#/$defs/FalsificationAttempt"
+      }
+    },
+    "promoted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of promotion through Gate D1"
+    }
+  },
+  "$defs": {
+    "EvidenceItem": {
+      "type": "object",
+      "required": ["source_type", "reference", "verified", "description"],
+      "additionalProperties": false,
+      "properties": {
+        "source_type": {
+          "type": "string",
+          "enum": ["doi", "pmid", "file", "figure", "metric"],
+          "description": "Type of evidence source"
+        },
+        "reference": {
+          "type": "string",
+          "minLength": 1,
+          "description": "DOI string, PMID, file path, figure ID, or metric name"
+        },
+        "verified": {
+          "type": "boolean",
+          "description": "Must be true for doi/pmid sources (externally verified)"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "description": "What this evidence contributes to the claim"
+        }
+      },
+      "if": {
+        "properties": {
+          "source_type": { "enum": ["doi", "pmid"] }
+        }
+      },
+      "then": {
+        "properties": {
+          "verified": { "const": true }
+        }
+      }
+    },
+    "Confidence": {
+      "type": "object",
+      "required": ["E", "R", "C", "K", "D", "computed_score", "formula_version"],
+      "additionalProperties": false,
+      "properties": {
+        "E": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Evidence quality component"
+        },
+        "R": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Reproducibility component"
+        },
+        "C": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Consistency component"
+        },
+        "K": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Knowledge-base alignment component"
+        },
+        "D": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Data completeness component"
+        },
+        "computed_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Geometric mean of the five components"
+        },
+        "formula_version": {
+          "type": "string",
+          "const": "v5.0-geometric",
+          "description": "Confidence formula version identifier"
+        }
+      }
+    },
+    "ConfounderHarness": {
+      "type": "object",
+      "required": ["level1_raw", "level2_conditioned", "level3_matched", "verdict"],
+      "additionalProperties": false,
+      "properties": {
+        "level1_raw": {
+          "type": "object",
+          "required": ["effect_size", "sign", "p_value", "ci_lower", "ci_upper"],
+          "additionalProperties": false,
+          "properties": {
+            "effect_size": {
+              "type": "number",
+              "description": "Unadjusted effect size"
+            },
+            "sign": {
+              "type": "string",
+              "enum": ["positive", "negative"],
+              "description": "Direction of the raw effect"
+            },
+            "p_value": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Raw p-value"
+            },
+            "ci_lower": {
+              "type": "number",
+              "description": "Lower bound of the confidence interval"
+            },
+            "ci_upper": {
+              "type": "number",
+              "description": "Upper bound of the confidence interval"
+            }
+          }
+        },
+        "level2_conditioned": {
+          "type": "object",
+          "required": ["effect_size", "sign", "p_value", "confounders_controlled"],
+          "additionalProperties": false,
+          "properties": {
+            "effect_size": {
+              "type": "number",
+              "description": "Effect size after conditioning on confounders"
+            },
+            "sign": {
+              "type": "string",
+              "enum": ["positive", "negative"],
+              "description": "Direction of the conditioned effect"
+            },
+            "p_value": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Conditioned p-value"
+            },
+            "confounders_controlled": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "description": "List of confounders that were controlled for"
+            }
+          }
+        },
+        "level3_matched": {
+          "type": "object",
+          "required": ["effect_size", "sign", "p_value", "matching_method", "balance_check_passed"],
+          "additionalProperties": false,
+          "properties": {
+            "effect_size": {
+              "type": "number",
+              "description": "Effect size after matching"
+            },
+            "sign": {
+              "type": "string",
+              "enum": ["positive", "negative"],
+              "description": "Direction of the matched effect"
+            },
+            "p_value": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Matched p-value"
+            },
+            "matching_method": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Method used for matching (e.g. propensity score, CEM)"
+            },
+            "balance_check_passed": {
+              "type": "boolean",
+              "description": "Whether the balance diagnostic passed after matching"
+            }
+          }
+        },
+        "verdict": {
+          "type": "string",
+          "enum": ["ARTIFACT", "CONFOUNDED", "ROBUST"],
+          "description": "Overall confounder harness verdict"
+        }
+      }
+    },
+    "CounterEvidenceSearch": {
+      "type": "object",
+      "required": ["status", "databases_searched", "queries_used", "contradictions_found", "alternative_explanations"],
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "type": "string",
+          "const": "DONE",
+          "description": "Must be DONE before promotion"
+        },
+        "databases_searched": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Databases queried for counter-evidence (e.g. IEEE Xplore, Optica, OpenAlex)"
+        },
+        "queries_used": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Actual query strings used in the search"
+        },
+        "contradictions_found": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of contradictory findings (empty array if none found)"
+        },
+        "alternative_explanations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Alternative explanations considered (empty array if none found)"
+        }
+      }
+    },
+    "FalsificationAttempt": {
+      "type": "object",
+      "required": ["test_description", "result", "claim_survived"],
+      "additionalProperties": false,
+      "properties": {
+        "test_description": {
+          "type": "string",
+          "minLength": 1,
+          "description": "What was tested to try to falsify the claim"
+        },
+        "result": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Outcome of the falsification attempt"
+        },
+        "claim_survived": {
+          "type": "boolean",
+          "description": "Whether the claim survived this falsification attempt"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "vibe-science",
+  "version": "5.5.0",
+  "description": "Scientific research engine with agentic tree search. Infinite loops until discovery, rigorous tracking, adversarial review, serendipity preserved. v5.5 ORO adds 7 data quality gates (DQ1-DQ4, DC0, DD0, L-1), R2 INLINE mode, structured logbook, SSOT rule. 36 quality gates (8 schema-enforced), 7 R2 modes. Post-mortem driven architecture.",
+  "codename": "ORO"
+}

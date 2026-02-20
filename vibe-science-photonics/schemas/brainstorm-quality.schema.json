@@ -1,0 +1,191 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vibe-science-v5.0/brainstorm-quality",
+  "title": "Brainstorm Quality Gate Artifact (B0)",
+  "description": "Artifact produced when a research question passes Gate B0 (Brainstorm Quality). Enforces gap identification with novelty verification, data availability threshold, falsifiable hypothesis with null hypothesis, directional predictions, and R2 ensemble brainstorm review. B0 MUST PASS before any OTAE cycle begins.",
+  "type": "object",
+  "required": [
+    "rq_id",
+    "gaps",
+    "verified_novel_gaps",
+    "data_availability_score",
+    "hypothesis",
+    "predictions",
+    "r2_brainstorm_verdict",
+    "user_approved",
+    "completed_at"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "rq_id": {
+      "type": "string",
+      "pattern": "^RQ-\\d{3,}$",
+      "description": "Research question identifier (e.g. RQ-001, RQ-042)"
+    },
+    "gaps": {
+      "type": "array",
+      "minItems": 3,
+      "description": "At least 3 knowledge gaps identified with supporting evidence from literature search",
+      "items": {
+        "$ref": "#/$defs/Gap"
+      }
+    },
+    "verified_novel_gaps": {
+      "type": "array",
+      "minItems": 1,
+      "description": "At least 1 gap verified as not-yet-addressed via preprint/conference check (arXiv physics.optics, eess.SP, recent OFC/ECOC proceedings, etc.)",
+      "items": {
+        "$ref": "#/$defs/VerifiedNovelGap"
+      }
+    },
+    "data_availability_score": {
+      "type": "number",
+      "minimum": 0.5,
+      "maximum": 1.0,
+      "description": "Data availability score for the chosen hypothesis. Must be >= 0.5 (DATA_AVAILABLE threshold). 1.0 = fully available, 0.5 = minimally sufficient."
+    },
+    "hypothesis": {
+      "$ref": "#/$defs/Hypothesis",
+      "description": "Falsifiable hypothesis with mandatory null hypothesis"
+    },
+    "predictions": {
+      "$ref": "#/$defs/Predictions",
+      "description": "Directional predictions: what follows if the hypothesis is true vs. false"
+    },
+    "r2_brainstorm_verdict": {
+      "$ref": "#/$defs/R2BrainstormVerdict",
+      "description": "R2 ensemble review of the brainstorm: must be WEAK_ACCEPT or better"
+    },
+    "user_approved": {
+      "type": "boolean",
+      "const": true,
+      "description": "User must explicitly approve the chosen research direction before proceeding"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of B0 gate passage"
+    }
+  },
+  "$defs": {
+    "Gap": {
+      "type": "object",
+      "required": ["gap_id", "description", "evidence", "source"],
+      "additionalProperties": false,
+      "properties": {
+        "gap_id": {
+          "type": "string",
+          "pattern": "^GAP-\\d{3,}$",
+          "description": "Unique gap identifier (e.g. GAP-001, GAP-012)"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 10,
+          "description": "Natural-language description of the knowledge gap"
+        },
+        "evidence": {
+          "type": "string",
+          "minLength": 10,
+          "description": "What supports this being a genuine gap (e.g. absence in systematic reviews, conflicting results, explicitly stated as future work)"
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "description": "DOI, PMID, or database reference supporting the gap identification"
+        }
+      }
+    },
+    "VerifiedNovelGap": {
+      "type": "object",
+      "required": ["gap_id", "preprint_check", "check_date", "databases_checked"],
+      "additionalProperties": false,
+      "properties": {
+        "gap_id": {
+          "type": "string",
+          "pattern": "^GAP-\\d{3,}$",
+          "description": "References a gap_id from the gaps array"
+        },
+        "preprint_check": {
+          "type": "string",
+          "enum": ["NOT_ADDRESSED", "PARTIALLY_ADDRESSED"],
+          "description": "Result of preprint check: NOT_ADDRESSED means no preprint addresses this gap; PARTIALLY_ADDRESSED means some work exists but the gap remains open"
+        },
+        "check_date": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of when the preprint check was performed"
+        },
+        "databases_checked": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Preprint servers and databases checked (e.g. arxiv physics.optics, arxiv eess.SP, IEEE Early Access, OFC/ECOC proceedings)"
+        }
+      }
+    },
+    "Hypothesis": {
+      "type": "object",
+      "required": ["text", "null_hypothesis", "domain"],
+      "additionalProperties": false,
+      "properties": {
+        "text": {
+          "type": "string",
+          "minLength": 10,
+          "description": "Full statement of the research hypothesis (H1)"
+        },
+        "null_hypothesis": {
+          "type": "string",
+          "minLength": 10,
+          "description": "Explicit null hypothesis (H0) that must be falsifiable. This is REQUIRED to ensure the hypothesis can be tested and potentially rejected."
+        },
+        "domain": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Scientific domain or subdomain of the hypothesis (e.g. photonics, optical communications, semiconductor lasers)"
+        }
+      }
+    },
+    "Predictions": {
+      "type": "object",
+      "required": ["if_true", "if_false"],
+      "additionalProperties": false,
+      "properties": {
+        "if_true": {
+          "type": "string",
+          "minLength": 10,
+          "description": "Observable consequence if the hypothesis is true (if true -> X)"
+        },
+        "if_false": {
+          "type": "string",
+          "minLength": 10,
+          "description": "Observable consequence if the hypothesis is false (if false -> Y)"
+        }
+      }
+    },
+    "R2BrainstormVerdict": {
+      "type": "object",
+      "required": ["verdict", "report_id", "feedback"],
+      "additionalProperties": false,
+      "properties": {
+        "verdict": {
+          "type": "string",
+          "enum": ["ACCEPT", "WEAK_ACCEPT"],
+          "description": "R2 ensemble verdict on the brainstorm quality. Must be WEAK_ACCEPT or better (ACCEPT). WEAK_REJECT and REJECT fail the gate."
+        },
+        "report_id": {
+          "type": "string",
+          "pattern": "^R2-B-\\d{3,}$",
+          "description": "R2 brainstorm review report identifier (e.g. R2-B-001)"
+        },
+        "feedback": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Summary of R2 ensemble feedback, including any conditions or recommendations"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vibe-science-v5.0/source-validity",
+  "title": "Source Validity Gate Artifact (L0)",
+  "description": "Schema for Gate L0 — Source Validity. Ensures all cited sources have verified DOIs, no training-knowledge-only claims are marked as DATA, all claims are registered in CLAIM-LEDGER.md, and confidence scores are computed (not guessed). This gate blocks the literature pipeline if any criterion fails.",
+  "type": "object",
+  "required": [
+    "review_id",
+    "sources",
+    "claims_verified",
+    "no_training_only_as_data",
+    "all_claims_in_ledger",
+    "checked_at"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "review_id": {
+      "type": "string",
+      "description": "Unique identifier for this review session (e.g., REV-20260216-001).",
+      "minLength": 1
+    },
+    "sources": {
+      "type": "array",
+      "description": "All sources cited in the review. Each must have a verified DOI accessible via the specified verification method.",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/source"
+      }
+    },
+    "claims_verified": {
+      "type": "array",
+      "description": "All claims referenced in this review, each verified for ledger registration, computed confidence, and honest type labeling.",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/claim"
+      }
+    },
+    "no_training_only_as_data": {
+      "type": "boolean",
+      "const": true,
+      "description": "Attestation that no claims derived solely from LLM training knowledge are marked as DATA. Must be true for gate to pass."
+    },
+    "all_claims_in_ledger": {
+      "type": "boolean",
+      "const": true,
+      "description": "Attestation that every claim in this review is registered in CLAIM-LEDGER.md. Must be true for gate to pass."
+    },
+    "checked_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of when this gate check was performed."
+    }
+  },
+  "$defs": {
+    "source": {
+      "type": "object",
+      "description": "A single cited source with its verification status.",
+      "required": [
+        "doi_or_id",
+        "verified",
+        "verification_method",
+        "source_type"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "doi_or_id": {
+          "type": "string",
+          "description": "The DOI (e.g., 10.1109/JLT.2024.0000001) or identifier of the source.",
+          "minLength": 1
+        },
+        "verified": {
+          "type": "boolean",
+          "const": true,
+          "description": "Whether the DOI was verified as accessible. Must be true — unverified sources cannot pass L0."
+        },
+        "verification_method": {
+          "type": "string",
+          "enum": [
+            "web_fetch",
+            "manual",
+            "database_lookup"
+          ],
+          "description": "Method used to verify the source. 'web_fetch' = resolved via HTTP request to DOI endpoint; 'manual' = human-verified; 'database_lookup' = verified via IEEE Xplore/Optica/OpenAlex API."
+        },
+        "source_type": {
+          "type": "string",
+          "enum": [
+            "peer_reviewed",
+            "preprint",
+            "conference",
+            "technical_report",
+            "other"
+          ],
+          "description": "Classification of the source publication type."
+        }
+      }
+    },
+    "claim": {
+      "type": "object",
+      "description": "A single claim verified for ledger registration, computed confidence, and honest type labeling.",
+      "required": [
+        "claim_id",
+        "in_ledger",
+        "confidence_computed",
+        "type_honest"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "claim_id": {
+          "type": "string",
+          "pattern": "^C-\\d{3,}$",
+          "description": "Claim identifier in C-NNN format (e.g., C-001, C-042). Must match the ID registered in CLAIM-LEDGER.md."
+        },
+        "in_ledger": {
+          "type": "boolean",
+          "const": true,
+          "description": "Whether this claim is registered in CLAIM-LEDGER.md. Must be true — unregistered claims cannot pass L0."
+        },
+        "confidence_computed": {
+          "type": "boolean",
+          "const": true,
+          "description": "Whether the confidence score was computed using a defined formula (not subjectively guessed). Must be true."
+        },
+        "type_honest": {
+          "type": "boolean",
+          "const": true,
+          "description": "Whether the claim type is honest — specifically, no claim sourced only from LLM training knowledge is labeled as DATA. Must be true."
+        }
+      }
+    }
+  }
+}

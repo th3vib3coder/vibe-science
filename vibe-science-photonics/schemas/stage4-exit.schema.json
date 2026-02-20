@@ -1,0 +1,209 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vibe-science-v5.0/stage4-exit",
+  "title": "Stage 4 Exit Gate Artifact (S4)",
+  "description": "Ablation & Validation Exit — verifies that every promoted claim survives ablation testing, multi-seed replication, and confounder harness review before advancing to Stage 5.",
+  "type": "object",
+  "required": [
+    "rq_id",
+    "stage",
+    "ablation_matrix",
+    "multi_seed_results",
+    "promoted_claims_harnesses",
+    "cross_validation_attempted",
+    "cross_validation_result",
+    "r2_batch_review",
+    "completed_at"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "rq_id": {
+      "type": "string",
+      "description": "Unique research-question identifier this gate artifact belongs to.",
+      "minLength": 1
+    },
+    "stage": {
+      "const": 4,
+      "description": "Pipeline stage number. Must be 4 for this gate."
+    },
+    "ablation_matrix": {
+      "type": "array",
+      "description": "One entry per ablated component. Each row records the metric impact of removing that component from the system.",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/AblationEntry"
+      }
+    },
+    "multi_seed_results": {
+      "type": "array",
+      "description": "Results from at least 3 independent random-seed runs, demonstrating that findings are not seed-dependent.",
+      "minItems": 3,
+      "items": {
+        "$ref": "#/$defs/MultiSeedRun"
+      }
+    },
+    "promoted_claims_harnesses": {
+      "type": "array",
+      "description": "Confounder harness verdict for every claim promoted from earlier stages. All promoted claims must have a corresponding harness entry.",
+      "items": {
+        "$ref": "#/$defs/ClaimHarness"
+      }
+    },
+    "cross_validation_attempted": {
+      "type": "boolean",
+      "description": "Whether cross-validation (e.g., k-fold, leave-one-out) was attempted during this stage."
+    },
+    "cross_validation_result": {
+      "type": "string",
+      "description": "Outcome of cross-validation. One of PASSED, FAILED, or NOT_APPLICABLE, followed by a justification. Example: 'PASSED — 5-fold CV yielded consistent AUC across folds.' or 'NOT_APPLICABLE — qualitative study with no numeric outcome metric.'",
+      "pattern": "^(PASSED|FAILED|NOT_APPLICABLE)(\\s*[—–-]\\s*.+)?$"
+    },
+    "r2_batch_review": {
+      "$ref": "#/$defs/R2BatchReview",
+      "description": "Summary of the R2 ensemble review for this stage's artifacts."
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of gate completion."
+    }
+  },
+  "$defs": {
+    "AblationEntry": {
+      "type": "object",
+      "description": "A single row in the ablation matrix: records what happens to a chosen metric when a specific component is removed.",
+      "required": [
+        "component",
+        "removed",
+        "metric_name",
+        "metric_baseline",
+        "metric_after_removal",
+        "metric_delta",
+        "contribution_assessment"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "component": {
+          "type": "string",
+          "description": "Name of the system component being ablated.",
+          "minLength": 1
+        },
+        "removed": {
+          "type": "boolean",
+          "description": "True if the component was removed in this ablation run; false if it was retained as a control row."
+        },
+        "metric_name": {
+          "type": "string",
+          "description": "Name of the metric observed (e.g., 'accuracy', 'F1', 'BLEU').",
+          "minLength": 1
+        },
+        "metric_baseline": {
+          "type": "number",
+          "description": "Metric value with all components present (full system)."
+        },
+        "metric_after_removal": {
+          "type": "number",
+          "description": "Metric value after removing this component."
+        },
+        "metric_delta": {
+          "type": "number",
+          "description": "Change in metric: metric_after_removal minus metric_baseline. Negative values indicate degradation when the component is removed."
+        },
+        "contribution_assessment": {
+          "type": "string",
+          "description": "Human-readable assessment of the component's contribution (e.g., 'critical — removal collapses performance', 'marginal — <1 % change').",
+          "minLength": 1
+        }
+      }
+    },
+    "MultiSeedRun": {
+      "type": "object",
+      "description": "Results from a single random-seed run used to check reproducibility.",
+      "required": [
+        "seed",
+        "config_id",
+        "primary_metric",
+        "all_metrics"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "seed": {
+          "type": "integer",
+          "description": "Random seed used for this run."
+        },
+        "config_id": {
+          "type": "string",
+          "description": "Identifier of the experiment configuration (hyperparameters, data split, etc.).",
+          "minLength": 1
+        },
+        "primary_metric": {
+          "type": "number",
+          "description": "Value of the primary evaluation metric for this seed."
+        },
+        "all_metrics": {
+          "type": "object",
+          "description": "Dictionary of all recorded metrics for this seed. Keys are metric names, values are numeric results.",
+          "additionalProperties": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "ClaimHarness": {
+      "type": "object",
+      "description": "Confounder-harness result for a single promoted claim.",
+      "required": [
+        "claim_id",
+        "harness_verdict",
+        "harness_file_ref"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "claim_id": {
+          "type": "string",
+          "description": "Identifier of the promoted claim being tested.",
+          "minLength": 1
+        },
+        "harness_verdict": {
+          "type": "string",
+          "enum": [
+            "ARTIFACT",
+            "CONFOUNDED",
+            "ROBUST"
+          ],
+          "description": "Outcome of the confounder harness. ARTIFACT = result is an experimental artifact; CONFOUNDED = a confounder explains the effect; ROBUST = claim survives all harness checks."
+        },
+        "harness_file_ref": {
+          "type": "string",
+          "description": "File path or URI pointing to the full harness report.",
+          "minLength": 1
+        }
+      }
+    },
+    "R2BatchReview": {
+      "type": "object",
+      "description": "Summary of the R2 (Reviewer-pair) ensemble review for this gate.",
+      "required": [
+        "verdict",
+        "report_id"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "verdict": {
+          "type": "string",
+          "enum": [
+            "PASS",
+            "FAIL",
+            "REVISE"
+          ],
+          "description": "Aggregate R2 verdict: PASS to advance, FAIL to halt, REVISE to iterate within stage."
+        },
+        "report_id": {
+          "type": "string",
+          "description": "Identifier of the full R2 review report artifact.",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

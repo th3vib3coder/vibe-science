@@ -1,0 +1,12 @@
+{
+  "hooks": [
+    {
+      "event": "stop",
+      "command": "echo 'Verify: confounder harness + R2 review for all claims'"
+    },
+    {
+      "event": "subagent_stop",
+      "command": "echo 'Verify: output files produced'"
+    }
+  ]
+}

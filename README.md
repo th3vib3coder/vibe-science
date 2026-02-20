@@ -14,7 +14,7 @@
 
 Vibe Science turns an LLM into a disciplined research agent. It provides a structured methodology (OTAE loop), an adversarial review system (Reviewer 2 Ensemble), typed evidence tracking, and quality gates — while preserving room for unexpected discoveries.
 
-This repository tracks the evolution of Vibe Science across five major releases, from the original OTAE loop to a post-mortem driven data quality framework. Each version is self-contained and independently installable.
+This repository tracks the evolution of Vibe Science across five major releases plus a domain-specialized photonics fork, from the original OTAE loop to a post-mortem driven data quality framework. Each version is self-contained and independently installable.
 
 ---
 
@@ -78,6 +78,7 @@ None of these were hallucinations. The data was real. The statistics were correc
 | [**v5.0**](vibe-science-v5.0/) | IUDEX | OTAE-Tree + Verification | SFI, blind-first pass, R3 judge, schema-validated gates | 10 | 27 |
 | [**v5.5**](vibe-science-v5.5/) | ORO | OTAE-Tree + Data Quality | 7 new gates, R2 INLINE, SSOT, structured logbook, post-mortem driven | 10 | 34 |
 | [**v5.0 Codex**](vibe-science-v5.0-codex/) | IUDEX | Same as v5.0 | OpenAI Codex port (condensed SKILL.md, no hooks/TEAM) | 10 | 27 |
+| [**Photonics**](vibe-science-photonics/) | ORO-PHOTONICS | OTAE-Tree + Expert Knowledge | v5.5 fork for photonics: R2-Physics, HE0-HE3, Expert Knowledge Injection | 10 | 36 |
 
 <p align="center">
   <img src="logos/logo-v3.5.svg" alt="v3.5" width="340">
@@ -609,6 +610,37 @@ DC0  Design Compliance (execution matches design?)
 
 ---
 
+## Photonics Fork — ORO-PHOTONICS
+
+> *Domain-specialized fork for literature-based research in photonics and high-speed optical interconnects (IM-DD, VCSEL, PAM4).*
+
+The Photonics fork extends v5.5 ORO with **domain-specific adaptations** for photonics research, where the expert knows more than the model about device physics.
+
+### What the Fork Adds
+
+| Innovation | Description |
+|-----------|-------------|
+| **R2-Physics** | Domain-specialist reviewer replacing R2-Bio: electromagnetic plausibility, Shannon limit, thermodynamic constraints |
+| **Expert Knowledge Injection** | Capture and enforce expert assertions as ground truth. Claims contradicting expert knowledge are immediately flagged |
+| **Human Expert Gates (HE0-HE3)** | Four blocking gates where the domain expert validates physical plausibility, priorities, and completeness |
+| **EXPERT-ASSERTIONS.md** | Persistent expert ground truth file, consulted by R2 before every review |
+
+### Gate Architecture: 36 Total
+
+25 base + 4 HE (Photonics) + 7 v5.5 ORO = **36 gates** (8 schema-enforced)
+
+```
+Base:      G0-G6 · L0-L2 · D0-D2 · T0-T3 · B0 · S1-S5 · V0 · J0   (25)
+Photonics: HE0 (Context) · HE1 (Priority) · HE2 (Plausibility) · HE3 (Completeness)   (4)
+v5.5 ORO:  L-1 · DQ1-DQ4 · DD0 · DC0   (7)
+```
+
+### What Stays the Same
+
+The OTAE-Tree loop, 10 Laws, SFI, BFP, R3 Judge, Schema-Validated Gates, Circuit Breaker, Agent Permission Model, Serendipity Engine, 7 R2 modes (including INLINE), SSOT, structured logbook — all inherited from v5.5 ORO.
+
+---
+
 ## Key Features Across Versions
 
 ### Reviewer 2 Ensemble — Evolution
@@ -817,11 +849,19 @@ vibe-science/
 │   ├── gates/ (34 gates)
 │   └── schemas/ (9) + assets/ (8)
 │
-└── vibe-science-v5.0-codex/    ← OpenAI Codex skill (v5.0 IUDEX)
-    ├── SKILL.md (~480 lines)
-    ├── agents/openai.yaml
-    ├── references/ (23)
-    └── assets/ (11)
+├── vibe-science-v5.0-codex/    ← OpenAI Codex skill (v5.0 IUDEX)
+│   ├── SKILL.md (~480 lines)
+│   ├── agents/openai.yaml
+│   ├── references/ (23)
+│   └── assets/ (11)
+│
+└── vibe-science-photonics/     ← Photonics fork (v5.5 ORO-PHOTONICS)
+    ├── SKILL.md + CLAUDE.md + CONTEXT.md
+    ├── BLUEPRINT.md (architecture v2.0)
+    ├── FORENSIC-CHECKLIST.md
+    ├── protocols/ (21, +expert-knowledge.md)
+    ├── gates/ (36 gates: 25 base + 4 HE + 7 v5.5)
+    └── schemas/ (9) + assets/ (8)
 ```
 
 ---
@@ -834,9 +874,10 @@ vibe-science/
 git clone https://github.com/th3vib3coder/vibe-science.git
 
 # Install the version you want:
-claude plugins add ./vibe-science/vibe-science-v5.5    # latest (ORO)
-claude plugins add ./vibe-science/vibe-science-v5.0    # verification release (IUDEX)
-claude plugins add ./vibe-science/vibe-science-v3.5    # stable, paper version
+claude plugins add ./vibe-science/vibe-science-v5.5          # latest (ORO)
+claude plugins add ./vibe-science/vibe-science-photonics     # photonics fork (ORO-PHOTONICS)
+claude plugins add ./vibe-science/vibe-science-v5.0          # verification release (IUDEX)
+claude plugins add ./vibe-science/vibe-science-v3.5          # stable, paper version
 ```
 
 ### OpenAI Codex

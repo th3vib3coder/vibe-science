@@ -1,0 +1,159 @@
+# Vibe Science v5.0 IUDEX — Seeded Fault Injection (SFI) Taxonomy
+# Purpose: Realistic faults injected into claim sets before R2 review.
+#          R2 knows CATEGORIES but not WHICH faults hit WHICH claims.
+# Origin:  Common errors in literature-based photonics research.
+# Owner:   Human architect only — LLM MUST NOT generate or modify faults.
+
+metadata:
+  version: "5.0.0"
+  min_active_per_category: 2      # notify human if category drops below 2
+  retirement_threshold: 3         # RETIRE after 3 consecutive R2 catches
+  fault_generation: HUMAN_ONLY
+
+# Domain-specific faults (SFI-01 through SFI-08), 2+ instances each
+# Status lifecycle: ACTIVE -> RETIRED (after retirement_threshold catches)
+faults:
+  # SFI-01: Confounded claim
+  - id: SFI-01a
+    category: confounded_claim
+    description: Performance gain disappears when controlling for temperature or device generation
+    example: "PAM4 advantage reverses when controlling for temperature — older devices tested at 25C only"
+    difficulty: HARD
+    equivalence_risk: HIGH
+    status: ACTIVE
+  - id: SFI-01b
+    category: confounded_claim
+    description: Correlation driven by measurement setup not device physics
+    example: "Reach improvement disappears after correcting for fiber type difference between studies"
+    difficulty: MEDIUM
+    equivalence_risk: MEDIUM
+    status: ACTIVE
+  # SFI-02: Already-known finding
+  - id: SFI-02a
+    category: already_known_finding
+    description: Well-established BER floor for given modulation format presented as novel
+    example: "BER floor of PAM4 at high baud rate presented as discovery — known limit from Shannon theory"
+    difficulty: EASY
+    equivalence_risk: LOW
+    status: ACTIVE
+  - id: SFI-02b
+    category: already_known_finding
+    description: Rediscovery of well-characterized phenomenon without citation
+    example: "VCSEL thermal rollover at high bias presented as new — textbook since Michalzik 2013"
+    difficulty: EASY
+    equivalence_risk: LOW
+    status: ACTIVE
+  # SFI-03: Physical impossibility
+  - id: SFI-03a
+    category: physical_impossibility
+    description: Claim violates fundamental physical limits (Shannon, thermodynamics, optics)
+    example: "Claimed spectral efficiency exceeds Shannon limit for given SNR"
+    difficulty: MEDIUM
+    equivalence_risk: LOW
+    status: ACTIVE
+  - id: SFI-03b
+    category: physical_impossibility
+    description: Mechanism cannot operate in the described system
+    example: "Single-mode behavior claimed for 9um oxide aperture VCSEL — supports multiple transverse modes"
+    difficulty: MEDIUM
+    equivalence_risk: LOW
+    status: ACTIVE
+  # SFI-04: Noise-as-signal
+  - id: SFI-04a
+    category: noise_as_signal
+    description: Effect size below measurement uncertainty presented as finding
+    example: "0.1 dB power penalty improvement claimed — within typical measurement uncertainty of ±0.3 dB"
+    difficulty: EASY
+    equivalence_risk: MEDIUM
+    status: ACTIVE
+  - id: SFI-04b
+    category: noise_as_signal
+    description: Variance-dominated signal treated as deterministic pattern
+    example: "2% BER improvement (CI spans zero) called 'significant advantage'"
+    difficulty: MEDIUM
+    equivalence_risk: MEDIUM
+    status: ACTIVE
+  # SFI-05: Simulation-only claim
+  - id: SFI-05a
+    category: simulation_only_claim
+    description: Simulation result presented as validated without experimental confirmation
+    example: "VCSEL bandwidth predicted by rate equations not validated against S21 measurement"
+    difficulty: HARD
+    equivalence_risk: HIGH
+    status: ACTIVE
+  - id: SFI-05b
+    category: simulation_only_claim
+    description: Idealized model results generalized to real devices
+    example: "Link budget from ideal Gaussian noise model applied to real VCSEL with RIN and mode partition noise"
+    difficulty: MEDIUM
+    equivalence_risk: HIGH
+    status: ACTIVE
+  # SFI-06: Citation fabrication
+  - id: SFI-06a
+    category: citation_fabrication
+    description: DOI does not resolve to any published work
+    example: "10.1109/JLT.2024.9999999 — DOI returns 404"
+    difficulty: EASY
+    equivalence_risk: LOW
+    status: ACTIVE
+  - id: SFI-06b
+    category: citation_fabrication
+    description: Real paper cited but finding misattributed
+    example: "Paper cited for 100 Gb/s PAM4 result — paper actually reports NRZ at 50 Gb/s"
+    difficulty: HARD
+    equivalence_risk: MEDIUM
+    status: ACTIVE
+  # SFI-07: Statistical artifact
+  - id: SFI-07a
+    category: statistical_artifact
+    description: Multiple testing without correction inflating significance
+    example: "20 device comparisons uncorrected — 1 expected significant by chance"
+    difficulty: MEDIUM
+    equivalence_risk: MEDIUM
+    status: ACTIVE
+  - id: SFI-07b
+    category: statistical_artifact
+    description: Wrong statistical test for data distribution
+    example: "Parametric t-test on BER values spanning 3 orders of magnitude — needs log-transform"
+    difficulty: MEDIUM
+    equivalence_risk: MEDIUM
+    status: ACTIVE
+  # SFI-08: Missing practical constraint
+  - id: SFI-08a
+    category: missing_practical_constraint
+    description: Performance reported without considering practical system constraints
+    example: "Record reach claimed ignoring thermal budget, packaging loss, and aging margin"
+    difficulty: EASY
+    equivalence_risk: LOW
+    status: ACTIVE
+  - id: SFI-08b
+    category: missing_practical_constraint
+    description: Laboratory result without manufacturing or reliability consideration
+    example: "Hero device result at 25C — no yield data, no temperature range, no lifetime estimate"
+    difficulty: MEDIUM
+    equivalence_risk: MEDIUM
+    status: ACTIVE
+
+# Meta-faults: domain-independent structural errors (v5.0+)
+meta_faults:
+  - id: META-01
+    category: claim_type_misclassification
+    description: Causal claim labeled as descriptive, or vice versa
+    example: "'X causes Y' but evidence is correlational — labeled DESCRIPTIVE"
+    difficulty: MEDIUM
+    equivalence_risk: HIGH
+    status: ACTIVE
+  - id: META-02
+    category: cherry_picked_citation
+    description: Source exists but does not support the claim as stated
+    example: "Paper reports 25C result; claim generalizes to full industrial temperature range without qualification"
+    difficulty: HARD
+    equivalence_risk: HIGH
+    status: ACTIVE
+  - id: META-03
+    category: p_hacking_narrative
+    description: Multiple comparisons reframed as single pre-specified hypothesis
+    example: "20 subgroup analyses; one significant result presented as primary"
+    difficulty: HARD
+    equivalence_risk: HIGH
+    status: ACTIVE
