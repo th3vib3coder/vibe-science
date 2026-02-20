@@ -87,15 +87,6 @@ None of these were hallucinations. The data was real. The statistics were correc
 <p align="center">
   <img src="logos/logo-v6.0.svg" alt="v6.0" width="700">
 </p>
-<p align="center">
-  <img src="logos/logo-v3.5.svg" alt="v3.5" width="230">
-  <img src="logos/logo-v4.0.svg" alt="v4.0" width="230">
-  <img src="logos/logo-v4.5.svg" alt="v4.5" width="230">
-</p>
-<p align="center">
-  <img src="logos/logo-v5.0.svg" alt="v5.0" width="340">
-  <img src="logos/logo-v5.5.svg" alt="v5.5" width="340">
-</p>
 
 ---
 
