@@ -17,7 +17,9 @@ See CITATION.cff for machine-readable citation metadata.
 
 VERSION HISTORY
 ===============
-v3.5.0  TERTIUM DATUR       — Feb 2026  (paper version, VibeX 2026)
-v4.0.0  ARBOR VITAE         — Feb 2026
-v4.5.0  ARBOR VITAE (Pruned)— Feb 2026
-v5.0.0  IUDEX               — Feb 2026
+v3.5.0  TERTIUM DATUR        — Feb 2026  (paper version, VibeX 2026)
+v4.0.0  ARBOR VITAE          — Feb 2026
+v4.5.0  ARBOR VITAE (Pruned) — Feb 2026
+v5.0.0  IUDEX                — Feb 2026
+v5.5.0  ORO                  — Feb 2026  (post-mortem driven data quality)
+v6.0.0  NEXUS                — Feb 2026  (plugin architecture, dual enforcement)

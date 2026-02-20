@@ -5,18 +5,15 @@
     "email": "th3vib3coder@github.com"
   },
   "metadata": {
-    "description": "Vibe Science - Scientific research in serendipity mode",
-    "version": "1.2.0"
+    "description": "Vibe Science v6.0 NEXUS — AI-native research engine with plugin-enforced integrity",
+    "version": "6.0.0"
   },
   "plugins": [
     {
       "name": "vibe-science",
-      "description": "Scientific research in serendipity mode. Infinite loops until discovery, rigorous tracking, adversarial review.",
+      "description": "Scientific research engine with adversarial review, 34+ quality gates, plugin-enforced integrity, and serendipity tracking.",
       "source": "./",
-      "strict": false,
-      "skills": [
-        "./vibe-science/vibe"
-      ]
+      "strict": false
     }
   ]
 }

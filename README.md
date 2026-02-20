@@ -1022,13 +1022,14 @@ vibe-science/
 │       ├── literature-registry.json    102 databases, 12 categories
 │       └── domain-config-template.json DQ gate thresholds
 │
-├── skill/                      ← v5.5 ORO methodology (unchanged)
-│   ├── SKILL.md (~1,300 lines)
-│   ├── CLAUDE.md (constitution)
-│   ├── protocols/ (21)
-│   ├── gates/ (34 gates)
-│   ├── schemas/ (9) + assets/ (8)
-│   └── commands/ + examples/
+├── SKILL.md                   ← v5.5 ORO methodology (~1,300 lines)
+├── CLAUDE.md                  ← Constitution + agent instructions
+├── protocols/                 ← 21 methodology protocols
+├── gates/                     ← 34 quality gates
+├── schemas/                   ← 9 JSON validation schemas
+├── assets/                    ← 8 asset files (fault taxonomy, rubrics, etc.)
+├── commands/                  ← start.md entry point
+├── examples/                  ← walkthrough
 │
 ├── blueprints/
 │   └── v6.0-NEXUS-BLUEPRINT.md     ← Architecture document (~2,500 lines)
@@ -1086,7 +1087,7 @@ claude plugins add ./vibe-science/archive/vibe-science-v3.5       # v3.5 TERTIUM
 
 ### Manual (any LLM interface)
 
-Upload the `skill/SKILL.md` as a system prompt or project knowledge file. Upload `skill/protocols/`, `skill/gates/`, and `skill/assets/` for on-demand reference loading. Note: without the plugin, gates are prompt-enforced only.
+Upload `SKILL.md` as a system prompt or project knowledge file. Upload `protocols/`, `gates/`, and `assets/` for on-demand reference loading. Note: without the plugin, gates are prompt-enforced only.
 
 ---
 
