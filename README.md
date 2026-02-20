@@ -1,20 +1,23 @@
 <p align="center">
-  <img src="logos/logo-v5.5.svg" alt="Vibe Science" width="700">
+  <img src="logos/logo-v6.0.svg" alt="Vibe Science" width="700">
 </p>
 
 <p align="center">
   <a href="https://doi.org/10.5281/zenodo.18665031"><img src="https://zenodo.org/badge/1148022920.svg" alt="DOI"></a>
-  <a href="vibe-science-v5.5/LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="License"></a>
-  <img src="https://img.shields.io/badge/version-5.5.0-orange.svg" alt="Version">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="License"></a>
+  <img src="https://img.shields.io/badge/version-6.0.0-purple.svg" alt="Version">
+  <img src="https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg" alt="Node">
 </p>
 
 # Vibe Science
 
-> An AI-native research engine that loops until discovery — with adversarial review, quality gates, and serendipity tracking.
+> An AI-native research engine that loops until discovery — with adversarial review, quality gates, serendipity tracking, and plugin-enforced integrity.
 
 Vibe Science turns an LLM into a disciplined research agent. It provides a structured methodology (OTAE loop), an adversarial review system (Reviewer 2 Ensemble), typed evidence tracking, and quality gates — while preserving room for unexpected discoveries.
 
-This repository tracks the evolution of Vibe Science across five major releases plus a domain-specialized photonics fork, from the original OTAE loop to a post-mortem driven data quality framework. Each version is self-contained and independently installable.
+**v6.0 NEXUS** introduces a dual architecture: the **skill** (prompt-level methodology) guides *what* the agent thinks, while the **plugin** (code-level enforcement) controls *what* the agent can do. Five lifecycle hooks intercept every tool use, enforce gates with exit code 2 blocking, track a Research Spine of every action, and persist everything to SQLite.
+
+This repository tracks the evolution of Vibe Science across six major releases plus a domain-specialized photonics fork. Each version is self-contained and independently installable.
 
 ---
 
@@ -72,25 +75,205 @@ None of these were hallucinations. The data was real. The statistics were correc
 
 | Version | Codename | Architecture | Key Innovation | Laws | Gates |
 |---------|----------|-------------|----------------|:----:|:-----:|
-| [**v3.5**](vibe-science-v3.5/) | TERTIUM DATUR | OTAE Loop | R2 double-pass, typed claims, evidence formula | 7 | 12 |
-| [**v4.0**](vibe-science-v4.0/) | ARBOR VITAE | OTAE-Tree | Tree search, branch scoring, serendipity branches | 10 | 26 |
-| [**v4.5**](vibe-science-v4.5/) | ARBOR VITAE (Pruned) | OTAE-Tree + Brainstorm | Phase 0 brainstorm, R2 6 modes, 5-stage pipeline | 10 | 25 |
-| [**v5.0**](vibe-science-v5.0/) | IUDEX | OTAE-Tree + Verification | SFI, blind-first pass, R3 judge, schema-validated gates | 10 | 27 |
+| [**v6.0**](#v60--nexus) | NEXUS | **Skill + Plugin** | Plugin enforcement, SQLite persistence, 5 lifecycle hooks, Research Spine | 10 | 34+ |
 | [**v5.5**](vibe-science-v5.5/) | ORO | OTAE-Tree + Data Quality | 7 new gates, R2 INLINE, SSOT, structured logbook, post-mortem driven | 10 | 34 |
+| [**v5.0**](vibe-science-v5.0/) | IUDEX | OTAE-Tree + Verification | SFI, blind-first pass, R3 judge, schema-validated gates | 10 | 27 |
+| [**v4.5**](vibe-science-v4.5/) | ARBOR VITAE (Pruned) | OTAE-Tree + Brainstorm | Phase 0 brainstorm, R2 6 modes, 5-stage pipeline | 10 | 25 |
+| [**v4.0**](vibe-science-v4.0/) | ARBOR VITAE | OTAE-Tree | Tree search, branch scoring, serendipity branches | 10 | 26 |
+| [**v3.5**](vibe-science-v3.5/) | TERTIUM DATUR | OTAE Loop | R2 double-pass, typed claims, evidence formula | 7 | 12 |
 | [**v5.0 Codex**](vibe-science-v5.0-codex/) | IUDEX | Same as v5.0 | OpenAI Codex port (condensed SKILL.md, no hooks/TEAM) | 10 | 27 |
 | [**Photonics**](vibe-science-photonics/) | ORO-PHOTONICS | OTAE-Tree + Expert Knowledge | v5.5 fork for photonics: R2-Physics, HE0-HE3, Expert Knowledge Injection | 10 | 36 |
 
 <p align="center">
-  <img src="logos/logo-v3.5.svg" alt="v3.5" width="340">
-  <img src="logos/logo-v4.0.svg" alt="v4.0" width="340">
+  <img src="logos/logo-v6.0.svg" alt="v6.0" width="700">
 </p>
 <p align="center">
-  <img src="logos/logo-v4.5.svg" alt="v4.5" width="340">
+  <img src="logos/logo-v3.5.svg" alt="v3.5" width="230">
+  <img src="logos/logo-v4.0.svg" alt="v4.0" width="230">
+  <img src="logos/logo-v4.5.svg" alt="v4.5" width="230">
+</p>
+<p align="center">
   <img src="logos/logo-v5.0.svg" alt="v5.0" width="340">
-</p>
-<p align="center">
   <img src="logos/logo-v5.5.svg" alt="v5.5" width="340">
 </p>
+
+---
+
+## v6.0 — NEXUS
+
+> *Methodology meets enforcement. The skill guides reasoning, the plugin makes violations structurally impossible.*
+
+v5.5 proved that prompt-level methodology works — but it also proved that prompts can be ignored. 12 mistakes in the CP+CRISPR run, ZERO caught by automated checks. v6.0 solves this by splitting the system in two: the **skill** (methodology, unchanged from v5.5) guides *what to think*, while the **plugin** (new, code-level) controls *what can happen*.
+
+### Dual Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  SKILL (prompt-level)           │  PLUGIN (code-level)          │
+│  ─────────────────              │  ──────────────────           │
+│  OTAE loop                      │  5 lifecycle hooks            │
+│  R2 Ensemble (7 modes)          │  Gate Engine (DQ/DC/DD/L-1+)  │
+│  SFI, BFP, R3 Judge             │  Permission Engine (6 roles)  │
+│  Brainstorm Engine               │  Research Spine (auto-log)    │
+│  Evidence Engine                 │  Context Builder (~700 tok)   │
+│  Serendipity Engine              │  Narrative Engine             │
+│  10 Constitutional Laws          │  R2 Auto-Calibration          │
+│  21 protocols                    │  Silent Observer              │
+│                                  │  SQLite (11 tables)           │
+│  Guides REASONING               │  Enforces BEHAVIOR            │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Plugin Subsystems
+
+<table>
+<tr>
+<td width="33%" valign="top">
+
+**Gate Engine**
+
+Enforces DQ1-DQ4, DC0, DD0, L-1+ at PostToolUse. Exit code 2 = BLOCK.
+
+- DQ4: auto-verifies FINDINGS.md numbers match JSON source
+- L-1+: blocks research direction without prior literature search
+- Domain-aware hints from `domain-config.json`
+
+</td>
+<td width="33%" valign="top">
+
+**Permission Engine**
+
+TEAM mode with 6 roles: `researcher`, `reviewer2`, `judge`, `serendipity`, `lead`, `experimenter`.
+
+- Glob-based file access control
+- Role inference from prompt keywords
+- Separation of powers enforced in code
+
+</td>
+<td width="33%" valign="top">
+
+**Research Spine**
+
+Automatic structured logging of every significant action.
+
+- 20+ action types classified
+- Timestamps, inputs, outputs, gate status
+- Links every numerical claim to its source
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+**Context Builder**
+
+Progressive disclosure in ~700 tokens:
+
+- Layer 1: STATE.md summary (~200 tok)
+- Layer 2: Semantic recall (~500 tok)
+- R2 calibration hints
+- Pending serendipity seeds
+
+</td>
+<td valign="top">
+
+**Silent Observer**
+
+Periodic integrity checks (every 10 tool uses):
+
+- Stale STATE.md detection
+- FINDINGS.md / JSON desync
+- Orphaned datasets
+- Design-execution drift
+- Literature staleness
+
+</td>
+<td valign="top">
+
+**R2 Auto-Calibration**
+
+Cross-session learning for R2:
+
+- Top weakness patterns
+- SFI miss categories
+- J0 score trends
+- Researcher error patterns
+- Hints injected at SessionStart
+
+</td>
+</tr>
+</table>
+
+### Five Lifecycle Hooks
+
+| Hook | When | What It Does |
+|------|------|-------------|
+| **Setup** | Plugin install | Creates `~/.vibe-science/`, initializes SQLite DB, loads sqlite-vec |
+| **SessionStart** | New conversation | Creates session, builds ~700-token context, loads R2 calibration |
+| **UserPromptSubmit** | Every user message | Identifies agent role, logs prompt hash (privacy), semantic recall |
+| **PostToolUse** | Every tool action | **Gate enforcement**, permission check, auto-log to Spine, observer |
+| **Stop** | Session end | Narrative summary, enforcement check (blocks if unreviewed claims), STATE.md export |
+
+### SQLite Persistence (11 Tables)
+
+```
+sessions              ← session lifecycle
+spine_entries         ← Research Spine (every action)
+claim_events          ← claim lifecycle (create, review, promote, kill)
+r2_reviews            ← R2 review results + weaknesses
+serendipity_seeds     ← cross-session seed survival
+gate_checks           ← every gate pass/fail with details
+literature_searches   ← L-1+ audit trail
+observer_alerts       ← Silent Observer findings
+calibration_log       ← R2 calibration data
+prompt_log            ← SHA-256 hashes only (privacy)
+embed_queue           ← async vector embedding queue
+```
+
+### Literature Engine (102 Databases)
+
+L-1+ is domain-aware with a 4-layer architecture:
+
+1. **Domain Registry** — 102 databases across 12 categories (genomics, chemistry, physics, materials, clinical, ...)
+2. **MCP Server Stack** — PubMed, arXiv, Semantic Scholar, OpenAlex, ChEMBL, UniProt
+3. **Scientific Skills** — 28+ K-Dense-AI database skills
+4. **Local RAG** — Zotero, PaperQA2, NotebookLM integration
+
+### What v6.0 Keeps from v5.5
+
+Everything. The entire v5.5 ORO skill is preserved unchanged:
+- OTAE-Tree loop, 10 Constitutional Laws, R2 Ensemble (7 modes including INLINE)
+- SFI, BFP, R3 Judge, Schema-Validated Gates, Circuit Breaker
+- Agent Permission Model, Serendipity Engine, 5-stage Experiment Manager
+- 34 gates, 21 protocols, SSOT rule, structured logbook
+- Full data discovery pipeline (download datasets, write Python scripts, serendipity detection)
+
+### What v6.0 Adds
+
+| Component | Lines | Purpose |
+|-----------|------:|---------|
+| `post-tool-use.js` | 1,482 | Gate enforcement, permissions, auto-logging, observer |
+| `session-start.js` | 387 | Context injection, R2 calibration, domain config |
+| `worker-embed.js` | 389 | Background embedding daemon |
+| `gate-engine.js` | 630 | DQ/DC/DD/L-1+ gate logic |
+| `db.js` | ~500 | SQLite wrapper with prepared statement cache |
+| `prompt-submit.js` | 239 | Agent identification, semantic recall |
+| `context-builder.js` | 231 | Progressive disclosure |
+| `permission-engine.js` | 288 | Role-based access control |
+| `narrative-engine.js` | 333 | Template-based session summaries |
+| `vec-search.js` | 355 | sqlite-vec with keyword fallback |
+| `r2-calibration.js` | 196 | Cross-session R2 learning |
+| `schema.sql` | ~250 | 11 tables + indices |
+| `stop.js` | 171 | Session end enforcement |
+| `setup.js` | 181 | DB initialization, dependency check |
+| `literature-registry.json` | ~800 | 102 databases, 12 categories |
+| **Total new code** | **~5,500+** | |
+
+---
+
+## v5.5 — ORO
+
+> *The post-mortem release. Every change traces to a real mistake. Now with plugin enforcement in v6.0.*
 
 ---
 
@@ -645,14 +828,14 @@ The OTAE-Tree loop, 10 Laws, SFI, BFP, R3 Judge, Schema-Validated Gates, Circuit
 
 ### Reviewer 2 Ensemble — Evolution
 
-| Feature | v3.5 | v4.0 | v4.5 | v5.0 | v5.5 |
-|---------|------|------|------|------|------|
-| Reviewers | 4 (Methods, Stats, Bio, Eng) | 4 | 4 | 4 | 4 |
-| Modes | 3 (standard, batch, forced) | 3 | **6** (+shadow, veto, redirect) | 6 | **7** (+**INLINE**) |
-| Workflow | Double-pass | Double-pass | Double-pass + red flags | Double-pass + **BFP** + **SFI** | + **INLINE at every finding** |
-| Independence | Simulated | TEAM mode available | TEAM mode | TEAM + **R3 Judge** | TEAM + R3 + INLINE |
-| Attack levels | 3-level orthogonal | 3-level | + 12 red flag checklist | + fault injection | + 7-point INLINE checklist |
-| Schema enforcement | None | None | None | **8 gates schema-validated** | 8 schema + 7 instruction-enforced |
+| Feature | v3.5 | v4.0 | v4.5 | v5.0 | v5.5 | v6.0 |
+|---------|------|------|------|------|------|------|
+| Reviewers | 4 (Methods, Stats, Bio, Eng) | 4 | 4 | 4 | 4 | 4 |
+| Modes | 3 (standard, batch, forced) | 3 | **6** (+shadow, veto, redirect) | 6 | **7** (+**INLINE**) | 7 |
+| Workflow | Double-pass | Double-pass | Double-pass + red flags | Double-pass + **BFP** + **SFI** | + **INLINE at every finding** | + **auto-calibration** |
+| Independence | Simulated | TEAM mode available | TEAM mode | TEAM + **R3 Judge** | TEAM + R3 + INLINE | + **plugin-enforced permissions** |
+| Attack levels | 3-level orthogonal | 3-level | + 12 red flag checklist | + fault injection | + 7-point INLINE checklist | + cross-session weakness tracking |
+| Schema enforcement | None | None | None | **8 gates schema-validated** | 8 schema + 7 instruction-enforced | + **code-enforced (exit code 2)** |
 
 ### Evidence Engine — Evolution
 
@@ -666,13 +849,14 @@ The OTAE-Tree loop, 10 Laws, SFI, BFP, R3 Judge, Schema-Validated Gates, Circuit
 
 ### Serendipity Engine — Evolution
 
-| Feature | v3.5 | v4.0+ | v5.0 | v5.5 |
-|---------|------|-------|------|------|
-| Scale | 0-15 | 0-20 | 0-20 | 0-20 |
-| Scanning | Every 10 cycles | Every EVALUATE | Every EVALUATE | Every EVALUATE |
-| Cross-branch | No | **Yes** | Yes | Yes |
-| Salvagente | No | No | **Yes** — killed claims produce seeds | Yes |
-| Interrupt threshold | >= 12 | >= 15 | >= 15 | >= 15 |
+| Feature | v3.5 | v4.0+ | v5.0 | v5.5 | v6.0 |
+|---------|------|-------|------|------|------|
+| Scale | 0-15 | 0-20 | 0-20 | 0-20 | 0-20 |
+| Scanning | Every 10 cycles | Every EVALUATE | Every EVALUATE | Every EVALUATE | Every EVALUATE |
+| Cross-branch | No | **Yes** | Yes | Yes | Yes |
+| Salvagente | No | No | **Yes** — killed claims produce seeds | Yes | + **cross-session seed survival** |
+| Interrupt threshold | >= 12 | >= 15 | >= 15 | >= 15 | >= 15 |
+| Persistence | File-based | File-based | File-based | File-based | **SQLite + vector search** |
 
 ---
 
@@ -807,75 +991,96 @@ vibe-science/
 ├── CITATION.cff                ← GitHub citation metadata (DOI)
 ├── LICENSE                     ← Apache 2.0
 ├── NOTICE                      ← Academic citation requirement
-├── CHANGELOG.md                ← Version history
+├── CHANGELOG.md                ← Version history (v1.0 → v6.0)
+├── package.json                ← Node.js package (better-sqlite3)
 ├── logos/                      ← Version-specific SVG logos
-│   ├── logo-v3.5.svg
-│   ├── logo-v4.0.svg
-│   ├── logo-v4.5.svg
-│   ├── logo-v5.0.svg
-│   └── logo-v5.5.svg
+│   ├── logo-v3.5.svg ... logo-v6.0.svg
 │
-├── vibe-science-v3.5/          ← Claude Code skill (v3.5)
-│   ├── SKILL.md                    320 lines
-│   ├── protocols/ (9)              ~1,500 lines
-│   ├── gates/gates.md              272 lines
-│   └── assets/ (3)                 ~615 lines
+├── .claude-plugin/             ← Plugin manifest
+│   └── plugin.json                 name, version, hooks reference
 │
-├── vibe-science-v4.0/          ← Claude Code skill (v4.0)
-│   ├── SKILL.md + CLAUDE.md
-│   ├── protocols/ (16)
-│   ├── gates/
-│   └── assets/ (6)
+├── plugin/                     ← v6.0 NEXUS enforcement engine (NEW)
+│   ├── hooks/
+│   │   └── hooks.json              5 lifecycle hook declarations
+│   ├── scripts/
+│   │   ├── setup.js                DB init, directory creation
+│   │   ├── session-start.js        Context injection, R2 calibration
+│   │   ├── prompt-submit.js        Agent ID, semantic recall
+│   │   ├── post-tool-use.js        Gate enforcement, permissions, Spine (1,482 lines)
+│   │   ├── stop.js                 Narrative summary, enforcement check
+│   │   └── worker-embed.js         Background embedding daemon
+│   ├── lib/
+│   │   ├── db.js                   SQLite wrapper + helpers
+│   │   ├── gate-engine.js          DQ/DC/DD/L-1+ gate logic
+│   │   ├── permission-engine.js    6-role TEAM mode enforcement
+│   │   ├── context-builder.js      Progressive disclosure (~700 tok)
+│   │   ├── narrative-engine.js     Template-based summaries
+│   │   ├── vec-search.js           sqlite-vec + keyword fallback
+│   │   └── r2-calibration.js       Cross-session R2 learning
+│   └── db/
+│       ├── schema.sql              11 tables + indices
+│       ├── literature-registry.json    102 databases, 12 categories
+│       └── domain-config-template.json DQ gate thresholds
 │
-├── vibe-science-v4.5/          ← Claude Code skill (v4.5)
-│   ├── SKILL.md + CLAUDE.md
-│   ├── protocols/ (16)
-│   ├── gates/
-│   └── assets/ (6)
-│
-├── vibe-science-v5.0/          ← Claude Code skill (v5.0 IUDEX)
-│   ├── SKILL.md (~1,150 lines)
-│   ├── CLAUDE.md (constitution)
-│   ├── BLUEPRINT.md (design document)
-│   ├── protocols/ (21)
-│   ├── gates/ + schemas/ (9)
-│   └── assets/ (8)
-│
-├── vibe-science-v5.5/          ← Claude Code skill (v5.5 ORO)
+├── skill/                      ← v5.5 ORO methodology (unchanged)
 │   ├── SKILL.md (~1,300 lines)
 │   ├── CLAUDE.md (constitution)
-│   ├── BLUEPRINT.md (design document)
-│   ├── protocols/ (21, enhanced)
+│   ├── protocols/ (21)
 │   ├── gates/ (34 gates)
-│   └── schemas/ (9) + assets/ (8)
+│   ├── schemas/ (9) + assets/ (8)
+│   └── commands/ + examples/
 │
-├── vibe-science-v5.0-codex/    ← OpenAI Codex skill (v5.0 IUDEX)
-│   ├── SKILL.md (~480 lines)
-│   ├── agents/openai.yaml
-│   ├── references/ (23)
-│   └── assets/ (11)
+├── blueprints/                 ← Architecture documents
+│   ├── v5.0-IUDEX-BLUEPRINT.md
+│   ├── v5.5-ORO-BLUEPRINT.md
+│   ├── v6.0-NEXUS-BLUEPRINT.md     THE BLUEPRINT (v1.1, ~2,500 lines)
+│   └── PHOTONICS-BLUEPRINT.md
 │
-└── vibe-science-photonics/     ← Photonics fork (v5.5 ORO-PHOTONICS)
-    ├── SKILL.md + CLAUDE.md + CONTEXT.md
-    ├── BLUEPRINT.md (architecture v2.0)
-    ├── FORENSIC-CHECKLIST.md
-    ├── protocols/ (21, +expert-knowledge.md)
-    ├── gates/ (36 gates: 25 base + 4 HE + 7 v5.5)
-    └── schemas/ (9) + assets/ (8)
+├── vibe-science-v3.5/          ← Historical: Claude Code skill (v3.5)
+├── vibe-science-v4.0/          ← Historical: Claude Code skill (v4.0)
+├── vibe-science-v4.5/          ← Historical: Claude Code skill (v4.5)
+├── vibe-science-v5.0/          ← Historical: Claude Code skill (v5.0 IUDEX)
+├── vibe-science-v5.5/          ← Historical: Claude Code skill (v5.5 ORO)
+├── vibe-science-v5.0-codex/    ← Historical: OpenAI Codex port
+└── vibe-science-photonics/     ← Domain fork: Photonics (ORO-PHOTONICS)
 ```
 
 ---
 
 ## Installation
 
-### Claude Code
+### v6.0 NEXUS (Recommended — Plugin + Skill)
 
 ```bash
 git clone https://github.com/th3vib3coder/vibe-science.git
+cd vibe-science
 
-# Install the version you want:
-claude plugins add ./vibe-science/vibe-science-v5.5          # latest (ORO)
-claude plugins add ./vibe-science/vibe-science-photonics     # photonics fork (ORO-PHOTONICS)
+# Install dependencies
+npm install
+
+# Install as Claude Code plugin (v6.0 with enforcement)
+claude plugins add .
+```
+
+**Requirements:** Node.js >= 18.0.0, Claude Code with plugin support.
+
+The plugin will automatically:
+1. Create `~/.vibe-science/` with DB and logs directories
+2. Initialize the SQLite database (11 tables)
+3. Attempt to load sqlite-vec for vector search (falls back to keyword search)
+4. Inject ~700 tokens of context at each session start
+
+### Skill-Only (v5.5 ORO — No Plugin Enforcement)
+
+```bash
+# If you want methodology without code enforcement:
+claude plugins add ./vibe-science/vibe-science-v5.5
+```
+
+### Previous Versions
+
+```bash
+claude plugins add ./vibe-science/vibe-science-photonics     # photonics fork
 claude plugins add ./vibe-science/vibe-science-v5.0          # verification release (IUDEX)
 claude plugins add ./vibe-science/vibe-science-v3.5          # stable, paper version
 ```
@@ -889,7 +1094,7 @@ claude plugins add ./vibe-science/vibe-science-v3.5          # stable, paper ver
 
 ### Manual (any LLM interface)
 
-Upload the `SKILL.md` of your chosen version as a system prompt or project knowledge file. Upload `protocols/`, `gates/`, and `assets/` directories for on-demand reference loading.
+Upload the `skill/SKILL.md` as a system prompt or project knowledge file. Upload `skill/protocols/`, `skill/gates/`, and `skill/assets/` for on-demand reference loading. Note: without the plugin, gates are prompt-enforced only.
 
 ---
 
@@ -899,7 +1104,8 @@ This repository documents the evolution of Vibe Science for the **VibeX 2026** p
 
 - **v3.5** is the version described in the paper (field-tested, 21 sprints)
 - **v4.0 → v4.5 → v5.0 → v5.5** show the progression of ideas
-- Annotated git tags (`v3.5.0`, `v4.0.0`, `v4.5.0`, `v5.0.0`, `v5.5.0`) provide traceable evolution
+- **v6.0** is the plugin-enforced architecture (skill + code enforcement)
+- Annotated git tags (`v3.5.0`, `v4.0.0`, `v4.5.0`, `v5.0.0`, `v5.5.0`, `v6.0.0`) provide traceable evolution
 - Annotated git tags and Zenodo archival provide permanent traceability
 
 ---
@@ -920,10 +1126,14 @@ Se utilizzi Vibe Science nella tua ricerca, ti chiediamo di citare:
 
 ## License
 
-Apache 2.0 — see [LICENSE](vibe-science-v5.0/LICENSE).
+Apache 2.0 — see [LICENSE](LICENSE).
 
 © 2026 Carmine Russo & Dr. Elisa Bertelli (MD)
 
 ## Authors
 
 **[Carmine Russo](https://github.com/th3vib3coder)** · **Dr. Elisa Bertelli (MD)**
+
+---
+
+*Built with Claude Code · Powered by Claude Opus · Made with adversarial love*

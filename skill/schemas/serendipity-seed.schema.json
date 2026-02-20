@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vibe-science-v5.0/serendipity-seed",
+  "title": "Serendipity Seed Schema",
+  "description": "Enforces structured serendipity seeds (Enhancement B). Seeds are actionable research objects with mandatory causal structure, provenance, and lifecycle tracking. Every seed must specify a causal question, falsifiers, and a discriminating test before entering the pipeline.",
+  "type": "object",
+  "required": [
+    "seed_id",
+    "status",
+    "source",
+    "score",
+    "causal_question",
+    "falsifiers",
+    "discriminating_test",
+    "expected_value",
+    "source_run_id",
+    "pointers",
+    "created_cycle",
+    "triage_deadline_cycle"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "seed_id": {
+      "type": "string",
+      "pattern": "^SEED-\\d{8}-\\d{3}$",
+      "description": "Unique seed identifier in the format SEED-YYYYMMDD-NNN (e.g. SEED-20260216-001)"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["PENDING_TRIAGE", "QUEUED", "TESTING", "KILLED", "PROMOTED_TO_CLAIM"],
+      "description": "Current lifecycle status of the seed"
+    },
+    "source": {
+      "type": "string",
+      "enum": ["SCANNER", "SALVAGED_FROM_R2", "CROSS_BRANCH", "USER"],
+      "description": "Origin of the seed: automatic scanner, salvaged from R2 ensemble dissent, cross-branch transfer, or user-injected"
+    },
+    "score": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 20,
+      "description": "Serendipity engine score (0-20). Higher scores indicate greater novelty-feasibility potential."
+    },
+    "causal_question": {
+      "type": "string",
+      "minLength": 10,
+      "description": "One-line causal question: what causes what? This is the core hypothesis the seed proposes to investigate."
+    },
+    "falsifiers": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 3,
+      "maxItems": 5,
+      "description": "3-5 specific ways this finding could be an illusion, artifact, or confound. Each falsifier must be concrete and testable."
+    },
+    "discriminating_test": {
+      "type": "string",
+      "minLength": 10,
+      "description": "One specific test that separates a real signal from an artifact. Must be actionable with available data and tools."
+    },
+    "fallback_test": {
+      "type": "string",
+      "minLength": 10,
+      "description": "Backup test if the primary discriminating test is infeasible due to data availability, computational cost, or tool limitations."
+    },
+    "expected_value": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Expected value assessment: [impact if true] x [probability estimate] x [test cost]. Used for triage prioritization."
+    },
+    "source_run_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identifier of the run or cycle that generated this seed (provenance tracking)"
+    },
+    "source_claim_id": {
+      "type": "string",
+      "pattern": "^C-\\d{3,}$",
+      "description": "Claim ID from which this seed was salvaged. Required when source is SALVAGED_FROM_R2."
+    },
+    "source_branch": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Tree branch from which this seed originated (for cross-branch and scanner seeds)"
+    },
+    "pointers": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "description": "File:line references to relevant data, code, or outputs that substantiate the seed"
+    },
+    "created_cycle": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Cycle number in which this seed was created"
+    },
+    "triage_deadline_cycle": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Cycle by which this seed must be triaged. LAW: must be <= created_cycle + 5. Cross-field constraint: triage_deadline_cycle >= created_cycle (enforced by orchestrator, not expressible in JSON Schema)."
+    },
+    "last_reviewed_cycle": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Cycle number of the most recent review of this seed"
+    },
+    "resolution": {
+      "type": "string",
+      "minLength": 1,
+      "description": "How the seed was resolved. Only applicable when status is KILLED or PROMOTED_TO_CLAIM."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "source": { "const": "SALVAGED_FROM_R2" }
+        },
+        "required": ["source"]
+      },
+      "then": {
+        "required": [
+          "seed_id",
+          "status",
+          "source",
+          "score",
+          "causal_question",
+          "falsifiers",
+          "discriminating_test",
+          "expected_value",
+          "source_run_id",
+          "source_claim_id",
+          "pointers",
+          "created_cycle",
+          "triage_deadline_cycle"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": { "enum": ["KILLED", "PROMOTED_TO_CLAIM"] }
+        },
+        "required": ["status"]
+      },
+      "then": {
+        "required": [
+          "seed_id",
+          "status",
+          "source",
+          "score",
+          "causal_question",
+          "falsifiers",
+          "discriminating_test",
+          "expected_value",
+          "source_run_id",
+          "pointers",
+          "created_cycle",
+          "triage_deadline_cycle",
+          "resolution"
+        ]
+      }
+    }
+  ]
+}

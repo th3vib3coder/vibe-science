@@ -1,0 +1,176 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 460">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0d1117"/>
+      <stop offset="100%" stop-color="#161b22"/>
+    </linearGradient>
+    <linearGradient id="nexus-glow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3fb950" stop-opacity="0.15"/>
+      <stop offset="50%" stop-color="#a371f7" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#58a6ff" stop-opacity="0.15"/>
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/>
+    </marker>
+    <marker id="arrow-nexus" viewBox="0 0 10 10" refX="10" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#a371f7"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="700" height="460" fill="url(#bg)"/>
+
+  <!-- Top decoration -->
+  <line x1="80" y1="18" x2="620" y2="18" stroke="#30363d" stroke-width="0.5"/>
+
+  <!-- Stars -->
+  <circle cx="674" cy="12" r="1" fill="#e3b341" opacity="0.7"/>
+  <circle cx="270" cy="19" r="1.5" fill="#e3b341" opacity="0.7"/>
+  <circle cx="578" cy="10" r="2.5" fill="#e3b341" opacity="0.3"/>
+  <circle cx="115" cy="18" r="1.5" fill="#e3b341" opacity="0.6"/>
+  <circle cx="47" cy="40" r="1.5" fill="#e3b341" opacity="0.7"/>
+  <circle cx="578" cy="31" r="1.5" fill="#e3b341" opacity="0.6"/>
+  <circle cx="304" cy="5" r="1.5" fill="#e3b341" opacity="0.7"/>
+  <circle cx="368" cy="22" r="1.5" fill="#e3b341" opacity="0.4"/>
+  <circle cx="364" cy="11" r="1" fill="#e3b341" opacity="0.5"/>
+  <circle cx="387" cy="27" r="2" fill="#e3b341" opacity="0.8"/>
+  <circle cx="490" cy="39" r="1" fill="#e3b341" opacity="0.9"/>
+  <circle cx="407" cy="10" r="2" fill="#e3b341" opacity="0.8"/>
+  <circle cx="653" cy="28" r="1.5" fill="#e3b341" opacity="0.7"/>
+  <circle cx="66" cy="47" r="1.5" fill="#e3b341" opacity="0.8"/>
+  <circle cx="101" cy="19" r="1" fill="#e3b341" opacity="0.5"/>
+  <circle cx="484" cy="45" r="2" fill="#e3b341" opacity="0.4"/>
+  <circle cx="383" cy="18" r="2" fill="#e3b341" opacity="0.7"/>
+  <circle cx="93" cy="43" r="1.5" fill="#e3b341" opacity="0.6"/>
+
+  <!-- VIBE -->
+  <text x="350" y="85" text-anchor="middle"
+        font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="76" font-weight="900"
+        fill="#3fb950" letter-spacing="0.25em">VIBE</text>
+
+  <!-- SCIENCE -->
+  <text x="350" y="145" text-anchor="middle"
+        font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="58" font-weight="900"
+        fill="#58a6ff" letter-spacing="0.18em">SCIENCE</text>
+
+  <!-- Version badge -->
+  <text x="350" y="175" text-anchor="middle"
+        font-family="Consolas, Monaco, 'Courier New', monospace" font-size="16" fill="#a371f7"
+        font-weight="bold">v6.0 — NEXUS</text>
+
+  <!-- Separator -->
+  <line x1="180" y1="188" x2="520" y2="188"
+        stroke="#30363d" stroke-width="0.5"/>
+
+  <!-- Architecture diagram -->
+  <g transform="translate(0,200)">
+
+    <!-- ===== SKILL LAYER (top) ===== -->
+    <!-- Layer label -->
+    <rect x="32" y="4" width="56" height="22" rx="4" fill="#1a2332" stroke="#3fb950" stroke-width="1.2"/>
+    <text x="60" y="19" text-anchor="middle"
+          font-family="Consolas, Monaco, 'Courier New', monospace" font-size="10" fill="#3fb950" font-weight="bold">SKILL</text>
+
+    <!-- OTAE -->
+    <rect x="108" y="0" width="82" height="30" rx="6" fill="#1a2332" stroke="#3fb950" stroke-width="1.5"/>
+    <text x="149" y="19" text-anchor="middle"
+          font-family="Consolas, Monaco, 'Courier New', monospace" font-size="11" fill="#3fb950" font-weight="bold">OTAE</text>
+    <line x1="190" y1="15" x2="214" y2="15" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <!-- R2 -->
+    <rect x="214" y="0" width="82" height="30" rx="6" fill="#1a2332" stroke="#f85149" stroke-width="1.5"/>
+    <text x="255" y="19" text-anchor="middle"
+          font-family="Consolas, Monaco, 'Courier New', monospace" font-size="11" fill="#f85149" font-weight="bold">R2</text>
+    <line x1="296" y1="15" x2="320" y2="15" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <!-- SFI -->
+    <rect x="320" y="0" width="82" height="30" rx="6" fill="#1a2332" stroke="#d2a8ff" stroke-width="1.5"/>
+    <text x="361" y="19" text-anchor="middle"
+          font-family="Consolas, Monaco, 'Courier New', monospace" font-size="11" fill="#d2a8ff" font-weight="bold">SFI</text>
+    <line x1="402" y1="15" x2="426" y2="15" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <!-- BFP -->
+    <rect x="426" y="0" width="82" height="30" rx="6" fill="#1a2332" stroke="#d2a8ff" stroke-width="1.5"/>
+    <text x="467" y="19" text-anchor="middle"
+          font-family="Consolas, Monaco, 'Courier New', monospace" font-size="11" fill="#d2a8ff" font-weight="bold">BFP</text>
+    <line x1="508" y1="15" x2="532" y2="15" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <!-- R3 -->
+    <rect x="532" y="0" width="82" height="30" rx="6" fill="#1a2332" stroke="#f0883e" stroke-width="1.5"/>
+    <text x="573" y="19" text-anchor="middle"
+          font-family="Consolas, Monaco, 'Courier New', monospace" font-size="10" fill="#f0883e" font-weight="bold">R3</text>
+
+    <!-- ===== NEXUS ZONE (connection arrows) ===== -->
+    <!-- Glowing nexus band -->
+    <rect x="90" y="38" width="540" height="44" rx="8" fill="url(#nexus-glow)" stroke="#a371f7" stroke-width="0.8" stroke-dasharray="4,3"/>
+
+    <!-- NEXUS label -->
+    <text x="350" y="63" text-anchor="middle"
+          font-family="Consolas, Monaco, 'Courier New', monospace" font-size="12" fill="#a371f7" font-weight="bold" letter-spacing="0.3em">N E X U S</text>
+
+    <!-- Vertical nexus arrows: skill down to nexus zone -->
+    <line x1="149" y1="30" x2="149" y2="40" stroke="#a371f7" stroke-width="1.2" marker-end="url(#arrow-nexus)"/>
+    <line x1="255" y1="30" x2="255" y2="40" stroke="#a371f7" stroke-width="1.2" marker-end="url(#arrow-nexus)"/>
+    <line x1="361" y1="30" x2="361" y2="40" stroke="#a371f7" stroke-width="1.2" marker-end="url(#arrow-nexus)"/>
+    <line x1="467" y1="30" x2="467" y2="40" stroke="#a371f7" stroke-width="1.2" marker-end="url(#arrow-nexus)"/>
+    <line x1="573" y1="30" x2="573" y2="40" stroke="#a371f7" stroke-width="1.2" marker-end="url(#arrow-nexus)"/>
+
+    <!-- Vertical nexus arrows: nexus zone down to plugin -->
+    <line x1="149" y1="80" x2="149" y2="90" stroke="#a371f7" stroke-width="1.2" marker-end="url(#arrow-nexus)"/>
+    <line x1="255" y1="80" x2="255" y2="90" stroke="#a371f7" stroke-width="1.2" marker-end="url(#arrow-nexus)"/>
+    <line x1="361" y1="80" x2="361" y2="90" stroke="#a371f7" stroke-width="1.2" marker-end="url(#arrow-nexus)"/>
+    <line x1="467" y1="80" x2="467" y2="90" stroke="#a371f7" stroke-width="1.2" marker-end="url(#arrow-nexus)"/>
+    <line x1="573" y1="80" x2="573" y2="90" stroke="#a371f7" stroke-width="1.2" marker-end="url(#arrow-nexus)"/>
+
+    <!-- ===== PLUGIN LAYER (bottom) ===== -->
+    <!-- Layer label -->
+    <rect x="32" y="94" width="56" height="22" rx="4" fill="#1a2332" stroke="#58a6ff" stroke-width="1.2"/>
+    <text x="60" y="109" text-anchor="middle"
+          font-family="Consolas, Monaco, 'Courier New', monospace" font-size="10" fill="#58a6ff" font-weight="bold">PLUGIN</text>
+
+    <!-- GATES -->
+    <rect x="108" y="90" width="82" height="30" rx="6" fill="#1a2332" stroke="#58a6ff" stroke-width="1.5"/>
+    <text x="149" y="109" text-anchor="middle"
+          font-family="Consolas, Monaco, 'Courier New', monospace" font-size="10" fill="#58a6ff" font-weight="bold">GATES</text>
+    <line x1="190" y1="105" x2="214" y2="105" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <!-- DB -->
+    <rect x="214" y="90" width="82" height="30" rx="6" fill="#1a2332" stroke="#58a6ff" stroke-width="1.5"/>
+    <text x="255" y="109" text-anchor="middle"
+          font-family="Consolas, Monaco, 'Courier New', monospace" font-size="10" fill="#58a6ff" font-weight="bold">DB</text>
+    <line x1="296" y1="105" x2="320" y2="105" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <!-- PERMS -->
+    <rect x="320" y="90" width="82" height="30" rx="6" fill="#1a2332" stroke="#58a6ff" stroke-width="1.5"/>
+    <text x="361" y="109" text-anchor="middle"
+          font-family="Consolas, Monaco, 'Courier New', monospace" font-size="10" fill="#58a6ff" font-weight="bold">PERMS</text>
+    <line x1="402" y1="105" x2="426" y2="105" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <!-- OBSERVER -->
+    <rect x="426" y="90" width="82" height="30" rx="6" fill="#1a2332" stroke="#58a6ff" stroke-width="1.5"/>
+    <text x="467" y="109" text-anchor="middle"
+          font-family="Consolas, Monaco, 'Courier New', monospace" font-size="9" fill="#58a6ff" font-weight="bold">OBSERVER</text>
+    <line x1="508" y1="105" x2="532" y2="105" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <!-- SPINE -->
+    <rect x="532" y="90" width="82" height="30" rx="6" fill="#1a2332" stroke="#58a6ff" stroke-width="1.5"/>
+    <text x="573" y="109" text-anchor="middle"
+          font-family="Consolas, Monaco, 'Courier New', monospace" font-size="10" fill="#58a6ff" font-weight="bold">SPINE</text>
+
+    <!-- ===== Summary line ===== -->
+    <text x="350" y="148" text-anchor="middle"
+          font-family="Consolas, Monaco, 'Courier New', monospace" font-size="10" fill="#8b949e">10 Laws  ·  34+ Gates  ·  7 R2 Modes  ·  11 Tables  ·  5 Hooks  ·  Plugin-Enforced</text>
+
+  </g>
+
+  <!-- Tagline -->
+  <text x="350" y="432" text-anchor="middle"
+        font-family="Consolas, Monaco, 'Courier New', monospace" font-size="14" fill="#a371f7"
+        font-style="italic" font-weight="bold">Methodology meets Enforcement</text>
+
+  <!-- Bottom decoration -->
+  <line x1="80" y1="452" x2="620" y2="452"
+        stroke="#30363d" stroke-width="0.5"/>
+</svg>

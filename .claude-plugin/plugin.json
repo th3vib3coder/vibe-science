@@ -1,0 +1,7 @@
+{
+  "name": "vibe-science",
+  "version": "6.0.0",
+  "description": "Vibe Science NEXUS — Scientific research plugin with infrastructure-enforced gates, persistent memory, agent team permissions, and auto-calibration.",
+  "hooks": "plugin/hooks/hooks.json",
+  "setup": "node plugin/scripts/setup.js"
+}

@@ -1,0 +1,34 @@
+{
+  "hooks": {
+    "Setup": [
+      {
+        "type": "command",
+        "command": "node plugin/scripts/setup.js"
+      }
+    ],
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "node plugin/scripts/session-start.js"
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "type": "command",
+        "command": "node plugin/scripts/prompt-submit.js"
+      }
+    ],
+    "PostToolUse": [
+      {
+        "type": "command",
+        "command": "node plugin/scripts/post-tool-use.js"
+      }
+    ],
+    "Stop": [
+      {
+        "type": "command",
+        "command": "node plugin/scripts/stop.js"
+      }
+    ]
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "$schema": "domain-config-template-v1",
+  "version": "1.0.0",
+  "_comment": "Template for domain-specific configuration. Copy this file to domain-config.json and fill in values for your research domain. See Vibe Science v6.0 Blueprint Section 10A.3 for details.",
+  "domain": "<domain-slug>",
+  "display_name": "<Human-readable domain name>",
+  "literature": {
+    "_comment_primary": "Main databases for this domain. These are checked first and are REQUIRED for L-1+ gate.",
+    "primary": [],
+    "_comment_secondary": "Supplementary databases for broader coverage and cross-referencing.",
+    "secondary": ["openalex", "semantic_scholar", "crossref"],
+    "_comment_datasets": "Data repositories specific to this domain (e.g., GEO for genomics, Materials Project for materials science).",
+    "datasets": [],
+    "_comment_preprints": "Preprint servers relevant to this domain.",
+    "preprints": [],
+    "_comment_grey": "Grey literature sources (reports, theses, patents). Leave empty if not applicable.",
+    "grey": [],
+    "_comment_curated_rag": "Local RAG solution for curated literature. Options: 'zotero', 'paperqa2', 'notebooklm', or null.",
+    "curated_rag": null,
+    "rag_config": {
+      "_comment": "Configuration for the selected curated_rag solution. Only needed if curated_rag is not null.",
+      "zotero_library": null,
+      "collection": null
+    }
+  },
+  "dq1": {
+    "_comment": "Data Quality Gate 1: domain-specific thresholds. Customize for your domain.",
+    "min_samples": null,
+    "required_columns": [],
+    "allowed_missing_fraction": 0.1,
+    "sha256_check": true
+  },
+  "examples": {
+    "crispr_off_target": {
+      "domain": "crispr-off-target",
+      "literature": {
+        "primary": ["pubmed", "biorxiv", "pmc"],
+        "secondary": ["openalex", "semantic_scholar", "crossref"],
+        "datasets": ["geo", "sra", "ena"],
+        "preprints": ["biorxiv", "medrxiv"],
+        "grey": [],
+        "curated_rag": null
+      }
+    },
+    "photonics_integrated": {
+      "domain": "photonics-integrated",
+      "literature": {
+        "primary": ["optica", "spie", "ieee_xplore"],
+        "secondary": ["openalex", "semantic_scholar", "arxiv"],
+        "datasets": ["materials_project", "nist_asd"],
+        "preprints": ["arxiv"],
+        "grey": [],
+        "curated_rag": "notebooklm"
+      }
+    },
+    "particle_physics": {
+      "domain": "particle-physics",
+      "literature": {
+        "primary": ["inspire_hep", "arxiv", "cern_cds"],
+        "secondary": ["nasa_ads", "openalex"],
+        "datasets": ["pdg"],
+        "preprints": ["arxiv"],
+        "grey": [],
+        "curated_rag": null
+      }
+    }
+  }
+}

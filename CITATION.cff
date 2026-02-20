@@ -40,10 +40,19 @@ abstract: >-
   writes to the claim ledger; the Judge Agent scores reviews but never modifies
   them; schemas are read-only for all agents. The system supports both SOLO mode
   (all roles in one context window) and TEAM mode (Agent Teams with dedicated
-  context windows per role). Developed and battle-tested over 21 sprints of
-  CRISPR-Cas9 off-target research, where it caught four confounded claims that
-  would have passed conventional AI review — including one with OR=2.30 and
-  p < 10^-100 whose sign reversed under propensity matching.
+  context windows per role). v6.0 NEXUS introduces a dual architecture — skill for
+  methodology, plugin for enforcement — that separates what the system knows from
+  what the system enforces. The plugin subsystem provides 5 lifecycle hooks
+  (PreToolUse, PostToolUse, Notification, Stop, SubagentStop) that intercept agent
+  actions at runtime, a Gate Engine backed by SQLite that tracks gate status with
+  deterministic pass/fail evaluation, and a Permission Engine that enforces
+  role-based access control across all agents. Together, the skill and plugin halves
+  form a closed enforcement loop: the skill defines the research protocol, the
+  plugin makes violations structurally impossible regardless of prompt content.
+  Developed and battle-tested over 21 sprints of CRISPR-Cas9 off-target research,
+  where it caught four confounded claims that would have passed conventional AI
+  review — including one with OR=2.30 and p < 10^-100 whose sign reversed under
+  propensity matching.
 authors:
   - family-names: Russo
     given-names: Carmine
@@ -53,8 +62,8 @@ authors:
     given-names: Elisa
     email: elisabertel@gmail.com
     name-suffix: MD
-version: "5.0.0"
-date-released: "2026-02-16"
+version: "6.0.0"
+date-released: "2026-02-20"
 doi: "10.5281/zenodo.18665031"
 license: Apache-2.0
 repository-code: "https://github.com/th3vib3coder/vibe-science"
@@ -77,6 +86,12 @@ keywords:
   - OTAE-loop
   - fault-injection
   - circuit-breaker
+  - plugin
+  - enforcement
+  - gate-engine
+  - permission-engine
+  - sqlite
+  - lifecycle-hooks
 references:
   - type: article
     title: "Vibe Science: AI-native research with adversarial review and serendipity tracking"

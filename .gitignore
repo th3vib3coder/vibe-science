@@ -11,3 +11,10 @@ Thumbs.db
 
 # Internal planning docs
 UPGRADE_PLAN_V2.md
+CHANGELOG_V2.md
+
+# Legacy nested directory (v1.0 artifact)
+vibe-science/
+
+# Node modules (plugin dependencies)
+node_modules/

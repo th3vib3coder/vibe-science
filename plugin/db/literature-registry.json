@@ -1,0 +1,952 @@
+{
+  "$schema": "literature-registry-v1",
+  "version": "1.0.0",
+  "generated": "2026-02-20",
+  "source": "Vibe Science v6.0 NEXUS Blueprint, Section 10A.4",
+  "total_databases": 108,
+  "categories": [
+    "multidisciplinary",
+    "biology_life_sciences",
+    "chemistry_pharmacology",
+    "physics_math_astronomy",
+    "materials_photonics_engineering",
+    "computer_science_ai",
+    "medicine_clinical",
+    "social_sciences_humanities",
+    "earth_sciences_environment",
+    "preprints_domain_specific",
+    "regional",
+    "grey_literature_special"
+  ],
+  "databases": {
+    "google_scholar": {
+      "name": "Google Scholar",
+      "category": ["multidisciplinary"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Cross-disciplinary"
+    },
+    "scopus": {
+      "name": "Scopus",
+      "category": ["multidisciplinary"],
+      "access": "subscription",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "90M+ records, peer-reviewed"
+    },
+    "web_of_science": {
+      "name": "Web of Science",
+      "category": ["multidisciplinary"],
+      "access": "subscription",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "170M+ records, citation index"
+    },
+    "openalex": {
+      "name": "OpenAlex",
+      "category": ["multidisciplinary"],
+      "access": "free",
+      "api": true,
+      "mcp_server": "benedict2310/Scientific-Papers-MCP",
+      "kdense_skill": "openalex-database",
+      "coverage": "240M+ works, open citations"
+    },
+    "semantic_scholar": {
+      "name": "Semantic Scholar",
+      "category": ["multidisciplinary"],
+      "access": "free",
+      "api": true,
+      "mcp_server": "openags/paper-search-mcp",
+      "kdense_skill": null,
+      "coverage": "200M+ papers, AI-driven"
+    },
+    "dimensions": {
+      "name": "Dimensions",
+      "category": ["multidisciplinary"],
+      "access": "mixed",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "130M+ publications"
+    },
+    "core": {
+      "name": "CORE",
+      "category": ["multidisciplinary"],
+      "access": "free",
+      "api": true,
+      "mcp_server": "benedict2310/Scientific-Papers-MCP",
+      "kdense_skill": null,
+      "coverage": "200M+ full-text OA"
+    },
+    "base": {
+      "name": "BASE",
+      "category": ["multidisciplinary"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "300M+ documents (OAI-PMH)"
+    },
+    "crossref": {
+      "name": "Crossref",
+      "category": ["multidisciplinary"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "140M+ DOI metadata"
+    },
+    "lens_org": {
+      "name": "Lens.org",
+      "category": ["multidisciplinary"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Patents + scholarly"
+    },
+    "unpaywall": {
+      "name": "Unpaywall",
+      "category": ["multidisciplinary"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "OA finder via DOI"
+    },
+
+    "pubmed": {
+      "name": "PubMed/MEDLINE",
+      "category": ["biology_life_sciences", "biomedical"],
+      "access": "free",
+      "api": true,
+      "mcp_server": "openags/paper-search-mcp",
+      "kdense_skill": "pubmed-database",
+      "coverage": "36M+ biomedical citations"
+    },
+    "biorxiv": {
+      "name": "bioRxiv",
+      "category": ["biology_life_sciences"],
+      "access": "free",
+      "api": true,
+      "mcp_server": "openags/paper-search-mcp",
+      "kdense_skill": "biorxiv-database",
+      "coverage": "Preprint biology"
+    },
+    "medrxiv": {
+      "name": "medRxiv",
+      "category": ["biology_life_sciences", "medicine_clinical"],
+      "access": "free",
+      "api": true,
+      "mcp_server": "openags/paper-search-mcp",
+      "kdense_skill": null,
+      "coverage": "Preprint medicine"
+    },
+    "europe_pmc": {
+      "name": "Europe PMC",
+      "category": ["biology_life_sciences"],
+      "access": "free",
+      "api": true,
+      "mcp_server": "benedict2310/Scientific-Papers-MCP",
+      "kdense_skill": null,
+      "coverage": "40M+ life sciences"
+    },
+    "pmc": {
+      "name": "PubMed Central",
+      "category": ["biology_life_sciences", "biomedical"],
+      "access": "free",
+      "api": true,
+      "mcp_server": "benedict2310/Scientific-Papers-MCP",
+      "kdense_skill": null,
+      "coverage": "Full-text OA biomedical"
+    },
+    "geo": {
+      "name": "GEO",
+      "category": ["biology_life_sciences"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": "geo-database",
+      "coverage": "Gene expression datasets"
+    },
+    "sra": {
+      "name": "SRA",
+      "category": ["biology_life_sciences"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Sequencing reads archive"
+    },
+    "ena": {
+      "name": "ENA",
+      "category": ["biology_life_sciences"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": "ena-database",
+      "coverage": "European Nucleotide Archive"
+    },
+    "uniprot": {
+      "name": "UniProt",
+      "category": ["biology_life_sciences"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": "uniprot-database",
+      "coverage": "Protein sequences/function"
+    },
+    "ensembl": {
+      "name": "Ensembl",
+      "category": ["biology_life_sciences"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": "ensembl-database",
+      "coverage": "Genome annotations (200+ species)"
+    },
+    "ncbi_gene": {
+      "name": "NCBI Gene",
+      "category": ["biology_life_sciences"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": "ncbi-gene-database",
+      "coverage": "Gene records"
+    },
+    "clinvar": {
+      "name": "ClinVar",
+      "category": ["biology_life_sciences"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": "clinvar-database",
+      "coverage": "Clinical variant significance"
+    },
+    "cosmic": {
+      "name": "COSMIC",
+      "category": ["biology_life_sciences"],
+      "access": "mixed",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": "cosmic-database",
+      "coverage": "Cancer somatic mutations"
+    },
+    "kegg": {
+      "name": "KEGG",
+      "category": ["biology_life_sciences"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": "kegg-database",
+      "coverage": "Pathways, metabolic networks"
+    },
+    "reactome": {
+      "name": "Reactome",
+      "category": ["biology_life_sciences"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": "reactome-database",
+      "coverage": "Pathway analysis (human focus)"
+    },
+    "string": {
+      "name": "STRING",
+      "category": ["biology_life_sciences"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": "string-database",
+      "coverage": "Protein-protein interactions"
+    },
+    "alphafold_db": {
+      "name": "AlphaFold DB",
+      "category": ["biology_life_sciences"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": "alphafold-database",
+      "coverage": "200M+ predicted protein structures"
+    },
+    "pdb_rcsb": {
+      "name": "PDB/RCSB",
+      "category": ["biology_life_sciences"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": "pdb-database",
+      "coverage": "3D macromolecular structures"
+    },
+    "gwas_catalog": {
+      "name": "GWAS Catalog",
+      "category": ["biology_life_sciences"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": "gwas-catalog-database",
+      "coverage": "SNP-trait associations"
+    },
+    "open_targets": {
+      "name": "Open Targets",
+      "category": ["biology_life_sciences"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": "open-targets-database",
+      "coverage": "Target-disease associations"
+    },
+    "clinicaltrials_gov": {
+      "name": "ClinicalTrials.gov",
+      "category": ["biology_life_sciences", "medicine_clinical"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": "clinicaltrials-database",
+      "coverage": "Clinical studies registry"
+    },
+    "dryad": {
+      "name": "Dryad",
+      "category": ["biology_life_sciences"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Research datasets (life sciences)"
+    },
+    "figshare": {
+      "name": "Figshare",
+      "category": ["biology_life_sciences"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Data, figures, preprint"
+    },
+    "flowrepository": {
+      "name": "FlowRepository",
+      "category": ["biology_life_sciences"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Flow cytometry data"
+    },
+
+    "pubchem": {
+      "name": "PubChem",
+      "category": ["chemistry_pharmacology"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": "pubchem-database",
+      "coverage": "111M+ compounds"
+    },
+    "chembl": {
+      "name": "ChEMBL",
+      "category": ["chemistry_pharmacology"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": "chembl-database",
+      "coverage": "Bioactive molecules, drug discovery"
+    },
+    "drugbank": {
+      "name": "DrugBank",
+      "category": ["chemistry_pharmacology"],
+      "access": "mixed",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": "drugbank-database",
+      "coverage": "Comprehensive drug data"
+    },
+    "zinc": {
+      "name": "ZINC",
+      "category": ["chemistry_pharmacology"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": "zinc-database",
+      "coverage": "230M+ purchasable compounds"
+    },
+    "chemspider": {
+      "name": "ChemSpider",
+      "category": ["chemistry_pharmacology"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "100M+ structures (RSC)"
+    },
+    "scifinder_cas": {
+      "name": "SciFinder/CAS",
+      "category": ["chemistry_pharmacology"],
+      "access": "subscription",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Chemical abstracts"
+    },
+    "reaxys": {
+      "name": "Reaxys",
+      "category": ["chemistry_pharmacology"],
+      "access": "subscription",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Reaction database"
+    },
+    "brenda": {
+      "name": "BRENDA",
+      "category": ["chemistry_pharmacology"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": "brenda-database",
+      "coverage": "Enzyme kinetics data"
+    },
+    "hmdb": {
+      "name": "HMDB",
+      "category": ["chemistry_pharmacology"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": "hmdb-database",
+      "coverage": "220K+ human metabolites"
+    },
+    "metabolomics_workbench": {
+      "name": "Metabolomics Workbench",
+      "category": ["chemistry_pharmacology"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": "metabolomics-workbench-database",
+      "coverage": "NIH metabolomics"
+    },
+
+    "arxiv": {
+      "name": "arXiv",
+      "category": ["physics_math_astronomy", "computer_science_ai"],
+      "access": "free",
+      "api": true,
+      "mcp_server": "blazickjp/arxiv-mcp-server",
+      "kdense_skill": null,
+      "coverage": "Preprint phys/CS/math/bio"
+    },
+    "inspire_hep": {
+      "name": "INSPIRE-HEP",
+      "category": ["physics_math_astronomy"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "High-energy physics"
+    },
+    "nasa_ads": {
+      "name": "NASA ADS",
+      "category": ["physics_math_astronomy"],
+      "access": "free",
+      "api": true,
+      "mcp_server": "prtc/nasa-ads-mcp",
+      "kdense_skill": null,
+      "coverage": "Astronomy/astrophysics"
+    },
+    "mathscinet": {
+      "name": "MathSciNet",
+      "category": ["physics_math_astronomy"],
+      "access": "subscription",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Mathematics reviews (AMS)"
+    },
+    "zbmath": {
+      "name": "zbMATH",
+      "category": ["physics_math_astronomy"],
+      "access": "mixed",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Mathematics"
+    },
+    "cern_cds": {
+      "name": "CERN CDS",
+      "category": ["physics_math_astronomy"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "CERN documents"
+    },
+    "pdg": {
+      "name": "PDG",
+      "category": ["physics_math_astronomy"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Particle data reviews"
+    },
+    "nist_asd": {
+      "name": "NIST Atomic Spectra",
+      "category": ["physics_math_astronomy"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Atomic spectra, optical data"
+    },
+    "slac_spires": {
+      "name": "SLAC SPIRES (now INSPIRE)",
+      "category": ["physics_math_astronomy"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "HEP literature (historical)"
+    },
+
+    "materials_project": {
+      "name": "Materials Project",
+      "category": ["materials_photonics_engineering"],
+      "access": "free",
+      "api": true,
+      "mcp_server": "pathintegral-institute/mcp.science",
+      "kdense_skill": "materials-project-database",
+      "coverage": "Crystal structures calc. (DFT)"
+    },
+    "icsd": {
+      "name": "ICSD",
+      "category": ["materials_photonics_engineering"],
+      "access": "subscription",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Inorganic crystal structures"
+    },
+    "csd": {
+      "name": "CSD",
+      "category": ["materials_photonics_engineering"],
+      "access": "subscription",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Cambridge structural database"
+    },
+    "springer_materials": {
+      "name": "Springer Materials",
+      "category": ["materials_photonics_engineering"],
+      "access": "subscription",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Material properties (Landolt-Bornstein)"
+    },
+    "ieee_xplore": {
+      "name": "IEEE Xplore",
+      "category": ["materials_photonics_engineering"],
+      "access": "subscription",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Engineering, EE, photonics"
+    },
+    "spie": {
+      "name": "SPIE Digital Library",
+      "category": ["materials_photonics_engineering"],
+      "access": "subscription",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Imaging, optics, remote sensing"
+    },
+    "optica": {
+      "name": "Optica Publishing",
+      "category": ["materials_photonics_engineering"],
+      "access": "mixed",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Optics Letters, JOSA, Applied Optics"
+    },
+    "engineering_village": {
+      "name": "Engineering Village",
+      "category": ["materials_photonics_engineering"],
+      "access": "subscription",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Compendex"
+    },
+
+    "dblp": {
+      "name": "DBLP",
+      "category": ["computer_science_ai"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "CS bibliographic (conferences/journals)"
+    },
+    "acm_digital_library": {
+      "name": "ACM Digital Library",
+      "category": ["computer_science_ai"],
+      "access": "subscription",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Computing full-text"
+    },
+    "acl_anthology": {
+      "name": "ACL Anthology",
+      "category": ["computer_science_ai"],
+      "access": "free",
+      "api": true,
+      "mcp_server": "IlyaGusev/academia_mcp",
+      "kdense_skill": null,
+      "coverage": "Computational linguistics"
+    },
+    "papers_with_code": {
+      "name": "Papers With Code",
+      "category": ["computer_science_ai"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "ML papers + code + benchmarks"
+    },
+    "neurips_icml_archives": {
+      "name": "NeurIPS/ICML archives",
+      "category": ["computer_science_ai"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "ML conference proceedings"
+    },
+    "eric": {
+      "name": "ERIC",
+      "category": ["computer_science_ai"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Education + CS education"
+    },
+
+    "cochrane_library": {
+      "name": "Cochrane Library",
+      "category": ["medicine_clinical"],
+      "access": "subscription",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Systematic reviews (gold standard)"
+    },
+    "cinahl": {
+      "name": "CINAHL",
+      "category": ["medicine_clinical"],
+      "access": "subscription",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Nursing, allied health"
+    },
+    "embase": {
+      "name": "Embase",
+      "category": ["medicine_clinical"],
+      "access": "subscription",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Pharmacology, biomedicine"
+    },
+    "clinpgx": {
+      "name": "ClinPGx",
+      "category": ["medicine_clinical"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": "clinpgx-database",
+      "coverage": "Pharmacogenomics"
+    },
+    "openfda": {
+      "name": "openFDA",
+      "category": ["medicine_clinical"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": "openfda-database",
+      "coverage": "FDA drug/device/adverse events"
+    },
+
+    "jstor": {
+      "name": "JSTOR",
+      "category": ["social_sciences_humanities"],
+      "access": "subscription",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Humanities/SS archive"
+    },
+    "ssrn": {
+      "name": "SSRN",
+      "category": ["social_sciences_humanities"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Social science preprints"
+    },
+    "econlit": {
+      "name": "EconLit",
+      "category": ["social_sciences_humanities"],
+      "access": "subscription",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Economics"
+    },
+    "psycinfo": {
+      "name": "PsycINFO",
+      "category": ["social_sciences_humanities"],
+      "access": "subscription",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Psychology"
+    },
+    "philpapers": {
+      "name": "PhilPapers",
+      "category": ["social_sciences_humanities"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Philosophy"
+    },
+    "hathitrust": {
+      "name": "HathiTrust",
+      "category": ["social_sciences_humanities"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Digitized books"
+    },
+    "project_muse": {
+      "name": "Project MUSE",
+      "category": ["social_sciences_humanities"],
+      "access": "subscription",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Humanities journals"
+    },
+
+    "georef": {
+      "name": "GeoRef",
+      "category": ["earth_sciences_environment"],
+      "access": "subscription",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Geosciences"
+    },
+    "pangaea": {
+      "name": "Pangaea",
+      "category": ["earth_sciences_environment"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Earth system data archive"
+    },
+    "gbif": {
+      "name": "GBIF",
+      "category": ["earth_sciences_environment"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Biodiversity occurrences"
+    },
+    "nasa_earthdata": {
+      "name": "NASA Earthdata",
+      "category": ["earth_sciences_environment"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Satellite, climate data"
+    },
+
+    "chemrxiv": {
+      "name": "ChemRxiv",
+      "category": ["preprints_domain_specific", "chemistry_pharmacology"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Chemistry preprints"
+    },
+    "eartharxiv": {
+      "name": "EarthArXiv",
+      "category": ["preprints_domain_specific", "earth_sciences_environment"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Earth science preprints"
+    },
+    "essoar": {
+      "name": "ESSOAr",
+      "category": ["preprints_domain_specific", "earth_sciences_environment"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Earth/space science preprints"
+    },
+    "engrxiv": {
+      "name": "engrXiv",
+      "category": ["preprints_domain_specific", "materials_photonics_engineering"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Engineering preprints"
+    },
+
+    "cnki": {
+      "name": "CNKI",
+      "category": ["regional"],
+      "access": "subscription",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Chinese literature"
+    },
+    "j_stage": {
+      "name": "J-STAGE",
+      "category": ["regional"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Japanese literature"
+    },
+    "scielo": {
+      "name": "SciELO",
+      "category": ["regional"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Latin America, OA"
+    },
+    "ajol": {
+      "name": "AJOL",
+      "category": ["regional"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Africa journals"
+    },
+    "kci": {
+      "name": "KCI",
+      "category": ["regional"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Korea"
+    },
+    "redalyc": {
+      "name": "Redalyc",
+      "category": ["regional"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Latin American OA journals"
+    },
+
+    "opengrey": {
+      "name": "OpenGrey",
+      "category": ["grey_literature_special"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Technical reports, EU theses"
+    },
+    "greylit": {
+      "name": "GreyLit",
+      "category": ["grey_literature_special"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Grey literature USA"
+    },
+    "world_bank_okr": {
+      "name": "World Bank OKR",
+      "category": ["grey_literature_special"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Development, economics"
+    },
+    "uspto": {
+      "name": "USPTO",
+      "category": ["grey_literature_special"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": "uspto-database",
+      "coverage": "Patents, trademarks"
+    },
+    "google_patents": {
+      "name": "Google Patents",
+      "category": ["grey_literature_special"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Multi-office patent search"
+    },
+    "espacenet": {
+      "name": "Espacenet",
+      "category": ["grey_literature_special"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "EPO patent search"
+    },
+    "pascal_francis": {
+      "name": "PASCAL/FRANCIS",
+      "category": ["grey_literature_special"],
+      "access": "free",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Science/humanities archive (until 2015)"
+    },
+    "scival": {
+      "name": "SciVal",
+      "category": ["grey_literature_special"],
+      "access": "subscription",
+      "api": false,
+      "mcp_server": null,
+      "kdense_skill": null,
+      "coverage": "Institutional analytics (Elsevier)"
+    }
+  }
+}
