@@ -76,13 +76,13 @@ None of these were hallucinations. The data was real. The statistics were correc
 | Version | Codename | Architecture | Key Innovation | Laws | Gates |
 |---------|----------|-------------|----------------|:----:|:-----:|
 | [**v6.0**](#v60--nexus) | NEXUS | **Skill + Plugin** | Plugin enforcement, SQLite persistence, 5 lifecycle hooks, Research Spine | 10 | 34+ |
-| [**v5.5**](vibe-science-v5.5/) | ORO | OTAE-Tree + Data Quality | 7 new gates, R2 INLINE, SSOT, structured logbook, post-mortem driven | 10 | 34 |
-| [**v5.0**](vibe-science-v5.0/) | IUDEX | OTAE-Tree + Verification | SFI, blind-first pass, R3 judge, schema-validated gates | 10 | 27 |
-| [**v4.5**](vibe-science-v4.5/) | ARBOR VITAE (Pruned) | OTAE-Tree + Brainstorm | Phase 0 brainstorm, R2 6 modes, 5-stage pipeline | 10 | 25 |
-| [**v4.0**](vibe-science-v4.0/) | ARBOR VITAE | OTAE-Tree | Tree search, branch scoring, serendipity branches | 10 | 26 |
-| [**v3.5**](vibe-science-v3.5/) | TERTIUM DATUR | OTAE Loop | R2 double-pass, typed claims, evidence formula | 7 | 12 |
-| [**v5.0 Codex**](vibe-science-v5.0-codex/) | IUDEX | Same as v5.0 | OpenAI Codex port (condensed SKILL.md, no hooks/TEAM) | 10 | 27 |
-| [**Photonics**](vibe-science-photonics/) | ORO-PHOTONICS | OTAE-Tree + Expert Knowledge | v5.5 fork for photonics: R2-Physics, HE0-HE3, Expert Knowledge Injection | 10 | 36 |
+| [**v5.5**](archive/vibe-science-v5.5/) | ORO | OTAE-Tree + Data Quality | 7 new gates, R2 INLINE, SSOT, structured logbook, post-mortem driven | 10 | 34 |
+| [**v5.0**](archive/vibe-science-v5.0/) | IUDEX | OTAE-Tree + Verification | SFI, blind-first pass, R3 judge, schema-validated gates | 10 | 27 |
+| [**v4.5**](archive/vibe-science-v4.5/) | ARBOR VITAE (Pruned) | OTAE-Tree + Brainstorm | Phase 0 brainstorm, R2 6 modes, 5-stage pipeline | 10 | 25 |
+| [**v4.0**](archive/vibe-science-v4.0/) | ARBOR VITAE | OTAE-Tree | Tree search, branch scoring, serendipity branches | 10 | 26 |
+| [**v3.5**](archive/vibe-science-v3.5/) | TERTIUM DATUR | OTAE Loop | R2 double-pass, typed claims, evidence formula | 7 | 12 |
+| [**v5.0 Codex**](archive/vibe-science-v5.0-codex/) | IUDEX | Same as v5.0 | OpenAI Codex port (condensed SKILL.md, no hooks/TEAM) | 10 | 27 |
+| [**Photonics**](archive/vibe-science-photonics/) | ORO-PHOTONICS | OTAE-Tree + Expert Knowledge | v5.5 fork for photonics: R2-Physics, HE0-HE3, Expert Knowledge Injection | 10 | 36 |
 
 <p align="center">
   <img src="logos/logo-v6.0.svg" alt="v6.0" width="700">
@@ -1030,19 +1030,20 @@ vibe-science/
 │   ├── schemas/ (9) + assets/ (8)
 │   └── commands/ + examples/
 │
-├── blueprints/                 ← Architecture documents
-│   ├── v5.0-IUDEX-BLUEPRINT.md
-│   ├── v5.5-ORO-BLUEPRINT.md
-│   ├── v6.0-NEXUS-BLUEPRINT.md     THE BLUEPRINT (v1.1, ~2,500 lines)
-│   └── PHOTONICS-BLUEPRINT.md
+├── blueprints/
+│   └── v6.0-NEXUS-BLUEPRINT.md     ← Architecture document (~2,500 lines)
 │
-├── vibe-science-v3.5/          ← Historical: Claude Code skill (v3.5)
-├── vibe-science-v4.0/          ← Historical: Claude Code skill (v4.0)
-├── vibe-science-v4.5/          ← Historical: Claude Code skill (v4.5)
-├── vibe-science-v5.0/          ← Historical: Claude Code skill (v5.0 IUDEX)
-├── vibe-science-v5.5/          ← Historical: Claude Code skill (v5.5 ORO)
-├── vibe-science-v5.0-codex/    ← Historical: OpenAI Codex port
-└── vibe-science-photonics/     ← Domain fork: Photonics (ORO-PHOTONICS)
+└── archive/                    ← Historical versions (v3.5 → v5.5, Photonics, Codex)
+    ├── vibe-science-v3.5/
+    ├── vibe-science-v4.0/
+    ├── vibe-science-v4.5/
+    ├── vibe-science-v5.0/
+    ├── vibe-science-v5.5/
+    ├── vibe-science-v5.0-codex/
+    ├── vibe-science-photonics/
+    ├── v5.0-IUDEX-BLUEPRINT.md
+    ├── v5.5-ORO-BLUEPRINT.md
+    └── PHOTONICS-BLUEPRINT.md
 ```
 
 ---
@@ -1070,26 +1071,17 @@ The plugin will automatically:
 3. Attempt to load sqlite-vec for vector search (falls back to keyword search)
 4. Inject ~700 tokens of context at each session start
 
-### Skill-Only (v5.5 ORO — No Plugin Enforcement)
+### Previous Versions (in `archive/`)
 
 ```bash
-# If you want methodology without code enforcement:
-claude plugins add ./vibe-science/vibe-science-v5.5
-```
+# Skill-only (no plugin enforcement):
+claude plugins add ./vibe-science/archive/vibe-science-v5.5       # v5.5 ORO
+claude plugins add ./vibe-science/archive/vibe-science-photonics  # photonics fork
+claude plugins add ./vibe-science/archive/vibe-science-v5.0       # v5.0 IUDEX
+claude plugins add ./vibe-science/archive/vibe-science-v3.5       # v3.5 TERTIUM DATUR
 
-### Previous Versions
-
-```bash
-claude plugins add ./vibe-science/vibe-science-photonics     # photonics fork
-claude plugins add ./vibe-science/vibe-science-v5.0          # verification release (IUDEX)
-claude plugins add ./vibe-science/vibe-science-v3.5          # stable, paper version
-```
-
-### OpenAI Codex
-
-```bash
-# The Codex version is in vibe-science-v5.0-codex/
-# Follow instructions in vibe-science-v5.0-codex/README.md
+# OpenAI Codex port:
+# See archive/vibe-science-v5.0-codex/README.md
 ```
 
 ### Manual (any LLM interface)
