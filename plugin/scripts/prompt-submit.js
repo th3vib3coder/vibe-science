@@ -224,16 +224,29 @@ process.stdin.on('end', () => {
 
     main(event)
         .then(result => {
-            process.stdout.write(JSON.stringify(result));
+            // Claude Code UserPromptSubmit protocol:
+            // stdout with exit 0 → added to context
+            // hookSpecificOutput.additionalContext → added to context
+            const contextParts = [];
+            contextParts.push(`[AGENT ROLE] ${result.agentRole || 'researcher'}`);
+            if (result.additionalContext) {
+                contextParts.push(result.additionalContext);
+            }
+            const output = {
+                hookSpecificOutput: {
+                    hookEventName: 'UserPromptSubmit',
+                    additionalContext: contextParts.join('\n'),
+                },
+            };
+            if (result.warnings && result.warnings.length > 0) {
+                output.systemMessage = result.warnings.join('; ');
+            }
+            process.stdout.write(JSON.stringify(output));
             process.exit(0);
         })
         .catch(err => {
-            // Never crash -- return minimal result on error
-            const fallback = {
-                agentRole: 'researcher',
-                error: err.message,
-            };
-            process.stdout.write(JSON.stringify(fallback));
+            // Never crash -- return minimal context on error
+            process.stderr.write(`PromptSubmit hook error: ${err.message}\n`);
             process.exit(0);
         });
 });

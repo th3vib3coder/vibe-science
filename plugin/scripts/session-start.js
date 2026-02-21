@@ -223,6 +223,21 @@ async function main(event) {
     const projectPath = event.project_path || event.cwd || process.cwd();
     const warnings = [];
 
+    // ---- 0. Auto-setup: run setup.js if DB doesn't exist (replaces "Setup" hook) --
+    const globalDbPath = join(homedir(), '.vibe-science', 'db', 'vibe-science.db');
+    if (!existsSync(globalDbPath)) {
+        try {
+            const setupPath = join(__dirname, 'setup.js');
+            if (existsSync(setupPath)) {
+                const { execSync } = await import('node:child_process');
+                execSync(`node "${setupPath}"`, { stdio: 'pipe', timeout: 30000 });
+                warnings.push('First run: auto-setup completed.');
+            }
+        } catch (err) {
+            warnings.push(`Auto-setup failed: ${err.message}. Run 'node plugin/scripts/setup.js' manually.`);
+        }
+    }
+
     // ---- 1. Open DB and register session ------------------------------------
     let db = null;
     let dbAvailable = false;
@@ -371,17 +386,32 @@ process.stdin.on('end', () => {
 
     main(event)
         .then(result => {
-            process.stdout.write(JSON.stringify(result));
+            // Claude Code SessionStart protocol:
+            // stdout with exit 0 → injected as context
+            // Use hookSpecificOutput.additionalContext for structured output
+            const output = {
+                hookSpecificOutput: {
+                    hookEventName: 'SessionStart',
+                    additionalContext: result.context,
+                },
+            };
+            if (result.warnings && result.warnings.length > 0) {
+                output.systemMessage = result.warnings.join('; ');
+            }
+            process.stdout.write(JSON.stringify(output));
             process.exit(0);
         })
         .catch(err => {
             // Never crash -- return minimal context on error
-            const fallback = {
-                sessionId: randomUUID(),
-                context: '--- VIBE SCIENCE CONTEXT ---\n[STATE] Hook error. Starting with no context.\n--- END CONTEXT ---',
-                error: err.message,
+            const fallbackContext = '--- VIBE SCIENCE CONTEXT ---\n[STATE] Hook error. Starting with no context.\n--- END CONTEXT ---';
+            const output = {
+                hookSpecificOutput: {
+                    hookEventName: 'SessionStart',
+                    additionalContext: fallbackContext,
+                },
+                systemMessage: `SessionStart hook error: ${err.message}`,
             };
-            process.stdout.write(JSON.stringify(fallback));
+            process.stdout.write(JSON.stringify(output));
             process.exit(0);
         });
 });

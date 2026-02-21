@@ -189,10 +189,20 @@ process.stdin.on('data', chunk => input += chunk);
 process.stdin.on('end', () => {
     const event = JSON.parse(input || '{}');
     main(event).then(result => {
-        process.stdout.write(JSON.stringify(result));
-        process.exit(result.exitCode === 2 ? 2 : 0);
+        // Claude Code Stop protocol:
+        //   exit 2 + stderr = block stop, stderr shown to Claude
+        //   JSON {"decision":"block","reason":"..."} = block stop with reason
+        //   exit 0 = allow stop
+        if (result.exitCode === 2) {
+            const reason = result.message || 'Stop blocked by enforcement check.';
+            process.stderr.write(reason);
+            process.exit(2);
+        }
+        // Allow stop
+        process.exit(0);
     }).catch(err => {
-        process.stderr.write(err.message);
-        process.exit(1);
+        // Never block due to our own bugs
+        process.stderr.write(`Stop hook error: ${err.message}\n`);
+        process.exit(0);
     });
 });

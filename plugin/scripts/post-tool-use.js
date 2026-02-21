@@ -94,12 +94,23 @@ process.stdin.on('data', chunk => input += chunk);
 process.stdin.on('end', () => {
     const event = JSON.parse(input || '{}');
     main(event).then(result => {
-        process.stdout.write(JSON.stringify(result));
-        process.exit(result.exitCode === 2 ? 2 : 0);
+        // Claude Code PostToolUse protocol:
+        //   exit 0 = allow (stdout in transcript only)
+        //   exit 2 = block (stderr fed to Claude)
+        //   JSON {"decision":"block","reason":"..."} on stdout = block with reason
+        if (result.exitCode === 2) {
+            const reason = result.stderr || result.reason || 'Gate enforcement blocked this action.';
+            process.stderr.write(reason);
+            process.exit(2);
+        }
+        if (result.stderr) {
+            // Non-blocking warning — shown to user
+            process.stderr.write(result.stderr);
+        }
+        process.exit(0);
     }).catch(err => {
         process.stderr.write(`PostToolUse internal error: ${err.message}\n${err.stack || ''}`);
         // Exit 0 on internal errors -- never block due to our own bugs
-        process.stdout.write(JSON.stringify({ exitCode: 0 }));
         process.exit(0);
     });
 });
