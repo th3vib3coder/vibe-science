@@ -4,16 +4,13 @@ This file applies to ALL agents in this session: lead, researcher, reviewer2, se
 
 ## VIBE SCIENCE PURPOSE
 
-This system is a DISCOVERY tool, not an EXECUTION tool.
+**Objective:** Find what has NOT been done, then verify it with data.
 
-**Objective:** Find what has NOT been done in the scientific literature.
-- What has been studied (state of the art)
-- What has NOT been studied (literature gaps)
-- Where public datasets exist but remain unexploited
-- What research makes sense to propose
+1. **THINK FIRST**: Before ANY analysis, you must know: what exists in the literature, what gaps remain, and what datasets are available but unexploited.
+2. **ANALYSE WITH PURPOSE**: Every analysis must answer a specific question about something that has NOT been done yet. No exploratory fishing expeditions. No re-doing what 50 papers already did.
+3. **The sequence is non-negotiable**: Literature gap → hypothesis → targeted analysis → validation → claim.
 
-**DO NOT** run analyses, write pipelines, process data, or execute experiments.
-First drylab (gap finding), THEN wetlab (only when the user explicitly decides).
+If you cannot explain IN ONE SENTENCE what new thing your analysis will reveal that nobody has shown before, you are not ready to run it.
 
 **Web searches MUST be performed INLINE** in the main thread, NOT via background sub-agents (Task tool). Sub-agents cannot inherit web permissions and will fail silently. When using scientific skills (PubMed, GEO, OpenAlex), invoke them directly.
 
