@@ -199,7 +199,7 @@ Cross-session learning for R2:
 
 | Hook | When | What It Does |
 |------|------|-------------|
-| **Setup** | Plugin install | Creates `~/.vibe-science/`, initializes SQLite DB, loads sqlite-vec |
+| **Setup** | Plugin install | Creates `~/.vibe-science/`, initializes SQLite DB, installs dependencies (smart marker), launches embedding worker daemon |
 | **SessionStart** | New conversation | Creates session, builds ~700-token context, loads R2 calibration |
 | **UserPromptSubmit** | Every user message | Identifies agent role, logs prompt hash (privacy), semantic recall |
 | **PostToolUse** | Every tool action | **Gate enforcement**, permission check, auto-log to Spine, observer |
@@ -220,6 +220,16 @@ calibration_log       ← R2 calibration data
 prompt_log            ← SHA-256 hashes only (privacy)
 embed_queue           ← async vector embedding queue
 ```
+
+Foreign keys: `calibration_log.session_id` and `prompt_log.session_id` reference `sessions(id)`. Index `idx_prompt_session` accelerates per-session prompt lookups.
+
+### Embedding Strategy
+
+v6.0 uses real ML embeddings for semantic search via the `all-MiniLM-L6-v2` model (~23 MB quantized ONNX). The worker daemon (`worker-embed.js`) processes the `embed_queue` table asynchronously:
+
+- **Lazy model loading** — the transformer model is downloaded and cached on first use via `@huggingface/transformers`
+- **Hash fallback** — if ML embedding fails (e.g., missing ONNX runtime), a deterministic SHA-256 hash vector provides graceful degradation
+- **Async batch processing** — embeddings are computed in background ticks, keeping hook latency at zero
 
 ### Literature Engine (102 Databases)
 
@@ -245,7 +255,7 @@ Everything. The entire v5.5 ORO skill is preserved unchanged:
 |-----------|------:|---------|
 | `post-tool-use.js` | 1,482 | Gate enforcement, permissions, auto-logging, observer |
 | `session-start.js` | 387 | Context injection, R2 calibration, domain config |
-| `worker-embed.js` | 389 | Background embedding daemon |
+| `worker-embed.js` | 519 | Background embedding daemon |
 | `gate-engine.js` | 630 | DQ/DC/DD/L-1+ gate logic |
 | `db.js` | ~500 | SQLite wrapper with prepared statement cache |
 | `prompt-submit.js` | 239 | Agent identification, semantic recall |
@@ -256,9 +266,9 @@ Everything. The entire v5.5 ORO skill is preserved unchanged:
 | `r2-calibration.js` | 196 | Cross-session R2 learning |
 | `schema.sql` | ~250 | 11 tables + indices |
 | `stop.js` | 171 | Session end enforcement |
-| `setup.js` | 181 | DB initialization, dependency check |
+| `setup.js` | 363 | DB init, dependency install, worker daemon launch |
 | `literature-registry.json` | ~800 | 102 databases, 12 categories |
-| **Total new code** | **~5,500+** | |
+| **Total new code** | **~6,600+** | |
 
 ---
 
@@ -983,7 +993,7 @@ vibe-science/
 ├── LICENSE                     ← Apache 2.0
 ├── NOTICE                      ← Academic citation requirement
 ├── CHANGELOG.md                ← Version history (v1.0 → v6.0)
-├── package.json                ← Node.js package (better-sqlite3)
+├── package.json                ← Node.js package (better-sqlite3, @huggingface/transformers, onnxruntime-node)
 ├── logos/                      ← Version-specific SVG logos
 │   ├── logo-v3.5.svg ... logo-v6.0.svg
 │
@@ -1045,7 +1055,7 @@ vibe-science/
 ### v6.0 NEXUS (Recommended — Plugin + Skill)
 
 ```bash
-git clone https://github.com/th3vib3coder/vibe-science.git
+git clone https://github.com/vibe-science-contributors/vibe-science.git
 cd vibe-science
 
 # Install dependencies
@@ -1057,11 +1067,15 @@ claude plugins add .
 
 **Requirements:** Node.js >= 18.0.0, Claude Code with plugin support.
 
+Manual worker start: `npm run worker` (normally auto-launched by setup).
+
 The plugin will automatically:
 1. Create `~/.vibe-science/` with DB and logs directories
 2. Initialize the SQLite database (11 tables)
 3. Attempt to load sqlite-vec for vector search (falls back to keyword search)
 4. Inject ~700 tokens of context at each session start
+5. Launch the background embedding worker daemon
+6. Download the all-MiniLM-L6-v2 model (~23 MB quantized) on first worker run
 
 ### Previous Versions (in `archive/`)
 
@@ -1098,13 +1112,13 @@ This repository documents the evolution of Vibe Science for the **VibeX 2026** p
 
 If you use Vibe Science in your research, please cite:
 
-> Russo, C. & Bertelli, E. (MD) (2026). *Vibe Science: an AI-native research engine with adversarial review and serendipity tracking.* https://github.com/th3vib3coder/vibe-science · DOI: [10.5281/zenodo.18665031](https://doi.org/10.5281/zenodo.18665031)
+> Vibe Science Contributors (2026). *Vibe Science: an AI-native research engine with adversarial review and serendipity tracking.* https://github.com/vibe-science-contributors/vibe-science · DOI: [10.5281/zenodo.18665031](https://doi.org/10.5281/zenodo.18665031)
 
 ---
 
 Se utilizzi Vibe Science nella tua ricerca, ti chiediamo di citare:
 
-> Russo, C. & Bertelli, E. (MD) (2026). *Vibe Science: un motore di ricerca AI-nativo con revisione avversariale e tracciamento della serendipità.* https://github.com/th3vib3coder/vibe-science · DOI: [10.5281/zenodo.18665031](https://doi.org/10.5281/zenodo.18665031)
+> Vibe Science Contributors (2026). *Vibe Science: un motore di ricerca AI-nativo con revisione avversariale e tracciamento della serendipità.* https://github.com/vibe-science-contributors/vibe-science · DOI: [10.5281/zenodo.18665031](https://doi.org/10.5281/zenodo.18665031)
 
 ---
 
@@ -1112,11 +1126,11 @@ Se utilizzi Vibe Science nella tua ricerca, ti chiediamo di citare:
 
 Apache 2.0 — see [LICENSE](LICENSE).
 
-© 2026 Carmine Russo & Dr. Elisa Bertelli (MD)
+© 2026 Vibe Science Contributors
 
 ## Authors
 
-**[Carmine Russo](https://github.com/th3vib3coder)** · **Dr. Elisa Bertelli (MD)**
+**Vibe Science Contributors**
 
 ---
 
