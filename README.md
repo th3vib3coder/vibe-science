@@ -84,9 +84,6 @@ None of these were hallucinations. The data was real. The statistics were correc
 | [**v5.0 Codex**](archive/vibe-science-v5.0-codex/) | IUDEX | Same as v5.0 | OpenAI Codex port (condensed SKILL.md, no hooks/TEAM) | 10 | 27 |
 | [**Photonics**](archive/vibe-science-photonics/) | ORO-PHOTONICS | OTAE-Tree + Expert Knowledge | v5.5 fork for photonics: R2-Physics, HE0-HE3, Expert Knowledge Injection | 10 | 36 |
 
-<p align="center">
-  <img src="logos/logo-v6.0.svg" alt="v6.0" width="700">
-</p>
 
 ---
 
