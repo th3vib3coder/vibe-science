@@ -138,10 +138,11 @@ Both point to the same scripts in `plugin/scripts/`. The "Setup" event does not 
 
 These are the **actually implemented** hooks:
 
-- **SessionStart hook** (`session-start.js`): Runs at every session start. Auto-runs setup if DB doesn't exist. Opens DB, creates session record (UUID), builds progressive context (state snapshot, observer alerts, R2 calibration data, pending serendipity seeds), injects ~700-token context string via `hookSpecificOutput.additionalContext`.
+- **SessionStart hook** (`session-start.js`): Runs at every session start. Auto-runs setup if DB doesn't exist. Opens DB, creates session record (UUID), builds progressive context (state snapshot, observer alerts, R2 calibration data, pending serendipity seeds, cross-session research patterns), injects ~700-token context string via `hookSpecificOutput.additionalContext`.
 - **UserPromptSubmit hook** (`prompt-submit.js`): Runs before each user prompt is processed. Identifies agent role (from explicit role or prompt keywords), logs prompt hash to DB (privacy-preserving), performs semantic recall via vector search on first 500 chars of prompt, returns recalled memories via `hookSpecificOutput.additionalContext`.
 - **PostToolUse hook** (`post-tool-use.js`): Runs after every tool invocation. Central enforcement point with 5 sections: (0) Literature search auto-detection — registers WebSearch/WebFetch/Read with scientific patterns; (1) Gate enforcement — DQ4 sync check (FINDINGS.md vs JSON source), CLAIM-LEDGER prerequisite gates, **Salvagente Rule** (killed claims MUST produce serendipity seed), L-1+ literature search gate for direction nodes; (2) Permission enforcement — role-based access control in TEAM mode; (3) Auto-logging — research spine entries + embedding queue; (4) Observer checks — periodic project health (stale STATE.md, FINDINGS/JSON desync, orphaned data, design-execution drift, literature staleness, **seed escalation** after 50+ actions, **score >= 15 interrupt**). Exit code 2 + stderr provides advisory feedback to Claude (tool already ran).
-- **Stop hook** (`stop.js`): Runs when agent is about to end session. (1) Generates template-based narrative summary, saves to DB + embed queue; (2) Enforcement check — blocks stop (exit 2 + stderr) if unreviewed claims exist (LAW 4: R2 is co-pilot); (3) State export — updates `.vibe-science/STATE.md` from DB for resumability (LAW 7).
+- **Stop hook** (`stop.js`): Runs when agent is about to end session. (1) Generates template-based narrative summary, saves to DB + embed queue; (2) Enforcement check — blocks stop (exit 2 + stderr) if unreviewed claims exist (LAW 4: R2 is co-pilot); (3) State export — updates `.vibe-science/STATE.md` from DB for resumability (LAW 7); (4) Pattern extraction — analyzes cross-session data for recurring gate failures, repeated actions, and claim lifecycle patterns (stored in `research_patterns` table).
+- **PreCompact hook** (`pre-compact.js`): Runs before context compaction (auto or manual). Snapshots active claims, pending seeds, spine entry count, and STATE.md content to DB. Enables LAW 7 recovery post-compaction. Cannot block compaction (exit 0 always).
 
 All hooks degrade gracefully if the DB is unavailable (e.g., `better-sqlite3` not installed). They never hard-crash — infrastructure failure should not block the agent.
 
@@ -156,6 +157,7 @@ All hooks degrade gracefully if the DB is unavailable (e.g., `better-sqlite3` no
 [ALERTS] WARN: STATE.md not updated in 48h
 [R2 CALIBRATION] R2 historically weak on: sample size checks
 [PENDING SEEDS] 2 seeds awaiting triage: SD-003 (score 12), SD-004 (score 15)
+[PATTERNS] GATE_FAILURE_CLUSTER: Gate DQ4 recurring failure (conf: 0.75, seen: 4x)
 --- END CONTEXT ---
 ```
 
@@ -166,6 +168,8 @@ All hooks degrade gracefully if the DB is unavailable (e.g., `better-sqlite3` no
 - `OBSERVER HALT: STATE.md has not been updated in N hours (>72h limit). Update STATE.md before continuing.`
 - `SALVAGENTE FAIL: Claim C-XXX was killed but no serendipity seed was produced. LAW: R2 must produce a serendipity seed when killing a claim.`
 - `SEED ESCALATION: Serendipity seed SD-XXX (score >= 15) has not been triaged after N actions. INTERRUPT: triage this seed now.`
+
+**PreCompact** saves state silently (no agent-visible output). Logged as COMPACT_SNAPSHOT spine entry for session-start recovery.
 
 **Stop** exit 2 stderr pattern (blocks session end):
 - `STOP BLOCKED: N unreviewed claims without R2 review: C-001, C-002, ... LAW 4: R2 is co-pilot.`

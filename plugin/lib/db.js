@@ -538,6 +538,113 @@ export function openAndInit(dbPath, schemaPath) {
     return db;
 }
 
+// =====================================================
+// Research pattern helpers
+// =====================================================
+
+/**
+ * Insert or update a research pattern.
+ * If same type+description exists for this project, increment occurrences and update confidence.
+ *
+ * @param {import('better-sqlite3').Database} db
+ * @param {object} pattern
+ * @param {string} pattern.pattern_type - GATE_FAILURE_CLUSTER, REPEATED_ACTION, CLAIM_LIFECYCLE
+ * @param {string} pattern.description
+ * @param {string|string[]} pattern.evidence - JSON array of supporting observations
+ * @param {number} pattern.confidence - 0.0-1.0
+ * @param {string} pattern.project_path
+ * @returns {import('better-sqlite3').RunResult}
+ */
+export function upsertPattern(db, pattern) {
+    const now = new Date().toISOString();
+    const evidence = Array.isArray(pattern.evidence)
+        ? JSON.stringify(pattern.evidence)
+        : pattern.evidence;
+
+    // Check if this pattern already exists
+    const existing = stmt(db,
+        `SELECT id, occurrences, evidence FROM research_patterns
+         WHERE pattern_type = ? AND description = ? AND project_path = ? AND active = 1`
+    ).get(pattern.pattern_type, pattern.description, pattern.project_path);
+
+    if (existing) {
+        // Merge evidence arrays
+        let mergedEvidence;
+        try {
+            const oldEv = JSON.parse(existing.evidence);
+            const newEv = JSON.parse(evidence);
+            mergedEvidence = JSON.stringify([...oldEv, ...newEv].slice(-20)); // Keep last 20
+        } catch {
+            mergedEvidence = evidence;
+        }
+
+        return stmt(db,
+            `UPDATE research_patterns
+             SET occurrences = occurrences + 1,
+                 confidence = MIN(1.0, MAX(confidence, ?) + 0.1),
+                 evidence = ?,
+                 last_seen = ?
+             WHERE id = ?`
+        ).run(pattern.confidence, mergedEvidence, now, existing.id);
+    }
+
+    return stmt(db,
+        `INSERT INTO research_patterns
+            (pattern_type, description, evidence, confidence, occurrences, first_seen, last_seen, project_path, active)
+         VALUES (?, ?, ?, ?, 1, ?, ?, ?, 1)`
+    ).run(
+        pattern.pattern_type,
+        pattern.description,
+        evidence,
+        pattern.confidence,
+        now, now,
+        pattern.project_path
+    );
+}
+
+/**
+ * Get active patterns for a project.
+ * Applies temporal decay (-0.02/week from last_seen).
+ * Archives patterns below 0.2 confidence.
+ *
+ * @param {import('better-sqlite3').Database} db
+ * @param {string} projectPath
+ * @returns {object[]} Active patterns with decayed confidence
+ */
+export function getActivePatterns(db, projectPath) {
+    const patterns = stmt(db,
+        `SELECT * FROM research_patterns
+         WHERE project_path = ? AND active = 1
+         ORDER BY confidence DESC, occurrences DESC`
+    ).all(projectPath);
+
+    const now = Date.now();
+    const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+    const result = [];
+
+    for (const p of patterns) {
+        const lastSeenTs = new Date(p.last_seen).getTime();
+        const ageWeeks = isNaN(lastSeenTs) ? 0 : Math.max(0, (now - lastSeenTs) / msPerWeek);
+        const decayedConfidence = p.confidence * Math.exp(-0.02 * ageWeeks);
+
+        if (decayedConfidence < 0.2) {
+            // Archive stale patterns
+            stmt(db,
+                `UPDATE research_patterns SET active = 0 WHERE id = ?`
+            ).run(p.id);
+            continue;
+        }
+
+        result.push({
+            ...p,
+            confidence: decayedConfidence,
+            evidence: (() => { try { return JSON.parse(p.evidence); } catch { return []; } })()
+        });
+    }
+
+    return result;
+}
+
 export default {
     openDB,
     initDB,
@@ -555,5 +662,7 @@ export default {
     getClaimHistory,
     getUnresolvedAlerts,
     createAlert,
-    queueForEmbedding
+    queueForEmbedding,
+    upsertPattern,
+    getActivePatterns
 };

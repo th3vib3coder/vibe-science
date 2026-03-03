@@ -40,6 +40,16 @@
           }
         ]
       }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/plugin/scripts/pre-compact.js\""
+          }
+        ]
+      }
     ]
   }
 }

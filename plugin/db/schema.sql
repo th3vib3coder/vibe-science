@@ -219,3 +219,23 @@ CREATE TABLE IF NOT EXISTS embed_queue (
     processed INTEGER DEFAULT 0
 );
 CREATE INDEX IF NOT EXISTS idx_embed_pending ON embed_queue(processed) WHERE processed = 0;
+
+-- =====================================================
+-- PATTERNS: Cross-session research pattern extraction
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS research_patterns (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    pattern_type TEXT NOT NULL,
+    -- GATE_FAILURE_CLUSTER, REPEATED_ACTION, CLAIM_LIFECYCLE
+    description TEXT NOT NULL,
+    evidence TEXT NOT NULL,          -- JSON array of supporting observations
+    confidence REAL NOT NULL,        -- 0.0-1.0, decays -0.02/week
+    occurrences INTEGER DEFAULT 1,
+    first_seen TEXT NOT NULL,
+    last_seen TEXT NOT NULL,
+    project_path TEXT NOT NULL,
+    active INTEGER DEFAULT 1
+);
+CREATE INDEX IF NOT EXISTS idx_patterns_project ON research_patterns(project_path, active);
+CREATE INDEX IF NOT EXISTS idx_patterns_type ON research_patterns(pattern_type);

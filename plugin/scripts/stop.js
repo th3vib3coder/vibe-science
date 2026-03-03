@@ -19,27 +19,44 @@
 
 // Dynamic imports — graceful if better-sqlite3 or other native deps missing
 let openDB, initDB, closeDB, endSession, generateNarrativeSummary, updateStateMdFromDB, queueForEmbedding;
+let upsertPattern = () => {};
+let extractPatterns = () => [];
+
 try {
     const dbMod = await import('../lib/db.js');
     openDB = dbMod.openDB;
     initDB = dbMod.initDB;
     closeDB = dbMod.closeDB;
     endSession = dbMod.endSession;
-
-    const narMod = await import('../lib/narrative-engine.js');
-    generateNarrativeSummary = narMod.generateNarrativeSummary;
-    updateStateMdFromDB = narMod.updateStateMdFromDB;
-
-    const vecMod = await import('../lib/vec-search.js');
-    queueForEmbedding = vecMod.queueForEmbedding;
+    upsertPattern = dbMod.upsertPattern;
 } catch {
     openDB = () => null;
     initDB = () => {};
     closeDB = () => {};
     endSession = () => {};
-    generateNarrativeSummary = () => 'Session summary unavailable (DB not installed).';
-    updateStateMdFromDB = () => {};
+}
+
+try {
+    const narMod = await import('../lib/narrative-engine.js');
+    generateNarrativeSummary = narMod.generateNarrativeSummary;
+    updateStateMdFromDB = narMod.updateStateMdFromDB;
+} catch {
+    generateNarrativeSummary = () => ({ text: 'Session summary unavailable (narrative-engine not loaded).', tokenEstimate: 0 });
+    updateStateMdFromDB = async () => {};
+}
+
+try {
+    const vecMod = await import('../lib/vec-search.js');
+    queueForEmbedding = vecMod.queueForEmbedding;
+} catch {
     queueForEmbedding = () => {};
+}
+
+try {
+    const patMod = await import('../lib/pattern-extractor.js');
+    extractPatterns = patMod.extractPatterns;
+} catch {
+    // pattern-extractor.js not available — degraded mode
 }
 
 // =====================================================
@@ -172,6 +189,22 @@ async function main(event) {
         // =========================================================
 
         await updateStateMdFromDB(db, sessionId, projectPath);
+
+        // =========================================================
+        // 4. PATTERN EXTRACTION (cross-session recurring patterns)
+        // =========================================================
+
+        try {
+            const patterns = extractPatterns(db, projectPath, sessionId);
+            for (const pattern of patterns) {
+                upsertPattern(db, {
+                    ...pattern,
+                    project_path: projectPath
+                });
+            }
+        } catch {
+            // Pattern extraction is non-critical — never block stop
+        }
 
         return {
             exitCode: 0,

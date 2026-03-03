@@ -31,7 +31,7 @@ const __dirname = dirname(__filename);
 // inline fallbacks so the hook never crashes.
 // ---------------------------------------------------------------------------
 
-let openDB, closeDB, createSession, getLastSession, getUnresolvedAlerts;
+let openDB, closeDB, createSession, getLastSession, getUnresolvedAlerts, getActivePatterns;
 let loadR2CalibrationData;
 
 try {
@@ -41,9 +41,11 @@ try {
     createSession = dbMod.createSession;
     getLastSession = dbMod.getLastSession;
     getUnresolvedAlerts = dbMod.getUnresolvedAlerts;
+    getActivePatterns = dbMod.getActivePatterns;
 } catch {
     // db.js not available -- will use null db path below
     openDB = null;
+    getActivePatterns = null;
 }
 
 try {
@@ -144,7 +146,7 @@ function fallbackBuildContext(db, projectPath, _sessionId) {
     return context;
 }
 
-function fallbackFormatContext(context, alerts, r2Stats) {
+function fallbackFormatContext(context, alerts, r2Stats, researchPatterns) {
     const parts = [];
 
     parts.push('--- VIBE SCIENCE CONTEXT ---');
@@ -180,6 +182,15 @@ function fallbackFormatContext(context, alerts, r2Stats) {
         parts.push('[PENDING SEEDS]');
         for (const s of context.pendingSeeds) {
             parts.push(`  - ${s.seed_id}: ${truncate(s.causal_question, 100)} (score: ${s.score})`);
+        }
+    }
+
+    // Research patterns (cross-session)
+    const effectivePatterns = researchPatterns || [];
+    if (effectivePatterns.length > 0) {
+        parts.push('[PATTERNS]');
+        for (const p of effectivePatterns.slice(0, 5)) {
+            parts.push(`  - [${p.pattern_type}] ${p.description} (conf: ${p.confidence.toFixed(2)}, seen: ${p.occurrences}x)`);
         }
     }
 
@@ -268,6 +279,7 @@ async function main(event) {
     let context;
     let alerts = [];
     let r2Stats = { hint: null, topWeaknesses: [], totalReviews: 0 };
+    let researchPatterns = [];
 
     if (db && dbAvailable) {
         // Use external context-builder if available, otherwise fallback
@@ -304,6 +316,15 @@ async function main(event) {
         } catch (err) {
             warnings.push(`R2 calibration load failed: ${err.message}`);
         }
+
+        // ---- 4b. Load cross-session research patterns ----------------------
+        try {
+            if (getActivePatterns) {
+                researchPatterns = getActivePatterns(db, projectPath);
+            }
+        } catch (err) {
+            warnings.push(`Pattern load failed: ${err.message}`);
+        }
     } else {
         // No DB -- minimal context
         context = {
@@ -328,11 +349,21 @@ async function main(event) {
         if (formatContextForInjection) {
             contextString = formatContextForInjection(context, alerts, r2Stats);
         } else {
-            contextString = fallbackFormatContext(context, alerts, r2Stats);
+            contextString = fallbackFormatContext(context, alerts, r2Stats, researchPatterns);
         }
     } catch (err) {
         warnings.push(`Context format failed: ${err.message}`);
         contextString = '--- VIBE SCIENCE CONTEXT ---\n[STATE] Context formatting error.\n--- END CONTEXT ---';
+    }
+
+    // Append cross-session patterns (works with both formatters)
+    if (researchPatterns.length > 0 && formatContextForInjection) {
+        // External formatter doesn't know about patterns yet — inject before END marker
+        const patternLines = researchPatterns.slice(0, 5).map(
+            p => `  - [${p.pattern_type}] ${p.description} (conf: ${p.confidence.toFixed(2)}, seen: ${p.occurrences}x)`
+        );
+        const patternBlock = '\n[PATTERNS]\n' + patternLines.join('\n');
+        contextString = contextString.replace('--- END CONTEXT ---', patternBlock + '\n--- END CONTEXT ---');
     }
 
     // Append domain info if available

@@ -3,6 +3,21 @@
 // Blueprint v6.0 Section 6.3-6.5
 
 /**
+ * Compute exponential decay weight based on age.
+ * @param {string} timestamp - ISO 8601 timestamp of the data point
+ * @param {number} [decayRate=0.02] - Decay per week (0.02 = 2% per week)
+ * @returns {number} Weight between 0 and 1 (1 = now, ~0.37 at 50 weeks)
+ */
+function computeDecayWeight(timestamp, decayRate = 0.02) {
+    if (!timestamp) return 1; // Missing timestamp — treat as recent (no decay)
+    const ts = new Date(timestamp).getTime();
+    if (isNaN(ts)) return 1; // Invalid timestamp — treat as recent (no decay)
+    const ageMs = Date.now() - ts;
+    const ageWeeks = ageMs / (7 * 24 * 60 * 60 * 1000);
+    return Math.exp(-decayRate * Math.max(0, ageWeeks));
+}
+
+/**
  * Load R2 calibration data from recent reviews.
  * Used at SessionStart to inject hints about R2's historical weaknesses.
  */
@@ -10,7 +25,7 @@ export function loadR2CalibrationData(db, projectPath) {
     // Last 20 reviews from last 10 sessions for this project
     const recentReviews = db.prepare(`
         SELECT review_mode, r2_weaknesses, sfi_caught, sfi_injected,
-               sfi_missed, j0_score
+               sfi_missed, j0_score, timestamp
         FROM r2_reviews
         WHERE session_id IN (
             SELECT id FROM sessions WHERE project_path = ?
@@ -29,14 +44,15 @@ export function loadR2CalibrationData(db, projectPath) {
         };
     }
 
-    // Analyze weakness patterns
+    // Analyze weakness patterns (with temporal decay)
     const weaknessPatterns = {};
     for (const review of recentReviews) {
         if (review.r2_weaknesses) {
             try {
                 const weaknesses = JSON.parse(review.r2_weaknesses);
+                const weight = computeDecayWeight(review.timestamp);
                 for (const w of weaknesses) {
-                    weaknessPatterns[w] = (weaknessPatterns[w] || 0) + 1;
+                    weaknessPatterns[w] = (weaknessPatterns[w] || 0) + weight;
                 }
             } catch { /* skip malformed JSON */ }
         }
@@ -59,17 +75,23 @@ export function loadR2CalibrationData(db, projectPath) {
         `).all(projectPath);
     } catch { /* json_each may not work on all SQLite builds */ }
 
-    // J0 score trend
-    const j0Scores = recentReviews
+    // J0 score trend (with temporal decay weighting)
+    const j0Data = recentReviews
         .filter(r => r.j0_score !== null && r.j0_score !== undefined)
-        .map(r => r.j0_score);
+        .map(r => ({ score: r.j0_score, weight: computeDecayWeight(r.timestamp) }));
 
     let j0Trend = 'insufficient_data';
-    if (j0Scores.length >= 6) {
-        const recentAvg = j0Scores.slice(0, 3).reduce((a, b) => a + b, 0) / 3;
-        const olderAvg = j0Scores.slice(-3).reduce((a, b) => a + b, 0) / 3;
+    if (j0Data.length >= 6) {
+        const recent3 = j0Data.slice(0, 3);
+        const older3 = j0Data.slice(-3);
+        const weightedAvg = (arr) => {
+            const totalW = arr.reduce((s, d) => s + d.weight, 0);
+            return totalW > 0 ? arr.reduce((s, d) => s + d.score * d.weight, 0) / totalW : 0;
+        };
+        const recentAvg = weightedAvg(recent3);
+        const olderAvg = weightedAvg(older3);
         j0Trend = recentAvg > olderAvg ? 'improving' : recentAvg < olderAvg ? 'declining' : 'stable';
-    } else if (j0Scores.length >= 3) {
+    } else if (j0Data.length >= 3) {
         j0Trend = 'early_data';
     }
 
@@ -94,8 +116,8 @@ function generateR2Hint(weaknesses, sfiStats, j0Trend) {
 
     // Weakness-based hints
     const sorted = Object.entries(weaknesses).sort((a, b) => b[1] - a[1]);
-    if (sorted.length > 0 && sorted[0][1] >= 2) {
-        hints.push(`R2 ha storicamente mancato "${sorted[0][0]}" ${sorted[0][1]} volte. Priorita' alta.`);
+    if (sorted.length > 0 && sorted[0][1] >= 1.5) {
+        hints.push(`R2 ha storicamente mancato "${sorted[0][0]}" (peso decaduto: ${sorted[0][1].toFixed(1)}). Priorita' alta.`);
     }
 
     // SFI-based hints
