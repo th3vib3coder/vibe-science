@@ -195,7 +195,7 @@ The stage mapping is set during Phase 0 COMMIT and stored in RQ.md.
 
 | Situation | Stage | Action |
 |-----------|-------|--------|
-| Serendipity INTERRUPT (score >= 12) | Any | Create serendipity node regardless of stage |
+| Serendipity INTERRUPT (score >= 15) | Any | Create serendipity node regardless of stage |
 | R2 VETO on entire approach | Any | Can force return to Stage 1 or Phase 0 |
 | All Stage 1 nodes fail | 1 | Revisit Phase 0 hypothesis |
 | No improvement in Stage 2 | 2 | Consider Stage 1 approach was wrong |

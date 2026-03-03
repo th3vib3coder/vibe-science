@@ -30,7 +30,7 @@ Tree mode is set at session initialization (Phase 0 COMMIT) and stored in STATE.
 | `hyperparameter` | Stage 2 | good node | 2 | Parameter variation |
 | `ablation` | Stage 4 | best node | 4 | Remove one component to test contribution |
 | `replication` | Stage 4-5 | good node | 4-5 | Same config, different seed |
-| `serendipity` | Any stage | any node (the trigger node) | Any | Unexpected branch from serendipity detection (score >= 12) |
+| `serendipity` | Any stage | any node (the trigger node) | Any | Unexpected branch from serendipity detection (score >= 15) |
 
 ### Node Type Constraints
 

@@ -1,6 +1,6 @@
 ---
 name: vibe-science
-description: "Scientific research engine v6.0 NEXUS with adversarial review, tree search over hypotheses, 34 quality gates (8 schema-enforced), serendipity detection, hook-based enforcement, cross-session learning, and temporal decay calibration. Use this skill whenever the user mentions research, hypotheses, scientific analysis, experimental design, literature review, data validation, quality gates, claim verification, reproducibility, or any task where correctness matters more than speed. Also use when the user wants to explore a dataset scientifically, validate findings against literature, run computational experiments with adversarial review, or hunt for unexpected patterns. Do NOT use for simple Q&A, code editing without research context, or non-scientific tasks."
+description: "Scientific research engine v6.0 NEXUS with adversarial review, tree search over hypotheses, 32 quality gates (8 schema-enforced), serendipity detection, hook-based enforcement, cross-session learning, and temporal decay calibration. Use this skill whenever the user mentions research, hypotheses, scientific analysis, experimental design, literature review, data validation, quality gates, claim verification, reproducibility, or any task where correctness matters more than speed. Also use when the user wants to explore a dataset scientifically, validate findings against literature, run computational experiments with adversarial review, or hunt for unexpected patterns. Do NOT use for simple Q&A, code editing without research context, or non-scientific tasks."
 license: Apache-2.0
 compatibility: "Claude Code. Python 3.8+ for enforcement scripts."
 metadata:
@@ -10,7 +10,7 @@ metadata:
 
 # Vibe Science v6.0 NEXUS — Observe · Recall · Operate
 
-> Research engine: agentic tree search over hypotheses, adversarial review by separate sub-agent, 34 quality gates (8 schema-enforced), serendipity detection, hook-based enforcement, cross-session learning, temporal decay calibration. Infinite loops until discovery.
+> Research engine: agentic tree search over hypotheses, adversarial review by separate sub-agent, 32 quality gates (8 schema-enforced), serendipity detection, hook-based enforcement, cross-session learning, temporal decay calibration. Infinite loops until discovery.
 
 ## WHY THIS SKILL EXISTS
 
@@ -43,7 +43,7 @@ In Claude Code, R2 is a **separate sub-agent** launched via the Task tool with i
 
 **LAW 1: DATA-FIRST** — No thesis without evidence from data. `NO DATA = NO GO.`
 **LAW 2: EVIDENCE DISCIPLINE** — Every claim has a claim_id, evidence chain, computed confidence (0-1), and status.
-**LAW 3: GATES BLOCK** — 34 quality gates are hard stops. Fix first, re-gate, then continue.
+**LAW 3: GATES BLOCK** — 32 quality gates are hard stops. Fix first, re-gate, then continue.
 **LAW 4: REVIEWER 2 IS CO-PILOT** — R2 can VETO, REDIRECT, FORCE re-investigation. Non-negotiable.
 **LAW 5: SERENDIPITY IS THE MISSION** — Hunt for the unexpected at every cycle. Score >= 10 → QUEUE. >= 15 → INTERRUPT.
 **LAW 6: ARTIFACTS OVER PROSE** — If a step can produce a file, it MUST.
@@ -111,7 +111,7 @@ R2-DEEP as sub-agent (via Task tool) means it has NO access to the researcher's 
 ### Banner
 ```
 VIBE SCIENCE v6.0 NEXUS — Observe · Recall · Operate
-HOOKS → SFI → BFP → R2 ENSEMBLE → V0/J0 → GATES (34 total, 8 schema-enforced)
+HOOKS → SFI → BFP → R2 ENSEMBLE → V0/J0 → GATES (32 total, 8 schema-enforced)
 SERENDIPITY RADAR · RESEARCH SPINE · OBSERVER · DQ1-DQ4
 PATTERNS · INSTINCTS · TEMPORAL DECAY · HANDOFF PROTOCOL
 Detect · Persist · Demolish · Discover · Learn
@@ -351,7 +351,7 @@ Three-part process: DETECTION → PERSISTENCE → VALIDATION.
 
 ---
 
-## GATES (34 Total)
+## GATES (32 Total)
 
 | Category | Gates | Count | Schema-Enforced |
 |----------|-------|-------|-----------------|
@@ -366,7 +366,7 @@ Three-part process: DETECTION → PERSISTENCE → VALIDATION.
 | Design Compliance | DC0 | 1 | — |
 | Vigilance | V0 | 1 | V0 (vigilance-check) |
 | Judge | J0 | 1 | — |
-| **Total** | | **34** | **8 schema-enforced** |
+| **Total** | | **32** | **8 schema-enforced** |
 
 ### Key Gate Summaries
 
@@ -515,7 +515,7 @@ Load ONLY when needed. Never load all at once.
 | Minor finding | ACCUMULATE — batch review at 3 |
 | Major finding | GATE — stop → verification → R2 FORCED |
 | Serendipity observation | LOG+TRIAGE → serendipity-engine |
-| Cross-branch pattern | SERENDIPITY — score → if >= 12: create node |
+| Cross-branch pattern | SERENDIPITY — score → if >= 15: INTERRUPT — create node |
 | Dead end on current path | PIVOT — document → try alternative → escalate if none |
 | No data available | **STOP** — LAW 1: NO DATA = NO GO |
 | Confidence explosion (>0.30/2cyc) | **FORCED R2** — possible confirmation bias |

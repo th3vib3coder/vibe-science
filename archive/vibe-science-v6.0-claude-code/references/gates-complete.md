@@ -1,6 +1,6 @@
-# Quality Gates v5.5 — Complete Reference (34 Gates)
+# Quality Gates v5.5 — Complete Reference (32 Gates)
 
-> v5.0: V0, J0, 8 schema-enforced, T3 exploration, S5 poison pill. v5.5: DQ1-DQ4, DD0, DC0, L-1. **34 gates, 8 schema-enforced.**
+> v5.0: V0, J0, 8 schema-enforced, T3 exploration, S5 poison pill. v5.5: DQ1-DQ4, DD0, DC0, L-1. **32 gates, 8 schema-enforced.**
 
 ## 1. Gate Philosophy
 
@@ -320,4 +320,4 @@ Schemas are READ-ONLY. Protocol: `references/schema-validation.md`.
 | Design Compliance | DC0 | 1 | -- | DC0 |
 | Vigilance | V0 | 1 | V0 | -- |
 | Judge | J0 | 1 | -- | -- |
-| **Total** | | **34** | **8** | **7 new** |
+| **Total** | | **32** | **8** | **7 new** |

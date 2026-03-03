@@ -199,7 +199,7 @@ After generating domain-internal hypotheses, force at least 1 cross-domain colli
 4. Identify:
    - Where the analogy HOLDS → potential mechanism insight
    - Where the analogy BREAKS → that's the research frontier
-5. Score the collision hypothesis using the serendipity formula (0-15)
+5. Score the collision hypothesis using the serendipity formula (0-20)
 6. If score >= 8 → promote to hypothesis list with tag `[COLLISION]`
 7. If score < 8 → log in `00-brainstorm/hypotheses.md` as "Explored collision, dismissed because [reason]"
 
@@ -208,7 +208,7 @@ After generating domain-internal hypotheses, force at least 1 cross-domain colli
 ## Cross-Domain Collision Hypotheses
 | Our Mechanism | Other Domain | Analogy | Where It Breaks | Serendipity Score | Status |
 |---|---|---|---|---|---|
-| [mechanism] | [domain: principle] | [analogy] | [frontier] | X/15 | PROMOTED / LOGGED |
+| [mechanism] | [domain: principle] | [analogy] | [frontier] | X/20 | PROMOTED / LOGGED |
 ```
 
 **Why this matters:** Natural ideation tends toward incremental thinking. Forced cross-domain collisions generate the kind of non-obvious hypotheses that the Serendipity Engine would flag as INTERRUPT — but at brainstorming time, before any resources are spent.
@@ -250,7 +250,7 @@ After scoring all hypotheses, check for productive tensions that should be prese
 **Protocol:**
 1. Compare the top 2 scored hypotheses
 2. If BOTH conditions are true:
-   - Score difference < 10% (e.g., 8.2 vs 7.6 on a 0-15 scale)
+   - Score difference < 10% (e.g., 8.2 vs 7.6 on a 0-20 scale)
    - They represent genuinely DIFFERENT paradigms (not minor variations)
    Then: **PRESERVE BOTH.** Do NOT eliminate one.
 3. Document: "H-A is preferred IF [condition]. H-B is preferred IF [condition]."

@@ -4,7 +4,7 @@
 
 ## Schema-Enforced Gates
 
-8 of 34 gates (the highest-stakes ones) require schema-valid artifacts, plus the serendipity-seed object.
+8 of 32 gates (the highest-stakes ones) require schema-valid artifacts, plus the serendipity-seed object.
 
 | Gate | Schema File | What It Enforces |
 |------|-------------|-----------------|
@@ -67,20 +67,23 @@ Schema validation ensures **structural completeness** (all required fields prese
 
 ## Schema File Locations
 
-All schema files live in the `assets/schemas/` directory at the skill root:
+All 12 schema files live in the `assets/schemas/` directory at the skill root:
 
 ```
 assets/
   schemas/
+    brainstorm-quality.schema.json
     claim-promotion.schema.json
+    data-quality-gate.schema.json      # utility — DQ1-DQ4 artifact structure
+    finding-validation.schema.json     # utility — R2 INLINE finding validation
+    review-completeness.schema.json
     rq-conclusion.schema.json
+    serendipity-seed.schema.json
+    source-validity.schema.json
+    spine-entry.schema.json            # utility — Research Spine entry structure
     stage4-exit.schema.json
     stage5-exit.schema.json
-    source-validity.schema.json
-    review-completeness.schema.json
-    brainstorm-quality.schema.json
     vigilance-check.schema.json
-    serendipity-seed.schema.json
 ```
 
 ---
@@ -89,4 +92,4 @@ assets/
 
 The `gate_check.py` script works unchanged in Claude Code environments. It requires only Python 3.8+ stdlib (no external dependencies). JSON Schema validation is performed by the script's built-in lightweight validator — no `jsonschema` library needed.
 
-All 9 schema files in `assets/schemas/` are platform-agnostic and work identically in Claude Code environments.
+All 12 schema files in `assets/schemas/` are platform-agnostic and work identically in Claude Code environments.

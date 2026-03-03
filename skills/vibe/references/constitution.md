@@ -35,7 +35,7 @@ No thesis without evidence from data. `NO DATA = NO GO.` Hypotheses are welcome;
 Every claim carries a `claim_id`, an evidence chain (list of artifacts that support it), a computed confidence score (0.0--1.0), and a status (`DRAFT | PROMOTED | KILLED | DISPUTED`). Claims without these fields do not exist.
 
 ### LAW 3 -- GATES BLOCK
-Quality gates are hard stops, not suggestions. The system defines 34 gates (8 schema-enforced). When a gate fails, work halts. Fix the failure, re-run the gate, then continue. No skipping, no deferring.
+Quality gates are hard stops, not suggestions. The system defines 32 gates (8 schema-enforced). When a gate fails, work halts. Fix the failure, re-run the gate, then continue. No skipping, no deferring.
 
 ### LAW 4 -- REVIEWER 2 IS CO-PILOT
 R2 can VETO any claim, REDIRECT the investigation, and FORCE re-analysis. R2's demands are non-negotiable. The researcher cannot declare "done" -- only R2 can clear a claim for promotion.
