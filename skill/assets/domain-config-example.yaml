@@ -1,0 +1,82 @@
+# Vibe Science v5.5 — Domain Configuration Example
+# Copy this file to your project as domain-config.yaml and customize.
+# If no domain-config.yaml is present, Vibe Science uses generic defaults.
+
+# Domain identification
+domain:
+  name: "example-domain"
+  description: "Example domain configuration showing all configurable fields"
+
+# DQ Gate thresholds (override defaults in scripts/dq_gate.py)
+thresholds:
+  dq_gates:
+    # DQ1: Post-Extraction
+    dq1_max_missing_frac: 0.50       # Max fraction of missing values per feature
+    dq1_max_label_corr: 0.95         # Max |correlation| with label (leakage check)
+
+    # DQ2: Post-Training
+    dq2_min_cv_stability: 0.50       # Max coefficient of variation across folds
+    dq2_max_feature_importance_frac: 0.50  # Max single-feature importance fraction
+
+    # DQ3: Post-Calibration
+    dq3_perfect_threshold: 0.001     # Threshold for "suspiciously perfect" results
+
+    # DQ4: Post-Finding
+    dq4_number_tolerance: 0.001      # Numeric tolerance for SSOT sync check
+
+# R2-Domain reviewer checklist
+# These checks are loaded by the R2-Domain reviewer sub-agent
+r2_domain:
+  checklist:
+    - "Are the methods standard for this domain?"
+    - "Are the metrics appropriate for the data type?"
+    - "Are domain-specific confounders addressed?"
+    - "Is the data preprocessing appropriate?"
+    - "Are the results plausible given domain knowledge?"
+
+# Domain-specific metrics (added to metric-parser.md defaults)
+metrics:
+  custom: []
+  # Example:
+  # custom:
+  #   - name: coverage
+  #     direction: maximize
+  #     range: [0, 1]
+  #     notes: "Prediction interval coverage"
+  #   - name: interval_width
+  #     direction: minimize
+  #     range: [0, inf]
+  #     notes: "Average prediction interval width"
+
+# SFI domain-specific faults (added to meta-faults in fault-taxonomy.yaml)
+sfi:
+  domain_faults: []
+  # Example:
+  # domain_faults:
+  #   - id: DOM-01a
+  #     category: domain_impossibility
+  #     description: "Claim contradicts established domain knowledge"
+  #     example: "Effect claimed in conditions where it cannot operate"
+  #     difficulty: MEDIUM
+  #     equivalence_risk: LOW
+  #     status: ACTIVE
+
+# Observer domain-specific checks
+observer:
+  custom_checks: []
+  # Example:
+  # custom_checks:
+  #   - name: "data_format_check"
+  #     description: "Verify data files are in expected domain format"
+  #     level: WARN
+
+# Literature search configuration
+literature:
+  databases: ["PubMed", "Google Scholar", "arXiv"]
+  # Domain-specific databases:
+  # databases: ["PubMed", "bioRxiv", "GEO", "CellxGene"]
+  search_strategies:
+    - keyword
+    - snowball
+    - author_trail
+    - citation_tracking

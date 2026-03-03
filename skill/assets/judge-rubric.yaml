@@ -1,0 +1,77 @@
+# Judge Agent (R3) Rubric — Vibe Science v5.5 ORO
+# Purpose: Structured scoring of R2 review quality (NOT claim quality)
+# Applies to: FORCED reviews only (BATCH/SHADOW exempt)
+
+rubric:
+  specificity:
+    weight: 1
+    scores:
+      0: "Absent — no specific references to claims or evidence"
+      1: "Superficial — references claims by ID but critique is generic"
+      2: "Adequate — identifies specific flaws with evidence locations"
+      3: "Exemplary — pinpoints exact lines, values, or steps that fail"
+
+  counter_evidence_search:
+    weight: 1
+    scores:
+      0: "Absent — no external search performed"
+      1: "Superficial — searched but only confirming sources"
+      2: "Adequate — searched for contradictions in 1 database"
+      3: "Exemplary — searched 2+ databases for contradictions, prior art, known artifacts"
+
+  confounder_analysis:
+    weight: 1
+    scores:
+      0: "Absent — no confounder discussion"
+      1: "Superficial — mentions confounders generically"
+      2: "Adequate — identifies specific confounders for specific claims"
+      3: "Exemplary — demands and designs specific tests for each confounder"
+
+  falsification_demand:
+    weight: 1
+    scores:
+      0: "Absent — no falsification tests requested"
+      1: "Superficial — generic 'more testing needed'"
+      2: "Adequate — specific tests requested for major claims"
+      3: "Exemplary — specific tests with expected outcomes if claim is false"
+
+  independence:
+    weight: 1
+    scores:
+      0: "Absent — review echoes researcher's framing"
+      1: "Superficial — some original analysis but mostly follows researcher's structure"
+      2: "Adequate — independent structure with some original observations"
+      3: "Exemplary — completely independent analysis, discovers issues researcher didn't anticipate"
+
+  escalation:
+    weight: 1
+    scores:
+      0: "Absent — no demands or actions"
+      1: "Superficial — generic demands without deadlines"
+      2: "Adequate — specific demands with priorities"
+      3: "Exemplary — specific demands with deadlines, clear PASS/FAIL criteria"
+
+scoring:
+  total_possible: 18
+  pass_threshold: 12
+  weak_pass_range: [9, 11]
+  fail_below: 9
+
+j0_gate:
+  min_total: 12
+  no_zero_dimensions: true
+  min_counter_evidence: 2
+  consecutive_fail_escalation: 2
+
+anti_gaming:
+  penalize_verbosity: false
+  reward_specificity: true
+  note: >
+    Brevity is not penalized. A 3-line review that identifies a specific
+    fatal flaw with evidence scores higher than a 3-page review that
+    restates concerns generically.
+
+solo_mode:
+  self_consistency_n: 2
+  score_selection: "lower"
+  blind_input: true

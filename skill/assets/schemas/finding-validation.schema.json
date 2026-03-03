@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Finding Validation",
+  "description": "Schema for DQ4 post-finding document quality validation",
+  "type": "object",
+  "required": ["finding_id", "numbers_verified", "sample_size_reported", "r2_inline_checklist"],
+  "properties": {
+    "finding_id": { "type": "string" },
+    "numbers_verified": { "type": "boolean" },
+    "number_mismatches": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "location": { "type": "string" },
+          "reported": { "type": "number" },
+          "source": { "type": "number" },
+          "difference": { "type": "number" }
+        }
+      }
+    },
+    "sample_size_reported": { "type": "boolean" },
+    "sample_size": { "type": ["integer", "null"], "minimum": 0 },
+    "alternative_explanations": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "terminology_consistent": { "type": "boolean" },
+    "evidence_reference": { "type": ["string", "null"] },
+    "r2_inline_checklist": {
+      "type": "object",
+      "required": ["numbers_match", "sample_size", "alternatives", "prior_art", "confounder_risk", "reproducible", "terminology"],
+      "properties": {
+        "numbers_match": { "type": "boolean" },
+        "sample_size": { "type": "boolean" },
+        "alternatives": { "type": "boolean" },
+        "prior_art": { "type": "boolean" },
+        "confounder_risk": { "type": "boolean" },
+        "reproducible": { "type": "boolean" },
+        "terminology": { "type": "boolean" }
+      }
+    },
+    "status": { "type": "string", "enum": ["PASS", "FAIL", "WARN"] },
+    "timestamp": { "type": "string" }
+  }
+}

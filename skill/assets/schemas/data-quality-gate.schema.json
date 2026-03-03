@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Data Quality Gate Result",
+  "description": "Schema for DQ1-DQ4 gate validation artifacts",
+  "type": "object",
+  "required": ["gate", "status", "checks", "timestamp"],
+  "properties": {
+    "gate": { "type": "string", "enum": ["DQ1", "DQ2", "DQ3", "DQ4"] },
+    "status": { "type": "string", "enum": ["PASS", "FAIL"] },
+    "checks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["check", "passed", "detail"],
+        "properties": {
+          "check": { "type": "string" },
+          "passed": { "type": "boolean" },
+          "detail": { "type": "string" },
+          "flagged": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "timestamp": { "type": "string" },
+    "data_file": { "type": "string" },
+    "config_file": { "type": ["string", "null"] }
+  }
+}

@@ -1,0 +1,98 @@
+# Vibe Science v6.0 NEXUS — Claude Code Agent Configuration
+#
+# Model tiers and reasoning settings for each agent role.
+# See AGENTS.md for full role definitions with YAML frontmatter.
+# See references/multi-agent-config.md for delegation patterns.
+
+interface:
+  display_name: "Vibe Science v6.0 NEXUS"
+  short_description: "Scientific research engine with adversarial review, quality gates, serendipity detection, and cross-session learning."
+  brand_color: "#1B5E20"
+
+policy:
+  allow_implicit_invocation: true
+
+# Model tier mapping for Claude Code
+# - opus: claude-opus-4-6 (highest reasoning, use for critical roles)
+# - sonnet: claude-sonnet-4-6 (balanced speed/quality)
+# - haiku: claude-haiku-4-5 (fast, lightweight tasks)
+
+roles:
+  researcher:
+    model: opus
+    reasoning: high
+    disposition: build
+    description: "Primary agent. Builds hypotheses, runs analyses, formulates findings."
+    task_tool_config:
+      subagent_type: general-purpose
+      model: opus
+
+  r2-deep:
+    model: opus
+    reasoning: high
+    disposition: destroy
+    description: "Adversarial reviewer. FORCED/BATCH/BRAINSTORM reviews with SFI+BFP."
+    task_tool_config:
+      subagent_type: general-purpose
+      model: opus
+
+  r2-inline:
+    model: sonnet
+    reasoning: medium
+    disposition: skeptic
+    description: "Lightweight inline reviewer. 7-point checklist per finding."
+    task_tool_config:
+      subagent_type: general-purpose
+      model: sonnet
+
+  observer:
+    model: haiku
+    reasoning: low
+    disposition: detect
+    description: "Read-only project health scanner. Orphans, desync, drift."
+    task_tool_config:
+      subagent_type: general-purpose
+      model: haiku
+
+  explorer:
+    model: sonnet
+    reasoning: medium
+    disposition: explore
+    description: "Parallel tree branch investigator. Literature search, alternative hypotheses."
+    task_tool_config:
+      subagent_type: general-purpose
+      model: sonnet
+
+  r3-judge:
+    model: opus
+    reasoning: high
+    disposition: meta-review
+    description: "Reviews R2's reviews. 6-dimension rubric scoring."
+    task_tool_config:
+      subagent_type: general-purpose
+      model: opus
+
+  instinct-scanner:
+    model: haiku
+    reasoning: low
+    disposition: pattern-detect
+    description: "Scans for recurring patterns across sessions. Auto-promotes instincts."
+    task_tool_config:
+      subagent_type: general-purpose
+      model: haiku
+
+# Delegation patterns
+delegation:
+  # R2-DEEP gets separate context (native BFP)
+  # Send: claims, evidence, data artifacts, RQ.md
+  # Do NOT send: chat history, researcher justifications
+  r2_deep_pattern: "Launch via Task tool. Fresh context = native Blind-First Pass."
+
+  # Explorer gets branch-specific context
+  explorer_pattern: "Launch via Task tool with branch hypothesis + data + RQ."
+
+  # Observer is read-only
+  observer_pattern: "Launch via Task tool with project path. Read-only access."
+
+  # Web searches MUST be inline (sub-agents cannot inherit web permissions)
+  web_search_rule: "NEVER delegate web searches to sub-agents. Always inline."
