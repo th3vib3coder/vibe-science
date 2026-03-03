@@ -42,7 +42,7 @@ Hooks never use exit code 1 (hard crash) in production. Infrastructure failure d
    - **R2 calibration data** — Temporal-decay-weighted weakness summary (see `r2-calibration.md`), with hints like "R2 historically weak on batch-effect confounders"
    - **Cross-session patterns** — Extracted patterns from the `research_patterns` table (see `pattern-extraction.md`)
    - **Pending serendipity seeds** — Any seeds from previous sessions that were never followed up
-5. **Loads domain config** — Reads `domain-config.yaml` if present, applies domain-specific thresholds.
+5. **Loads domain config** — Reads `domain-config.json` if present, applies domain-specific thresholds.
 6. **Injects context** — The assembled context is returned via `hookSpecificOutput.additionalContext`, making it available to the agent without consuming the prompt.
 
 **Exit behavior:** Always exits 0. SessionStart must never block — a failed session start is worse than a session without context.

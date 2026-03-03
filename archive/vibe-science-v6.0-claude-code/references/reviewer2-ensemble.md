@@ -137,7 +137,7 @@ inline_review:
 
 ### Spawning R2 as a Sub-Agent
 
-In Codex environments, R2 reviewers are spawned as sub-agents via the Task tool. Each
+In Claude Code environments, R2 reviewers are spawned as sub-agents via the Task tool. Each
 reviewer receives: (a) the R2 system prompt with behavioral requirements (Section 2),
 (b) its specific concern scope (Section 1), and (c) the claims to review.
 
@@ -149,7 +149,7 @@ BEFORE packaging the review context for R2.
 
 | Property          | R2-DEEP                          | R2-INLINE                        |
 |-------------------|----------------------------------|----------------------------------|
-| Model             | gpt-5.3-codex                    | gpt-5.3-codex-spark              |
+| Model             | claude-opus-4-6                  | claude-sonnet-4-6                |
 | Reasoning effort  | High                             | Medium                           |
 | Used in modes     | FORCED, BATCH, VETO              | BRAINSTORM, SHADOW, REDIRECT, INLINE |
 | Token budget      | Up to 16k output                 | Up to 4k output                  |

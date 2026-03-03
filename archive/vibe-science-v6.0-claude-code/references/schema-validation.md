@@ -4,7 +4,7 @@
 
 ## Schema-Enforced Gates
 
-8 of 27 gates (the highest-stakes ones) require schema-valid artifacts, plus the serendipity-seed object.
+8 of 34 gates (the highest-stakes ones) require schema-valid artifacts, plus the serendipity-seed object.
 
 | Gate | Schema File | What It Enforces |
 |------|-------------|-----------------|
@@ -89,4 +89,4 @@ assets/
 
 The `gate_check.py` script works unchanged in Claude Code environments. It requires only Python 3.8+ stdlib (no external dependencies). JSON Schema validation is performed by the script's built-in lightweight validator — no `jsonschema` library needed.
 
-All 12 schema files in `assets/schemas/` are platform-agnostic and work identically across Codex and Claude Code.
+All 9 schema files in `assets/schemas/` are platform-agnostic and work identically in Claude Code environments.

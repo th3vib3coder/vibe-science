@@ -1,4 +1,4 @@
-# Vibe Science v5.5 Templates
+# Vibe Science v6.0 Templates
 
 All templates for creating files in the `.vibe-science/` folder structure.
 
@@ -8,7 +8,7 @@ Max 100 lines. Rewritten each cycle (not append-only).
 
 ```yaml
 ---
-vibe_science_version: 5.5.0
+vibe_science_version: 6.0.0
 rq: RQ-001
 runtime: solo
 phase: brainstorm|discovery|analysis|data|validation|pipeline|synthesis
@@ -129,7 +129,7 @@ Append-only. Never edit previous entries. Newest at top.
 
 ---
 
-## SPINE.md Template (v5.5)
+## SPINE.md Template (v6.0)
 
 ```markdown
 # Research Spine
@@ -169,7 +169,7 @@ Append-only. Never edit previous entries. Newest at top.
 
 ```json
 {
-  "version": "5.5.0",
+  "version": "6.0.0",
   "tree_mode": "branching",
   "current_stage": 1,
   "cycle": 1,

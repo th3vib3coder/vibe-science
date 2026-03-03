@@ -6,7 +6,7 @@ Anti-anchoring barrier for R2 Ensemble reviews. Forces independent assessment be
 
 **When**: Every FORCED R2 review. Not BATCH, not SHADOW, not BRAINSTORM.
 
-> **Note (v5.5):** In Codex multi-agent mode, BFP is native: the R2 sub-agent has a separate context and never sees the researcher's reasoning. The two-phase protocol described below applies to single-agent (SOLO) mode where R2 is a persona within the same context. In multi-agent mode, Phase 1 is structurally guaranteed by context isolation — the R2 agent literally cannot see the researcher's justifications until they are explicitly passed. Phase 2 still applies: the R2 agent receives full context and must reconcile with its independent assessment.
+> **Note (v6.0):** In Claude Code multi-agent mode, BFP is native: the R2 sub-agent has a separate context and never sees the researcher's reasoning. The two-phase protocol described below applies to single-agent (SOLO) mode where R2 is a persona within the same context. In multi-agent mode, Phase 1 is structurally guaranteed by context isolation — the R2 agent literally cannot see the researcher's justifications until they are explicitly passed. Phase 2 still applies: the R2 agent receives full context and must reconcile with its independent assessment.
 
 ---
 

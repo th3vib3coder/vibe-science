@@ -4,7 +4,7 @@
 
 ## Overview
 
-OTAE = Observe → Think → Act → Evaluate → Checkpoint → Crystallize. Adapted from OpenAI Codex agent loop for scientific research.
+OTAE = Observe → Think → Act → Evaluate → Checkpoint → Crystallize. Adapted for Claude Code multi-agent architecture for scientific research.
 
 v3.5 had a flat OTAE loop: cycle 1 → cycle 2 → cycle 3 → ...
 
@@ -88,7 +88,7 @@ After reading, you should know:
    - Stage 3: `draft` (creative variants)
    - Stage 4: `ablation` or `replication`
    - Any stage: `debug` (if parent is buggy, max 3 attempts)
-   - Any stage: `serendipity` (if score >= 12)
+   - Any stage: `serendipity` (if score >= 15)
 7. What would falsify the parent node's result? (mandatory question)
 8. Plan the specific action for this node
 
@@ -193,9 +193,9 @@ Run the full 5-scan protocol (see serendipity-engine.md):
 2. **CROSS-BRANCH SCAN** (tree mode only): Compare with sibling branches. Pattern visible only when comparing? Two branches failing for different reasons suggesting a third approach?
 3. **CONTRADICTION SCAN**: Contradicts any claim in CLAIM-LEDGER? Contradicts published finding in knowledge base?
 4. **CONNECTION SCAN**: Connects to a different RQ? Echoes a pattern from a different domain? Unexpected similarity to an unrelated paper?
-5. **SCORE** (0-15): Data availability (0-3) + Potential impact (0-3) + Connection strength (0-3) + Novelty (0-3) + Feasibility (0-3)
+5. **SCORE** (0-20): Data availability (0-3) + Potential impact (0-3) + Connection strength (0-3) + Novelty (0-3) + Feasibility (0-3) + Falsifiability (0-3) + Urgency (0-2)
 
-Response: 0-3 NOISE → log and move on | 4-7 FILE → log with details | 8-11 QUEUE → create tagged entry for Serendipity Sprint | 12-15 INTERRUPT → STOP, create serendipity node, triage immediately
+Response: 0-4 NOISE → log and move on | 5-9 FILE → log with details | 10-14 QUEUE → create tagged entry for Serendipity Sprint | 15-20 INTERRUPT → STOP, create serendipity node, triage immediately
 
 ### Gate Application
 

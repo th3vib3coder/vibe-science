@@ -105,7 +105,7 @@ A conforming seed has the following structure:
 
 ```yaml
 seed_id: SEED-YYYYMMDD-NNN
-status: PENDING_TRIAGE | QUEUED | TESTING | KILLED | PROMOTED_TO_CLAIM
+status: PENDING_TRIAGE | QUEUED | EXPLORED | KILLED
 source: SCANNER | SALVAGED_FROM_R2 | CROSS_BRANCH | USER
 score: 0-20
 

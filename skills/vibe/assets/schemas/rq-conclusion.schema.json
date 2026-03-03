@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vibe-science-v5.0/rq-conclusion",
+  "title": "RQ Conclusion Gate Artifact (D2)",
+  "description": "Artifact produced when a Research Question passes Gate D2 (RQ Conclusion). Enforces that all claims are referenced by ID with status VERIFIED, CONFIRMED, or ROBUST (no UNVERIFIED claims allowed), R2 final verdict is present, tree snapshot is referenced, and all completion flags are true.",
+  "type": "object",
+  "required": [
+    "rq_id",
+    "conclusion_text",
+    "claims",
+    "r2_final_verdict",
+    "tree_snapshot_ref",
+    "knowledge_base_updated",
+    "progress_complete",
+    "all_confounder_harnesses_complete",
+    "concluded_at"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "rq_id": {
+      "type": "string",
+      "pattern": "^RQ-\\d{3,}$",
+      "description": "Research Question identifier (e.g. RQ-001, RQ-042)"
+    },
+    "conclusion_text": {
+      "type": "string",
+      "minLength": 20,
+      "description": "Natural-language conclusion for this Research Question, summarizing findings and their implications"
+    },
+    "claims": {
+      "type": "array",
+      "minItems": 1,
+      "description": "All claims referenced in this conclusion. Every claim must have a terminal status (VERIFIED, CONFIRMED, or ROBUST) — no UNVERIFIED claims are permitted.",
+      "items": {
+        "$ref": "#/$defs/ClaimReference"
+      }
+    },
+    "r2_final_verdict": {
+      "$ref": "#/$defs/R2FinalVerdict",
+      "description": "Final R2 ensemble verdict for this RQ conclusion"
+    },
+    "tree_snapshot_ref": {
+      "type": "string",
+      "minLength": 1,
+      "description": "File path to the final tree visualization snapshot (e.g. 08-tree/tree-final-snapshot.png)"
+    },
+    "knowledge_base_updated": {
+      "type": "boolean",
+      "const": true,
+      "description": "Must be true: knowledge base has been updated with all findings from this RQ"
+    },
+    "progress_complete": {
+      "type": "boolean",
+      "const": true,
+      "description": "Must be true: PROGRESS.md is complete with no gaps"
+    },
+    "all_confounder_harnesses_complete": {
+      "type": "boolean",
+      "const": true,
+      "description": "Must be true: all promoted claims have passed their confounder harness (LAW 9)"
+    },
+    "concluded_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of conclusion through Gate D2"
+    }
+  },
+  "$defs": {
+    "ClaimReference": {
+      "type": "object",
+      "required": [
+        "claim_id",
+        "final_status",
+        "confidence_score",
+        "confounder_harness_verdict"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "claim_id": {
+          "type": "string",
+          "pattern": "^C-\\d{3,}$",
+          "description": "Claim identifier matching the CLAIM-LEDGER (e.g. C-001, C-042)"
+        },
+        "final_status": {
+          "type": "string",
+          "enum": ["VERIFIED", "CONFIRMED", "ROBUST"],
+          "description": "Terminal status of the claim. Only VERIFIED, CONFIRMED, or ROBUST are allowed in a conclusion — UNVERIFIED claims must be resolved or excluded before Gate D2 can pass."
+        },
+        "confidence_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Final geometric confidence score from the Evidence Engine (0-1)"
+        },
+        "confounder_harness_verdict": {
+          "type": "string",
+          "enum": ["ROBUST", "CONFOUNDED"],
+          "description": "Confounder harness verdict. ARTIFACT is not allowed in a conclusion — only ROBUST or CONFOUNDED claims may appear."
+        }
+      }
+    },
+    "R2FinalVerdict": {
+      "type": "object",
+      "required": [
+        "verdict",
+        "report_id",
+        "reviewed_at"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "verdict": {
+          "type": "string",
+          "enum": ["ACCEPT", "WEAK_ACCEPT"],
+          "description": "R2 ensemble final verdict. Only ACCEPT or WEAK_ACCEPT allow the conclusion to proceed — REJECT blocks Gate D2."
+        },
+        "report_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Identifier of the R2 ensemble report that produced this verdict"
+        },
+        "reviewed_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of the final R2 ensemble review"
+        }
+      }
+    }
+  }
+}

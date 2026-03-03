@@ -1,0 +1,154 @@
+# Vibe Science v5.5 ORO — Seeded Fault Injection (SFI) Taxonomy
+# Purpose: Meta-faults injected into claim sets before R2 review.
+#          R2 knows CATEGORIES but not WHICH faults hit WHICH claims.
+# Owner:   Human architect only — LLM MUST NOT generate or modify faults.
+# Domain:  These are DOMAIN-AGNOSTIC meta-faults. Domain-specific faults
+#          should be added via domain-config.yaml.
+
+metadata:
+  version: "5.5.0"
+  min_active_per_category: 2
+  retirement_threshold: 3
+  fault_generation: HUMAN_ONLY
+
+# Meta-faults: domain-independent structural errors
+meta_faults:
+  # META-01: Claim type misclassification
+  - id: META-01a
+    category: claim_type_misclassification
+    description: Causal claim labeled as descriptive, or vice versa
+    example: "'X causes Y' but evidence is correlational — labeled DESCRIPTIVE"
+    difficulty: MEDIUM
+    equivalence_risk: HIGH
+    status: ACTIVE
+  - id: META-01b
+    category: claim_type_misclassification
+    description: Inference claim presented as directly observed data
+    example: "Model interpretation presented as empirical finding"
+    difficulty: HARD
+    equivalence_risk: HIGH
+    status: ACTIVE
+
+  # META-02: Cherry-picked citation
+  - id: META-02a
+    category: cherry_picked_citation
+    description: Source exists but does not support the claim as stated
+    example: "Paper reports effect in one context; claim generalizes without qualification"
+    difficulty: HARD
+    equivalence_risk: HIGH
+    status: ACTIVE
+  - id: META-02b
+    category: cherry_picked_citation
+    description: Citation misattributed — real paper, wrong finding
+    example: "Author cited for method X — paper actually describes method Y"
+    difficulty: HARD
+    equivalence_risk: MEDIUM
+    status: ACTIVE
+
+  # META-03: P-hacking narrative
+  - id: META-03a
+    category: p_hacking_narrative
+    description: Multiple comparisons reframed as single pre-specified hypothesis
+    example: "20 subgroup analyses; one significant result presented as primary"
+    difficulty: HARD
+    equivalence_risk: HIGH
+    status: ACTIVE
+  - id: META-03b
+    category: p_hacking_narrative
+    description: Post-hoc hypothesis presented as a priori
+    example: "Observed pattern → hypothesis → presented as predicted"
+    difficulty: MEDIUM
+    equivalence_risk: HIGH
+    status: ACTIVE
+
+  # META-04: Confounded claim
+  - id: META-04a
+    category: confounded_claim
+    description: Statistical signal that reverses under proper conditioning
+    example: "Strong correlation disappears when controlling for obvious confounder"
+    difficulty: HARD
+    equivalence_risk: HIGH
+    status: ACTIVE
+  - id: META-04b
+    category: confounded_claim
+    description: Correlation driven by batch/group effect, not studied variable
+    example: "Performance difference disappears after controlling for data source"
+    difficulty: MEDIUM
+    equivalence_risk: MEDIUM
+    status: ACTIVE
+
+  # META-05: Already-known finding
+  - id: META-05a
+    category: already_known_finding
+    description: Established knowledge presented as novel discovery
+    example: "Well-documented phenomenon rediscovered without citation"
+    difficulty: EASY
+    equivalence_risk: LOW
+    status: ACTIVE
+  - id: META-05b
+    category: already_known_finding
+    description: Standard methodological result presented as domain insight
+    example: "Known statistical property of the method presented as domain finding"
+    difficulty: EASY
+    equivalence_risk: LOW
+    status: ACTIVE
+
+  # META-06: Noise-as-signal
+  - id: META-06a
+    category: noise_as_signal
+    description: Effect size below meaningful threshold presented as finding
+    example: "Cohen's d = 0.07 labeled as meaningful effect"
+    difficulty: EASY
+    equivalence_risk: MEDIUM
+    status: ACTIVE
+  - id: META-06b
+    category: noise_as_signal
+    description: Variance-dominated signal treated as deterministic pattern
+    example: "3% improvement with CI spanning zero called 'robust improvement'"
+    difficulty: MEDIUM
+    equivalence_risk: MEDIUM
+    status: ACTIVE
+
+  # META-07: Citation fabrication
+  - id: META-07a
+    category: citation_fabrication
+    description: DOI does not resolve to any published work
+    example: "DOI returns 404 — paper does not exist"
+    difficulty: EASY
+    equivalence_risk: LOW
+    status: ACTIVE
+  - id: META-07b
+    category: citation_fabrication
+    description: Real DOI but paper is entirely unrelated to the claim
+    example: "Valid DOI to a paper on unrelated topic"
+    difficulty: MEDIUM
+    equivalence_risk: LOW
+    status: ACTIVE
+
+  # META-08: Missing control
+  - id: META-08a
+    category: missing_control
+    description: Performance reported without appropriate baseline comparison
+    example: "87% accuracy 'high' — random baseline gives 84% on imbalanced data"
+    difficulty: EASY
+    equivalence_risk: LOW
+    status: ACTIVE
+  - id: META-08b
+    category: missing_control
+    description: Treatment effect without negative control
+    example: "Improvement claimed without comparing to untreated/default condition"
+    difficulty: MEDIUM
+    equivalence_risk: MEDIUM
+    status: ACTIVE
+
+# Domain-specific faults: loaded from domain-config.yaml if present
+# To add domain faults, create a domain-config.yaml with:
+#   sfi:
+#     domain_faults:
+#       - id: DOM-01a
+#         category: domain_impossibility
+#         description: "..."
+#         example: "..."
+#         difficulty: MEDIUM
+#         equivalence_risk: LOW
+#         status: ACTIVE

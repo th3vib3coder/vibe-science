@@ -1,0 +1,229 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vibe-science-v5.0/review-completeness",
+  "title": "Review Completeness Gate Artifact (L2)",
+  "description": "Artifact produced when Gate L2 (Review Completeness) passes. Certifies that all major findings have been reviewed by the R2 ensemble, all fatal flaws resolved or findings rejected, all demanded evidence provided or findings downgraded, and counter-evidence explicitly searched for every conclusion.",
+  "type": "object",
+  "required": [
+    "review_scope_id",
+    "r2_ensemble_reports",
+    "fatal_flaws",
+    "demanded_evidence",
+    "counter_evidence_searches",
+    "all_findings_reviewed",
+    "checked_at"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "review_scope_id": {
+      "type": "string",
+      "description": "Unique identifier for the scope of this review (e.g., an RQ ID, sprint ID, or analysis batch ID)."
+    },
+    "r2_ensemble_reports": {
+      "type": "array",
+      "description": "References to R2 ensemble review reports. Every major finding must appear in at least one report.",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/R2EnsembleReport"
+      }
+    },
+    "fatal_flaws": {
+      "type": "array",
+      "description": "All fatal flaws identified during R2 review. May be empty if no fatal flaws were found. Every entry must include a resolution.",
+      "items": {
+        "$ref": "#/$defs/FatalFlaw"
+      }
+    },
+    "demanded_evidence": {
+      "type": "array",
+      "description": "All evidence demands raised during R2 review. Each must be satisfied (PROVIDED) or the associated finding downgraded.",
+      "items": {
+        "$ref": "#/$defs/DemandedEvidence"
+      }
+    },
+    "counter_evidence_searches": {
+      "type": "array",
+      "description": "Counter-evidence searches performed for every conclusion. At least one search must be recorded.",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/CounterEvidenceSearch"
+      }
+    },
+    "all_findings_reviewed": {
+      "type": "boolean",
+      "const": true,
+      "description": "Must be true. Asserts that all major findings have been reviewed by the R2 ensemble. Gate L2 cannot pass if any finding was skipped."
+    },
+    "checked_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of when this gate check was performed."
+    }
+  },
+  "$defs": {
+    "R2EnsembleReport": {
+      "type": "object",
+      "description": "A reference to an R2 ensemble review report for a specific finding.",
+      "required": [
+        "report_id",
+        "finding_id",
+        "verdict",
+        "reviewed_at"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "report_id": {
+          "type": "string",
+          "description": "Unique identifier for the R2 ensemble report (e.g., R2-20260215-001)."
+        },
+        "finding_id": {
+          "type": "string",
+          "description": "Identifier of the finding that was reviewed (e.g., FINDING-003)."
+        },
+        "verdict": {
+          "type": "string",
+          "description": "The R2 ensemble verdict for this finding (e.g., ACCEPT, WEAK_ACCEPT, REVISE, REJECT)."
+        },
+        "reviewed_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of when the ensemble review was completed."
+        }
+      }
+    },
+    "FatalFlaw": {
+      "type": "object",
+      "description": "A fatal flaw identified during R2 review. Every flaw must have a resolution before Gate L2 can pass.",
+      "required": [
+        "flaw_id",
+        "description",
+        "resolution",
+        "resolution_details"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "flaw_id": {
+          "type": "string",
+          "description": "Unique identifier for the fatal flaw (e.g., FLAW-001)."
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of the fatal flaw."
+        },
+        "resolution": {
+          "type": "string",
+          "enum": ["RESOLVED", "FINDING_REJECTED"],
+          "description": "How the flaw was addressed: RESOLVED means the flaw was fixed, FINDING_REJECTED means the associated finding was dropped."
+        },
+        "resolution_details": {
+          "type": "string",
+          "description": "Detailed explanation of how the flaw was resolved or why the finding was rejected."
+        }
+      }
+    },
+    "DemandedEvidence": {
+      "type": "object",
+      "description": "An evidence demand raised during R2 review. Must be satisfied or the finding downgraded.",
+      "required": [
+        "demand_id",
+        "description",
+        "status"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "demand_id": {
+          "type": "string",
+          "description": "Unique identifier for the evidence demand (e.g., DEMAND-001)."
+        },
+        "description": {
+          "type": "string",
+          "description": "What evidence was demanded and why."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["PROVIDED", "FINDING_DOWNGRADED"],
+          "description": "Whether the demanded evidence was provided or the finding was downgraded instead."
+        },
+        "evidence_ref": {
+          "type": ["string", "null"],
+          "description": "Reference to the evidence that was provided (e.g., a DOI, file path, or claim ID). Required when status is PROVIDED; null when status is FINDING_DOWNGRADED."
+        }
+      },
+      "if": {
+        "properties": {
+          "status": { "const": "PROVIDED" }
+        }
+      },
+      "then": {
+        "required": ["demand_id", "description", "status", "evidence_ref"],
+        "properties": {
+          "evidence_ref": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "CounterEvidenceSearch": {
+      "type": "object",
+      "description": "Documents a counter-evidence search performed for a specific claim or conclusion.",
+      "required": [
+        "claim_id",
+        "databases_searched",
+        "contradictions_found",
+        "search_date"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "claim_id": {
+          "type": "string",
+          "description": "Identifier of the claim or conclusion for which counter-evidence was searched (e.g., CLAIM-007)."
+        },
+        "databases_searched": {
+          "type": "array",
+          "description": "List of databases or sources searched for contradicting evidence.",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "contradictions_found": {
+          "type": "array",
+          "description": "Contradicting evidence found, if any. Empty array means no contradictions were found.",
+          "items": {
+            "$ref": "#/$defs/Contradiction"
+          }
+        },
+        "search_date": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of when the counter-evidence search was performed."
+        }
+      }
+    },
+    "Contradiction": {
+      "type": "object",
+      "description": "A piece of contradicting evidence found during counter-evidence search.",
+      "required": [
+        "source_ref",
+        "summary",
+        "impact_assessment"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "source_ref": {
+          "type": "string",
+          "description": "Reference to the contradicting source (DOI, PMID, URL, etc.)."
+        },
+        "summary": {
+          "type": "string",
+          "description": "Brief summary of the contradicting evidence."
+        },
+        "impact_assessment": {
+          "type": "string",
+          "description": "Assessment of how this contradiction affects the claim (e.g., weakens, refutes, limits scope)."
+        }
+      }
+    }
+  }
+}

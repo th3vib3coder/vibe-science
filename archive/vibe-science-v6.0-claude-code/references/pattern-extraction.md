@@ -4,7 +4,7 @@ Pattern extraction identifies recurring behaviors across sessions — failures t
 
 ---
 
-## The Three Pattern Types
+## The Four Pattern Types
 
 ### 1. GATE_FAILURE_CLUSTER
 
@@ -93,6 +93,34 @@ Where `kill_count` is the total number of claims killed for this reason. Example
 
 ---
 
+### 4. INSTINCT
+
+**Definition:** Learned behavior pattern from cross-session observation.
+
+**Why it matters:** Instincts are high-confidence patterns that have been validated across multiple sessions and promoted from other pattern types. They represent the system's accumulated wisdom about how to conduct research effectively in the current domain. When an instinct is relevant to the current context, the agent should apply it proactively rather than rediscovering the lesson.
+
+**Evidence structure:**
+
+```json
+{
+  "instinct_description": "Always run batch correction before differential expression",
+  "source_pattern_type": "CLAIM_LIFECYCLE",
+  "sessions": [
+    {"session_id": "abc123", "outcome": "applied", "timestamp": "2026-01-15T10:00:00Z"},
+    {"session_id": "def456", "outcome": "confirmed", "timestamp": "2026-01-18T14:00:00Z"}
+  ],
+  "promotion_reason": "Pattern confirmed across 4+ sessions with confidence >= 0.7"
+}
+```
+
+**Confidence formula:** `confidence = min(0.9, base_confidence + 0.1 * confirmations)`
+
+Where `base_confidence` is inherited from the source pattern and `confirmations` is the number of sessions where the instinct was applied successfully. Instinct confidence is capped at 0.9 — no instinct should be treated as absolute truth.
+
+**Actionable output:** "Instinct: Always run batch correction before differential expression (confidence: 0.8, confirmed in 4 sessions). Applying proactively."
+
+---
+
 ## Database Schema
 
 Patterns are stored in the `research_patterns` table:
@@ -100,7 +128,7 @@ Patterns are stored in the `research_patterns` table:
 | Column | Type | Description |
 |--------|------|-------------|
 | `id` | INTEGER PRIMARY KEY | Auto-increment ID |
-| `pattern_type` | TEXT NOT NULL | One of: `GATE_FAILURE_CLUSTER`, `REPEATED_ACTION`, `CLAIM_LIFECYCLE` |
+| `pattern_type` | TEXT NOT NULL | One of: `GATE_FAILURE_CLUSTER`, `REPEATED_ACTION`, `CLAIM_LIFECYCLE`, `INSTINCT` |
 | `description` | TEXT NOT NULL | Human-readable summary of the pattern |
 | `evidence` | TEXT (JSON) | Structured evidence (see examples above) |
 | `confidence` | REAL NOT NULL | Confidence score, 0.0 to 1.0 |

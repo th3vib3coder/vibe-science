@@ -356,7 +356,7 @@ Three-part process: DETECTION → PERSISTENCE → VALIDATION.
 | Category | Gates | Count | Schema-Enforced |
 |----------|-------|-------|-----------------|
 | Pipeline | G0-G6 | 7 | — |
-| Literature | L-1, L0-L2 | 4 | L0 (source-validity) |
+| Literature | L-1, L0-L2 | 4 | L0 (source-validity), L2 (review-completeness) |
 | Decision | D0-D2 | 3 | D1 (claim-promotion), D2 (rq-conclusion) |
 | Tree | T0-T3 | 4 | — |
 | Brainstorm | B0 | 1 | B0 (brainstorm-quality) |
