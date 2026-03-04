@@ -13,7 +13,9 @@ All notable changes to Vibe Science are documented here.
 - **seeded-fault-injection.md**: Italian SFI hint example → English
 - **v6.0-NEXUS-BLUEPRINT.md**: 5 Italian strings in pseudocode → English
 - **r2-calibration.md**: Removed non-existent `project_path` column from `r2_reviews` table doc; fixed `review_mode` enum: `INLINE, FORCED, SFI` → `INLINE, FORCED, BATCH, SHADOW, BRAINSTORM`
-- **schema.sql**: 4 Italian SQL comments → English (lines 54, 76, 119, 137)
+- **schema.sql**: 5 Italian SQL comments → English (lines 54, 76, 119, 137, 186)
+- **session-start.js**: Italian fallback state string → English ("Prima sessione su questo progetto." → "First session on this project.")
+- **context-builder.js**: Same Italian fallback string → English (2 occurrences)
 - Archive synced for all changed files
 
 ## [6.0.2] — 2026-03-04 — Hardening & Modular Rules

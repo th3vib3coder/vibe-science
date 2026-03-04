@@ -66,10 +66,10 @@ export function buildContext(db, projectPath, sessionId) {
                 `${lastSession.claims_killed ?? 0} killed.\n` +
                 `Summary: ${truncate(lastSession.narrative_summary, 200)}`;
         } else {
-            context.state = 'Prima sessione su questo progetto.';
+            context.state = 'First session on this project.';
         }
     } catch {
-        context.state = 'Prima sessione su questo progetto.';
+        context.state = 'First session on this project.';
     }
 
     // ---------------------------------------------------------------

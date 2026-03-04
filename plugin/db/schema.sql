@@ -183,7 +183,7 @@ CREATE TABLE IF NOT EXISTS prompt_log (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     session_id TEXT NOT NULL,
     agent_role TEXT,
-    prompt_hash TEXT NOT NULL,  -- SHA-256, non il prompt intero (privacy)
+    prompt_hash TEXT NOT NULL,  -- SHA-256, not the full prompt (privacy)
     timestamp TEXT NOT NULL,
     FOREIGN KEY (session_id) REFERENCES sessions(id)
 );

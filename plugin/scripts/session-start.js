@@ -84,7 +84,7 @@ function truncate(text, maxLen) {
 
 function fallbackBuildContext(db, projectPath, _sessionId) {
     const context = {
-        state: 'Prima sessione su questo progetto.',
+        state: 'First session on this project.',
         memories: [],
         pendingSeeds: [],
         alerts: [],
