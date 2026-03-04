@@ -19,9 +19,9 @@ When a task arrives, classify it:
 | **Scientific brainstorming** | **brainstorm-engine.md → scientific-brainstorming + hypothesis-generation skills** | **Gate B0 (brainstorm quality)** |
 | **Dataset discovery** | **brainstorm-engine.md → geo-database, cellxgene-census, openalex-database skills** | **Gate B0 (data availability)** |
 | Literature review | search-protocol.md → pubmed/openalex/biorxiv skills | Gate claims, track evidence, invoke reviewer |
-| scRNA-seq pipeline | analysis-orchestrator.md → scanpy + scvi-tools skills | Gate every step, enforce artifact contract |
+| Data analysis pipeline | analysis-orchestrator.md → domain-appropriate analysis skills | Gate every step, enforce artifact contract |
 | Statistical analysis | → statistical-analysis + statsmodels skills | R2-Stats review, metrics validation |
-| Data exploration | → exploratory-data-analysis + anndata skills | Schema validation (Gate 0-1) |
+| Data exploration | → exploratory-data-analysis + domain data skills | Schema validation (Gate 0-1) |
 | Figure generation | → scientific-visualization + matplotlib skills | Figure in artifact contract (Gate 5, G6 VLM) |
 | Paper writing | → scientific-writing + literature-review skills | Claim verification from ledger |
 | Hypothesis generation | → hypothesis-generation + scientific-brainstorming | Reviewer ensemble on hypothesis |
@@ -30,19 +30,19 @@ When a task arrives, classify it:
 
 ## Routing Table: Key Skills
 
-### Single-Cell Analysis Pipeline
+### Data Analysis Pipeline
 
 | Step | Dispatch to | Vibe-Science Gate |
 |------|-----------|-------------------|
-| Load data, inspect AnnData | `anndata` skill | G0: Input Sanity |
-| QC (violin plots, filtering) | `scanpy` skill | G0: counts int, mito/ribo ok |
-| Normalize obs schema | `assets/obs-normalizer.md` (internal) | G1: Schema Compliance |
-| HVG selection | `scanpy` skill | G2: justify n_HVG choice |
-| Batch correction (scVI) | `scvi-tools` skill | G2: batch_key justified, G3: convergence |
-| Clustering | `scanpy` skill | G4: stability check |
-| DE analysis | `scanpy` or `pydeseq2` skill | G4: statistical validity |
+| Load data, inspect structure | Domain data skill (e.g., `anndata`, `polars`, `pandas`) | G0: Input Sanity |
+| QC (quality filtering) | Domain analysis skill | G0: data types correct, quality metrics ok |
+| Normalize metadata schema | `assets/obs-normalizer.md` (internal) | G1: Schema Compliance |
+| Feature selection | Domain analysis skill | G2: justify feature selection criteria |
+| Batch correction / normalization | Domain-appropriate skill | G2: batch key justified, G3: convergence |
+| Clustering / grouping | Appropriate analysis skill | G4: stability check |
+| Differential analysis | Statistical analysis skill (e.g., `pydeseq2`, `statsmodels`) | G4: statistical validity |
 | Visualization | `scientific-visualization` skill | G5: figures present |
-| Metrics (iLISI, etc.) | `scvi-tools` + custom | G4: metric table complete |
+| Metrics computation | Domain-appropriate + custom | G4: metric table complete |
 | Report | `analysis-orchestrator.md` (internal) | G5: artifact contract |
 
 ### Literature Research
@@ -122,7 +122,7 @@ Vibe-science handles these internally (no dispatch needed):
 - Confidence scoring → evidence-engine.md
 - Reviewer ensemble invocation → protocols/reviewer2-ensemble.md
 - Gate checking → gates/gates.md
-- Obs schema normalization → assets/obs-normalizer.md
+- Data schema normalization → assets/obs-normalizer.md
 - Decision logging → audit-reproducibility.md
 - Run comparison → audit-reproducibility.md
 - Template generation → assets/templates.md

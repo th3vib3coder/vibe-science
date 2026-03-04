@@ -85,20 +85,20 @@ For each parsed metric:
 | ece | minimize | [0, 1] | Expected calibration error |
 | brier | minimize | [0, 1] | Brier score |
 
-### scRNA-seq Integration
+### Clustering / Integration
 | Metric | Direction | Range | Notes |
 |--------|-----------|-------|-------|
-| ilisi | maximize | [0, 1] | Integration LISI (batch mixing) |
-| clisi | minimize | [0, 1] | Cell-type LISI (biology preservation) |
 | nmi | maximize | [0, 1] | Normalized mutual information |
 | ari | maximize | [-1, 1] | Adjusted Rand index |
-| asw_batch | maximize | [-1, 1] | Silhouette width for batch |
-| asw_label | maximize | [-1, 1] | Silhouette width for cell type |
+| asw | maximize | [-1, 1] | Average silhouette width |
+| completeness | maximize | [0, 1] | Clustering completeness score |
+| homogeneity | maximize | [0, 1] | Clustering homogeneity score |
+| v_measure | maximize | [0, 1] | Harmonic mean of completeness and homogeneity |
 
-### CRISPR Off-Target
+### Detection / Anomaly
 | Metric | Direction | Range | Notes |
 |--------|-----------|-------|-------|
-| auprc | maximize | [0, 1] | Primary metric for imbalanced off-target detection |
+| auprc | maximize | [0, 1] | Primary metric for imbalanced detection tasks |
 | auroc | maximize | [0, 1] | Secondary metric |
 | lift | maximize | [1, +inf) | Lift over random baseline (auprc / prevalence) |
 | sensitivity_at_90spec | maximize | [0, 1] | Sensitivity at 90% specificity |

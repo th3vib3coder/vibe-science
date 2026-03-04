@@ -2,6 +2,40 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.16] — 2026-03-04 — Domain generalization R29: assets/ cleanup + README reference count
+
+> **Trigger:** Round 29 paranoid deep debug — full scan of assets/, gates/, schemas/, hooks/, plugin/, and root files. Found 3 asset files with scRNA-seq/CRISPR-specific content and stale reference count in README.md.
+
+### Fixed — Domain Generalization (assets/obs-normalizer.md)
+- **Complete rewrite:** Entire file was scRNA-seq specific (AnnData `.obs`, `import scanpy as sc`, platform maps for 10X_v2/SmartSeq2/DropSeq/InDrop/CELSeq2, MT- gene prefix detection, pct_mito/pct_ribo computation, scVI references in pitfalls table). Replaced with domain-agnostic "Data Normalizer Standard" using generic DataFrame operations, collection method standardization, completeness metrics, and outlier flags.
+- **WHY:** This file defined how to normalize dataset metadata. The AnnData/.obs pattern was biology-specific. The new version works for any tabular data with categorical metadata columns.
+
+### Fixed — Domain Generalization (assets/skill-router.md)
+- **Line 22:** "scRNA-seq pipeline | analysis-orchestrator.md → scanpy + scvi-tools skills" → "Data analysis pipeline | analysis-orchestrator.md → domain-appropriate analysis skills"
+- **Line 24:** "Data exploration | → exploratory-data-analysis + anndata skills" → "Data exploration | → exploratory-data-analysis + domain data skills"
+- **Lines 33-46:** Replaced "Single-Cell Analysis Pipeline" table (AnnData, scanpy, scVI, HVG, batch_key, iLISI, obs-normalizer) with generic "Data Analysis Pipeline" table using domain-neutral terms.
+- **Line 125:** "Obs schema normalization" → "Data schema normalization"
+- **WHY:** The routing table hard-coded a single-cell workflow as if it were the only analysis type. The new version is domain-agnostic while still providing concrete examples.
+
+### Fixed — Domain Generalization (assets/metric-parser.md)
+- **Lines 88-96:** Replaced "scRNA-seq Integration" table (ilisi, clisi, asw_batch, asw_label) with "Clustering / Integration" table (nmi, ari, asw, completeness, homogeneity, v_measure).
+- **Lines 98-104:** Replaced "CRISPR Off-Target" table with "Detection / Anomaly" table (same metrics but domain-neutral naming).
+- **WHY:** Metric examples should demonstrate the parser's format, not assume a specific research domain. The new tables use standard clustering and detection metrics applicable to any field.
+
+### Fixed — README.md Reference Count
+- Updated "34 reference documents" → "36 reference documents" in 5 locations (lines 46, 145, 151, 298, 402). Actual count confirmed: 36 files in skills/vibe/references/.
+- **WHY:** Count became stale after R26 added vlm-gate.md and analysis-orchestrator.md to references/. Previous rounds updated the references but not the README count.
+
+### Flagged — assets/fault-taxonomy.yaml (HUMAN-ONLY)
+- Lines 35, 42, 50 contain CRISPR-specific examples (PAM, mismatches, cleavage). This file is marked HUMAN-ONLY modification in CLAUDE.md — flagged for user review, not modified by agent.
+
+### Validation
+- `assets/obs-normalizer.md`: 0 domain-specific terms (AnnData/scRNA/scanpy/scVI/10X/MT-/pct_mito) — CLEAN
+- `assets/skill-router.md`: `anndata` appears only as one example in "(e.g., anndata, polars, pandas)" — ACCEPTABLE
+- `assets/metric-parser.md`: 0 domain-specific terms (scRNA/CRISPR/ilisi/clisi/off-target) — CLEAN
+- `README.md`: 0 remaining "34 reference" — all updated to 36
+- Reference count verified: 36 files in skills/vibe/references/
+
 ## [6.0.15] — 2026-03-04 — Domain generalization R28: data-extraction, analysis-orchestrator, vlm-gate Unicode
 
 > **Trigger:** Round 28 paranoid deep debug — full scan of all 20 protocols/ and 36 references/ files. Found domain-specific content leakage in 2 protocol files that had been missed in earlier rounds, plus Unicode □ in vlm-gate (both copies).

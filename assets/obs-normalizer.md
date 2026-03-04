@@ -1,10 +1,10 @@
-# Obs Normalizer Standard
+# Data Normalizer Standard
 
-Standard procedure for normalizing AnnData `.obs` DataFrame to meet schema compliance (Gate 1).
+Standard procedure for normalizing a dataset's metadata DataFrame to meet schema compliance (Gate 1).
 
 ## Why This Exists
 
-The #1 cause of silent pipeline failures in multi-study scRNA-seq integration is inconsistent `.obs` schema: string vs category dtypes, mixed encodings, NaN in categorical columns, leftover unused categories. The obs normalizer eliminates these problems systematically.
+The #1 cause of silent pipeline failures in multi-source data integration is inconsistent metadata schema: string vs category dtypes, mixed encodings, NaN in categorical columns, leftover unused categories. The data normalizer eliminates these problems systematically.
 
 ## Normalization Steps
 
@@ -17,63 +17,57 @@ import pandas as pd
 
 # Columns that MUST be categorical
 categorical_cols = [
-    'study_id', 'sample_id', 'cell_type', 'platform',
-    'donor_id', 'sex', 'disease', 'tissue', 'batch'
+    'source_id', 'sample_id', 'group_label', 'collection_method',
+    'subject_id', 'condition', 'batch'
 ]
 
 for col in categorical_cols:
-    if col in adata.obs.columns:
+    if col in df.columns:
         # Convert object/string to category
-        if adata.obs[col].dtype == 'object' or adata.obs[col].dtype.name == 'string':
-            adata.obs[col] = adata.obs[col].astype('category')
+        if df[col].dtype == 'object' or df[col].dtype.name == 'string':
+            df[col] = df[col].astype('category')
 
         # If already category, ensure clean
-        if adata.obs[col].dtype.name == 'category':
+        if df[col].dtype.name == 'category':
             # Remove unused categories (leftover from filtering)
-            adata.obs[col] = adata.obs[col].cat.remove_unused_categories()
+            df[col] = df[col].cat.remove_unused_categories()
 ```
 
 ### Step 2: Category Standardization
 
 ```python
-# Platform names: standardize to canonical forms
-platform_map = {
-    "10x chromium v2": "10X_v2",
-    "10x_v2": "10X_v2",
-    "10X Chromium v2": "10X_v2",
-    "10x chromium v3": "10X_v3",
-    "10x_v3": "10X_v3",
-    "10X Chromium v3": "10X_v3",
-    "smart-seq2": "SmartSeq2",
-    "Smart-Seq2": "SmartSeq2",
-    "smartseq2": "SmartSeq2",
-    "drop-seq": "DropSeq",
-    "Drop-seq": "DropSeq",
-    "inDrop": "InDrop",
-    "indrop": "InDrop",
-    "CEL-Seq2": "CELSeq2",
-    "cel-seq2": "CELSeq2",
+# Collection method names: standardize to canonical forms
+# (adapt this map to your domain — examples shown)
+method_map = {
+    "survey_v1": "Survey_v1",
+    "Survey V1": "Survey_v1",
+    "survey_v2": "Survey_v2",
+    "Survey V2": "Survey_v2",
+    "instrument_a": "Instrument_A",
+    "Instrument-A": "Instrument_A",
+    "instrument_b": "Instrument_B",
+    "Instrument-B": "Instrument_B",
 }
 
-if 'platform' in adata.obs.columns:
-    adata.obs['platform'] = (
-        adata.obs['platform']
-        .map(lambda x: platform_map.get(str(x).strip(), str(x).strip()))
+if 'collection_method' in df.columns:
+    df['collection_method'] = (
+        df['collection_method']
+        .map(lambda x: method_map.get(str(x).strip(), str(x).strip()))
         .astype('category')
     )
 
-# Sex standardization
-sex_map = {
-    "male": "M", "Male": "M", "m": "M", "MALE": "M",
-    "female": "F", "Female": "F", "f": "F", "FEMALE": "F",
+# Generic label standardization (adapt to domain)
+label_map = {
+    "yes": "Yes", "YES": "Yes", "y": "Yes",
+    "no": "No", "NO": "No", "n": "No",
     "unknown": "Unknown", "": "Unknown", "NA": "Unknown",
 }
 
-if 'sex' in adata.obs.columns:
-    adata.obs['sex'] = (
-        adata.obs['sex']
+if 'group_label' in df.columns:
+    df['group_label'] = (
+        df['group_label']
         .fillna("Unknown")
-        .map(lambda x: sex_map.get(str(x).strip(), str(x).strip()))
+        .map(lambda x: label_map.get(str(x).strip(), str(x).strip()))
         .astype('category')
     )
 ```
@@ -81,15 +75,15 @@ if 'sex' in adata.obs.columns:
 ### Step 3: NaN Handling in Categoricals
 
 ```python
-# Categoricals used as batch_key or covariates CANNOT have NaN
-critical_categorical = ['study_id', 'sample_id', 'platform']
+# Categoricals used as batch keys or covariates CANNOT have NaN
+critical_categorical = ['source_id', 'sample_id', 'collection_method']
 
 for col in critical_categorical:
-    if col in adata.obs.columns:
-        n_nan = adata.obs[col].isna().sum()
+    if col in df.columns:
+        n_nan = df[col].isna().sum()
         if n_nan > 0:
             print(f"WARNING: {col} has {n_nan} NaN values")
-            # Decision required: drop cells or impute from metadata
+            # Decision required: drop rows or impute from metadata
             # Log in decision-log.md
 ```
 
@@ -98,41 +92,37 @@ for col in critical_categorical:
 After all normalization, freeze categories to prevent silent errors downstream:
 
 ```python
-for col in adata.obs.select_dtypes(include='category').columns:
-    adata.obs[col] = adata.obs[col].cat.remove_unused_categories()
+for col in df.select_dtypes(include='category').columns:
+    df[col] = df[col].cat.remove_unused_categories()
     # Log category levels for audit
-    n_cats = len(adata.obs[col].cat.categories)
+    n_cats = len(df[col].cat.categories)
     print(f"{col}: {n_cats} categories")
 ```
 
 ### Step 5: QC Columns
 
-Ensure QC metrics are computed and present:
+Ensure quality metrics are computed and present:
 
 ```python
-import scanpy as sc
+# Compute domain-appropriate quality metrics
+# Examples (adapt to your data):
 
-# Mitochondrial genes
-adata.var['mt'] = adata.var_names.str.startswith('MT-')  # Human
-# For mouse: adata.var['mt'] = adata.var_names.str.startswith('mt-')
+# Completeness: fraction of non-null values per row
+df['completeness'] = df.notna().mean(axis=1)
 
-# Ribosomal genes
-adata.var['ribo'] = adata.var_names.str.startswith(('RPS', 'RPL'))
+# Outlier flag: values beyond 3 standard deviations (for numeric columns)
+numeric_cols = df.select_dtypes(include='number').columns
+for col in numeric_cols:
+    mean_val = df[col].mean()
+    std_val = df[col].std()
+    df[f'{col}_outlier'] = ((df[col] - mean_val).abs() > 3 * std_val)
 
-# Compute QC metrics
-sc.pp.calculate_qc_metrics(
-    adata, qc_vars=['mt', 'ribo'],
-    percent_top=None, log1p=False, inplace=True
-)
-
-# Rename to standard names
+# Rename to standard names if needed
 rename_map = {
-    'pct_counts_mt': 'pct_mito',
-    'pct_counts_ribo': 'pct_ribo',
-    'total_counts': 'n_counts',
-    'n_genes_by_counts': 'n_genes',
+    # Map domain-specific names to standard names
+    # 'original_name': 'standard_name',
 }
-adata.obs.rename(columns=rename_map, inplace=True)
+df.rename(columns=rename_map, inplace=True)
 ```
 
 ## Validation Report
@@ -140,37 +130,36 @@ adata.obs.rename(columns=rename_map, inplace=True)
 After normalization, produce a validation summary:
 
 ```markdown
-## Obs Normalization Report
+## Data Normalization Report
 
 **Date:** YYYY-MM-DD
 **Input:** [filename]
-**Cells:** N_pre → N_post (if any dropped)
+**Records:** N_pre → N_post (if any dropped)
 
 ### Dtype Conversions
 | Column | Before | After | Categories |
 |--------|--------|-------|------------|
-| study_id | object | category | 12 |
-| platform | string | category | 3 (10X_v2, 10X_v3, SmartSeq2) |
-| sex | object | category | 3 (M, F, Unknown) |
+| source_id | object | category | 12 |
+| collection_method | string | category | 3 |
+| group_label | object | category | 3 (Yes, No, Unknown) |
 
 ### NaN Resolution
 | Column | NaN count | Action | Decision ID |
 |--------|-----------|--------|-------------|
-| platform | 0 | — | — |
-| donor_id | 45 | Filled "Unknown" | DEC-xxx |
+| collection_method | 0 | — | — |
+| subject_id | 45 | Filled "Unknown" | DEC-xxx |
 
 ### QC Metrics Added
-- [x] pct_mito
-- [x] pct_ribo
-- [x] n_counts
-- [x] n_genes
+- [x] completeness
+- [x] outlier flags
+- [x] [domain-specific metrics]
 
 ### Unused Categories Removed
 | Column | Before | After | Removed |
 |--------|--------|-------|---------|
-| cell_type | 24 | 21 | 3 (from filtered cells) |
+| group_label | 24 | 21 | 3 (from filtered records) |
 
-### Gate 1 Status: ✅ PASS / ❌ FAIL
+### Gate 1 Status: PASS / FAIL
 [If FAIL: list specific violations]
 ```
 
@@ -178,9 +167,9 @@ After normalization, produce a validation summary:
 
 | Problem | Symptom | Fix |
 |---------|---------|-----|
-| String categoricals | scVI ignores covariate, no error thrown | Convert to `pd.Categorical` |
+| String categoricals | Model ignores covariate, no error thrown | Convert to `pd.Categorical` |
 | Unused categories | One-hot encoding creates empty columns, wastes parameters | `remove_unused_categories()` |
-| NaN in batch_key | scVI silently drops cells or crashes | Fill or drop, document decision |
-| Mixed gene ID formats | HVG selection fails or produces garbage | Standardize to one format |
-| Float counts | scVI trains but produces nonsense latent space | Verify integer, check .raw.X |
-| Duplicate var_names | Indexing errors, wrong gene in DE results | `var_names_make_unique()` |
+| NaN in batch key | Model silently drops rows or crashes | Fill or drop, document decision |
+| Mixed identifier formats | Feature selection fails or produces garbage | Standardize to one format |
+| Float values where integers expected | Model trains but produces nonsense results | Verify data types match expectations |
+| Duplicate feature names | Indexing errors, wrong feature in results | Make feature names unique |

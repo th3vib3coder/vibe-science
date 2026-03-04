@@ -43,7 +43,7 @@ Vibe Science is not a single file — it's three layers that reinforce each othe
 │  LAYER 2: SKILL (Methodology Brain)                                    │
 │  OTAE-Tree loop · R2 Ensemble (7 modes) · 32 gates · 21 protocols     │
 │  Brainstorm engine · Serendipity radar · Evidence engine               │
-│  12 constitutional laws · 7 agent roles · 34 reference documents       │
+│  12 constitutional laws · 7 agent roles · 36 reference documents       │
 │  → Guides WHAT the agent thinks                                        │
 ├─────────────────────────────────────────────────────────────────────────┤
 │  LAYER 3: PLUGIN (Enforcement Body)                                    │
@@ -142,13 +142,13 @@ Every cycle scans for unexpected findings. Score >= 10 → QUEUE for triage. Sco
 
 ---
 
-## v6.0 Skill (34 Reference Documents)
+## v6.0 Skill (36 Reference Documents)
 
 The v6.0 skill lives in `skills/vibe/` and contains the full methodology:
 
 | Component | Count | Examples |
 |-----------|-------|---------|
-| **References** | 34 | constitution, loop-otae, reviewer2-ensemble, hook-system, pattern-extraction, instinct-model, context-resilience, handoff-protocol, r2-calibration... |
+| **References** | 36 | constitution, loop-otae, reviewer2-ensemble, hook-system, pattern-extraction, instinct-model, context-resilience, handoff-protocol, r2-calibration... |
 | **Python scripts** | 6 | dq_gate.py, gate_check.py, spine_entry.py, sync_check.py, tree_health.py, observer.py |
 | **JSON schemas** | 12 | brainstorm-quality, claim-promotion, review-completeness, serendipity-seed, data-quality-gate, finding-validation, spine-entry... |
 | **Asset files** | 7 | fault-taxonomy.yaml, judge-rubric.yaml, templates.md, stage-prompts.md, metric-parser.md, node-schema.md, domain-config-example.yaml |
@@ -295,7 +295,7 @@ vibe-science/
 ├── skills/vibe/                 ← v6.0 NEXUS Skill (served by plugin)
 │   ├── SKILL.md                 ← Full methodology (528 lines)
 │   ├── AGENTS.md                ← 7 agent roles with YAML frontmatter
-│   ├── references/              ← 34 reference documents
+│   ├── references/              ← 36 reference documents
 │   ├── scripts/                 ← 6 Python enforcement scripts
 │   ├── assets/
 │   │   └── schemas/             ← 12 JSON validation schemas
@@ -399,7 +399,7 @@ The jump from v5.5 to v6.0 is architectural, not incremental. The methodology (s
 - Context resilience: PreCompact snapshots, progressive context building, crash recovery
 - Silent observer with periodic health checks
 - LAW 12 — INSTINCT: learned patterns inform current behavior, decay with time
-- 34 reference documents (28 from v5.5 + 6 new), 12 JSON schemas (9 v5.0 + 3 v5.5), 6 Python enforcement scripts
+- 36 reference documents (28 from v5.5 + 6 new in v6.0 + 2 added in v6.0.x), 12 JSON schemas (9 v5.0 + 3 v5.5), 6 Python enforcement scripts
 
 **Codex → Claude Code migration:** v5.0 and v5.5 had Codex-specific variants (`archive/vibe-science-v5.0-codex/`, `archive/vibe-science-v5.5-codex/`). v6.0 is Claude Code native — no Codex variant needed.
 
