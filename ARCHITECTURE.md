@@ -444,7 +444,7 @@ FLOOR: E < 0.2 → capped at 0.20
 | Analysis Orchestrator | Artifact contract (manifest + report + figures + metrics + scripts) |
 | Serendipity Engine | Quantitative triage (0-20), scheduled Sprints |
 | Knowledge Base | Cross-RQ persistence: library.json, patterns.md, dead-ends.md |
-| Data Extraction | NO TRUNCATION rule, AnnData schema contract |
+| Data Extraction | NO TRUNCATION rule, data schema contract |
 | Audit & Reproducibility | Decision log, run comparison, 10-point reproducibility contract |
 
 ### Field Testing: 21 Sprints

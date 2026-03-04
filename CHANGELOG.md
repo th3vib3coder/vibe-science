@@ -2,6 +2,14 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.20] — 2026-03-05 — Domain generalization R34: ARCHITECTURE.md
+
+> **Trigger:** Round 34 paranoid deep debug — full repo-wide grep sweep across all live files (excluding archive/, CHANGELOG.md, SKILL.md, fault-taxonomy.yaml, domain-config-template.json). Found `AnnData schema contract` in ARCHITECTURE.md. Historical/provenance references in ARCHITECTURE.md (lines 25, 168, 374 — CRISPR research origin story) and blueprints/ are intentional context, not domain assumptions.
+
+### Fixed — Domain Generalization (ARCHITECTURE.md)
+- **Line 447:** `AnnData schema contract` → `data schema contract`
+- **WHY:** The Data Extraction protocol summary references a domain-agnostic schema contract. `AnnData` is a single-cell-specific data structure; the contract applies to any structured data format.
+
 ## [6.0.19] — 2026-03-04 — Domain generalization R33: templates, skill-router
 
 > **Trigger:** Round 32-33 paranoid deep debug — scanned 16 references-only files (all PASS), agent-teams.md (PASS), plugin/ directory, hooks/, .claude-plugin/, root-level files, schemas/, and assets/. Found CRISPR-specific confounder list in templates.md and `anndata` as first tool example in skill-router.md.
