@@ -8,6 +8,6 @@
   },
   "repository": "https://github.com/th3vib3coder/vibe-science",
   "homepage": "https://github.com/th3vib3coder/vibe-science#readme",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "keywords": ["scientific-research", "literature-review", "discovery", "adversarial-review", "serendipity"]
 }

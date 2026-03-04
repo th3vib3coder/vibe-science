@@ -13,18 +13,18 @@ abstract: >-
   Pass (BFP), which forces the reviewer to assess claims without seeing the
   researcher's justifications, breaking anchoring bias; a Judge Agent (R3) that
   meta-reviews the quality of adversarial reviews on a 6-dimension rubric; and
-  Schema-Validated Gates (SVG), where 8 of the system's 27 quality gates enforce
+  Schema-Validated Gates (SVG), where 8 of the system's 32 quality gates enforce
   JSON Schema validation against 9 read-only schema files, making prose claims of
   completion structurally impossible to accept. The core architecture is an
   OTAE-Tree (Observe-Think-Act-Evaluate) loop embedded in a branching tree search
   over hypotheses, with 7 node types, 3 tree modes, best-first selection, and
   automatic pruning. At the center of the system sits the Reviewer 2 Ensemble, a
-  4-reviewer adversarial co-pilot operating in 6 modes (BRAINSTORM, FORCED, BATCH,
-  SHADOW, VETO, REDIRECT) with a 12-flag mandatory checklist, double-pass review
+  4-reviewer adversarial co-pilot operating in 7 modes (BRAINSTORM, FORCED, BATCH,
+  SHADOW, VETO, REDIRECT, INLINE) with a 12-flag mandatory checklist, double-pass review
   (Fatal Hunt then Method Repair), and mandatory counter-evidence search. Every
   quantitative claim must survive a Confounder Harness (raw estimate, conditioned
   estimate, propensity-matched estimate — sign change kills, collapse over 50
-  percent downgrades, survival promotes). The system is governed by 10 Constitutional
+  percent downgrades, survival promotes). The system is governed by 12 Constitutional
   Laws that no agent, protocol, or user request can override, and enforced at
   runtime by Claude Code hooks that deterministically block premature closure,
   incomplete artifacts, and idle teammates. Additional subsystems include a
@@ -42,8 +42,8 @@ abstract: >-
   (all roles in one context window) and TEAM mode (Agent Teams with dedicated
   context windows per role). v6.0 NEXUS introduces a dual architecture — skill for
   methodology, plugin for enforcement — that separates what the system knows from
-  what the system enforces. The plugin subsystem provides 5 lifecycle hooks
-  (PreToolUse, PostToolUse, Notification, Stop, SubagentStop) that intercept agent
+  what the system enforces. The plugin subsystem provides 7 lifecycle hooks
+  (SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, PreCompact, Stop, SubagentStop) that intercept agent
   actions at runtime, a Gate Engine backed by SQLite that tracks gate status with
   deterministic pass/fail evaluation, and a Permission Engine that enforces
   role-based access control across all agents. Together, the skill and plugin halves

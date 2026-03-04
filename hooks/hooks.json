@@ -5,7 +5,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/plugin/scripts/session-start.js\""
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/plugin/scripts/session-start.js\"",
+            "timeout": 30
           }
         ]
       }
@@ -15,7 +16,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/plugin/scripts/prompt-submit.js\""
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/plugin/scripts/prompt-submit.js\"",
+            "timeout": 10
           }
         ]
       }
@@ -26,7 +28,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/plugin/scripts/post-tool-use.js\""
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/plugin/scripts/post-tool-use.js\"",
+            "timeout": 15
           }
         ]
       }
@@ -36,7 +39,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/plugin/scripts/stop.js\""
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/plugin/scripts/stop.js\"",
+            "timeout": 30
           }
         ]
       }
@@ -46,7 +50,31 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/plugin/scripts/pre-compact.js\""
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/plugin/scripts/pre-compact.js\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/plugin/scripts/pre-tool-use.js\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/plugin/scripts/subagent-stop.js\"",
+            "timeout": 10
           }
         ]
       }

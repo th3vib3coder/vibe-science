@@ -1,5 +1,7 @@
 ---
 description: Initialize a new Vibe Science research session
+allowed-tools: Read, Write, Edit, Bash, Glob, Grep, WebSearch, WebFetch
+model: opus
 ---
 
 > **REMEMBER: Think first, analyse second.** Before any analysis, know what exists in the literature and what gaps remain. Every analysis must answer something that has NOT been done yet. If you cannot explain in one sentence what new thing it will reveal, you are not ready to run it.

@@ -30,15 +30,15 @@ v5.5 proved that prompt-level methodology works — but it also proved that prom
 ┌─────────────────────────────────────────────────────────────────┐
 │  SKILL (prompt-level)           │  PLUGIN (code-level)          │
 │  ─────────────────              │  ──────────────────           │
-│  OTAE loop                      │  5 lifecycle hooks            │
+│  OTAE loop                      │  7 lifecycle hooks            │
 │  R2 Ensemble (7 modes)          │  Gate Engine (DQ/DC/DD/L-1+)  │
 │  SFI, BFP, R3 Judge             │  Permission Engine (6 roles)  │
 │  Brainstorm Engine               │  Research Spine (auto-log)    │
 │  Evidence Engine                 │  Context Builder (~700 tok)   │
 │  Serendipity Engine              │  Narrative Engine             │
-│  10 Constitutional Laws          │  R2 Auto-Calibration          │
+│  12 Constitutional Laws          │  R2 Auto-Calibration          │
 │  21 protocols                    │  Silent Observer              │
-│                                  │  SQLite (11 tables)           │
+│                                  │  SQLite (12 tables)           │
 │  Guides REASONING               │  Enforces BEHAVIOR            │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -86,17 +86,19 @@ Cross-session learning for R2:
 - Researcher error patterns
 - Hints injected at SessionStart
 
-### Five Lifecycle Hooks
+### Seven Lifecycle Hooks
 
 | Hook | When | What It Does |
 |------|------|-------------|
-| **Setup** | Plugin install | Creates `~/.vibe-science/`, initializes SQLite DB, installs dependencies (smart marker), launches embedding worker daemon |
-| **SessionStart** | New conversation | Creates session, builds ~700-token context, loads R2 calibration |
+| **SessionStart** | New conversation | Creates session, builds ~700-token context, loads R2 calibration. Auto-runs first-time setup (DB init, dependencies) if needed. |
 | **UserPromptSubmit** | Every user message | Identifies agent role, logs prompt hash (privacy), semantic recall |
+| **PreToolUse** | Before Write/Edit tool | LAW 9: blocks CLAIM-LEDGER modifications without confounder_status field |
 | **PostToolUse** | Every tool action | **Gate enforcement**, permission check, auto-log to Spine, observer |
 | **Stop** | Session end | Narrative summary, enforcement check (blocks if unreviewed claims), STATE.md export |
+| **PreCompact** | Before compaction | Snapshots active claims, pending seeds, STATE.md to DB (LAW 7) |
+| **SubagentStop** | Subagent finishes | Salvagente Rule: killed claims must produce serendipity seed |
 
-### SQLite Persistence (11 Tables)
+### SQLite Persistence (12 Tables)
 
 ```
 sessions              ← session lifecycle
@@ -110,6 +112,7 @@ observer_alerts       ← Silent Observer findings
 calibration_log       ← R2 calibration data
 prompt_log            ← SHA-256 hashes only (privacy)
 embed_queue           ← async vector embedding queue
+research_patterns     ← cross-session learned patterns
 ```
 
 Foreign keys: `calibration_log.session_id` and `prompt_log.session_id` reference `sessions(id)`. Index `idx_prompt_session` accelerates per-session prompt lookups.
@@ -146,7 +149,7 @@ L-1+ is domain-aware with a 4-layer architecture:
 | `narrative-engine.js` | 333 | Template-based session summaries |
 | `vec-search.js` | 355 | sqlite-vec with keyword fallback |
 | `r2-calibration.js` | 196 | Cross-session R2 learning |
-| `schema.sql` | ~250 | 11 tables + indices |
+| `schema.sql` | ~250 | 12 tables + indices |
 | `stop.js` | 171 | Session end enforcement |
 | `setup.js` | 363 | DB init, dependency install, worker daemon launch |
 | `literature-registry.json` | ~800 | 102 databases, 12 categories |

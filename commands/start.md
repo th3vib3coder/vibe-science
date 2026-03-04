@@ -1,3 +1,18 @@
+---
+description: Start or resume a Vibe Science research session
+allowed-tools: Read, Write, Edit, Bash, Glob, Grep, WebSearch, WebFetch, Task
+model: opus
+---
+
+## Session State (auto-injected)
+!`cat .vibe-science/STATE.md 2>/dev/null || echo "No active session found."`
+
+## Pending Claims
+!`grep -c "status: PENDING\|status: DISPUTED" .vibe-science/CLAIM-LEDGER.md 2>/dev/null || echo "0 claims"`
+
+## Last Progress
+!`tail -5 .vibe-science/PROGRESS.md 2>/dev/null || echo "No progress yet."`
+
 # /start — Vibe Science v4.0 Session Initialization
 
 > **REMEMBER: Think first, analyse second.** Before any analysis, know what exists in the literature and what gaps remain. Every analysis must answer something that has NOT been done yet. If you cannot explain in one sentence what new thing it will reveal, you are not ready to run it.

@@ -1,6 +1,14 @@
 ---
 description: Execute one cycle of the Vibe Science research loop (OTAE)
+allowed-tools: Read, Write, Edit, Bash, Glob, Grep, WebSearch, WebFetch, Task
+model: opus
 ---
+
+## Current State (auto-injected)
+!`cat .vibe-science/STATE.md 2>/dev/null || echo "No STATE.md — run /vibe-science:init first"`
+
+## Tree State
+!`python -c "import json; d=json.load(open('.vibe-science/TREE-STATE.json')); print(f'Nodes: {len(d.get(\"nodes\",[]))}, Active: {d.get(\"active_node\",\"none\")}')" 2>/dev/null || echo "No tree state"`
 
 # vibe-science:loop
 

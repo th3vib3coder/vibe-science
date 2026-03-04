@@ -161,7 +161,7 @@
 
     <!-- ===== Summary line ===== -->
     <text x="350" y="148" text-anchor="middle"
-          font-family="Consolas, Monaco, 'Courier New', monospace" font-size="10" fill="#8b949e">10 Laws  ·  34+ Gates  ·  7 R2 Modes  ·  11 Tables  ·  5 Hooks  ·  Plugin-Enforced</text>
+          font-family="Consolas, Monaco, 'Courier New', monospace" font-size="10" fill="#8b949e">12 Laws  ·  32 Gates  ·  7 R2 Modes  ·  12 Tables  ·  7 Hooks  ·  Plugin-Enforced</text>
 
   </g>
 

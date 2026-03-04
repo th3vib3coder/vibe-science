@@ -1,19 +1,22 @@
 # Hook-Based Enforcement System — Reference Protocol
 
-The hook system is the enforcement backbone of Vibe Science. Five hooks intercept the agent lifecycle at critical points — session start, prompt submission, tool use, context compaction, and session end — to enforce the Immutable Laws without relying on the agent's memory or goodwill. Hooks operate outside the context window. They are infrastructure, not suggestions.
+The hook system is the enforcement backbone of Vibe Science. Seven hooks intercept the agent lifecycle at critical points — session start, prompt submission, pre-tool-use, tool use, context compaction, session end, and subagent completion — to enforce the Immutable Laws without relying on the agent's memory or goodwill. Hooks operate outside the context window. They are infrastructure, not suggestions.
 
 ---
 
 ## Architecture Overview
 
 ```
-Session Start ──► UserPromptSubmit ──► [Agent works] ──► PostToolUse (per tool)
-                                                              │
-                                                              ▼
-                                              PreCompact (if compaction triggered)
-                                                              │
-                                                              ▼
-                                                            Stop
+Session Start ──► UserPromptSubmit ──► PreToolUse (before tool) ──► [Tool runs] ──► PostToolUse (after tool)
+                                                                                          │
+                                                                                          ▼
+                                                                          PreCompact (if compaction triggered)
+                                                                                          │
+                                                                                          ▼
+                                                                                        Stop
+                                                                                          │
+                                                                                          ▼
+                                                                          SubagentStop (if subagent finishing)
 ```
 
 All hooks communicate with the agent through two mechanisms:
@@ -220,6 +223,58 @@ Context compaction erases the buffer. This hook ensures that nothing important i
 
 ---
 
+## Hook 6: PreToolUse (`pre-tool-use.js`)
+
+**When:** Runs before every Write or Edit tool invocation (matcher: `Write|Edit`, regex).
+
+**Laws enforced:** LAW 9 (Confounder Harness).
+
+**What it does:**
+
+1. **Tool filtering** — Intercepts `Write` and `Edit` tools (regex matcher). All other tools pass through immediately.
+2. **Target filtering** — Only intercepts modifications to files containing `CLAIM-LEDGER` in the path. Other files pass through.
+3. **Confounder status check** — Scans the content being written for a `confounder_status:` field. If present, allows the write.
+4. **NOT_APPLICABLE escape** — If the content contains `confounder.*not.?applicable` (case-insensitive), allows the write. Some claims legitimately don't need the confounder harness.
+5. **Blocks if missing** — If neither check passes, blocks the write with `permissionDecision: 'deny'` and a stderr message explaining that the confounder harness must be run first.
+
+**Exit behavior:** Exit 0 + `permissionDecision: 'allow'` for allowed writes. Exit 2 + `permissionDecision: 'deny'` for blocked writes. Graceful degradation on parse errors (exit 0).
+
+**Output format (stderr, on block):**
+
+```
+LAW 9 VIOLATION: Write/Edit to CLAIM-LEDGER blocked. Every claim requires a confounder_status field
+(RAW | CONDITIONED | MATCHED | ROBUST | NOT_APPLICABLE). Run the confounder harness first,
+or mark as NOT_APPLICABLE with justification.
+```
+
+---
+
+## Hook 7: SubagentStop (`subagent-stop.js`)
+
+**When:** Runs when any subagent finishes (R2, Explorer, Observer, etc.).
+
+**Laws enforced:** LAW 4 (R2 is Co-Pilot), LAW 5 (Serendipity is the Mission) — specifically the Salvagente Rule.
+
+**What it does:**
+
+1. **Session lookup** — Gets the current session ID from the event.
+2. **Killed claims query** — Queries the DB for claims with event_type `KILLED` in the current session.
+3. **Seed check** — For each killed claim, checks the `serendipity_seeds` table for a seed with matching `source_claim_id`.
+4. **Blocks if seeds missing** — If any killed claim lacks a serendipity seed, blocks the subagent stop with a descriptive reason listing the offending claim IDs.
+
+**Exit behavior:** Exit 0 if no killed claims or all killed claims have seeds. Exit 2 + reason if Salvagente Rule violated. Graceful degradation if DB unavailable (exit 0).
+
+**Output format (stdout, on block):**
+
+```json
+{
+  "decision": "block",
+  "reason": "SALVAGENTE RULE VIOLATION: 2 killed claim(s) have no serendipity seed. Claims without seeds: CLM-003, CLM-007. R2 MUST produce a serendipity seed for every killed claim."
+}
+```
+
+---
+
 ## Graceful Degradation
 
 All hooks are designed to degrade gracefully when infrastructure is unavailable:
@@ -255,9 +310,11 @@ Both configurations point to the same scripts in `plugin/scripts/`. The hook beh
 |------|---------|------------|------------|-------------|
 | SessionStart | Session begins | No | 0 only | LAW 7, LAW 12 |
 | UserPromptSubmit | Before each prompt | No | 0 only | LAW 10, LAW 7 |
+| PreToolUse | Before Write/Edit tool | Yes (deny) | 0, 2 | LAW 9 |
 | PostToolUse | After each tool | No (advisory) | 0, 2 | LAW 3, LAW 6, LAW 10 |
 | PreCompact | Before compaction | No | 0 only | LAW 7, LAW 10 |
 | Stop | Session ending | Yes (LAW 4) | 0, 2 | LAW 4, LAW 7, LAW 12 |
+| SubagentStop | Subagent finishes | Yes (Salvagente) | 0, 2 | LAW 4, LAW 5 |
 
 ---
 

@@ -1,11 +1,18 @@
 {
+  "permissions": {
+    "deny": [
+      "Edit(.vibe-science/schemas/*)",
+      "Write(.vibe-science/schemas/*)"
+    ]
+  },
   "hooks": {
     "SessionStart": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/plugin/scripts/session-start.js\""
+            "command": "node \"$CLAUDE_PROJECT_DIR/plugin/scripts/session-start.js\"",
+            "timeout": 30
           }
         ]
       }
@@ -15,7 +22,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/plugin/scripts/prompt-submit.js\""
+            "command": "node \"$CLAUDE_PROJECT_DIR/plugin/scripts/prompt-submit.js\"",
+            "timeout": 10
           }
         ]
       }
@@ -26,7 +34,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/plugin/scripts/post-tool-use.js\""
+            "command": "node \"$CLAUDE_PROJECT_DIR/plugin/scripts/post-tool-use.js\"",
+            "timeout": 15
           }
         ]
       }
@@ -36,7 +45,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/plugin/scripts/stop.js\""
+            "command": "node \"$CLAUDE_PROJECT_DIR/plugin/scripts/stop.js\"",
+            "timeout": 30
           }
         ]
       }
@@ -46,10 +56,41 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/plugin/scripts/pre-compact.js\""
+            "command": "node \"$CLAUDE_PROJECT_DIR/plugin/scripts/pre-compact.js\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/plugin/scripts/pre-tool-use.js\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/plugin/scripts/subagent-stop.js\"",
+            "timeout": 10
           }
         ]
       }
     ]
+  },
+  "env": {
+    "MCP_TIMEOUT": "30000",
+    "MAX_MCP_OUTPUT_TOKENS": "100000",
+    "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1",
+    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "50",
+    "BASH_MAX_TIMEOUT_MS": "600000"
   }
 }

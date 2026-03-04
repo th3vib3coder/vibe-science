@@ -1,6 +1,8 @@
 ---
 description: Invoke Reviewer 2 adversarial review on findings
-args: ["--batch", "--final", "--pivot"]
+argument-hint: "--batch | --final | --pivot [reason]"
+allowed-tools: Read, Grep, Glob, WebSearch, WebFetch
+model: opus
 ---
 
 # vibe-science:reviewer2

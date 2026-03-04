@@ -2,6 +2,53 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.2] — 2026-03-04 — Hardening & Modular Rules
+
+### Added
+- **`permissions.deny`**: Structural protection for schemas — `Edit(.vibe-science/schemas/*)` and `Write(.vibe-science/schemas/*)` denied at settings level
+- **Modular rules directory**: `.claude/rules/roles.md` (6 agent role constraints) and `.claude/rules/enforcement.md` (v5.0 structural enforcement protocols)
+- **Hook timeouts**: All 7 hooks now have explicit `timeout` field (10-30s) to prevent hangs
+- **Regex matcher on PreToolUse**: Matcher upgraded from `"Write"` to `"Write|Edit"` — prevents LAW 9 bypass via Edit tool
+- **Environment variables**: `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=50` (auto-compact at 50% context), `BASH_MAX_TIMEOUT_MS=600000` (10-min max for long-running scripts)
+
+### Changed
+- **CLAUDE.md trimmed**: 176 → ~100 lines. Role constraints and enforcement protocols moved to `.claude/rules/` (auto-loaded by Claude Code). Adherence improves under 150 lines (documented in best-practices research).
+- **CLAUDE.md hooks section**: Now documents all 7 hooks with summary table (was missing PreToolUse and SubagentStop descriptions)
+- **Hook output patterns**: Condensed to tag-based reference format
+
+### Fixed
+- CLAUDE.md previously only documented 5 hooks despite v6.0.1 adding PreToolUse and SubagentStop — now all 7 are documented
+- **CLAUDE.md gate count**: 34 → 32 (pre-debug artifact, correct count confirmed in SKILL.md gate table)
+- **ARCHITECTURE.md**: Removed phantom "Setup" hook row (auto-setup runs inside SessionStart); updated SQLite table count 11 → 12 (added `research_patterns`)
+- **CITATION.cff**: Hook count 5 → 7, hook names corrected to match actual implementation
+- **Logo SVG**: Updated summary line — 12 laws, 32 gates, 12 tables, 7 hooks (was 10, 34+, 11, 5)
+- **CLAUDE.md law count**: Added missing LAW 12 (INSTINCT) — had only 11 laws, README/SKILL both say 12
+- **ARCHITECTURE.md law count**: "10 Constitutional Laws" → "12 Constitutional Laws" in dual architecture diagram
+- **CITATION.cff numbers**: Constitutional laws 10→12, quality gates 27→32, R2 modes 6→7 (added INLINE)
+
+## [6.0.1] — 2026-03-04 — Best Practices Upgrade
+
+### Added
+- **PreToolUse hook**: Blocks Write to CLAIM-LEDGER without confounder_status (LAW 9 structural enforcement)
+- **SubagentStop hook**: Enforces Salvagente Rule — killed claims must produce serendipity seed
+- **Dynamic context injection**: `/start` and `/loop` pre-inject STATE.md, PROGRESS.md, TREE-STATE.json via `!` bash prefix
+- **Environment variables**: MCP_TIMEOUT=30000, MAX_MCP_OUTPUT_TOKENS=100000, CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR=1
+- **Blueprint**: v6.0.1-BEST-PRACTICES-BLUEPRINT.md
+
+### Changed
+- **Reviewer 2 agent**: Added `tools: Read, Grep, Glob, WebSearch, WebFetch` — R2 structurally cannot Write/Edit/Bash
+- **All 5 commands**: Added `allowed-tools`, `model` (official spec fields)
+- **2 commands**: Replaced non-standard `args` with official `argument-hint`
+- **Search command**: `model: sonnet` (retrieval-heavy workload)
+- **Reviewer2 command**: `allowed-tools` restricted to read-only tools
+- **SKILL.md frontmatter**: Trimmed to 3 official fields (name, description, allowed-tools)
+- Hook count: 5 → 7 (added PreToolUse, SubagentStop)
+
+### Fixed
+- `package.json` license: MIT → Apache-2.0
+- Removed non-standard `capabilities` field from reviewer2 agent
+- Removed non-standard `args` field from command frontmatter
+
 ## [6.0.0] — 2026-02-20 — NEXUS (Plugin Architecture)
 
 ### Added

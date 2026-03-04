@@ -1,6 +1,8 @@
 ---
 description: Execute a literature search across Scopus, PubMed, and OpenAlex databases
-args: ["--scopus", "--pubmed", "--openalex", "--author", "--citations"]
+argument-hint: "--scopus | --pubmed | --openalex | --author | --citations"
+allowed-tools: Read, Write, Edit, WebSearch, WebFetch, Glob, Grep
+model: sonnet
 ---
 
 # vibe-science:search

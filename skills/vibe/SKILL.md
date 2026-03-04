@@ -1,12 +1,9 @@
 ---
 name: vibe-science
-description: "Scientific research engine v6.0 NEXUS with adversarial review, tree search over hypotheses, 32 quality gates (8 schema-enforced), serendipity detection, hook-based enforcement, cross-session learning, and temporal decay calibration. Use this skill whenever the user mentions research, hypotheses, scientific analysis, experimental design, literature review, data validation, quality gates, claim verification, reproducibility, or any task where correctness matters more than speed. Also use when the user wants to explore a dataset scientifically, validate findings against literature, run computational experiments with adversarial review, or hunt for unexpected patterns. Do NOT use for simple Q&A, code editing without research context, or non-scientific tasks."
-license: Apache-2.0
-compatibility: "Claude Code. Python 3.8+ for enforcement scripts."
-metadata:
-  author: th3vib3coder
-  version: "6.0.0"
+description: "Scientific research engine v6.0 NEXUS — adversarial review (Reviewer 2), 32 quality gates, tree search, serendipity tracking, confounder harness, cross-session learning. Use for ANY scientific analysis, hypothesis testing, data validation, literature review, or task where correctness > speed."
+allowed-tools: Read, Write, Edit, Bash, Glob, Grep, WebSearch, WebFetch, Task
 ---
+<!-- v6.0.1 | Apache-2.0 | Author: th3vib3coder | Requires: Python 3.8+ for enforcement scripts -->
 
 # Vibe Science v6.0 NEXUS — Observe · Recall · Operate
 
@@ -62,7 +59,7 @@ In Claude Code, R2 is a **separate sub-agent** launched via the Task tool with i
 
 | Innovation | What | Reference |
 |-----------|------|-----------|
-| Hook-Based Enforcement | 5 hooks (SessionStart, UserPromptSubmit, PostToolUse, Stop, PreCompact) enforce laws mechanically | `references/hook-system.md` |
+| Hook-Based Enforcement | 7 hooks (SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, Stop, PreCompact, SubagentStop) enforce laws mechanically | `references/hook-system.md` |
 | Cross-Session Learning | Pattern extraction at session end: gate failure clusters, repeated actions, claim lifecycle patterns | `references/pattern-extraction.md` |
 | Instinct Model | ECC-inspired learned behaviors with confidence decay. Observed patterns auto-promote after 3 confirmations. | `references/instinct-model.md` |
 | Temporal Decay R2 Calibration | R2 weakness tracking with exponential decay (weight = e^(-0.02 * weeks)). Recent reviews weigh more. | `references/r2-calibration.md` |
@@ -198,7 +195,7 @@ Tree modes: **LINEAR** (literature), **BRANCHING** (experiments), **HYBRID** (bo
 
 ## HOOKS ENFORCEMENT
 
-5 hooks enforce the laws mechanically. They run as Node.js scripts triggered by Claude Code events.
+7 hooks enforce the laws mechanically. They run as Node.js scripts triggered by Claude Code events.
 
 | Hook | Event | What It Does | Laws Enforced |
 |------|-------|-------------|---------------|
@@ -207,6 +204,8 @@ Tree modes: **LINEAR** (literature), **BRANCHING** (experiments), **HYBRID** (bo
 | **PostToolUse** | After every tool | Gate enforcement (DQ4, CLAIM-LEDGER prerequisites, L-1), permission checks, auto-logging spine entries, observer checks | LAW 3 (gates), LAW 6 (artifacts), LAW 10 (crystallize) |
 | **Stop** | Session ending | Narrative summary, blocks stop if unreviewed claims exist, exports STATE.md, extracts patterns | LAW 4 (R2 co-pilot), LAW 7 (resilience), LAW 12 (instinct) |
 | **PreCompact** | Before compaction | Snapshots active claims, pending seeds, spine count, STATE.md to DB | LAW 7 (resilience), LAW 10 (crystallize) |
+| **PreToolUse** | Before Write/Edit tool | Blocks CLAIM-LEDGER modifications without confounder_status field (regex matcher) | LAW 9 (confounder harness) |
+| **SubagentStop** | Subagent finishes | Checks killed claims have serendipity seeds (Salvagente Rule) | LAW 4 (R2 co-pilot), LAW 5 (serendipity) |
 
 All hooks degrade gracefully if the DB is unavailable. They never hard-crash.
 
