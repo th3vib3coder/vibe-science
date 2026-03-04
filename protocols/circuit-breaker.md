@@ -11,8 +11,8 @@ Deadlock prevention for the R2 Ensemble review loop. Detects irreconcilable disa
 In a multi-agent system with rigid quality gates, deadlocks are inevitable. The canonical scenario:
 
 ```
-R2:         "You must run confounder harness for GC content bias"
-Researcher: "Dataset lacks GC annotation — test is impossible with available data"
+R2:         "You must run confounder harness for variable X bias"
+Researcher: "Dataset lacks variable X annotation — test is impossible with available data"
 R2:         "Without harness, verdict is REJECT"
 Researcher: "Gate won't pass without your ACCEPT"
   -> Infinite loop. Tokens burn. No progress.
@@ -89,3 +89,26 @@ A DISPUTED claim is re-examined automatically when any of the following occurs:
 - **Cross-model audit**: An R3 Judge or external model reviews the dispute and provides a reasoned resolution.
 
 Upon re-examination, if the trigger resolves the objection, the claim is unfrozen and re-enters normal review. If not, it remains DISPUTED until S5 forces resolution.
+
+## v6.0 DB TRACKING
+
+### Persistent DISPUTED State
+In v6.0, circuit breaker state is tracked in the DB via the `claim_events` table. When a claim becomes DISPUTED (same R2 objection x 3 rounds x no state change):
+
+1. A `DISPUTED` event is recorded in `claim_events`
+2. The claim is frozen — not killed, not promoted
+3. DISPUTED state persists across sessions (DB-backed)
+4. Pipeline continues with other claims
+5. DISPUTED claims block Stage 5 synthesis (S5 Poison Pill)
+
+### Cross-Session Recovery
+When resuming a session, SessionStart can detect DISPUTED claims from previous sessions:
+- Claims with `DISPUTED` event but no subsequent `RESOLVED` event
+- These are included in the session context as unresolved issues
+- The researcher must address them before Stage 5
+
+### Resolution
+A DISPUTED claim can be resolved by:
+1. New evidence that changes the state (breaks the deadlock)
+2. Human intervention (user decides)
+3. Explicit KILL with documented reason

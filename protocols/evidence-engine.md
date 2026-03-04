@@ -15,22 +15,22 @@ Every assertion made during research gets a ledger entry. The ledger is the sing
 ```markdown
 | Field | Required | Description |
 |-------|----------|-------------|
-| `claim_id` | ✅ | Sequential: C-001, C-002, ... |
-| `text` | ✅ | Atomic assertion (one testable statement) |
-| `type` | ✅ | `DATA` (direct observation), `INFERENCE` (derived), `OPINION` (interpretation) |
-| `evidence` | ✅ | List of evidence items (file, figure, DOI, quote) |
-| `confidence` | ✅ | Computed score 0.00–1.00 (see formula below) |
-| `status` | ✅ | `UNVERIFIED` → `VERIFIED` → `CHALLENGED` → `REJECTED` or `CONFIRMED` |
-| `reviewer2` | ○ | Review ID if reviewed |
-| `depends_on` | ○ | List of claim_ids this claim requires |
-| `assumptions` | ○ | List of assumption_ids (from Assumption Register) |
-| `claim_type_assigned_by` | ✅ | `orchestrator` — only orchestrator assigns type |
-| `claim_type_locked` | ✅ | `true` after assignment — prevents gaming |
-| `dispute_reason` | ○ | Verbatim R2 objection (if DISPUTED) |
-| `dispute_cycle` | ○ | Cycle when DISPUTED (if applicable) |
-| `researcher_position` | ○ | Verbatim researcher response (if DISPUTED) |
-| `created` | ✅ | ISO date |
-| `updated` | ✅ | ISO date |
+| `claim_id` | Y | Sequential: C-001, C-002, ... |
+| `text` | Y | Atomic assertion (one testable statement) |
+| `type` | Y | `DATA` (direct observation), `INFERENCE` (derived), `OPINION` (interpretation) |
+| `evidence` | Y | List of evidence items (file, figure, DOI, quote) |
+| `confidence` | Y | Computed score 0.00-1.00 (see formula below) |
+| `status` | Y | `UNVERIFIED` → `VERIFIED` → `CHALLENGED` → `REJECTED` or `CONFIRMED` |
+| `reviewer2` | O | Review ID if reviewed |
+| `depends_on` | O | List of claim_ids this claim requires |
+| `assumptions` | O | List of assumption_ids (from Assumption Register) |
+| `claim_type_assigned_by` | Y | `orchestrator` — only orchestrator assigns type |
+| `claim_type_locked` | Y | `true` after assignment — prevents gaming |
+| `dispute_reason` | O | Verbatim R2 objection (if DISPUTED) |
+| `dispute_cycle` | O | Cycle when DISPUTED (if applicable) |
+| `researcher_position` | O | Verbatim researcher response (if DISPUTED) |
+| `created` | Y | ISO date |
+| `updated` | Y | ISO date |
 ```
 
 ### Claim Ledger File Format (CLAIM-LEDGER.md)
@@ -39,20 +39,20 @@ Every assertion made during research gets a ledger entry. The ledger is the sing
 # Claim Ledger
 
 ## C-001
-- **Text:** scVI batch correction preserves cell-type separation in epithelial clusters
+- **Text:** Batch correction preserves group separation in the integrated dataset
 - **Type:** INFERENCE
-- **Evidence:** [run-20250207/report.md §Metrics], [Fig. 2A UMAP], [DOI:10.1038/s41592-018-0229-2]
+- **Evidence:** [run-20250207/report.md Metrics], [Fig. 2A visualization], [DOI:10.xxxx/xxxxx]
 - **Confidence:** 0.72
 - **Status:** VERIFIED
 - **Reviewer2:** ensemble-major-001
-- **Depends on:** C-003 (raw counts verified), C-005 (batch key justified)
+- **Depends on:** C-003 (data integrity verified), C-005 (batch key justified)
 - **Assumptions:** A-002 (platform effects are batch effects)
 - **Updated:** 2025-02-07
 
 ## C-002
-- **Text:** HVG selection at n=3000 captures endometriosis-specific genes
+- **Text:** Feature selection at threshold N captures domain-relevant variables
 - **Type:** DATA
-- **Evidence:** [hvg_analysis.py output], [overlap with known endo genes: 87%]
+- **Evidence:** [feature_analysis.py output], [overlap with known markers: 87%]
 - **Confidence:** 0.85
 - **Status:** VERIFIED
 - **Updated:** 2025-02-07
@@ -60,7 +60,7 @@ Every assertion made during research gets a ledger entry. The ledger is the sing
 
 ### Rules for Claim Extraction
 
-1. **Atomize**: Break compound statements into single testable claims. "scVI corrects batch effects and preserves biology" → two claims.
+1. **Atomize**: Break compound statements into single testable claims. "Method X corrects for confounders and preserves signal" → two claims.
 2. **Type honestly**: If no direct data supports it, it's INFERENCE. If it's your interpretation beyond what data shows, it's OPINION. Never upgrade type.
 3. **Chain dependencies**: If C-005 depends on C-003, and C-003 gets REJECTED, cascade: C-005 becomes CHALLENGED automatically.
 4. **No orphan claims**: Every claim in a finding document must have a ledger entry. Every ledger entry must have evidence.
@@ -78,17 +78,17 @@ Step 1: Hard veto check (LAW 1 enforcement)
   IF E < 0.05 OR D < 0.05 → confidence = 0.0
   STOP. No data = no go.
 
-Step 2: Apply dynamic floor to soft components (unknown ≠ false)
+Step 2: Apply dynamic floor to soft components (unknown != false)
   R_eff = max(R_raw, floor)
   C_eff = max(C_raw, floor)
   K_eff = max(K_raw, floor)
 
 Step 3: Aggregate
-  confidence = E × D × (R_eff × C_eff × K_eff)^(1/3)
+  confidence = E * D * (R_eff * C_eff * K_eff)^(1/3)
 
   E, D: product (hard veto — zero kills)
   R, C, K: geometric mean (softer, compensatory)
-  Floor: prevents "unknown" from killing; "unknown" ≠ "contradicted"
+  Floor: prevents "unknown" from killing; "unknown" != "contradicted"
 ```
 
 ### Dynamic Floor by Claim Type and Stage
@@ -117,7 +117,7 @@ Since the floor depends on `claim.type`, a researcher could game the system by l
 - R=0 (new finding) → R_eff = floor, confidence penalized but NOT killed
 - K=0 (no mechanism) → K_eff = floor, serendipitous findings protected
 - All components = 1.0 → confidence = 1.0
-- All soft components at floor → confidence ≈ E × D × floor (heavy penalty, not death)
+- All soft components at floor → confidence ~ E * D * floor (heavy penalty, not death)
 
 ### R-C Collinearity Note
 Replication (R) and Consistency (C) are likely correlated. The geometric mean mitigates this (less punitive than product). v6.0 may merge R and C into a single "External Validation" component.
@@ -133,7 +133,7 @@ Claims scored under v4.5 formula should be re-scored under v5.0 during session r
 |-------|----------|
 | 1.0 | Peer-reviewed, high-impact journal, reproducible methodology described |
 | 0.8 | Peer-reviewed, standard journal, methodology adequate |
-| 0.6 | Preprint (bioRxiv, medRxiv) with credible methodology |
+| 0.6 | Preprint with credible methodology |
 | 0.4 | Preprint without replication, or conference proceeding |
 | 0.2 | Blog post, technical report, single unreplicated observation |
 | 0.0 | Training knowledge only, no retrievable source |
@@ -169,7 +169,7 @@ Claims scored under v4.5 formula should be re-scored under v5.0 during session r
 | 0.6 | Some confounders discussed but not all controlled |
 | 0.4 | Confounders acknowledged but unaddressed |
 | 0.2 | Obvious confounders not mentioned |
-| 0.0 | High risk of batch/platform/compositional confounding, unacknowledged |
+| 0.0 | High risk of significant confounding, unacknowledged |
 
 **D — Directness** (weight: 0.10)
 
@@ -179,17 +179,17 @@ Claims scored under v4.5 formula should be re-scored under v5.0 during session r
 | 0.8 | Close proxy with validated relationship |
 | 0.6 | Indirect measurement, reasonable proxy |
 | 0.4 | Multi-step inference chain (>2 logical steps) |
-| 0.2 | Analogy from different system/species |
+| 0.2 | Analogy from different system or context |
 | 0.0 | Pure speculation or theoretical extrapolation |
 
 ### Confidence Thresholds for Action
 
 | Range | Label | Action |
 |-------|-------|--------|
-| 0.80–1.00 | HIGH | Can build on. Include in conclusions. |
-| 0.60–0.79 | MEDIUM | Seek additional confirmation before building. Flag in report. |
-| 0.40–0.59 | LOW | Must upgrade before using in conclusions. Active investigation needed. |
-| 0.00–0.39 | INSUFFICIENT | Cannot use. Log for transparency. Seek alternative evidence or abandon. |
+| 0.80-1.00 | HIGH | Can build on. Include in conclusions. |
+| 0.60-0.79 | MEDIUM | Seek additional confirmation before building. Flag in report. |
+| 0.40-0.59 | LOW | Must upgrade before using in conclusions. Active investigation needed. |
+| 0.00-0.39 | INSUFFICIENT | Cannot use. Log for transparency. Seek alternative evidence or abandon. |
 
 ## Assumption Register
 
@@ -200,12 +200,12 @@ Separate from claims. Assumptions are things we accept without proof for the pur
 ```markdown
 | Field | Required | Description |
 |-------|----------|-------------|
-| `assumption_id` | ✅ | Sequential: A-001, A-002, ... |
-| `text` | ✅ | What we assume |
-| `risk` | ✅ | `HIGH` / `MEDIUM` / `LOW` — impact if wrong |
-| `verification_plan` | ✅ | How we could test this assumption |
-| `status` | ✅ | `ACTIVE` / `TESTED-OK` / `TESTED-FAIL` / `RETIRED` |
-| `claims_affected` | ✅ | List of claim_ids that depend on this assumption |
+| `assumption_id` | Y | Sequential: A-001, A-002, ... |
+| `text` | Y | What we assume |
+| `risk` | Y | `HIGH` / `MEDIUM` / `LOW` — impact if wrong |
+| `verification_plan` | Y | How we could test this assumption |
+| `status` | Y | `ACTIVE` / `TESTED-OK` / `TESTED-FAIL` / `RETIRED` |
+| `claims_affected` | Y | List of claim_ids that depend on this assumption |
 ```
 
 ### Example (ASSUMPTION-REGISTER.md)
@@ -214,17 +214,17 @@ Separate from claims. Assumptions are things we accept without proof for the pur
 # Assumption Register
 
 ## A-001
-- **Text:** Platform effects (10X v2 vs v3) behave as batch effects correctable by scVI
-- **Risk:** HIGH — if platform effects are biological, correction destroys real signal
-- **Verification plan:** Compare DE results pre/post correction for known platform-independent genes
+- **Text:** Platform effects behave as batch effects correctable by the integration method
+- **Risk:** HIGH — if platform effects are domain-specific, correction destroys real signal
+- **Verification plan:** Compare results pre/post correction for known platform-independent features
 - **Status:** ACTIVE
 - **Claims affected:** C-001, C-005, C-012
 
 ## A-002
-- **Text:** Raw counts in GEO datasets are truly raw (not re-normalized)
-- **Risk:** MEDIUM — if counts are normalized, scVI preprocessing is wrong
-- **Verification plan:** Check .X dtype (int vs float), verify max values, check GEO submission notes
-- **Status:** TESTED-OK (verified integer counts in all 52 datasets)
+- **Text:** Raw data in the repository is truly unprocessed (not re-normalized)
+- **Risk:** MEDIUM — if data is pre-normalized, preprocessing assumptions are wrong
+- **Verification plan:** Check data types (int vs float), verify value ranges, check repository submission notes
+- **Status:** TESTED-OK (verified correct data types in all datasets)
 - **Claims affected:** C-003, C-004
 ```
 
@@ -237,11 +237,11 @@ When a finding document is produced, the Evidence Engine requires explicit mappi
 
 | Claim | Evidence Item | Type | Location |
 |-------|--------------|------|----------|
-| C-015 | UMAP Fig. 2A | Figure | run-20250207/figures/umap_batch.png |
-| C-015 | iLISI = 0.89 | Metric | run-20250207/report.md §Table 1 |
-| C-016 | Tsai 2015 Table S3 | Data | 03-data/supplementary/tsai2015_S3.csv |
-| C-016 | "count data suitable..." | Quote | DOI:10.1038/nbt.3117, p. 187 |
-| C-017 | DE overlap = 92% | Metric | run-20250207/report.md §3.2 |
+| C-015 | Visualization Fig. 2A | Figure | run-20250207/figures/viz_batch.png |
+| C-015 | Integration metric = 0.89 | Metric | run-20250207/report.md Table 1 |
+| C-016 | Reference Table S3 | Data | 03-data/supplementary/ref_S3.csv |
+| C-016 | "data suitable for..." | Quote | DOI:10.xxxx/xxxxx, p. 187 |
+| C-017 | Feature overlap = 92% | Metric | run-20250207/report.md 3.2 |
 ```
 
 ## Confounder Harness (LAW 9 — Mandatory for Every Quantitative Claim)
@@ -250,7 +250,7 @@ When a finding document is produced, the Evidence Engine requires explicit mappi
 
 ### Why This Exists
 
-The Sprint 17 lesson: a claim with OR=2.30 and p < 10^-100 was completely confounded — propensity matching reversed the sign. Without this harness, that claim would have reached publication. The OR was real. The statistics were correct. The narrative was plausible. But the claim was an artifact of a confounding variable (consecutive mismatches correlated with total mismatch count).
+The lesson from prior case studies: a claim with strong effect size and extreme statistical significance was completely confounded — propensity matching reversed the sign. Without this harness, that claim would have reached publication. The effect size was real. The statistics were correct. The narrative was plausible. But the claim was an artifact of a confounding variable.
 
 ### The Three Levels
 
@@ -261,8 +261,7 @@ The Sprint 17 lesson: a claim with OR=2.30 and p < 10^-100 was completely confou
 
 **Level 2: Conditioned Estimate**
 - Adjusted for known confounders via regression, stratification, or partial correlation
-- Domain-specific confounders (examples for CRISPR: n_mm, affinity/log_change, PAM, region, guide as random effect)
-- For other domains: identify the 3-5 most plausible confounders in the literature
+- Domain-specific confounders: identify the 3-5 most plausible confounders in the literature
 - Record: same metrics + which confounders controlled + change from raw
 
 **Level 3: Matched Estimate**
@@ -304,10 +303,12 @@ See `assets/templates.md` for the template.
 
 When applying the harness, use domain-appropriate confounders:
 
-**CRISPR off-target**: n_mm, affinity/log_change, PAM type, position/region, guide identity (random effect)
-**scRNA-seq**: batch, platform, donor, cell-type composition, total counts, mitochondrial %
-**Clinical/epidemiological**: age, sex, BMI, comorbidities, treatment history
 **Machine learning**: dataset size, class balance, feature dimensionality, random seed
+**Observational studies**: age, sex, BMI, comorbidities, treatment history
+**Time series**: seasonality, trend, autocorrelation, regime changes
+**Survey/behavioral**: selection bias, response bias, social desirability, sample demographics
+
+Identify the 3-5 most plausible confounders for YOUR specific domain from the literature.
 
 `NO HARNESS = NO CLAIM. NO EXCEPTIONS.`
 
@@ -315,15 +316,15 @@ When applying the harness, use domain-appropriate confounders:
 
 ## Counter-Evidence Search (Mandatory Before Promotion)
 
-When a claim reaches MEDIUM confidence (≥ 0.60), a counter-evidence search is MANDATORY before the claim can be promoted via Gate D1.
+When a claim reaches MEDIUM confidence (>= 0.60), a counter-evidence search is MANDATORY before the claim can be promoted via Gate D1.
 
 ### Protocol
 1. **Search for CONTRADICTING evidence:**
-   - Query PubMed/Scopus/OpenAlex with negation terms: "NOT [claim]", "[opposite of claim]"
+   - Query databases with negation terms: "NOT [claim]", "[opposite of claim]"
    - Search for papers with contradictory findings in the same domain
    - Check if any retracted papers originally supported this claim
 2. **Search for ALTERNATIVE explanations:**
-   - For each causal/correlative claim: identify ≥2 alternative mechanisms that could produce the same observation
+   - For each causal/correlative claim: identify >=2 alternative mechanisms that could produce the same observation
    - For each alternative: assess plausibility (HIGH/MEDIUM/LOW)
 3. **Update scoring:**
    - If contradicting evidence found → reduce Concordance (C component) by 0.2 per credible contradiction
@@ -351,7 +352,7 @@ These rules **cannot** be relaxed under any circumstance:
 3. **QUOTE** exact text — do not paraphrase factual claims
 4. **VERIFY** DOIs are accessible before citing (attempt web_fetch on doi.org/DOI)
 5. **MARK** confidence using the quantitative formula, not intuition
-6. If a claim comes from training knowledge only: `confidence: 0.0` for E component, flag explicitly with ⚠️
+6. If a claim comes from training knowledge only: `confidence: 0.0` for E component, flag explicitly
 7. **CHAIN**: if claim A depends on claim B, and B is INSUFFICIENT, A inherits the constraint
 8. **NO UPGRADE**: never upgrade a claim's type (DATA → OPINION is forbidden; OPINION → DATA requires new evidence)
 9. **CONFOUNDER HARNESS**: every quantitative claim MUST pass the three-level harness (LAW 9) before promotion
@@ -362,7 +363,7 @@ These rules **cannot** be relaxed under any circumstance:
 
 ### The Problem
 
-Numbers copied manually between files desynchronize. A JSON file gets updated with corrected results, but FINDINGS.md still shows old numbers. This is not hypothetical — it happened (M6: v2/v3 desync in the CRISPR run).
+Numbers copied manually between files desynchronize. A JSON file gets updated with corrected results, but FINDINGS.md still shows old numbers. This is not hypothetical — it has happened in practice.
 
 ### The Rule
 

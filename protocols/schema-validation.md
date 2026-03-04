@@ -71,15 +71,18 @@ Schema validation ensures **structural completeness** (all required fields prese
 All schema files live in the `schemas/` directory at the skill root:
 
 ```
-vibe-science-v5.0/
+vibe-science/
   schemas/
+    brainstorm-quality.schema.json
     claim-promotion.schema.json
+    data-quality-gate.schema.json      (v6.0 — DQ1-DQ4 gate artifacts)
+    finding-validation.schema.json     (v6.0 — DQ4 finding validation)
+    review-completeness.schema.json
     rq-conclusion.schema.json
+    serendipity-seed.schema.json
+    source-validity.schema.json
+    spine-entry.schema.json            (v6.0 — research spine entries)
     stage4-exit.schema.json
     stage5-exit.schema.json
-    source-validity.schema.json
-    review-completeness.schema.json
-    brainstorm-quality.schema.json
     vigilance-check.schema.json
-    serendipity-seed.schema.json
 ```

@@ -30,7 +30,7 @@ Tree mode is set at session initialization (Phase 0 COMMIT) and stored in STATE.
 | `hyperparameter` | Stage 2 | good node | 2 | Parameter variation |
 | `ablation` | Stage 4 | best node | 4 | Remove one component to test contribution |
 | `replication` | Stage 4-5 | good node | 4-5 | Same config, different seed |
-| `serendipity` | Any stage | any node (the trigger node) | Any | Unexpected branch from serendipity detection (score >= 12) |
+| `serendipity` | Any stage | any node (the trigger node) | Any | Unexpected branch from serendipity detection (score >= 15) |
 
 ### Node Type Constraints
 
@@ -175,25 +175,25 @@ Updated every cycle in `08-tree/tree-visualization.md`.
 ### Format
 ```
 [S{stage}] root
- ├── [S1][draft] node-001 ★ good (acc=0.72)
- │   ├── [S2][hyper] node-003 ★ good (acc=0.78) ← BEST
- │   │   └── [S2][hyper] node-005 ✗ buggy (NaN loss)
- │   │       └── [S2][debug] node-008 ✗ buggy (fix failed)
- │   │           └── [S2][debug] node-009 ✂ pruned (3 attempts)
- │   └── [S2][hyper] node-004 ★ good (acc=0.75)
- ├── [S1][draft] node-002 ★ good (acc=0.68)
- │   └── [S2][improve] node-006 ★ good (acc=0.74)
- ├── [S1][draft] node-007 ~ pending
- └── [S3][serendipity] node-010 ★ good (acc=0.81) ◆ promoted
+ |-- [S1][draft] node-001 * good (metric=0.72)
+ |   |-- [S2][hyper] node-003 * good (metric=0.78) <- BEST
+ |   |   +-- [S2][hyper] node-005 X buggy (NaN loss)
+ |   |       +-- [S2][debug] node-008 X buggy (fix failed)
+ |   |           +-- [S2][debug] node-009 # pruned (3 attempts)
+ |   +-- [S2][hyper] node-004 * good (metric=0.75)
+ |-- [S1][draft] node-002 * good (metric=0.68)
+ |   +-- [S2][improve] node-006 * good (metric=0.74)
+ |-- [S1][draft] node-007 ~ pending
+ +-- [S3][serendipity] node-010 * good (metric=0.81) ^ promoted
 ```
 
 ### Legend
-- ★ good — node executed successfully, metrics valid
-- ✗ buggy — node execution failed or produced errors
-- ✂ pruned — node removed from consideration (debug limit, R2 veto, etc.)
+- * good — node executed successfully, metrics valid
+- X buggy — node execution failed or produced errors
+- # pruned — node removed from consideration (debug limit, R2 veto, etc.)
 - ~ pending — node created but not yet executed
-- ◆ promoted — node promoted after R2 clearance
-- ← BEST — current best node in tree
+- ^ promoted — node promoted after R2 clearance
+- <- BEST — current best node in tree
 
 ---
 

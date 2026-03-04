@@ -50,22 +50,22 @@ VISIBILITY: R2 does NOT know which claims are seeded faults
 
 ## Fault Taxonomy
 
-The fault taxonomy is defined in `assets/fault-taxonomy.yaml`. Eight categories, derived from real errors observed across 21 sprints of the CRISPR case study:
+The fault taxonomy is defined in `assets/fault-taxonomy.yaml`. Eight categories, derived from real errors observed across research investigations:
 
 | Fault ID | Category | Catches |
 |----------|----------|---------|
 | SFI-01 | Confounded claim | Signal that reverses under propensity matching |
 | SFI-02 | Already-known finding | Established result presented as novel |
-| SFI-03 | Biological impossibility | Claim violating known domain constraints |
+| SFI-03 | Domain impossibility | Claim violating known domain-specific constraints |
 | SFI-04 | Noise-as-signal | Sub-threshold effect presented as meaningful |
-| SFI-05 | Non-generalizable finding | Assay-specific result claimed as universal |
+| SFI-05 | Non-generalizable finding | Context-specific result claimed as universal |
 | SFI-06 | Citation fabrication | Non-resolving DOI or misattributed finding |
 | SFI-07 | Statistical artifact | Wrong test, uncorrected multiple comparisons |
 | SFI-08 | Missing control | Comparison without appropriate baseline |
 
 Each fault in the taxonomy carries: difficulty rating (EASY / MEDIUM / HARD), equivalence risk (LOW / MEDIUM / HIGH), and current state.
 
-**Fault generation is HUMAN-ONLY.** The LLM does not generate faults for itself. The taxonomy is authored by the human architect based on real errors from historical sprints.
+**Fault generation is HUMAN-ONLY.** The LLM does not generate faults for itself. The taxonomy is authored by the human architect based on real errors from historical investigations.
 
 ---
 
@@ -158,4 +158,21 @@ CHECKPOINT-r2 (FORCED) triggered
   +-- V0 FAIL? --> Log failure, re-review entire claim set, check escalation threshold
 ```
 
-SFI does not replace any existing gate. It wraps the R2 review to validate the reviewer before trusting the review. All downstream gates (G1-G7) operate on the cleaned output (seeded faults removed).
+SFI does not replace any existing gate. It wraps the R2 review to validate the reviewer before trusting the review. All downstream gates (G0-G6) operate on the cleaned output (seeded faults removed).
+
+---
+
+## v6.0 DB TRACKING
+
+### Calibration Feedback Loop
+SFI results are logged to the `r2_reviews` table:
+- `sfi_caught`: number of seeded faults R2 caught
+- `sfi_injected`: total faults injected
+- `sfi_missed`: JSON array of fault types R2 missed
+
+### R2 Calibration Integration
+Missed faults feed back into R2 calibration hints via temporal decay:
+- If R2 repeatedly misses "confounded_effect" faults, SessionStart will inject: "SFI: R2 most frequently misses fault type 'confounded_effect'. Inject faults of this category with priority."
+- This creates a self-improving feedback loop: miss → hint → focus → catch
+
+See `references/r2-calibration.md` for the decay formula.

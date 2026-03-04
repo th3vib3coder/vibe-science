@@ -12,31 +12,31 @@ The Auto-Experiment protocol handles the ACT phase for computational tree nodes:
 
 ```
 1. RECEIVE PLAN (from THINK phase)
-   └── Node plan: what to run, what to measure, what files to produce
+   +-- Node plan: what to run, what to measure, what files to produce
 
 2. CODE GENERATION
-   ├── If draft node: generate new script from scratch
-   ├── If improve/hyper node: modify parent node's code
-   ├── If ablation node: remove one component from parent's code
-   ├── If replication node: copy parent's code, change only seed
-   └── If debug node: diagnose and fix parent's bug
+   |-- If draft node: generate new script from scratch
+   |-- If improve/hyper node: modify parent node's code
+   |-- If ablation node: remove one component from parent's code
+   |-- If replication node: copy parent's code, change only seed
+   +-- If debug node: diagnose and fix parent's bug
 
 3. PRE-EXECUTION CHECK
-   └── Gate G0 where applicable (data integrity)
+   +-- Gate G0 where applicable (data integrity)
 
 4. EXECUTE
-   ├── Run script
-   ├── Capture stdout, stderr, execution time
-   └── Save execution log
+   |-- Run script
+   |-- Capture stdout, stderr, execution time
+   +-- Save execution log
 
 5. POST-EXECUTION
-   ├── Parse metrics from output
-   ├── Compute delta from parent metrics
-   ├── Save all artifacts (scripts, data, figures, logs)
-   └── Detect if execution failed (buggy node)
+   |-- Parse metrics from output
+   |-- Compute delta from parent metrics
+   |-- Save all artifacts (scripts, data, figures, logs)
+   +-- Detect if execution failed (buggy node)
 
 6. RETURN to EVALUATE
-   └── Results ready for scoring, gating, serendipity radar
+   +-- Results ready for scoring, gating, serendipity radar
 ```
 
 ---
@@ -51,7 +51,7 @@ The Auto-Experiment protocol handles the ACT phase for computational tree nodes:
    - Print metrics to stdout in parseable format (see Metric Output Format)
    - Save figures to specified output directory
    - Save results to specified output file
-3. Use skill-router.md to dispatch to appropriate MCP skill for domain-specific code
+3. Use skill-router.md to dispatch to appropriate domain tools for specialized code
 
 ### For `improve` / `hyperparameter` Nodes (refinement)
 1. Start from parent node's code (`code_path` in parent's YAML)
@@ -120,17 +120,17 @@ If no `[METRIC]` lines found in output:
 Each computational node produces files in:
 ```
 08-tree/nodes/{node_id}-{type}/
-├── script.py              # The generated/modified script
-├── diff.patch             # Diff from parent (if improve/hyper/ablation)
-├── execution.log          # stdout + stderr
-├── metrics.json           # Parsed metrics
-├── figures/               # Generated figures (if any)
-│   ├── fig1.png
-│   └── ...
-├── data/                  # Output data (if any)
-│   ├── results.csv
-│   └── ...
-└── node-{id}-{type}.yaml  # Full node metadata
+|-- script.py              # The generated/modified script
+|-- diff.patch             # Diff from parent (if improve/hyper/ablation)
+|-- execution.log          # stdout + stderr
+|-- metrics.json           # Parsed metrics
+|-- figures/               # Generated figures (if any)
+|   |-- fig1.png
+|   +-- ...
+|-- data/                  # Output data (if any)
+|   |-- results.csv
+|   +-- ...
++-- node-{id}-{type}.yaml  # Full node metadata
 ```
 
 ---
@@ -162,16 +162,16 @@ Each computational node produces files in:
 
 ## Skill Dispatch for Code Generation
 
-When generating code, dispatch to the appropriate MCP skill:
+When generating code, dispatch to the appropriate domain tools:
 
-| Task | Skill | Notes |
-|------|-------|-------|
-| ML classification/regression | `scikit-learn` | Standard ML pipelines |
-| Deep learning | `pytorch-lightning` | Training loops, models |
-| scRNA-seq analysis | `scanpy`, `scvi-tools` | Single-cell workflows |
-| Statistical analysis | `statsmodels` | Regression, GLM, tests |
-| Visualization | `matplotlib`, `scientific-visualization` | Figures |
-| Data manipulation | `anndata`, exploratory-data-analysis | Data handling |
+| Task | Tool Category | Notes |
+|------|---------------|-------|
+| ML classification/regression | ML frameworks | Standard ML pipelines |
+| Deep learning | Deep learning frameworks | Training loops, models |
+| Domain-specific analysis | Domain tools | Specialized analysis workflows |
+| Statistical analysis | Statistical packages | Regression, GLM, tests |
+| Visualization | Plotting libraries | Figures |
+| Data manipulation | Data handling tools | Data loading and transformation |
 
 Use `find_helpful_skills(task_description)` to identify the right skill, then `read_skill_document(skill_name)` for implementation guidance.
 
@@ -186,7 +186,7 @@ Use `find_helpful_skills(task_description)` to identify the right skill, then `r
 | Import error | stderr contains "ModuleNotFoundError" | Note missing package. Debug node should install or use alternative. |
 | Data not found | stderr contains "FileNotFoundError" | Check data path. Debug node should fix path. |
 | OOM | stderr contains "MemoryError" or killed | Reduce batch size, subsample data, or note as constraint. |
-| NaN loss | metrics contain NaN | Check: non-integer counts? extreme outliers? learning rate too high? |
+| NaN loss | metrics contain NaN | Check: data preprocessing issues? extreme outliers? learning rate too high? |
 | Timeout | execution exceeds limit | Kill process. Note timeout. May need optimization or simpler approach. |
 | Empty output | stdout has no [METRIC] lines | Check script logic. May need different output format. |
 

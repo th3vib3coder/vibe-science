@@ -2,6 +2,44 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.11] — 2026-03-04 — Protocol/Reference Sync (17 files, 80+ edits)
+
+> **Trigger:** Round 23 paranoid deep debug — systematic comparison of all 18 paired files between `protocols/` (repo context) and `skills/vibe/references/` (plugin context). The references/ copies had been updated to v6.0 standards (generalized language, corrected thresholds, v6.0 hook sections) but protocols/ copies were stale. Found: Unicode symbols instead of ASCII, domain-specific CRISPR/scRNA-seq examples instead of generic language, old serendipity thresholds (>=12 instead of >=15), missing v6.0 sections, and Sprint 17 case study references instead of anonymized lessons.
+
+### Fixed — Full sync (protocols/ replaced from references/, preserving schema path convention)
+- **blind-first-pass.md**: Full sync from references/ (Unicode arrows/symbols to ASCII)
+- **circuit-breaker.md**: Full sync from references/ (Unicode to ASCII, generalized examples)
+- **seeded-fault-injection.md**: Full sync from references/ (Unicode to ASCII, generic fault examples)
+- **judge-agent.md**: Full sync from references/ (Unicode to ASCII)
+- **tree-search.md**: Full sync (serendipity >= 12 to >= 15, Unicode to ASCII throughout)
+- **writeup-engine.md**: Full sync (Unicode checkbox to ASCII [])
+- **search-protocol.md**: Full sync (CRISPR-specific search examples to generic)
+- **auto-experiment.md**: Full sync (Unicode to ASCII, domain-specific dispatch to generic)
+- **audit-reproducibility.md**: Full sync (CRISPR/scRNA examples to generic, Unicode to ASCII)
+
+### Fixed — Targeted edits (protocols/ has unique content preserved)
+- **schema-validation.md**: Schema list expanded 9 to 12 (added v6.0 schemas)
+- **knowledge-base.md**: Unicode arrows/tree-chars to ASCII
+- **experiment-manager.md**: 6 targeted edits (Unicode to ASCII, CRISPR dispatch to generic); kept unique DC0 section
+- **serendipity-engine.md**: 7 targeted fixes (Unicode to ASCII, old thresholds to v5.0 scale); added v6.0 CROSS-SESSION SEED SURVIVAL section
+- **brainstorm-engine.md**: 15 edits across 3 context windows (collision score 0-15 to 0-20, promotion threshold 8 to 10, Unicode to ASCII); kept unique L-1 Literature Pre-Check, TEAM Mode Distribution, role annotations
+- **data-extraction.md**: 2 edits (minor Unicode); kept unique DD0 Data Dictionary, AnnData Contract, schema violation triage
+- **evidence-engine.md**: 22 edits total (Sprint 17 to anonymized lesson, CRISPR confounders to generic domain lists, PubMed/Scopus/OpenAlex to "databases", domain-specific confounder lists replaced with 4 generic domains); kept unique Single Source of Truth v5.5 section
+- **loop-otae.md**: 9 edits total (Unicode to ASCII, serendipity scale 0-15 to 0-20, thresholds aligned); added v6.0 HOOK INTEGRATION section documenting how hooks support each OTAE phase
+
+### Deferred
+- **reviewer2-ensemble.md**: Major v5.5 to v6.0 architectural rewrite (650 lines protocols/ vs 326 lines references/) — deferred to Round 24
+
+### Design Decisions
+- **Schema paths preserved**: protocols/ uses `schemas/` (repo-relative), references/ uses `assets/schemas/` (skill-relative) — both correct for their context, intentionally different
+- **Unique content kept**: 6 files in protocols/ have sections not present in references/ (DD0, AnnData, DC0, L-1, TEAM mode, SSOT) — these are protocol-specific elaborations, not drift
+- **Domain generalization**: All CRISPR off-target, scRNA-seq, and Sprint 17 case study references replaced with domain-agnostic language — protocols/ is now reusable across any research domain
+
+### Validation
+- Grep scans: 0 remaining Unicode symbols in edited files, 0 domain-specific terms (CRISPR/scRNA/Sprint 17) in edited files
+- Cross-protocol scan: remaining issues only in out-of-scope files (analysis-orchestrator.md, reviewer2-ensemble.md, vlm-gate.md)
+- No test suite exists in current repo state (test files removed in prior restructuring)
+
 ## [6.0.10] — 2026-03-04 — Cross-Cutting Consistency Sweep (8 checks, 8 fixes)
 
 > **Trigger:** Round 22 paranoid deep debug — cross-cutting audit searching for the SAME fact stated differently in different files. Ran 8 systematic checks across ALL live files: gate count, law count, hook count, schema count, DB table count, LOC count, serendipity scale, version strings. Found mismatches in 8 files across 4 of the 8 check categories.

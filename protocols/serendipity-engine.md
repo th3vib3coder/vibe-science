@@ -12,9 +12,9 @@ Serendipity is NOT just flagging anomalies. It is a three-part process:
 
 1. **DETECTION**: Notice the anomaly (the Serendipity Radar does this)
 2. **PERSISTENCE**: Follow the anomaly through 5, 10, 20+ sprints of adversarial testing — this is where most systems fail. They flag the anomaly and move on. Real serendipity requires relentless follow-through.
-3. **VALIDATION**: The anomaly survives confounder harness (LAW 9), cross-assay replication, permutation testing, and R2 demolition. Only THEN is it a finding.
+3. **VALIDATION**: The anomaly survives confounder harness (LAW 9), cross-dataset replication, permutation testing, and R2 demolition. Only THEN is it a finding.
 
-**The lesson from the CRISPR case study:** UOT failed (Sprint 3) → Serendipity Engine scored 13/15 → investigation pivoted → 21 sprints of adversarial testing → 4 validated findings across 1.38M sites. The serendipity flag at Sprint 3 was the BEGINNING, not the end. Without the 18 subsequent sprints of falsification, the flag would have been meaningless.
+**The lesson from prior case studies:** An initial method failure triggered a serendipity flag → investigation pivoted → many sprints of adversarial testing → multiple validated findings. The serendipity flag was the BEGINNING, not the end. Without the subsequent sprints of falsification, the flag would have been meaningless.
 
 **Implication:** Serendipity flags MUST be tracked with the same persistence as research questions. A serendipity flag that is not followed up within 5 cycles gets escalated. A flag that IS followed up gets the full confounder harness treatment.
 
@@ -60,7 +60,7 @@ At every EVALUATE phase, BEFORE gates, run all 5 scans:
 | Novelty | 0-3 | 0: already known. 1: slight variation. 2: new angle. 3: no prior art found |
 | Feasibility | 0-3 | 0: impossible to follow up. 1: requires major effort. 2: achievable. 3: straightforward |
 | Falsifiability | 0-3 | 0: unfalsifiable. 1: vaguely testable. 2: clear test exists. 3: discriminating test identified with expected outcomes |
-| Urgency | 0-2 | 0: can wait indefinitely. 1: time-sensitive (data expiring, competing lab). 2: critical window |
+| Urgency | 0-2 | 0: can wait indefinitely. 1: time-sensitive (data expiring, competing group). 2: critical window |
 
 **Total = sum of all 7 components (0-20)** *(v4.0 used 5 components for 0-15; v5.0 adds Falsifiability and Urgency)*
 
@@ -105,7 +105,7 @@ A conforming seed has the following structure:
 
 ```yaml
 seed_id: SEED-YYYYMMDD-NNN
-status: PENDING_TRIAGE | QUEUED | TESTING | KILLED | PROMOTED_TO_CLAIM
+status: PENDING_TRIAGE | QUEUED | EXPLORED | KILLED
 source: SCANNER | SALVAGED_FROM_R2 | CROSS_BRANCH | USER
 score: 0-20
 
@@ -116,7 +116,7 @@ falsifiers:     # 3-5 specific ways this could be an illusion
   - "[artifact of method Z]"
 discriminating_test: "[one specific test]"
 fallback_test: "[backup if primary infeasible]"
-expected_value: "[impact] × [probability] × [cost]"
+expected_value: "[impact] * [probability] * [cost]"
 
 source_run_id: "[run/cycle]"
 source_claim_id: "[if salvaged]"
@@ -130,7 +130,7 @@ resolution: "[when done]"
 ```
 
 Key design decisions:
-- **`causal_question`** forces the seed author to articulate a mechanism, not just an observation. "Gene X is differentially expressed" is not a seed; "Gene X's differential expression is caused by off-target editing at locus Y" is.
+- **`causal_question`** forces the seed author to articulate a mechanism, not just an observation. "Variable X is different" is not a seed; "Variable X's difference is caused by mechanism Y" is.
 - **`falsifiers`** are mandatory. A seed without falsifiers is unfalsifiable and scores 0 on the Falsifiability dimension.
 - **`discriminating_test`** and **`fallback_test`** ensure that every seed has an actionable next step before it enters the queue.
 - **`expected_value`** combines impact, probability, and cost to help prioritize across seeds.
@@ -304,3 +304,32 @@ In SOLO mode, the radar runs as part of every EVALUATE phase (same checks, same 
 | Cross-branch pattern detected | Score it → if >= 10: QUEUE, if >= 15: INTERRUPT |
 | Serendipity node produces `good` result | R2 FORCED review |
 | R2 confirms serendipity finding | Present to user: extend current RQ or spawn new |
+
+---
+
+## v6.0 CROSS-SESSION SEED SURVIVAL
+
+### DB Storage
+Serendipity seeds are stored in the `serendipity_seeds` DB table:
+- `seed_id`: unique identifier
+- `causal_question`: the question the seed asks
+- `discriminating_test`: what test would confirm/deny it
+- `score`: serendipity score (0-20)
+- `status`: PENDING_TRIAGE, QUEUED, EXPLORED, KILLED
+- `created_session`: which session created it
+
+### Session-Start Loading
+SessionStart loads top 5 pending seeds (PENDING_TRIAGE or QUEUED, ordered by score DESC) and injects them as `[PENDING SEEDS]` in context.
+
+### PreCompact Snapshots
+PreCompact hook includes pending seeds in its snapshot, ensuring they survive context compaction.
+
+### Lifecycle
+1. R2 kills a claim → Salvagente rule → seed created (PENDING_TRIAGE)
+2. Serendipity radar detects anomaly → seed created (PENDING_TRIAGE)
+3. Next session start → seed loaded into context → researcher triages
+4. If promising → QUEUED → investigated in current or future session
+5. If investigated → EXPLORED (with resolution notes)
+6. If not worth pursuing → KILLED (with reason)
+
+Seeds that survive across 3+ sessions without being triaged get ESCALATED priority.

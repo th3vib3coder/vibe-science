@@ -25,19 +25,19 @@ Before the writeup engine can produce output, verify these exist:
 
 ```
 REQUIRED:
-□ CLAIM-LEDGER.md — all claims with final statuses
-□ ASSUMPTION-REGISTER.md — all assumptions with statuses
-□ CONFOUNDER-HARNESS files — for every promoted quantitative claim
-□ R2 final ensemble review — ACCEPT verdict
-□ TREE-STATE.json — full tree with best nodes identified
-□ 08-tree/best-nodes.md — stage-best summaries
-□ RQ.md — original hypothesis, success criteria, kill conditions
-□ 00-brainstorm/ — context, landscape, gaps, hypotheses
+[] CLAIM-LEDGER.md — all claims with final statuses
+[] ASSUMPTION-REGISTER.md — all assumptions with statuses
+[] CONFOUNDER-HARNESS files — for every promoted quantitative claim
+[] R2 final ensemble review — ACCEPT verdict
+[] TREE-STATE.json — full tree with best nodes identified
+[] 08-tree/best-nodes.md — stage-best summaries
+[] RQ.md — original hypothesis, success criteria, kill conditions
+[] 00-brainstorm/ — context, landscape, gaps, hypotheses
 
 RECOMMENDED:
-□ 06-runs/ — run manifests and reports
-□ 08-tree/tree-visualization.md — final tree snapshot
-□ Figures validated by VLM (if available)
+[] 06-runs/ — run manifests and reports
+[] 08-tree/tree-visualization.md — final tree snapshot
+[] Figures validated by VLM (if available)
 ```
 
 ---
@@ -125,7 +125,7 @@ When converting claims to prose:
 ## Supplementary Materials
 
 Generate supplementary materials for:
-- Full claim ledger (all 34+ claims with statuses)
+- Full claim ledger (all claims with statuses)
 - Confounder harness results for each quantitative claim
 - Tree search visualization (final snapshot)
 - Sprint reports (if applicable)
@@ -138,13 +138,13 @@ Generate supplementary materials for:
 
 Use skill-router.md to dispatch to writing skills:
 
-| Task | Skill |
-|------|-------|
-| Paper draft | `scientific-writing` skill |
-| LaTeX formatting | `venue-templates` skill (for specific venues) |
-| Citation formatting | `citation-management` skill |
-| Figures | `scientific-visualization` skill |
-| Supplementary tables | `xlsx` or internal formatting |
+| Task | Tool Category |
+|------|---------------|
+| Paper draft | Scientific writing tools |
+| LaTeX formatting | Template/formatting tools (for specific venues) |
+| Citation formatting | Citation management tools |
+| Figures | Scientific visualization tools |
+| Supplementary tables | Spreadsheet or internal formatting |
 
 ---
 

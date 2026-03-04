@@ -2,9 +2,11 @@
 
 Anti-anchoring barrier for R2 Ensemble reviews. Forces independent assessment before exposure to the researcher's framing, methodology, or confidence computation.
 
-**v5.0 addition**: Two-phase review within a single R2 invocation, CoVe verification questions, self-consistency N=3 for SOLO mode, mandatory discrepancy accounting. Integrates with R3 Independence scoring.
+**v5.0 addition**: Two-phase review within a single R2 invocation, CoVe verification questions, self-consistency N=3, mandatory discrepancy accounting. Integrates with R3 Independence scoring.
 
 **When**: Every FORCED R2 review. Not BATCH, not SHADOW, not BRAINSTORM.
+
+> **Note (v6.0):** In Claude Code multi-agent mode, BFP is native: the R2 sub-agent has a separate context and never sees the researcher's reasoning. The two-phase protocol described below applies to single-agent (SOLO) mode where R2 is a persona within the same context. In multi-agent mode, Phase 1 is structurally guaranteed by context isolation — the R2 agent literally cannot see the researcher's justifications until they are explicitly passed. Phase 2 still applies: the R2 agent receives full context and must reconcile with its independent assessment.
 
 ---
 
@@ -81,16 +83,16 @@ Rule: If a Phase 1 concern disappears in Phase 2 without the evidence explicitly
 
 ---
 
-## SOLO Mode Enhancement -- Self-Consistency
+## Self-Consistency Enhancement
 
-In SOLO mode, for FORCED reviews on high-risk claims (confidence >= 0.60):
+For FORCED reviews on high-risk claims (confidence >= 0.60):
 
 1. R2 generates **N=3 independent Phase 1 assessments** using different sampling (temperature variance).
 2. Each assessment produces its own evidence-needed list, alternatives, and verdict.
 3. The **most conservative** verdict wins (not majority vote). Ordering: `SUSPICIOUS` > `PLAUSIBLE` > `STRONG`.
 4. All three assessments are logged; the final Phase 1 output uses the most conservative.
 
-This creates divergence without context separation. Self-consistency at equal compute cost compensates for the absence of a separate reviewer context window (Wang et al., arXiv:2203.11171).
+This creates divergence within a single context. Self-consistency at equal compute cost provides independent assessment diversity (Wang et al., arXiv:2203.11171).
 
 ---
 
@@ -101,4 +103,16 @@ The R3 rubric scores an **Independence** dimension. BFP provides structural evid
 - R3 reads the `blind_assessment_comparison` section from the ensemble report.
 - If Phase 1 concerns vanish in Phase 2 without being addressed: Independence score drops (score 0-1 on that dimension).
 - If Phase 1 concerns are retained or explicitly resolved: Independence score holds (score 2-3).
-- In SOLO mode, R3 also checks whether self-consistency N=3 was performed for high-risk claims. If skipped, Independence score cannot exceed 1.
+- R3 also checks whether self-consistency N=3 was performed for high-risk claims. If skipped, Independence score cannot exceed 1.
+
+---
+
+## v6.0 NATIVE BFP IN CLAUDE CODE
+
+In Claude Code, the Task tool provides **native Blind-First Pass** by architecture. When R2-DEEP is spawned as a sub-agent via Task tool:
+
+1. The sub-agent gets a **fresh context window** — it has never seen the researcher's reasoning, excitement, or justifications
+2. The sub-agent receives ONLY: claims, evidence artifacts, data files, and the research question
+3. This is structurally superior to same-agent BFP simulation, which requires the agent to deliberately ignore its own prior reasoning (unreliable)
+
+No protocol enforcement is needed — the architecture guarantees isolation. The two-phase review (blind → informed) happens naturally when the sub-agent's verdict is returned and the researcher provides justifications for a second pass.

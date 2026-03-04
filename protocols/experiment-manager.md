@@ -105,13 +105,13 @@ Adapted from AI-Scientist-v2's 4-stage manager. We add Stage 5 (Synthesis & Revi
 **Activities:**
 - Ablate each key component: remove one at a time, measure impact
 - Multi-seed validation: minimum 3 seeds for best configuration
-- Cross-dataset/cross-assay validation if generalizable claims are made
+- Cross-dataset validation if generalizable claims are made
 - Confounder harness (LAW 9) for ALL promoted claims
 
 **Advance when (Gate S4):**
 - All key components ablated, contribution quantified
 - Multi-seed validation complete (minimum 3 seeds for best config)
-- Cross-dataset/cross-assay validation attempted (if generalizable claims)
+- Cross-dataset validation attempted (if generalizable claims)
 - Confounder harness run for ALL promoted claims (LAW 9)
 - R2 batch review at transition
 
@@ -131,7 +131,7 @@ Adapted from AI-Scientist-v2's 4-stage manager. We add Stage 5 (Synthesis & Revi
 
 **Activities:**
 - Synthesize all findings into coherent narrative
-- Run final R2 full ensemble review (all 4 reviewers, double-pass)
+- Run final R2 full ensemble review (all reviewers, double-pass)
 - Verify all claims are consistent with evidence
 - Produce final report/paper draft via writeup-engine.md
 - Update knowledge base with reusable learnings
@@ -172,7 +172,7 @@ DC0 Design Compliance:
    → If deviation is significant (e.g., dropping a whole dataset): WARN
 ```
 
-**Why this exists:** The CRISPR post-mortem revealed that a dataset (CRISPRoffT) was downloaded in hour 1 but not used for 7 hours (M2), despite the design calling for it. DC0 catches this kind of execution drift early.
+**Why this exists:** Post-mortem analysis revealed that datasets can be downloaded early but not used for hours despite the design calling for them. DC0 catches this kind of execution drift early.
 
 **DC0 is NOT about rigidly following the design.** Research evolves. Deviations are often correct. DC0 is about making deviations EXPLICIT and DOCUMENTED, not silent and accidental.
 
@@ -221,9 +221,9 @@ The stage mapping is set during Phase 0 COMMIT and stored in RQ.md.
 
 | Situation | Stage | Action |
 |-----------|-------|--------|
-| Serendipity INTERRUPT (score >= 12) | Any | Create serendipity node regardless of stage |
+| Serendipity INTERRUPT (score >= 15) | Any | Create serendipity node regardless of stage |
 | R2 VETO on entire approach | Any | Can force return to Stage 1 or Phase 0 |
 | All Stage 1 nodes fail | 1 | Revisit Phase 0 hypothesis |
 | No improvement in Stage 2 | 2 | Consider Stage 1 approach was wrong |
 | Time budget exceeded | Any | Advance to Stage 5 with whatever is available |
-| Cross-assay fails in Stage 4 | 4 | Downgrade generalizable claims, don't kill validated local claims |
+| Cross-dataset fails in Stage 4 | 4 | Downgrade generalizable claims, don't kill validated local claims |

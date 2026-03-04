@@ -2,12 +2,12 @@
 
 ## Source Priority
 
-Route through Skill Router to appropriate MCP skills:
+Route through Skill Router to appropriate scientific tools:
 
 1. **Scopus** (via API/web) — comprehensive, citation data, best for systematic coverage
 2. **PubMed** → `pubmed-database` skill — biomedical focus, MeSH precision
 3. **OpenAlex** → `openalex-database` skill — open scholarly data, connection discovery
-4. **bioRxiv** → `biorxiv-database` skill — preprints (confidence penalty applies)
+4. **Preprint servers** → domain-appropriate preprint databases — preprints (confidence penalty applies)
 5. **web_search** — fallback only (lowest confidence tier)
 
 ## Search Deduplication
@@ -26,9 +26,9 @@ Every search must be logged:
 ```markdown
 ## Search Log Entry
 
-**Query:** TITLE-ABS-KEY("unbalanced optimal transport") AND TITLE-ABS-KEY(biology OR genomics)
-**Database:** Scopus | PubMed | OpenAlex | bioRxiv
-**MCP Skill used:** pubmed-database | openalex-database | biorxiv-database | web_search
+**Query:** TITLE-ABS-KEY("method X") AND TITLE-ABS-KEY(domain Y)
+**Database:** Scopus | PubMed | OpenAlex | Preprints
+**Tool used:** pubmed-database | openalex-database | domain-tool | web_search
 **Date:** YYYY-MM-DD
 **Results:** N total
 **Relevant:** N relevant
@@ -53,8 +53,8 @@ PUBYEAR > 2020 &sort=citedby-count
 
 ### PubMed (via pubmed-database skill)
 ```
-"CRISPR-Cas Systems"[MeSH] AND "Off-Target Effects"[MeSH]
-(optimal transport[tiab]) AND ("2020"[PDAT] : "2025"[PDAT])
+"Research Topic"[MeSH] AND "Subtopic"[MeSH]
+(method name[tiab]) AND ("2020"[PDAT] : "2025"[PDAT])
 ```
 
 ### OpenAlex (via openalex-database skill)
@@ -64,9 +64,9 @@ Use skill's search API with filters for concept, year, cited_by_count.
 
 | Source | E-component (Evidence Quality) |
 |--------|-------------------------------|
-| Peer-reviewed, high-impact (Nature, Science, Cell, etc.) | 1.0 |
+| Peer-reviewed, high-impact journal | 1.0 |
 | Peer-reviewed, standard journal | 0.8 |
-| bioRxiv/medRxiv preprint, credible methodology | 0.6 |
+| Preprint with credible methodology | 0.6 |
 | Preprint without replication, conference proceedings | 0.4 |
 | Blog, technical report, single unreplicated observation | 0.2 |
 | Training knowledge only, web_search without verification | 0.0 |
@@ -78,7 +78,7 @@ Use skill's search API with filters for concept, year, cited_by_count.
 3. **QUOTE** exact text — do not paraphrase factual claims
 4. **VERIFY** DOIs are accessible (web_fetch on doi.org/DOI)
 5. **MARK** confidence using quantitative formula (see evidence-engine.md)
-6. Training knowledge only → E=0.0, flag with ⚠️
+6. Training knowledge only → E=0.0, flag explicitly
 7. Register every claim in CLAIM-LEDGER.md upon discovery
 
 ## Citation Verification (Before Claim Promotion)

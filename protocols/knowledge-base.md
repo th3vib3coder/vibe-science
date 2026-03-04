@@ -10,10 +10,10 @@ The Knowledge Base accumulates reusable information across research questions. I
 
 ```
 .vibe-science/KNOWLEDGE/
-├── library.json          # Index of known papers, authors, datasets, methods
-├── patterns.md           # Cross-domain patterns discovered
-├── methods.md            # Reusable methodological knowledge
-└── dead-ends.md          # What didn't work and why (prevents re-exploring)
+|-- library.json          # Index of known papers, authors, datasets, methods
+|-- patterns.md           # Cross-domain patterns discovered
+|-- methods.md            # Reusable methodological knowledge
++-- dead-ends.md          # What didn't work and why (prevents re-exploring)
 ```
 
 ## library.json Schema
@@ -90,7 +90,7 @@ The Knowledge Base accumulates reusable information across research questions. I
 
 ```markdown
 ## PAT-001: [Pattern Name]
-- **Domains connected:** [field A] ↔ [field B]
+- **Domains connected:** [field A] <-> [field B]
 - **Pattern:** [What's the connection]
 - **Evidence:** [DOI or RQ reference]
 - **Potential applications:** [Where else this might apply]

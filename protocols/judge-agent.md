@@ -64,9 +64,9 @@ J0 is NOT schema-enforced (rubric-based, not artifact-based).
 
 ---
 
-## SOLO Mode Specification
+## Independence Specification
 
-In SOLO mode, R3 operates in the same context as researcher and R2. To preserve independence:
+R3 operates in the same context as researcher and R2. To preserve independence:
 
 1. **Blind input**: R3 receives ONLY R2's ensemble report and the claims under review. NOT the researcher's justifications, methodology descriptions, or confidence computations. Same blind principle as BFP Phase 1.
 
@@ -74,7 +74,7 @@ In SOLO mode, R3 operates in the same context as researcher and R2. To preserve 
 
 3. **Self-consistency N=2**: R3 scores the review twice using different sampling. The **lower** total score wins. This compensates for the "be generous to yourself" bias inherent in same-context evaluation.
 
-4. **Monitoring**: If J0 FAIL rate in SOLO mode is consistently > 50% higher than in TEAM mode (measured over 10+ sessions), escalate to human. The SOLO R3 may not be providing real scrutiny.
+4. **Monitoring**: If J0 FAIL rate is consistently > 50% (measured over 10+ sessions), escalate to human. R3 may not be providing real scrutiny.
 
 ---
 
@@ -85,8 +85,7 @@ JUDGE AGENT (R3) PROTOCOL
 
 WHEN:   After every FORCED R2 review completes and passes V0
         (not BATCH, not SHADOW — cost management)
-WHO:    Separate context from both researcher and R2.
-        In SOLO mode: same context, blind input (see SOLO spec above).
+WHO:    Same context, blind input (see Independence spec above).
 INPUT:  R2's ensemble report (YAML) + claims under review (from CLAIM-LEDGER.md)
         Explicitly EXCLUDED: researcher's justifications, methodology, confidence computations
 OUTPUT: J0 gate verdict + rubric scores + specific feedback to R2
@@ -110,7 +109,7 @@ STEPS:
 
 4. COMPUTE TOTAL
    total = sum of 6 dimension scores (range: 0-18).
-   In SOLO mode: repeat steps 3-4 with different sampling.
+   Repeat steps 3-4 with different sampling (self-consistency N=2).
    Take the LOWER of the two totals.
 
 5. EVALUATE J0 GATE
@@ -127,7 +126,7 @@ STEPS:
    Contents:
      judge_report_id: J-YYYYMMDD-NNN
      ensemble_reviewed: ENS-YYYYMMDD-NNN
-     mode: SOLO | TEAM
+     mode: SOLO
      dimensions:
        specificity: {score: N, evidence: "..."}
        counter_evidence_search: {score: N, evidence: "..."}
@@ -136,7 +135,7 @@ STEPS:
        independence: {score: N, evidence: "..."}
        escalation: {score: N, evidence: "..."}
      total: N
-     solo_scores: [N1, N2]          # SOLO mode only — both samples
+     consistency_scores: [N1, N2]    # Both scoring samples
      verdict: PASS | WEAK_PASS | FAIL
      feedback_to_r2: "..."          # Specific, actionable — which dimensions failed and why
      consecutive_failures: N         # Track for escalation
@@ -186,3 +185,26 @@ FORCED reviews occur approximately 5-10 times per RQ. Running R3 on every review
 ## Why R3, Not R4
 
 Data Processing Inequality: in a text-only chain (R2 reads claims, R3 reads R2's review, R4 reads R3's report), each layer cannot increase information about the original data. R4 would be noise plus cost. Width over depth: add more R2 reviewers in parallel (self-consistency N=3), not more meta-review layers. Standard peer review uses at most Reviewers + Meta-reviewer (Area Chair). Two layers is the norm; three is exceptional.
+
+---
+
+## v6.0 J0 TREND TRACKING
+
+### Temporal Decay
+J0 scores are tracked with timestamps and weighted by exponential decay:
+```
+weight = exp(-0.02 * ageWeeks)
+```
+
+### Trend Computation
+- Recent 3 scores vs older 3 scores (both decay-weighted)
+- If weighted average of recent > older → "improving"
+- If weighted average of recent < older → "declining"
+- Otherwise → "stable"
+- Fewer than 6 data points → "insufficient_data" or "early_data"
+
+### Session-Start Warning
+If J0 trend is "declining", SessionStart injects a warning:
+"J0 score declining in recent sessions. R2 review quality is degrading."
+
+This warns the researcher that R2's meta-review quality is dropping, prompting extra attention to review rigor.

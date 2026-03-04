@@ -48,7 +48,7 @@ Phase 0 produces: a locked RQ with hypothesis, success criteria, kill conditions
 
 **Actions:**
 1. Rapid literature scan using search-protocol.md
-2. Dispatch to relevant skills: `openalex-database`, `pubmed-database`, `biorxiv-database`
+2. Dispatch to relevant skills: `openalex-database`, `pubmed-database`, or other domain-appropriate search tools
 3. Identify: major papers (last 3 years), key groups, dominant methods, recent trends
 4. Map the competitive landscape: who is doing what, where are the clusters
 
@@ -80,12 +80,12 @@ Phase 0 produces: a locked RQ with hypothesis, success criteria, kill conditions
 
 **Gate:** L-1 (Literature Pre-Check) — MUST PASS before proceeding to GAPS.
 
-**Why this exists (v5.5):** The CRISPR post-mortem revealed that pursuing a direction without first checking for prior work wastes hours (M1: spin glass dead end — Fu 2022 had already done it). This step is fast (15-30 minutes) and prevents investing in already-explored territory.
+**Why this exists (v5.5):** Post-mortem analysis revealed that pursuing a direction without first checking for prior work wastes hours. This step is fast (15-30 minutes) and prevents investing in already-explored territory.
 
 **Actions:**
 1. For EACH promising direction visible from the landscape, search for the **exact intersection**:
    - PubMed: `"[method]" AND "[domain application]"`
-   - bioRxiv/medRxiv: same query
+   - Preprint servers: same query
    - arXiv: same query (if computational method)
    - Google Scholar: same query (catches theses, conference papers)
 2. Search **components separately** as well:
@@ -124,11 +124,11 @@ Phase 0 produces: a locked RQ with hypothesis, success criteria, kill conditions
 1. Systematic gap identification using multiple strategies (focus on directions that PASSED L-1):
    - **Cross-domain transfer**: Methods successful in field A not yet applied to field B
    - **Assumption reversal**: What if a widely-held assumption is wrong?
-   - **Scale change**: What happens at different scales (single cell vs. tissue vs. organ)?
+   - **Scale change**: What happens at different scales (e.g., micro vs. macro, individual vs. population)?
    - **Negative space**: What has NOT been published? (absence of evidence)
    - **Method gap**: Standard method exists but no one applied it to this specific data type
 2. For each gap: evidence that it IS a gap (not just unaware of existing work)
-3. Preprint check: search bioRxiv/medRxiv to confirm gap is still open
+3. Preprint check: search preprint servers to confirm gap is still open
 
 **Output:** `00-brainstorm/gaps.md`
 ```markdown
@@ -137,7 +137,7 @@ Phase 0 produces: a locked RQ with hypothesis, success criteria, kill conditions
 ## Gap 1: [title]
 - **Description:** [what's missing]
 - **Evidence it's a gap:** [searched X, Y, Z — nothing found]
-- **Preprint check:** [searched bioRxiv YYYY-MM-DD — not addressed]
+- **Preprint check:** [searched preprint servers YYYY-MM-DD — not addressed]
 - **Strategy:** [cross-domain | assumption-reversal | scale-change | negative-space | method-gap]
 - **Potential impact:** [HIGH | MEDIUM | LOW]
 
@@ -155,7 +155,7 @@ After identifying gaps via blue-ocean hunting, systematically invert consensus c
    - **Plausibility** (0-3): Is there any evidence, even indirect, supporting the inversion?
    - **Testability**: Could this inversion be tested with available data?
    - **Prior attempts**: Has anyone tried this and failed? If so, WHY did they fail? Have constraints changed?
-4. Inversions scoring plausibility ≥ 2 → add to gaps.md as "CONTRARIAN GAP"
+4. Inversions scoring plausibility >= 2 → add to gaps.md as "CONTRARIAN GAP"
 5. Inversions where prior attempts failed due to now-resolved constraints → flag as "REVIVAL CANDIDATE"
 
 **Output:** Append to `00-brainstorm/gaps.md`:
@@ -174,7 +174,7 @@ After identifying gaps via blue-ocean hunting, systematically invert consensus c
 
 **Actions:**
 1. For each gap identified, check data availability
-2. Dispatch to relevant skills: `geo-database`, `cellxgene-census`, `openalex-database`, `ensembl-database`
+2. Dispatch to domain-appropriate database tools, data repositories, or search APIs
 3. Score each gap: DATA_AVAILABLE (0-1)
    - 1.0: Public dataset with clear accession, well-documented, sufficient sample size
    - 0.7: Public dataset exists but needs preprocessing or has limitations
@@ -190,7 +190,7 @@ After identifying gaps via blue-ocean hunting, systematically invert consensus c
 - **DATA_AVAILABLE:** 0.X
 - **Dataset:** [name, accession, URL]
 - **Sample size:** [N]
-- **Format:** [h5ad | CSV | FASTQ | ...]
+- **Format:** [CSV, JSON, Parquet, HDF5, ...]
 - **Limitations:** [known issues]
 - **Access:** [public | restricted | requires approval]
 
@@ -225,7 +225,7 @@ After identifying gaps via blue-ocean hunting, systematically invert consensus c
 - **Success criteria:** [measurable]
 - **Kill conditions:** [when to abandon]
 - **Data:** [which dataset]
-- **Skills needed:** [which MCP tools]
+- **Skills needed:** [which available tools]
 
 ## H2: ...
 ```
@@ -242,15 +242,15 @@ After generating domain-internal hypotheses, force at least 1 cross-domain colli
    - Where the analogy HOLDS → potential mechanism insight
    - Where the analogy BREAKS → that's the research frontier
 5. Score the collision hypothesis using the serendipity formula (0-20)
-6. If score ≥ 10 → promote to hypothesis list with tag `[COLLISION]`
-7. If score < 10 → log in `00-brainstorm/hypotheses.md` as "Explored collision, dismissed because [reason]"
+6. If score >= 8 → promote to hypothesis list with tag `[COLLISION]`
+7. If score < 8 → log in `00-brainstorm/hypotheses.md` as "Explored collision, dismissed because [reason]"
 
 **Output:** Append to `00-brainstorm/hypotheses.md`:
 ```
 ## Cross-Domain Collision Hypotheses
 | Our Mechanism | Other Domain | Analogy | Where It Breaks | Serendipity Score | Status |
 |---|---|---|---|---|---|
-| [mechanism] | [domain: principle] | [analogy] | [frontier] | X/15 | PROMOTED / LOGGED |
+| [mechanism] | [domain: principle] | [analogy] | [frontier] | X/20 | PROMOTED / LOGGED |
 ```
 
 **Why this matters:** Natural ideation tends toward incremental thinking. Forced cross-domain collisions generate the kind of non-obvious hypotheses that the Serendipity Engine would flag as INTERRUPT — but at brainstorming time, before any resources are spent.
@@ -292,7 +292,7 @@ After scoring all hypotheses, check for productive tensions that should be prese
 **Protocol:**
 1. Compare the top 2 scored hypotheses
 2. If BOTH conditions are true:
-   - Score difference < 10% (e.g., 10.9 vs 10.1 on a 0-20 scale)
+   - Score difference < 10% (e.g., 8.2 vs 7.6 on a 0-15 scale)
    - They represent genuinely DIFFERENT paradigms (not minor variations)
    Then: **PRESERVE BOTH.** Do NOT eliminate one.
 3. Document: "H-A is preferred IF [condition]. H-B is preferred IF [condition]."
@@ -369,7 +369,7 @@ B0 MUST PASS before any OTAE cycle begins. No exceptions.
 | LANDSCAPE | Researcher | Rapid literature scan |
 | LIT PRE-CHECK | Researcher | Prior art search for each direction (Gate L-1) |
 | GAPS | Researcher + Serendipity | Both hunt for gaps from different angles (L-1 passed directions) |
-| DATA | Researcher | Data audit via GEO, CellxGene, etc. |
+| DATA | Researcher | Data audit via relevant databases |
 | HYPOTHESES | Researcher | Generates hypotheses |
 | TRIAGE | Lead | Synthesizes, scores, presents to user |
 | R2 REVIEW | **Reviewer 2** | Reviews brainstorm output — genuinely independent context! |

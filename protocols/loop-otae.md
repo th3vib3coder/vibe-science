@@ -4,7 +4,7 @@
 
 ## Overview
 
-OTAE = Observe → Think → Act → Evaluate → Checkpoint → Crystallize. Adapted from OpenAI Codex agent loop for scientific research.
+OTAE = Observe → Think → Act → Evaluate → Checkpoint → Crystallize. Adapted for Claude Code multi-agent architecture for scientific research.
 
 v3.5 had a flat OTAE loop: cycle 1 → cycle 2 → cycle 3 → ...
 
@@ -50,8 +50,8 @@ Each cycle produces ONE meaningful action. No multi-step bundles. One action, ve
 ### Consistency Check
 - Does STATE.md's "Current Tree State" match TREE-STATE.json?
 - Does STATE.md's "Next Action" match what PROGRESS.md last recorded?
-- If STATE ↔ TREE mismatch → TREE-STATE.json is authoritative (it's the structured format)
-- If STATE ↔ PROGRESS mismatch → something was interrupted. Resume from PROGRESS.md (it's append-only, more reliable).
+- If STATE <-> TREE mismatch → TREE-STATE.json is authoritative (it's the structured format)
+- If STATE <-> PROGRESS mismatch → something was interrupted. Resume from PROGRESS.md (it's append-only, more reliable).
 - If STATE.md is corrupt or >100 lines → rewrite from PROGRESS.md last 5 entries + TREE-STATE.json.
 
 ### Operational Integrity Check (v5.5)
@@ -95,7 +95,7 @@ After reading, you should know:
    - Stage 3: `draft` (creative variants)
    - Stage 4: `ablation` or `replication`
    - Any stage: `debug` (if parent is buggy, max 3 attempts)
-   - Any stage: `serendipity` (if score >= 12)
+   - Any stage: `serendipity` (if score >= 15)
 5. What would falsify the parent node's result? (mandatory question)
 6. Plan the specific action for this node
 
@@ -114,8 +114,8 @@ Same as v3.5 — ask these questions IN ORDER:
 |------|-------------|----------|
 | SEARCH | Need more literature evidence | search-protocol.md |
 | EXTRACT | Have a paper, need to pull specific data | data-extraction.md |
-| VALIDATE | Have a claim, need to verify numerically | analysis-orchestrator.md |
-| COMPUTE | Need to run analysis pipeline | analysis-orchestrator.md |
+| VALIDATE | Have a claim, need to verify numerically | analysis pipeline |
+| COMPUTE | Need to run analysis pipeline | analysis pipeline |
 | TREE_EXPAND | Expand tree with new node (computational) | auto-experiment.md |
 | BRAINSTORM | Phase 0 hypothesis generation | brainstorm-engine.md |
 | SERENDIPITY_TRIAGE | Serendipity flag needs investigation | serendipity-engine.md |
@@ -154,8 +154,8 @@ Before expanding a new tree node, verify Gate T0 (Node Validity):
 |--------|------|----|
 | SEARCH | search-protocol.md | Query database, record in queries.log |
 | EXTRACT | data-extraction.md | Download supplementary, parse tables |
-| VALIDATE | analysis-orchestrator.md | Run validation, check statistical significance |
-| COMPUTE | analysis-orchestrator.md + obs-normalizer.md | Execute pipeline step |
+| VALIDATE | analysis pipeline | Run validation, check statistical significance |
+| COMPUTE | analysis pipeline | Execute pipeline step |
 | TREE_EXPAND | auto-experiment.md | Generate code, execute, parse metrics |
 | BRAINSTORM | brainstorm-engine.md | Gap analysis, hypothesis generation |
 | SERENDIPITY_TRIAGE | serendipity-engine.md | Score, investigate, decide: NOISE/FILE/QUEUE/INTERRUPT |
@@ -219,10 +219,10 @@ Response: 0-4 NOISE → log and move on | 5-9 FILE → log with details | 10-14 
 Apply ALL relevant gates for the action type:
 
 **Pipeline Gates (data/compute actions):**
-- G0: Data loaded correctly? (counts integer, no NaN/Inf)
-- G1: obs schema normalized?
-- G2: Design justified? (batch_key, HVG, covariates)
-- G3: Training converged? (ELBO, no train-val gap)
+- G0: Data loaded correctly? (correct types, no NaN/Inf)
+- G1: Schema normalized?
+- G2: Design justified? (key parameters, covariates)
+- G3: Training converged? (loss diagnostics, no train-val gap)
 - G4: Metrics meaningful? (contextualized, trade-offs explicit)
 - G5: Artifacts complete? (manifest, report, figures, metrics)
 - G6: VLM validation? (if VLM available — OPTIONAL)
@@ -390,3 +390,32 @@ If cycle > 30 AND no new findings in last 5 cycles:
 2. Force R2 comprehensive review of ALL findings
 3. Check tree health — is the tree stuck in one unproductive branch?
 4. Present options to user: conclude, pivot, prune and restart, or new approach
+
+---
+
+## v6.0 HOOK INTEGRATION
+
+The OTAE loop is mechanically supported by Claude Code hooks:
+
+### OBSERVE Phase
+SessionStart hook provides injected context:
+- `[STATE]` — last session summary
+- `[ALERTS]` — unresolved observer alerts
+- `[R2 CALIBRATION]` — temporal decay hints about R2 weaknesses
+- `[PATTERNS]` — cross-session learned patterns with confidence
+- `[PENDING SEEDS]` — serendipity seeds from prior sessions
+
+### THINK Phase
+Check instincts (LAW 12): before planning, review [PATTERNS] from session context. If a pattern with confidence >= 0.5 is relevant, apply it. If < 0.5, investigate.
+
+### ACT Phase
+PostToolUse hook auto-logs every tool invocation as a spine entry. Observer checks run periodically (every 5 tool calls). Gate enforcement is automatic: DQ4 sync, CLAIM-LEDGER prerequisites, L-1 for direction nodes.
+
+### EVALUATE Phase
+Update instinct confidence based on outcome. If a pattern predicted the result correctly, increase confidence. If contradicted, decrease by 0.2.
+
+### CRYSTALLIZE Phase
+Stop hook generates narrative summary, exports STATE.md, and extracts cross-session patterns. All persist to DB.
+
+### COMPACT RECOVERY
+If context was compacted (auto or manual), PreCompact hook saved a snapshot to DB. SessionStart loads it. The agent can continue without manual recovery.

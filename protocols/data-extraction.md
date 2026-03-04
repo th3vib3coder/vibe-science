@@ -56,11 +56,11 @@ var_required = {
 
 | Flag | Meaning |
 |------|---------|
-| ✅ VERIFIED | Data downloaded, read completely, schema compliant |
-| ⚠️ PARTIAL | Only partial data accessible (document what's missing) |
-| ❌ INACCESSIBLE | Data claimed but not available at provided link |
-| 🔄 NEEDS PROCESSING | Raw data available but requires processing |
-| 🔴 SCHEMA VIOLATION | Data exists but violates contract (specify which fields) |
+| VERIFIED | Data downloaded, read completely, schema compliant |
+| PARTIAL | Only partial data accessible (document what's missing) |
+| INACCESSIBLE | Data claimed but not available at provided link |
+| NEEDS_PROCESSING | Raw data available but requires processing |
+| SCHEMA_VIOLATION | Data exists but violates contract (specify which fields) |
 
 ### Schema Violation Triage
 
@@ -151,13 +151,13 @@ When a finding depends on data from multiple papers:
 3. Note methodological differences
 4. Register discrepancies in ASSUMPTION-REGISTER.md if unresolvable
 
-## Sequencing Data (GEO/SRA/ENA)
+## Repository Data (Public Databases)
 
-Route to `geo-database` or `ena-database` skills:
+Route to appropriate database skills:
 
-1. Record accession numbers (GSE, SRR, etc.)
-2. Document: organism, tissue, condition, technology
+1. Record accession numbers or identifiers
+2. Document: organism/system, conditions, technology/methodology
 3. Note sample sizes per condition
-4. Check if processed data (count matrices) available
-5. Prefer processed matrices over raw FASTQ unless specifically needed
-6. Verify raw count integrity (integer dtype) before accepting
+4. Check if processed data available
+5. Prefer processed data over raw files unless specifically needed
+6. Verify data integrity (correct types, expected ranges) before accepting
