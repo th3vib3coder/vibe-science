@@ -61,8 +61,8 @@ export function buildContext(db, projectPath, sessionId) {
 
         if (lastSession) {
             context.state =
-                `Ultima sessione: ${lastSession.total_actions ?? 0} azioni, ` +
-                `${lastSession.claims_created ?? 0} claims create, ` +
+                `Last session: ${lastSession.total_actions ?? 0} actions, ` +
+                `${lastSession.claims_created ?? 0} claims created, ` +
                 `${lastSession.claims_killed ?? 0} killed.\n` +
                 `Summary: ${truncate(lastSession.narrative_summary, 200)}`;
         } else {
