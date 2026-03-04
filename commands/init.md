@@ -97,7 +97,7 @@ mkdir -p .vibe-science/RQ-001-[slug]/{01-discovery,02-analysis,03-data,04-valida
 **4c. Create files from templates:**
 
 For each file below, READ the template first, then WRITE the populated version.
-The templates live in `vibe-science/vibe/templates/` relative to the project root.
+The templates live in `skills/vibe/assets/templates.md` relative to the project root.
 
 | Target file | Template source | Populate |
 |-------------|----------------|----------|

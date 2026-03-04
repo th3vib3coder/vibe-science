@@ -4,7 +4,7 @@
 
 ## Schema-Enforced Gates
 
-8 of 34 gates (the highest-stakes ones) require schema-valid artifacts, plus the serendipity-seed object. v5.5 adds 7 new gates (DQ1-DQ4, DC0, DD0, L-1) that are instruction-enforced, not schema-enforced.
+8 of 32 gates (the highest-stakes ones) require schema-valid artifacts, plus the serendipity-seed object. v5.5 adds 7 new gates (DQ1-DQ4, DC0, DD0, L-1) that are instruction-enforced, not schema-enforced.
 
 | Gate | Schema File | What It Enforces |
 |------|-------------|-----------------|

@@ -46,7 +46,7 @@ try {
     openDB = () => null;
     initDB = () => {};
     closeDB = () => {};
-    checkPermission = () => ({ allowed: true });
+    checkPermission = () => null;
     queueForEmbedding = () => {};
 }
 
@@ -911,6 +911,7 @@ function checkSalvagenteRule(db, sessionId, toolInput) {
             SELECT seed_id FROM serendipity_seeds
             WHERE (
                 narrative LIKE ? OR narrative LIKE ?
+                OR causal_question LIKE ? OR causal_question LIKE ?
                 OR source = 'SALVAGED_FROM_R2'
             )
             AND created_session IN (
@@ -919,7 +920,7 @@ function checkSalvagenteRule(db, sessionId, toolInput) {
                 )
             )
             LIMIT 1
-        `).get(`%${claimId}%`, `%${claimId.replace('-', '')}%`, sessionId);
+        `).get(`%${claimId}%`, `%${claimId.replace('-', '')}%`, `%${claimId}%`, `%${claimId.replace('-', '')}%`, sessionId);
 
         if (seed) {
             // Seed exists — Salvagente satisfied

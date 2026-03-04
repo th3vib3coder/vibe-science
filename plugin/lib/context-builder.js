@@ -104,7 +104,11 @@ export function buildContext(db, projectPath, sessionId) {
     // ---------------------------------------------------------------
     // Layer 2: Pending serendipity seeds
     // ---------------------------------------------------------------
-    context.pendingSeeds = loadPendingSeeds(db, projectPath);
+    try {
+        context.pendingSeeds = loadPendingSeeds(db, projectPath);
+    } catch {
+        context.pendingSeeds = [];
+    }
 
     // ---------------------------------------------------------------
     // Layer 2: Unresolved observer alerts

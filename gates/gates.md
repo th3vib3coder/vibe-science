@@ -1,7 +1,7 @@
 # Quality Gates v5.5
 
 > **v5.0 IUDEX upgrades**: 2 new gates (V0, J0), schema enforcement on 8 gates, exploration budget in T3, S5 poison pill.
-> **v5.5 ORO upgrades**: 7 new gates (DQ1-DQ4, DC0, DD0, L-1) for data quality, design compliance, and operational integrity. Total: 34 gates. 8 schema-enforced.
+> **v5.5 ORO upgrades**: 7 new gates (DQ1-DQ4, DC0, DD0, L-1) for data quality, design compliance, and operational integrity. Total: 32 gates. 8 schema-enforced.
 
 Blocking gates that stop-the-line if failed. No analysis proceeds past a failed gate. Fix first, re-gate, then continue.
 
@@ -456,7 +456,7 @@ FAIL actions:
 
 ## Data Quality Gates (DQ1-DQ4) — NEW in v5.5
 
-These gates address a blind spot in v5.0: all 27 existing gates verify *claim quality* (is the conclusion supported?) but NONE verify *data quality* (are the features correct? is the alignment right? do the numbers in documents match the source?). Data quality gates operate between pipeline phases, not at the claim level.
+These gates address a blind spot in v5.0: all 25 existing gates verify *claim quality* (is the conclusion supported?) but NONE verify *data quality* (are the features correct? is the alignment right? do the numbers in documents match the source?). Data quality gates operate between pipeline phases, not at the claim level.
 
 ### Gate DQ1 — Post-Extraction Data Quality
 **When:** After extracting features, variables, or computed values from any dataset. Before using them for modeling or analysis.
@@ -689,7 +689,7 @@ In every run report, sprint report, and decision log:
 
 ## v5.5 Gate Summary
 
-v5.5 adds 7 gates for a total of **34 gates**:
+v5.5 adds 7 gates for a total of **32 gates**:
 
 | Group | Gates | Count | New in v5.5 |
 |-------|-------|-------|-------------|
@@ -704,4 +704,4 @@ v5.5 adds 7 gates for a total of **34 gates**:
 | Design Compliance | DC0 | 1 | DC0 |
 | Vigilance | V0 | 1 | — |
 | Judge | J0 | 1 | — |
-| **Total** | | **34** | **7 new** |
+| **Total** | | **32** | **7 new** |

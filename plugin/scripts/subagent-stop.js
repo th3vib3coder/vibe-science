@@ -63,8 +63,9 @@ async function main(event) {
     for (const { claim_id } of killedClaims) {
       const seed = db.prepare(`
         SELECT seed_id FROM serendipity_seeds
-        WHERE source_claim_id = ?
-      `).get(claim_id);
+        WHERE narrative LIKE '%' || ? || '%'
+           OR causal_question LIKE '%' || ? || '%'
+      `).get(claim_id, claim_id);
 
       if (!seed) {
         missingSeeds.push(claim_id);

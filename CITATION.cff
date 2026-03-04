@@ -3,7 +3,7 @@ message: "If you use this software in your research, please cite it as below."
 type: software
 title: "Vibe Science"
 abstract: >-
-  Vibe Science v5.0 IUDEX is an AI-native research engine for Claude Code that
+  Vibe Science v6.0 NEXUS is an AI-native research engine for Claude Code that
   transforms LLM agents into rigorous scientific investigators through structural
   enforcement, not just prompting. Grounded in Huang et al. (ICLR 2024), who
   proved that LLMs cannot self-correct reasoning without external feedback, v5.0

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "vibe-science-v5.0/brainstorm-quality",
+  "$id": "vibe-science-v6.0/brainstorm-quality",
   "title": "Brainstorm Quality Gate Artifact (B0)",
   "description": "Artifact produced when a research question passes Gate B0 (Brainstorm Quality). Enforces gap identification with novelty verification, data availability threshold, falsifiable hypothesis with null hypothesis, directional predictions, and R2 ensemble brainstorm review. B0 MUST PASS before any OTAE cycle begins.",
   "type": "object",

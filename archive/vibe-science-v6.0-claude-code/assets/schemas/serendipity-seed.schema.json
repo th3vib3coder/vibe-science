@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "vibe-science-v5.0/serendipity-seed",
+  "$id": "vibe-science-v6.0/serendipity-seed",
   "title": "Serendipity Seed Schema",
   "description": "Enforces structured serendipity seeds (Enhancement B). Seeds are actionable research objects with mandatory causal structure, provenance, and lifecycle tracking. Every seed must specify a causal question, falsifiers, and a discriminating test before entering the pipeline.",
   "type": "object",

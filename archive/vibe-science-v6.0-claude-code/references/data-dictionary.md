@@ -85,11 +85,8 @@ The data dictionary is written to `data-dictionary.md` in the project's `.vibe-s
 DD0 is primarily a manual gate — the researcher documents columns by inspecting the data and its documentation. However, the script can auto-generate a skeleton:
 
 ```bash
-# Generate skeleton data dictionary from a dataset
-python scripts/dd0_gate.py --data dataset.csv --output data-dictionary.md
-
-# Validate an existing data dictionary for completeness
-python scripts/dd0_gate.py --dict data-dictionary.md --data dataset.csv --validate
+# DD0 is checked via gate_check.py or manual verification
+python scripts/gate_check.py --gate DD0 --data dataset.csv
 ```
 
 **Arguments:**

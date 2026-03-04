@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "vibe-science-v5.0/source-validity",
+  "$id": "vibe-science-v6.0/source-validity",
   "title": "Source Validity Gate Artifact (L0)",
   "description": "Schema for Gate L0 — Source Validity. Ensures all cited sources have verified DOIs/PMIDs, no training-knowledge-only claims are marked as DATA, all claims are registered in CLAIM-LEDGER.md, and confidence scores are computed (not guessed). This gate blocks the literature pipeline if any criterion fails.",
   "type": "object",

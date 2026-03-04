@@ -3,7 +3,7 @@
  *
  * Comprehensive test coverage for the plugin infrastructure:
  *   B1. Syntax & Import Tests (13 JS files)
- *   B2. Schema SQL Tests (11 tables, FK constraints, indices)
+ *   B2. Schema SQL Tests (12 tables, FK constraints, indices)
  *   B3. Library Unit Tests (7 libs, export verification)
  *   B4. Script Integration Tests (setup, session-start, prompt-submit)
  *   B5. Package & Config Tests (package.json, hooks.json, plugin.json, schemas)
@@ -60,7 +60,10 @@ describe('B1. Syntax & Import Tests', () => {
         'plugin/scripts/session-start.js',
         'plugin/scripts/prompt-submit.js',
         'plugin/scripts/post-tool-use.js',
+        'plugin/scripts/pre-tool-use.js',
+        'plugin/scripts/pre-compact.js',
         'plugin/scripts/stop.js',
+        'plugin/scripts/subagent-stop.js',
         'plugin/scripts/worker-embed.js',
     ];
 
@@ -71,6 +74,7 @@ describe('B1. Syntax & Import Tests', () => {
         'plugin/lib/vec-search.js',
         'plugin/lib/context-builder.js',
         'plugin/lib/narrative-engine.js',
+        'plugin/lib/pattern-extractor.js',
         'plugin/lib/r2-calibration.js',
     ];
 
@@ -95,12 +99,12 @@ describe('B1. Syntax & Import Tests', () => {
         });
     }
 
-    it('all 13 JS files are present', () => {
-        assert.equal(allJsFiles.length, 13, 'Expected exactly 13 JS files (6 scripts + 7 libs)');
+    it('all 17 JS files are present', () => {
+        assert.equal(allJsFiles.length, 17, 'Expected exactly 17 JS files (9 scripts + 8 libs)');
         for (const file of allJsFiles) {
             assert.ok(fs.existsSync(rel(file)), `Missing: ${file}`);
         }
-        pass('all-13-present');
+        pass('all-17-present');
     });
 });
 
@@ -123,6 +127,7 @@ describe('B2. Schema SQL Tests', () => {
         'calibration_log',
         'prompt_log',
         'embed_queue',
+        'research_patterns',
     ];
 
     let Database;
@@ -144,7 +149,7 @@ describe('B2. Schema SQL Tests', () => {
         pass('schema-exec');
     });
 
-    it('all 11 tables exist', () => {
+    it('all 12 tables exist', () => {
         assert.ok(db, 'DB not initialized');
         const rows = db.prepare(
             `SELECT name FROM sqlite_master WHERE type='table' ORDER BY name`
@@ -161,7 +166,7 @@ describe('B2. Schema SQL Tests', () => {
             tableNames.length >= EXPECTED_TABLES.length,
             `Expected at least ${EXPECTED_TABLES.length} tables, found ${tableNames.length}`
         );
-        pass('11-tables');
+        pass('12-tables');
     });
 
     it('FK constraint on calibration_log.session_id', () => {
@@ -486,15 +491,15 @@ describe('B4. Script Integration Tests', () => {
 
             const result = JSON.parse(trimmed);
             assert.ok(
-                'sessionId' in result,
-                'session-start.js output should have "sessionId" field'
+                result.hookSpecificOutput,
+                'session-start.js output should have "hookSpecificOutput" field'
             );
             pass('session-start-integration');
         } catch (err) {
             if (err.stdout) {
                 try {
                     const result = JSON.parse(err.stdout.trim());
-                    assert.ok('sessionId' in result, 'session-start.js should output sessionId');
+                    assert.ok(result.hookSpecificOutput, 'session-start.js should output hookSpecificOutput');
                     pass('session-start-integration-degraded');
                     return;
                 } catch {
@@ -523,20 +528,19 @@ describe('B4. Script Integration Tests', () => {
 
             const result = JSON.parse(trimmed);
             assert.ok(
-                'agentRole' in result,
-                'prompt-submit.js output should have "agentRole" field'
+                result.hookSpecificOutput,
+                'prompt-submit.js output should have "hookSpecificOutput" field'
             );
-            assert.equal(
-                result.agentRole,
-                'researcher',
-                'Default agentRole should be "researcher" for generic prompt'
+            assert.ok(
+                result.hookSpecificOutput.additionalContext,
+                'prompt-submit.js hookSpecificOutput should have "additionalContext"'
             );
             pass('prompt-submit-integration');
         } catch (err) {
             if (err.stdout) {
                 try {
                     const result = JSON.parse(err.stdout.trim());
-                    assert.ok('agentRole' in result, 'prompt-submit.js should output agentRole');
+                    assert.ok(result.hookSpecificOutput, 'prompt-submit.js should output hookSpecificOutput');
                     pass('prompt-submit-integration-degraded');
                     return;
                 } catch {
@@ -598,7 +602,7 @@ describe('B5. Package & Config Tests', () => {
     });
 
     it('hooks.json: declares all required hooks', () => {
-        const hooksPath = rel('plugin', 'hooks', 'hooks.json');
+        const hooksPath = rel('hooks', 'hooks.json');
         assert.ok(fs.existsSync(hooksPath), 'hooks.json should exist');
 
         const hooksConfig = JSON.parse(fs.readFileSync(hooksPath, 'utf-8'));
@@ -606,7 +610,7 @@ describe('B5. Package & Config Tests', () => {
 
         // Check for required hook names (as defined in the file)
         const hookNames = Object.keys(hooksConfig.hooks);
-        const requiredHooks = ['Setup', 'SessionStart', 'UserPromptSubmit', 'PostToolUse', 'Stop'];
+        const requiredHooks = ['SessionStart', 'UserPromptSubmit', 'PreToolUse', 'PostToolUse', 'PreCompact', 'Stop', 'SubagentStop'];
 
         for (const hook of requiredHooks) {
             assert.ok(
@@ -752,22 +756,29 @@ describe('B6. Content Integrity Tests', () => {
 
     it('all script files referenced in hooks.json exist on disk', () => {
         const hooksConfig = JSON.parse(
-            fs.readFileSync(rel('plugin', 'hooks', 'hooks.json'), 'utf-8')
+            fs.readFileSync(rel('hooks', 'hooks.json'), 'utf-8')
         );
 
         for (const [hookName, hookEntries] of Object.entries(hooksConfig.hooks)) {
             for (const entry of hookEntries) {
-                if (entry.command) {
-                    // Extract the script path from the command (e.g., "node plugin/scripts/setup.js")
-                    const parts = entry.command.split(/\s+/);
-                    // Find the .js file in the command parts
-                    const jsFile = parts.find(p => p.endsWith('.js'));
-                    if (jsFile) {
-                        const fullPath = rel(jsFile);
-                        assert.ok(
-                            fs.existsSync(fullPath),
-                            `Hook "${hookName}" references ${jsFile} but file does not exist at ${fullPath}`
-                        );
+                // New hook format: entry.hooks is an array of { type, command, timeout }
+                const innerHooks = entry.hooks || [];
+                for (const innerHook of innerHooks) {
+                    if (innerHook.command) {
+                        // Strip ${CLAUDE_PLUGIN_ROOT}/ prefix and quotes to get relative path
+                        const cmd = innerHook.command
+                            .replace(/\$\{CLAUDE_PLUGIN_ROOT\}\//g, '')
+                            .replace(/"/g, '');
+                        // Extract the .js file path from the command
+                        const match = cmd.match(/(plugin\/scripts\/[\w-]+\.js)/);
+                        if (match) {
+                            const jsFile = match[1];
+                            const fullPath = rel(jsFile);
+                            assert.ok(
+                                fs.existsSync(fullPath),
+                                `Hook "${hookName}" references ${jsFile} but file does not exist at ${fullPath}`
+                            );
+                        }
                     }
                 }
             }

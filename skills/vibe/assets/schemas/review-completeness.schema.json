@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "vibe-science-v5.0/review-completeness",
+  "$id": "vibe-science-v6.0/review-completeness",
   "title": "Review Completeness Gate Artifact (L2)",
   "description": "Artifact produced when Gate L2 (Review Completeness) passes. Certifies that all major findings have been reviewed by the R2 ensemble, all fatal flaws resolved or findings rejected, all demanded evidence provided or findings downgraded, and counter-evidence explicitly searched for every conclusion.",
   "type": "object",

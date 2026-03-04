@@ -1,4 +1,4 @@
-# Vibe Science v5.5 — Constitution (Reference)
+# Vibe Science v6.0 — Constitution (Reference)
 
 This document is the authoritative reference for all agents. No role is exempt.
 
@@ -211,12 +211,14 @@ All state lives in `.vibe-science/` at the project root:
 
 ## v6.0 ENFORCEMENT
 
-Laws 1-12 are enforced mechanically by 5 Claude Code hooks:
+Laws 1-12 are enforced mechanically by 7 Claude Code hooks:
 - SessionStart: LAW 7 (resilience), LAW 12 (instinct)
 - UserPromptSubmit: LAW 10 (crystallize), LAW 7 (resilience)
+- PreToolUse: LAW 9 (confounder harness) — blocks Write/Edit to CLAIM-LEDGER without confounder_status
 - PostToolUse: LAW 3 (gates), LAW 6 (artifacts), LAW 10 (crystallize)
-- Stop: LAW 4 (R2 co-pilot), LAW 7 (resilience), LAW 12 (instinct)
 - PreCompact: LAW 7 (resilience), LAW 10 (crystallize)
+- Stop: LAW 4 (R2 co-pilot), LAW 7 (resilience), LAW 12 (instinct)
+- SubagentStop: LAW 4 (Salvagente Rule) — killed claims must produce serendipity seed
 
 See `references/hook-system.md` for full hook protocol.
 

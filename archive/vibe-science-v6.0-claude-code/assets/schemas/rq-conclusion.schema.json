@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "vibe-science-v5.0/rq-conclusion",
+  "$id": "vibe-science-v6.0/rq-conclusion",
   "title": "RQ Conclusion Gate Artifact (D2)",
   "description": "Artifact produced when a Research Question passes Gate D2 (RQ Conclusion). Enforces that all claims are referenced by ID with status VERIFIED, CONFIRMED, or ROBUST (no UNVERIFIED claims allowed), R2 final verdict is present, tree snapshot is referenced, and all completion flags are true.",
   "type": "object",

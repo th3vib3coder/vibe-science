@@ -13,7 +13,7 @@ model: opus
 ## Last Progress
 !`tail -5 .vibe-science/PROGRESS.md 2>/dev/null || echo "No progress yet."`
 
-# /start — Vibe Science v4.0 Session Initialization
+# /start — Vibe Science v6.0 Session Initialization
 
 > **REMEMBER: Think first, analyse second.** Before any analysis, know what exists in the literature and what gaps remain. Every analysis must answer something that has NOT been done yet. If you cannot explain in one sentence what new thing it will reveal, you are not ready to run it.
 
@@ -88,7 +88,7 @@ Look for `.vibe-science/STATE.md` in the current workspace.
 6. Create folder structure (see SKILL.md)
 7. Populate files using TEMPLATE-FIRST pattern:
    - For each file (STATE.md, PROGRESS.md, SERENDIPITY.md, RQ.md, ASSUMPTIONS.md):
-     READ the corresponding template from `vibe-science/vibe/templates/` first,
+     READ the corresponding template from `skills/vibe/assets/templates.md` first,
      then WRITE the populated version to `.vibe-science/`.
    - STATE.md MUST keep the YAML frontmatter (rq, phase, cycle, last_updated)
      because stop.js and narrative-engine.js parse it.
@@ -101,7 +101,7 @@ Look for `.vibe-science/STATE.md` in the current workspace.
 ## Step 2: Announcement
 
 ```
-Vibe Science v4.0 ARBOR VITAE activated for: [RESEARCH QUESTION]
+Vibe Science v6.0 NEXUS activated for: [RESEARCH QUESTION]
 Mode: [DISCOVERY | ANALYSIS | EXPERIMENT | BRAINSTORM | SERENDIPITY]
 Tree: [LINEAR (literature) | BRANCHING (experiments) | HYBRID]
 Runtime: [SOLO | TEAM]

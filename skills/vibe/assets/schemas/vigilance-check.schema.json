@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "vibe-science-v5.0/vigilance-check",
+  "$id": "vibe-science-v6.0/vigilance-check",
   "title": "R2 Vigilance Check Gate Artifact (V0)",
   "description": "Artifact produced when Gate V0 (R2 Vigilance) completes. The SFI protocol injects seeded faults into the evidence; R2 must catch them. Gate PASS requires RMS >= 0.80 (non-EQUIV faults) AND FAR <= 0.10. Maximum 3 attempts before ESCALATE to human.",
   "type": "object",

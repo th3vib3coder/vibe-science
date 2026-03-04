@@ -158,7 +158,7 @@ CHECKPOINT-r2 (FORCED) triggered
   +-- V0 FAIL? --> Log failure, re-review entire claim set, check escalation threshold
 ```
 
-SFI does not replace any existing gate. It wraps the R2 review to validate the reviewer before trusting the review. All downstream gates (G1-G7) operate on the cleaned output (seeded faults removed).
+SFI does not replace any existing gate. It wraps the R2 review to validate the reviewer before trusting the review. All downstream gates (G0-G6) operate on the cleaned output (seeded faults removed).
 
 ---
 

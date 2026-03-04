@@ -1,4 +1,4 @@
-# Quality Gates v5.5 — Complete Reference (32 Gates)
+# Quality Gates v6.0 — Complete Reference (32 Gates)
 
 > v5.0: V0, J0, 8 schema-enforced, T3 exploration, S5 poison pill. v5.5: DQ1-DQ4, DD0, DC0, L-1. **32 gates, 8 schema-enforced.**
 

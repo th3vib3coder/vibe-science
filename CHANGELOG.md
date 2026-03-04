@@ -25,6 +25,29 @@ All notable changes to Vibe Science are documented here.
 - **CLAUDE.md law count**: Added missing LAW 12 (INSTINCT) — had only 11 laws, README/SKILL both say 12
 - **ARCHITECTURE.md law count**: "10 Constitutional Laws" → "12 Constitutional Laws" in dual architecture diagram
 - **CITATION.cff numbers**: Constitutional laws 10→12, quality gates 27→32, R2 modes 6→7 (added INLINE)
+- **marketplace.json**: Gate count 34+ → 32 in plugin description
+- **constitution.md** (skill reference): Hook count 5 → 7, added PreToolUse and SubagentStop to enforcement list, title v5.5 → v6.0
+- **`__test_e2e.mjs`**: Expected tables 11 → 12 (added `research_patterns`), required hooks 5 → 7 (added PreToolUse, PreCompact, SubagentStop; removed phantom Setup), fixed hooks.json path (`plugin/hooks/` → `hooks/`), fixed hook entry structure parsing for new nested format
+- **`__test_e2e.mjs`**: JS file count 13 → 17 (added pre-tool-use, pre-compact, subagent-stop scripts + pattern-extractor lib), B4 test assertions now check `hookSpecificOutput` wrapper instead of top-level fields
+- **`subagent-stop.js`**: Fixed query on non-existent `source_claim_id` column — now searches `narrative` and `causal_question` via LIKE
+- **`post-tool-use.js`**: Fixed `checkPermission` degraded-mode fallback (returned truthy object, callers treat truthy as violation — now returns null)
+- **`post-tool-use.js`**: SALVAGENTE seed lookup now also searches `causal_question` field (was only checking `narrative`)
+- **`context-builder.js`**: Wrapped `loadPendingSeeds` in try/catch (was the only unwrapped Layer 2 section)
+- **`dq_gate.py`**: DQ3 now requires ≥2 seeds (was passing with 1), uses sample stdev (Bessel's correction), falsy-safe `expected_n` check (`is not None`), unconditional alternative explanations per spec
+- **Schema `$id` fields**: 9 schemas updated from `vibe-science-v5.0` → `vibe-science-v6.0`
+- **Version references**: gates-complete.md, reviewer2-ensemble.md, commands/start.md, CITATION.cff, observer.py, walkthrough, templates.md, fault-taxonomy.yaml — all updated to v6.0
+- **gates/gates.md**: Gate count 34 → 32, base count 27 → 25
+- **protocols/schema-validation.md**: "8 of 34" → "8 of 32"
+- **blueprints/v6.0-NEXUS-BLUEPRINT.md**: Gate count 34 → 32 (all occurrences), hook count 5 → 7
+- **Root SKILL.md**: License MIT → Apache-2.0, gate count 34 → 32, law count 10 → 12
+- **CHANGELOG.md**: Gate count 34 → 32 in v5.5 entry, law count 10 → 12 in v6.0 entry
+- **reviewer2-ensemble.md**: R3 rubric dimensions aligned with judge-rubric.yaml, r2-verdict.schema.json → review-completeness.schema.json, verdict version 5.5 → 6.0
+- **seeded-fault-injection.md**: Gate range G1-G7 → G0-G6
+- **data-dictionary.md**: Removed reference to non-existent `dd0_gate.py`
+- **design-compliance.md**: Removed reference to non-existent `dc0_gate.py`
+- **commands/init.md**: Template path `vibe-science/vibe/templates/` → `skills/vibe/assets/templates.md`
+- **commands/start.md**: Template path updated to `skills/vibe/assets/templates.md`
+- **Archive sync**: `archive/vibe-science-v6.0-claude-code/` re-synced with `skills/vibe/`
 
 ## [6.0.1] — 2026-03-04 — Best Practices Upgrade
 
@@ -69,7 +92,7 @@ All notable changes to Vibe Science are documented here.
 ### Changed
 - Architecture: **Skill-only -> Skill + Plugin hybrid** (methodology stays prompt-level, enforcement becomes code-level)
 - Gate L-1 upgraded to L-1+ (domain-aware literature pre-check with MCP server stack)
-- All 10 Constitutional Laws now have plugin-level enforcement (not just prompt-level)
+- All 12 Constitutional Laws now have plugin-level enforcement (not just prompt-level)
 - SSOT rule enforced by DQ4 gate (automatic FINDINGS.md vs JSON sync check)
 - Agent permissions enforced at PostToolUse (not just suggested in prompts)
 
@@ -84,7 +107,7 @@ All notable changes to Vibe Science are documented here.
 ## [5.5.0] — 2026-02-19 — ORO (Post-Mortem Driven)
 
 ### Added
-- 7 new gates: L-1, DQ1-DQ4, DD0, DC0 (34 total)
+- 7 new gates: L-1, DQ1-DQ4, DD0, DC0 (32 total)
 - R2 INLINE mode (7th activation mode)
 - SSOT (Single Source of Truth) rule
 - Structured logbook protocol

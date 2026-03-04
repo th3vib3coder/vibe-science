@@ -1,7 +1,7 @@
 ---
 name: vibe
 description: Scientific research engine with agentic tree search. Infinite loops until discovery, rigorous tracking, adversarial review, serendipity preserved.
-license: MIT
+license: Apache-2.0
 metadata:
     version: "6.0.0"
     codename: "NEXUS"
@@ -9,7 +9,7 @@ metadata:
     architecture: OTAE-Tree (Observe-Think-Act-Evaluate inside Tree Search)
     lineage: "v3.5 TERTIUM DATUR + AI-Scientist-v2 reverse engineering"
     sources: Ralph, GSD, BMAD, Codex unrolled loop, Anthropic bio-research, ChatGPT Spec Kit, Sakana AI-Scientist-v2 (arXiv:2504.08066v1)
-    changelog: "v4.0.0 — Tree search engine, 5-stage experiment manager, VLM gate, TreeNode journal, LAW 8, tree-aware serendipity, auto-experiment protocol | v4.5.0 — Inversion+Collision brainstorm techniques, R2 red flag checklist, counter-evidence search, DOI verification, progressive disclosure refactor | v5.0.0 — Seeded Fault Injection, Judge Agent (R3), Blind-First Pass, Schema-Validated Gates. 27 gates (2 new: V0, J0). 8 gates schema-enforced. Circuit Breaker. Agent Permission Model. Confidence formula revised. R2 structurally unbypassable. | v5.5.0 — ORO (Observe-Recall-Operate). 7 new gates (DQ1-DQ4, DC0, DD0, L-1) for data quality and operational integrity. Total: 34 gates. R2 INLINE mode (7th activation). Structured logbook (LOGBOOK.md mandatory in CRYSTALLIZE). Literature Pre-Check (L-1) in Phase 0. Data Dictionary Protocol (DD0). Design Compliance Gate (DC0). Single Source of Truth rule. Post-mortem driven: 12 errors from CRISPR run mapped to architectural fixes."
+    changelog: "v4.0.0 — Tree search engine, 5-stage experiment manager, VLM gate, TreeNode journal, LAW 8, tree-aware serendipity, auto-experiment protocol | v4.5.0 — Inversion+Collision brainstorm techniques, R2 red flag checklist, counter-evidence search, DOI verification, progressive disclosure refactor | v5.0.0 — Seeded Fault Injection, Judge Agent (R3), Blind-First Pass, Schema-Validated Gates. 25 gates (2 new: V0, J0). 8 gates schema-enforced. Circuit Breaker. Agent Permission Model. Confidence formula revised. R2 structurally unbypassable. | v5.5.0 — ORO (Observe-Recall-Operate). 7 new gates (DQ1-DQ4, DC0, DD0, L-1) for data quality and operational integrity. Total: 32 gates. R2 INLINE mode (7th activation). Structured logbook (LOGBOOK.md mandatory in CRYSTALLIZE). Literature Pre-Check (L-1) in Phase 0. Data Dictionary Protocol (DD0). Design Compliance Gate (DC0). Single Source of Truth rule. Post-mortem driven: 12 errors from CRISPR run mapped to architectural fixes."
 ---
 
 # Vibe Science v5.5 — ORO
@@ -207,12 +207,12 @@ Display this banner, then the session info:
      ┌─ SFI ────> BFP ────> R2 ENSEMBLE ──> V0 ─┐
      │  Seeded     Blind     4 Reviewers         │
      │  Faults     First     7 Modes             │
-     └──> R3/J0 ──> SVG ──> GATES <── 34 total ─┘
+     └──> R3/J0 ──> SVG ──> GATES <── 32 total ─┘
           Judge     Schema   8 Enforced
              │                    │
              v                    v
       * SERENDIPITY *      [ CLAIM-LEDGER ]
-        Salvagente           10 Laws
+        Salvagente           12 Laws
         Seeds survive        Circuit Breaker
 
       Detect  ·  Persist  ·  Demolish  ·  Discover
@@ -316,7 +316,7 @@ Mandatory structured entry in CRYSTALLIZE for every cycle. Not optional, not ret
 All numbers in documents must originate from structured data files. No manual transcription. DQ4 enforces consistency. See `protocols/evidence-engine.md`.
 
 ### What v5.5 Does NOT Change
-- 10 Immutable Laws: unchanged
+- 12 Immutable Laws: unchanged
 - OTAE-Tree loop structure: unchanged (v5.5 adds operations INSIDE phases, not new phases)
 - R2 Ensemble (4 reviewers): unchanged
 - SFI, BFP, R3 Judge: unchanged
@@ -780,7 +780,7 @@ Each node in the tree is a full OTAE cycle record containing identity, type/stag
 
 ---
 
-## GATES (Complete List v5.5 — 34 gates)
+## GATES (Complete List v5.5 — 32 gates)
 
 ### Pipeline Gates (G0-G6)
 ```
@@ -865,7 +865,7 @@ J0 (Judge Quality):       R3 meta-review of R2's report. Total >= 12/18, no dime
 ```
 
 > **Full gate definitions:** `gates/gates.md`
-> Contains: pass/fail criteria for all 34 gates, fail actions, gate tracking format.
+> Contains: pass/fail criteria for all 32 gates, fail actions, gate tracking format.
 
 ---
 

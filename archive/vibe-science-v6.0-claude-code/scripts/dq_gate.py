@@ -96,10 +96,10 @@ def check_dq1(data, thresholds):
     expected_f = data.get("expected_n_features")
     count_ok = True
     count_detail = "OK"
-    if expected_n and n_samples != expected_n:
+    if expected_n is not None and n_samples != expected_n:
         count_ok = False
         count_detail = f"Expected {expected_n} samples, got {n_samples}"
-    elif expected_f and n_features != expected_f:
+    elif expected_f is not None and n_features != expected_f:
         count_ok = False
         count_detail = f"Expected {expected_f} features, got {n_features}"
     checks.append({
@@ -151,7 +151,7 @@ def check_dq2(data, thresholds):
     fold_metrics = data.get("fold_metrics", [])
     if len(fold_metrics) >= 2:
         mean_m = sum(fold_metrics) / len(fold_metrics)
-        std_m = math.sqrt(sum((x - mean_m) ** 2 for x in fold_metrics) / len(fold_metrics))
+        std_m = math.sqrt(sum((x - mean_m) ** 2 for x in fold_metrics) / (len(fold_metrics) - 1))
         cv = std_m / mean_m if mean_m != 0 else float("inf")
         checks.append({
             "check": "fold_stability",
@@ -231,8 +231,8 @@ def check_dq3(data, thresholds):
     else:
         checks.append({
             "check": "reproducible",
-            "passed": len(seed_results) == 1,
-            "detail": f"{len(seed_results)} seed(s) — consider more" if seed_results else "No seeds reported",
+            "passed": False,
+            "detail": "At least 2 random seeds required for reproducibility" if seed_results else "No seeds reported",
         })
 
     return checks
@@ -271,11 +271,11 @@ def check_dq4(data, thresholds):
     # Check: alternative explanations
     alternatives = data.get("alternative_explanations", [])
     is_surprising = data.get("is_surprising", False)
-    alt_ok = not is_surprising or len(alternatives) >= 1
+    alt_ok = len(alternatives) >= 1
     checks.append({
         "check": "alternatives",
         "passed": alt_ok,
-        "detail": f"{len(alternatives)} alternatives listed" if alternatives else ("OK — not surprising" if not is_surprising else "No alternatives for surprising result"),
+        "detail": f"{len(alternatives)} alternatives listed" if alternatives else "No alternative explanations provided",
     })
 
     # Check: terminology consistency

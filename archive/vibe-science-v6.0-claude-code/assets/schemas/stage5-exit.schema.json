@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "vibe-science-v5.0/stage5-exit",
+  "$id": "vibe-science-v6.0/stage5-exit",
   "title": "Stage 5 Exit Gate Artifact (S5)",
   "description": "Final gate artifact for Stage 5 — Synthesis & Review Exit. Structurally enforces the S5 POISON PILL: the DISPUTED status is excluded from the final_status enum, meaning this schema CANNOT validate if any claim remains disputed. All disputes must be resolved (new data, claim dropped, or human override) before S5 can close. R2 ensemble verdict must be ACCEPT — no WEAK_ACCEPT, no REJECT.",
   "type": "object",

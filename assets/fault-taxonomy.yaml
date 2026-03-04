@@ -5,7 +5,7 @@
 # Owner:   Human architect only — LLM MUST NOT generate or modify faults.
 
 metadata:
-  version: "5.5.0"
+  version: "6.0.0"
   min_active_per_category: 2      # notify human if category drops below 2
   retirement_threshold: 3         # RETIRE after 3 consecutive R2 catches
   fault_generation: HUMAN_ONLY

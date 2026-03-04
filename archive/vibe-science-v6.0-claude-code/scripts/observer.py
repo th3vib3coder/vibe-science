@@ -179,7 +179,7 @@ def check_naming_consistency(project_path):
             alerts.append({
                 "level": "WARN",
                 "check": "missing_spine",
-                "detail": "PROGRESS.md has entries but SPINE.md does not exist (v5.5 requirement)",
+                "detail": "PROGRESS.md has entries but SPINE.md does not exist (v6.0 requirement)",
             })
 
     return alerts

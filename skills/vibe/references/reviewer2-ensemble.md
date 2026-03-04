@@ -1,6 +1,6 @@
 # Reviewer 2 Ensemble — Reference (ATOM-11)
 
-> Version: v5.5 | Domain-agnostic | 4 reviewers, 7 modes, schema-enforced verdicts
+> Version: v6.0 | Domain-agnostic | 4 reviewers, 7 modes, schema-enforced verdicts
 
 ## 1. R2 Ensemble Composition
 
@@ -92,11 +92,11 @@ SFI --> BFP Phase 1 (blind) --> Full Review Phase 2 --> V0 --> R3/J0 --> SVG
 
 5. **R3/J0 (Judge Agent).** R3 receives ONLY the ensemble report and claims (NOT the
    researcher's justifications — blind principle). R3 scores the review on the 6-dimension
-   rubric: Specificity, Independence, Counter-Evidence, Depth, Constructiveness,
-   Consistency. R3 cannot modify R2's report; it only produces a meta-score.
+   rubric: Specificity, Counter-Evidence Search, Confounder Analysis, Falsification Demand,
+   Independence, Escalation. R3 cannot modify R2's report; it only produces a meta-score.
 
 6. **SVG (Schema-Validated Gate).** The verdict artifact is validated against
-   `r2-verdict.schema.json`. Prose claims of completion are ignored. Only schema
+   `review-completeness.schema.json`. Prose claims of completion are ignored. Only schema
    validation passes the gate.
 
 ## 5. INLINE 7-Point Checklist (v5.5)
@@ -232,11 +232,11 @@ the claim becomes **DISPUTED**.
 ## 9. Output Schema (R2 Verdict)
 
 Every R2 review produces a verdict in the following YAML format. In FORCED/BATCH modes,
-this is validated against `r2-verdict.schema.json`.
+this is validated against `review-completeness.schema.json`.
 
 ```yaml
 r2_verdict:
-  version: "5.5"
+  version: "6.0"
   mode: FORCED          # BRAINSTORM | FORCED | BATCH | SHADOW | VETO | REDIRECT | INLINE
   timestamp: "2026-02-23T14:30:00Z"
   claims_reviewed:

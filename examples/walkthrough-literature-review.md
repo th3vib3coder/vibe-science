@@ -9,7 +9,7 @@ This annotated example shows a complete Vibe Science session investigating a lit
 **Vibe Science responds:**
 
 ```
-Vibe Science v3.5 activated for: OT applications in scRNA trajectory inference
+Vibe Science v6.0 activated for: OT applications in scRNA trajectory inference
 Mode: DISCOVERY
 Constitution loaded. R2 Ensemble armed. Gates active.
 ```

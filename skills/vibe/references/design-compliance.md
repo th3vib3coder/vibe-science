@@ -87,12 +87,8 @@ Deviations are appended to `.vibe-science/DEVIATIONS.md`.
 ## Running the Gate
 
 ```bash
-# Run DC0 check
-python scripts/dc0_gate.py --design RQ.md --spine SPINE.md --deviations DEVIATIONS.md
-
-# Run with data dictionary cross-check
-python scripts/dc0_gate.py --design RQ.md --spine SPINE.md --deviations DEVIATIONS.md \
-  --dict data-dictionary.md
+# DC0 is checked via gate_check.py or manual verification
+python scripts/gate_check.py --gate DC0 --design RQ.md --spine SPINE.md --deviations DEVIATIONS.md
 
 # Quiet mode (only report failures)
 python scripts/dc0_gate.py --design RQ.md --spine SPINE.md --deviations DEVIATIONS.md --quiet

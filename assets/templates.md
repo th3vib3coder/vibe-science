@@ -8,7 +8,7 @@ Max 100 lines. Rewritten each cycle (not append-only).
 
 ```yaml
 ---
-vibe_science_version: 4.0.0
+vibe_science_version: 6.0.0
 rq: RQ-001
 runtime: solo|team
 phase: brainstorm|discovery|analysis|data|validation|pipeline|synthesis
@@ -95,7 +95,7 @@ Append-only. Never edit previous entries. Newest at top.
 - **Confounder Harness:** [Claims tested this cycle, results]
 - **Gates:** [Passed: G0 | Failed: G2 (reason)]
 - **R2:** [None | SHADOW (no issues) | FORCED (demands: ...)]
-- **Serendipity:** None / [unexpected discovery, score: N/15]
+- **Serendipity:** None / [unexpected discovery, score: N/20]
 - **Crystallized:** [Files written this cycle]
 ```
 
