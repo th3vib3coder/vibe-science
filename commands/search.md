@@ -59,7 +59,7 @@ DOCTYPE(ar)  # articles
 DOCTYPE(re)  # reviews
 
 # Combining
-TITLE-ABS-KEY(CRISPR) AND TITLE-ABS-KEY("off-target") AND PUBYEAR > 2020
+TITLE-ABS-KEY("optimal transport") AND TITLE-ABS-KEY("data integration") AND PUBYEAR > 2020
 
 # Sort (via API parameter)
 &sort=citedby-count   # Most cited
@@ -90,7 +90,7 @@ Smith J[Author]
 Review[Publication Type]
 
 # Combining
-CRISPR[Title] AND off-target[Title/Abstract] AND 2020:2024[pdat]
+"optimal transport"[Title] AND "data integration"[Title/Abstract] AND 2020:2024[pdat]
 ```
 
 ### OpenAlex
@@ -105,7 +105,7 @@ https://api.openalex.org/works?search=term1 term2
 ?filter=author.id:A123456
 
 # Combining
-?search=CRISPR off-target&filter=publication_year:>2020
+?search=optimal transport data integration&filter=publication_year:>2020
 
 # Sorting
 &sort=cited_by_count:desc
@@ -117,10 +117,10 @@ https://api.openalex.org/works?search=term1 term2
 ### Step 1: Parse Query
 
 ```markdown
-Input: /vibe-science:search optimal transport CRISPR
+Input: /vibe-science:search optimal transport data integration
 
 Parsed:
-- Terms: ["optimal transport", "CRISPR"]
+- Terms: ["optimal transport", "data integration"]
 - Databases: all
 - Filters: none
 - Sort: relevance
@@ -138,9 +138,9 @@ Combine results, remove duplicates, categorize.
 
 ```markdown
 Gap analysis:
-- "optimal transport" + CRISPR: 57 papers
-- "unbalanced optimal transport" + CRISPR: 0 papers  ← POTENTIAL GAP
-- "optimal transport" + "off-target": 3 papers ← SPARSE AREA
+- "optimal transport" + "data integration": 57 papers
+- "unbalanced optimal transport" + "data integration": 0 papers  ← POTENTIAL GAP
+- "optimal transport" + "cross-domain transfer": 3 papers ← SPARSE AREA
 ```
 
 ### Step 5: Log Results

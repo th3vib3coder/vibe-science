@@ -38,10 +38,10 @@ The Knowledge Base accumulates reusable information across research questions. I
       "accession": "GSE123456",
       "source": "GEO",
       "organism": "Homo sapiens",
-      "assay": "scRNA-seq",
-      "cells": 50000,
+      "assay": "RNA-seq",
+      "samples": 50000,
       "rq_references": ["RQ-002"],
-      "notes": "Endometriosis vs control, 10X Chromium",
+      "notes": "Treatment vs control, paired design",
       "quality": "verified",
       "added": "2025-02-01"
     }
@@ -49,18 +49,18 @@ The Knowledge Base accumulates reusable information across research questions. I
   "methods": [
     {
       "name": "MAD-based QC filtering",
-      "domain": "single-cell",
-      "reference_doi": "scverse best practices",
-      "parameters": {"n_mads": 5, "mt_threshold": 20},
-      "notes": "Permissive default, adjust per tissue type",
+      "domain": "data-quality",
+      "reference_doi": "10.xxx/best-practices",
+      "parameters": {"n_mads": 5, "quality_threshold": 0.8},
+      "notes": "Permissive default, adjust per data type",
       "rq_references": ["RQ-002"]
     }
   ],
   "authors": [
     {
-      "name": "Lazzarotto CR",
+      "name": "Smith AB",
       "scopus_id": "37064674600",
-      "domain": ["CRISPR", "off-target", "GUIDE-seq"],
+      "domain": ["optimal-transport", "data-integration", "methodology"],
       "key_papers": ["10.xxx", "10.yyy"],
       "rq_references": ["RQ-001"]
     }

@@ -42,12 +42,12 @@ Read current state and update:
 Reading .vibe-science/STATE.md...
 
 Current state:
-- RQ: RQ-001-uot-crispr
+- RQ: RQ-001-transport-integration
 - Phase: discovery
 - Cycle: 7
 - Minor findings pending: 2
 
-Resuming from: "Search PubMed for GUIDE-seq protocol details"
+Resuming from: "Search PubMed for data integration methodology details"
 ```
 
 ### Step 2: Search Literature
@@ -55,7 +55,7 @@ Resuming from: "Search PubMed for GUIDE-seq protocol details"
 Execute next planned search:
 
 ```markdown
-**Query:** TITLE-ABS-KEY("GUIDE-seq") AND TITLE-ABS-KEY(protocol OR method)
+**Query:** TITLE-ABS-KEY("data integration") AND TITLE-ABS-KEY(methodology OR protocol)
 **Database:** Scopus
 **Results:** 45
 
@@ -65,8 +65,8 @@ Analyzing results...
 - 3 review articles
 
 Flagging for deep-dive:
-1. Tsai 2015 (original method) - DOI:10.1038/nbt.3117
-2. Lazzarotto 2020 (improvements) - DOI:10.1038/s41596-020-0310-7
+1. Author A 2020 (original method) - DOI:10.xxxx/example.1234
+2. Author B 2022 (improvements) - DOI:10.xxxx/example.5678
 ```
 
 Log to `queries.log` and `PROGRESS.md`.
@@ -76,11 +76,11 @@ Log to `queries.log` and `PROGRESS.md`.
 For each relevant paper:
 
 ```markdown
-Reading: Tsai et al. 2015
+Reading: Author A et al. 2020
 
-**Finding:** GUIDE-seq produces genome-wide off-target site counts
+**Finding:** Method X produces dataset-wide integration scores
 
-**Type:** MAJOR - directly relevant to OT formulation
+**Type:** MAJOR - directly relevant to research question
 **Confidence:** HIGH - primary source, methodology paper
 
 → STOP: Major finding triggers Reviewer 2
@@ -89,7 +89,7 @@ Reading: Tsai et al. 2015
 Or:
 
 ```markdown
-**Finding:** Cell viability affects read counts in GUIDE-seq
+**Finding:** Sample quality affects measurement reliability
 
 **Type:** MINOR - supporting evidence
 **Confidence:** MEDIUM - mentioned in discussion
@@ -102,16 +102,16 @@ Minor findings pending: 3/3 → Batch Reviewer 2 triggered
 If paper has relevant supplementary data:
 
 ```markdown
-Downloading supplementary materials for Tsai 2015...
+Downloading supplementary materials for Author A 2020...
 
-- Table S1: Off-target sites (CSV) ✓
-- Table S2: Read counts (XLSX) ✓
-- Methods S1: Protocol (PDF) ✓
+- Table S1: Integration results (CSV) ✓
+- Table S2: Quality metrics (XLSX) ✓
+- Methods S1: Protocol details (PDF) ✓
 
 Reading Table S1 (complete - 2,847 rows)...
 Reading Table S2 (complete - 156 rows)...
 
-Extracted: Off-target count data suitable for OT input
+Extracted: Integration metric data suitable for analysis
 ```
 
 ### Step 5: Validate
@@ -161,7 +161,7 @@ Updating STATE.md:
 
 Appending to PROGRESS.md:
 ### Cycle 7 - 15:45
-- **Action:** Scopus search GUIDE-seq methodology
+- **Action:** Scopus search data integration methodology
 - **Result:** Found 45 papers, 3 flagged
 - **Decision:** Major finding on count data → Reviewer 2
 - **Serendipity:** None

@@ -2,6 +2,39 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.17] — 2026-03-04 — Domain generalization R30: commands, protocols, gates
+
+> **Trigger:** Round 30 paranoid deep debug — full scan of gates/, commands/, agents/, .claude-plugin/, protocols/, and ARCHITECTURE.md. Found CRISPR/GUIDE-seq examples in 2 command templates, scRNA-seq/CRISPR examples in 1 protocol, and a protospacer example in gates.
+
+### Fixed — Domain Generalization (commands/loop.md)
+- **Lines 45-168:** Replaced entire CRISPR/GUIDE-seq worked example with domain-neutral "data integration" example. Changed: RQ ID (`uot-crispr` → `transport-integration`), search queries (GUIDE-seq → data integration), paper examples (Tsai 2015, Lazzarotto 2020 → Author A 2020, Author B 2022), findings (off-target site counts → integration scores), extracted data description.
+- **WHY:** Command templates are domain-agnostic reusable components. The worked example should demonstrate the OTAE loop mechanics without assuming a specific research domain.
+
+### Fixed — Domain Generalization (commands/search.md)
+- **Line 62:** Scopus example `CRISPR AND "off-target"` → `"optimal transport" AND "data integration"`
+- **Line 93:** PubMed example `CRISPR[Title] AND off-target` → `"optimal transport"[Title] AND "data integration"`
+- **Line 108:** OpenAlex example `CRISPR off-target` → `optimal transport data integration`
+- **Lines 120-143:** Gap analysis example replaced: `CRISPR` → `data integration`, `off-target` → `cross-domain transfer`
+- **WHY:** Search syntax examples should demonstrate query patterns, not assume a specific research topic.
+
+### Fixed — Domain Generalization (protocols/knowledge-base.md)
+- **Line 41:** `"assay": "scRNA-seq"` → `"assay": "RNA-seq"`
+- **Line 44:** `"Endometriosis vs control, 10X Chromium"` → `"Treatment vs control, paired design"`
+- **Lines 50-56:** Method domain changed from `"single-cell"` to `"data-quality"`, removed scverse reference
+- **Lines 61-63:** Author example changed from `"domain": ["CRISPR", "off-target", "GUIDE-seq"]` → `"domain": ["optimal-transport", "data-integration", "methodology"]`
+- **WHY:** The knowledge base JSON schema examples should be domain-neutral to work for any research project.
+
+### Fixed — Domain Generalization (gates/gates.md)
+- **Lines 554-556:** DD0 gate example `"Protospacer_sequence" may not be the designed protospacer` → `"normalized_score" may not use the normalization method you expect`
+- **WHY:** The DD0 gate teaches "column names lie" — the example should use a generic column name to be universally applicable.
+
+### Validation
+- `protocols/knowledge-base.md`: 0 domain-specific terms — CLEAN
+- `commands/loop.md`: 0 domain-specific terms — CLEAN
+- `commands/search.md`: 0 domain-specific terms — CLEAN
+- `gates/gates.md`: 0 remaining protospacer/CRISPR references — CLEAN
+- `skills/vibe/references/knowledge-base.md`: already clean (no sync needed)
+
 ## [6.0.16] — 2026-03-04 — Domain generalization R29: assets/ cleanup + README reference count
 
 > **Trigger:** Round 29 paranoid deep debug — full scan of assets/, gates/, schemas/, hooks/, plugin/, and root files. Found 3 asset files with scRNA-seq/CRISPR-specific content and stale reference count in README.md.

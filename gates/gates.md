@@ -552,8 +552,8 @@ PASS criteria (ALL must be true):
   (what does it represent? what are its units? what is its source?)
 [ ] Column name verified against actual semantics
   (NEVER assume a column name implies its meaning — verify from documentation,
-   metadata, or inspection. E.g., "Protospacer_sequence" may not be
-   the designed protospacer.)
+   metadata, or inspection. E.g., "normalized_score" may not use the
+   normalization method you expect.)
 [ ] Documentation recorded in a persistent file (data-dictionary.md or equivalent)
 
 FAIL actions:
