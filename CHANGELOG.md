@@ -2,6 +2,26 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.14] — 2026-03-04 — Cross-file consistency + missing reference files
+
+> **Trigger:** Round 26 paranoid deep debug — full repo scan for cross-file consistency (gate counts, schema counts, law counts, file references) + identification of 3 protocol files missing from references/.
+
+### Fixed — Cross-File Consistency
+- **archive/v6.0-NEXUS-BLUEPRINT.md:2330**: Schema-enforced gate count "12 schema" → "8 schema" in v5.5 and v6.0 columns. Blueprints/ copy was already correct; archive/ copy was stale. The "12" referred to schema FILES (tracked in row below), not schema-enforced GATES (canonical: 8).
+- **CHANGELOG.md:266**: "$id fields: 9 schemas" → "All 12 schemas updated to vibe-science-v6.0 (9 from v5.0, 3 from v5.5)". Original was accurate but incomplete — omitted the 3 v5.5-origin schemas.
+
+### Added — Missing Reference Files
+- **skills/vibe/references/vlm-gate.md**: Copied from protocols/vlm-gate.md (already 100% domain-agnostic). VLM Gate Protocol for figure quality validation — was missing from the skill package entirely.
+- **skills/vibe/references/analysis-orchestrator.md**: Copied from protocols/analysis-orchestrator.md with full domain generalization. Protocol structure is universal; biology-specific examples (scVI, scanpy, anndata, h5ad, HVG, iLISI/cLISI, kBET, pct_mito, batch_key, n_latent) replaced with domain-agnostic placeholders. Manifest.json, report template, ablation matrix, and script library patterns all generalized.
+
+### Not Copied (by design)
+- **protocols/agent-teams.md**: TEAM mode operational runbook. references/multi-agent-config.md already covers essential reference material — agent-teams.md is the detailed how-to guide, appropriate for protocols/ only.
+
+### Validation
+- `references/analysis-orchestrator.md`: 0 domain-specific terms (scVI/scanpy/anndata/h5ad/HVG/CRISPR/pct_mito/batch_key/n_latent/ELBO/iLISI/cLISI/kBET) — CLEAN
+- `references/vlm-gate.md`: 0 domain-specific terms — CLEAN
+- Gate counts (32/8), law counts (12), schema counts (12) verified consistent across CLAUDE.md, SKILL.md, ARCHITECTURE.md, README.md, gates/gates.md, blueprints/, protocols/
+
 ## [6.0.13] — 2026-03-04 — gates.md + SKILL.md domain generalization & Unicode cleanup
 
 > **Trigger:** Round 25 paranoid deep debug — scanned all remaining .md files for Unicode symbols, domain-specific biology terms, and stale version references. Found 3 targets: `gates/gates.md` (177 Unicode checkboxes + biology-specific G0/G1/G2/G3/G5/L-1 gate content), `SKILL.md` (stale serendipity threshold).
@@ -263,7 +283,7 @@ All notable changes to Vibe Science are documented here.
 - **`post-tool-use.js`**: SALVAGENTE seed lookup now also searches `causal_question` field (was only checking `narrative`)
 - **`context-builder.js`**: Wrapped `loadPendingSeeds` in try/catch (was the only unwrapped Layer 2 section)
 - **`dq_gate.py`**: DQ3 now requires ≥2 seeds (was passing with 1), uses sample stdev (Bessel's correction), falsy-safe `expected_n` check (`is not None`), unconditional alternative explanations per spec
-- **Schema `$id` fields**: 9 schemas updated from `vibe-science-v5.0` → `vibe-science-v6.0`
+- **Schema `$id` fields**: All 12 schemas updated to `vibe-science-v6.0` (9 from v5.0, 3 from v5.5)
 - **Version references**: gates-complete.md, reviewer2-ensemble.md, commands/start.md, CITATION.cff, observer.py, walkthrough, templates.md, fault-taxonomy.yaml — all updated to v6.0
 - **gates/gates.md**: Gate count 34 → 32, base count 27 → 25
 - **protocols/schema-validation.md**: "8 of 34" → "8 of 32"
