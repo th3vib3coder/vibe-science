@@ -2,6 +2,52 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.12] — 2026-03-04 — reviewer2-ensemble.md v5.5→v6.0 Architectural Rewrite
+
+> **Trigger:** Round 24 paranoid deep debug — the final deferred file from Round 23. `protocols/reviewer2-ensemble.md` (650+ lines) had extensive unique content not present in `skills/vibe/references/reviewer2-ensemble.md` (327 lines), so it required targeted edits rather than full replacement. The protocols/ copy was still at v5.5 with biology-specific language, old INLINE checklist format, missing v6.0 sections (Multi-Agent Delegation, Temporal Decay Calibration), and Unicode symbols throughout.
+
+### Fixed — Unicode Normalization
+- **replace_all** □ (U+25A1) → `[ ]` (~60 occurrences) — checkbox symbols incompatible with ASCII-only rendering
+- **replace_all** ≥ (U+2265) → `>=` (9 occurrences) — mathematical symbols to ASCII
+- **replace_all** ≤ (U+2264) → `<=` (1 occurrence) — mathematical symbols to ASCII
+- **replace_all** ─ (U+2500 box drawing) → `-` — YAML decorative line characters to ASCII
+
+### Fixed — Domain Generalization (R2-Bio → R2-Domain)
+- **replace_all** `R2-Bio` → `R2-Domain` (4 instances) — v6.0 generalized the biology-specific reviewer
+- **R2-Domain table row**: "Biology | Biological plausibility..." → "Domain-specific rigour | Loads checklist from `domain-config.yaml` if present; otherwise applies generic domain checks"
+- **R2-Domain Checklist**: Replaced entire biology-specific checklist (gene names, cell types, doublets, ambient RNA, marker validation) with generic domain checklist (measurement validity, construct operationalisation, field artifacts, reporting requirements, terminology consistency)
+- **10 domain-specific examples generalized**: batch_key/n_HVG/n_latent → key hyperparameters/feature count/latent dimensions; bulk RNA-seq → generic data type mismatch; cell-type proportions → subgroup proportions/compositional effects; 10X/Smart-seq2 → list platforms/instruments; iLISI metric → generic metric; HVG selection → feature selection; scVI on normalized → model on pre-processed; organism gene symbols → identifiers/nomenclature; iLISI/cLISI/ELBO/HVGs demanded evidence → generic metric/convergence/feature evidence
+
+### Fixed — v6.0 Structural Updates
+- **Header**: `# Reviewer 2 Ensemble Protocol v5.5` → `# Reviewer 2 Ensemble Protocol v6.0` with domain-agnostic attribution line
+- **INLINE 7-point checklist**: Replaced v5.5 code-block format (TRACEABLE, SURVIVES HOSTILE READ) with v6.0 table format (Prior Art, Confounder Risk, Reproducible) + YAML storage block
+- **Activation Modes table**: Expanded from 4-column (Mode/Trigger/Scope/Blocking) to 5-column (Mode/Trigger/Blocking/Sub-agent type/Description) matching references/ format
+
+### Added — v6.0 Sections
+- **Multi-Agent Delegation section**: R2-DEEP vs R2-INLINE sub-agent types (opus for FORCED/BATCH/VETO, sonnet for BRAINSTORM/SHADOW/REDIRECT/INLINE), spawning details, SOLO mode behavior
+- **v6.0 TEMPORAL DECAY CALIBRATION section**: Exponential decay formula `weight = exp(-0.02 * ageWeeks)`, calibration data loading at session start, usage instructions for R2 agents, feedback loop tracking
+
+### Preserved (unique to protocols/, NOT in references/)
+- Version history paragraphs (v3.5/v4.0/v5.0/v5.5 evolution)
+- R2 System Prompt section with behavioral directives
+- R2 Shadow Mode Protocol
+- INLINE mode detailed sections (Why/When/Verdict/Interaction/Cost)
+- Ensemble Composition + When to Invoke tables
+- Modified FORCED Review Flow (8-step detailed process)
+- Salvagente Protocol + Circuit Breaker Integration
+- Mandatory Output Schema (full YAML template)
+- Domain-Specific Checklists (R2-Methods, R2-Stats with Confounding Audit Table, R2-Domain, R2-Engineering)
+- Red Flag Checklist (12 flags: 6 statistical + 6 methodological)
+- Reviewer Persona and Invocation Procedure sections
+- Review Severity Guide (0-100 numeric scoring)
+
+### Validation
+- Unicode scan (□/≥/≤/─): 0 matches — CLEAN
+- Domain-specific scan (scRNA/scVI/iLISI/cLISI/ELBO/HVG/doublet/ambient RNA/10X/Smart-seq/MT-/mt-): 0 matches — CLEAN
+- R2-Bio scan: 0 matches — CLEAN
+- v5.5 references: 3 matches, all in historical/contextual text (correct to keep)
+- Final file: 710 lines, structurally sound
+
 ## [6.0.11] — 2026-03-04 — Protocol/Reference Sync (17 files, 80+ edits)
 
 > **Trigger:** Round 23 paranoid deep debug — systematic comparison of all 18 paired files between `protocols/` (repo context) and `skills/vibe/references/` (plugin context). The references/ copies had been updated to v6.0 standards (generalized language, corrected thresholds, v6.0 hook sections) but protocols/ copies were stale. Found: Unicode symbols instead of ASCII, domain-specific CRISPR/scRNA-seq examples instead of generic language, old serendipity thresholds (>=12 instead of >=15), missing v6.0 sections, and Sprint 17 case study references instead of anonymized lessons.

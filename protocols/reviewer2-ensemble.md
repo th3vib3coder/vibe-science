@@ -1,6 +1,8 @@
-# Reviewer 2 Ensemble Protocol v5.5
+# Reviewer 2 Ensemble Protocol v6.0
 
-Pillar 2 of Vibe Science. Four domain-specific reviewers, each with checklist and failure modes. Cold, not theatrical. Precise, not aggressive. Output is structured, not prose.
+> Version: v6.0 | Domain-agnostic | 4 reviewers, 7 modes, schema-enforced verdicts
+
+Four domain-agnostic reviewers, each with checklist and failure modes. Cold, not theatrical. Precise, not aggressive. Output is structured, not prose.
 
 **v3.5 base**: Double-pass workflow (fatal-hunt → method-repair), three-level orthogonal attack (L1-Logic / L2-Stats / L3-Data), mandatory tool-use verification, typed claims with scaled evidence standards, confounding audit table, "What Would Convince Me" constructive output, No Free Lunch principle.
 
@@ -24,15 +26,15 @@ Key behavioral requirements (from the system prompt):
 
 ## R2 Activation Modes (v4.0 expanded)
 
-| Mode | Trigger | Scope | Blocking? |
-|------|---------|-------|-----------|
-| **BRAINSTORM** | Phase 0 completion | Reviews gap analysis, hypothesis quality, data availability | YES — must WEAK_ACCEPT before OTAE starts |
-| **FORCED** | Major finding, stage transition, pivot, confidence explosion (>0.30/2cyc) | Full ensemble (4 reviewers), double-pass | YES — demands must be addressed |
-| **BATCH** | 3 minor findings accumulated | Single-pass batch review, R2-Methods lead | YES — demands must be addressed |
-| **SHADOW** | Every 3 cycles automatically | Passive review of tree health, claim ledger drift, assumption register, serendipity log | NO — but can ESCALATE to FORCED |
-| **VETO** | R2 spots fatal flaw during any mode | Halts current branch or entire tree | YES — cannot be overridden except by human |
-| **REDIRECT** | R2 identifies better direction during review | Proposes alternative branch/hypothesis/return to Phase 0 | Soft — user chooses whether to follow |
-| **INLINE** | Every individual finding formulated (v5.5) | 7-point checklist, single reviewer, lightweight | YES — anomalies block; clean findings pass immediately |
+| Mode | Trigger | Blocking | Sub-agent type | Description |
+|------|---------|----------|----------------|-------------|
+| **BRAINSTORM** | Researcher requests early feedback | No | R2-INLINE | Lightweight critique on draft hypotheses. Advisory only. |
+| **FORCED** | Gate G3 (pre-synthesis) or orchestrator | **Yes** | R2-DEEP | Full adversarial review with SFI + BFP. Blocks pipeline. |
+| **BATCH** | Accumulated >= 5 unreviewed claims | **Yes** | R2-DEEP | Bulk review. Each claim scored independently. |
+| **SHADOW** | Every N cycles (configurable, default 3) | No | R2-INLINE | Silent monitoring. Flags raised but do not block. |
+| **VETO** | R2 issues VETO on a specific claim | **Yes** | R2-DEEP | Hard stop. Claim cannot proceed until VETO resolved or overridden by user. |
+| **REDIRECT** | R2 proposes alternative investigation | No | R2-INLINE | Suggests pivot. Researcher must acknowledge; not auto-blocking. |
+| **INLINE** | Every finding, before CLAIM-LEDGER write | **Yes** | R2-INLINE | v5.5 addition. 7-point checklist per finding. Fast, synchronous. |
 
 ## R2 Shadow Mode Protocol (every 3 cycles)
 
@@ -63,23 +65,34 @@ Every time a finding is formulated (before it enters CLAIM-LEDGER.md). This is N
 
 For each finding, verify ALL seven:
 
-```
-INLINE-R2 Checklist:
-□ 1. NUMBERS MATCH SOURCE — Every number in the finding text exists in the
-     source data file (JSON, CSV, script output). No manual transcription errors.
-□ 2. SAMPLE SIZE ADEQUATE — n is reported AND sufficient for the strength
-     of the claim. (Claiming 3-decimal precision from n=20 is not credible.)
-□ 3. ALTERNATIVE EXPLANATIONS — At least 1 alternative explanation listed
-     for any surprising, negative, or strong result.
-□ 4. TERMINOLOGY PRECISE — Terms used consistently and correctly.
-     (e.g., "cross-assay" vs "cross-study" mean different things.)
-□ 5. CLAIM ≤ EVIDENCE — The claim is not stronger than the evidence supports.
-     (e.g., "demonstrates" requires interventional evidence; "suggests" is safer
-     for observational data.)
-□ 6. TRACEABLE — Finding → evidence source → script → raw data. Full chain
-     exists and can be verified.
-□ 7. SURVIVES HOSTILE READ — Would a skeptical reviewer accept this finding
-     as stated? If not, what would they attack?
+Every finding must pass this checklist before entering the CLAIM-LEDGER. Each item is
+scored PASS / FAIL / N-A. Two or more FAILs block the finding.
+
+| #  | Check                      | Question                                                              |
+|----|----------------------------|-----------------------------------------------------------------------|
+| 1  | **Numbers Match Source**    | Do all reported numbers trace back to a specific computation output?  |
+| 2  | **Sample Size**            | Is the sample size stated, adequate, and not inflated by duplication? |
+| 3  | **Alternatives Considered**| Were at least 2 alternative explanations for the result evaluated?    |
+| 4  | **Prior Art**              | Was a literature/web search performed to check if this is already known? |
+| 5  | **Confounder Risk**        | Were potential confounders identified and either controlled or noted? |
+| 6  | **Reproducible**           | Can the result be reproduced from the saved artifacts + code + seeds? |
+| 7  | **Terminology Consistent** | Does the finding use terms consistent with established definitions?   |
+
+The checklist result is stored as a YAML block in the finding record:
+
+```yaml
+inline_review:
+  checklist:
+    numbers_match_source: PASS
+    sample_size: PASS
+    alternatives_considered: PASS
+    prior_art: PASS
+    confounder_risk: FAIL  # reason: batch effect not assessed
+    reproducible: PASS
+    terminology_consistent: PASS
+  pass_count: 6
+  fail_count: 1
+  blocked: false  # blocked if fail_count >= 2
 ```
 
 ### INLINE verdict
@@ -109,7 +122,7 @@ INLINE is a single-pass checklist, not a full ensemble review. In SOLO mode, the
 |----------|--------|-------|-----------|
 | **R2-Methods** | Methodology | Search completeness, experimental design, protocol validity | Missing databases, biased sampling, incomplete keywords, wrong tool choice |
 | **R2-Stats** | Statistics | Statistical validity, power, bias, leakage, metrics | p-hacking, confounding, leakage, insufficient n, wrong test, inflated metrics |
-| **R2-Bio** | Biology | Biological plausibility, pathway logic, annotation quality | Mis-annotation, wrong organism, pathway confusion, overinterpretation |
+| **R2-Domain** | Domain-specific rigour | Loads checklist from `domain-config.yaml` if present; otherwise applies generic domain checks (measurement validity, construct operationalisation, known artifacts) | Mis-annotation, wrong construct, domain-specific artifacts, overinterpretation |
 | **R2-Eng** | Engineering | Code correctness, reproducibility, data contracts, performance | dtype errors, memory leaks, non-determinism, missing seeds, broken pipelines |
 
 ## When to Invoke
@@ -119,7 +132,7 @@ INLINE is a single-pass checklist, not a full ensemble review. In SOLO mode, the
 | Major finding discovered | All 4 | STOP the loop, review now |
 | 3 minor findings accumulated | R2-Methods + most relevant specialist | Before next cycle |
 | Before concluding any RQ | All 4 (final review) | Before writing conclusion |
-| Serendipity pivot proposed | R2-Methods + R2-Bio | Before creating new RQ folder |
+| Serendipity pivot proposed | R2-Methods + R2-Domain | Before creating new RQ |
 | Computational pipeline complete | R2-Stats + R2-Eng (minimum) | Before accepting run |
 | Gate failure investigated | Relevant specialist(s) | During fix |
 
@@ -234,7 +247,7 @@ date: YYYY-MM-DD
 finding_under_review: [reference to finding/run]
 review_type: major_finding | batch_minor | final | pivot | pipeline
 
-# ─── CLAIM LEDGER (typed — evidence standard scales with claim type)
+# --- CLAIM LEDGER (typed — evidence standard scales with claim type)
 claim_ledger:
   - claim_id: C-xxx
     text: "[exact claim text]"
@@ -250,7 +263,7 @@ claim_ledger:
     #   causal       → interventional evidence OR strong triangulation
     #   predictive   → validated on independent holdout data
 
-# ─── FATAL FLAWS (any one = REJECT) ─────────────────────────────
+# --- FATAL FLAWS (any one = REJECT) -----------------------------
 fatal_flaws:
   - id: FF-001
     domain: stats | methods | bio | eng
@@ -258,7 +271,7 @@ fatal_flaws:
     evidence: [what specifically is wrong — file, line, metric, claim_id]
     impact: [what breaks if this is not fixed]
 
-# ─── MAJOR FLAWS ────────────────────────────────────────────────
+# --- MAJOR FLAWS ------------------------------------------------
 major_flaws:
   - id: MF-001
     domain: stats | methods | bio | eng
@@ -266,15 +279,15 @@ major_flaws:
     demanded_evidence: [exact file/figure/test needed to resolve]
     suggested_fix: [concrete action, not vague advice]
 
-# ─── DEMANDED EVIDENCE LIST ─────────────────────────────────────
+# --- DEMANDED EVIDENCE LIST -------------------------------------
 demanded_evidence:
   - item: "Show me [X] or I reject"
     type: figure | metric | test | file | citation
     claim_ids_affected: [C-xxx, C-yyy]
     deadline: immediate | before_next_cycle | before_conclusion
 
-# ─── FALSIFICATION PLAN (≥3 tests per major claim) ────────────
-# For EACH major/causal/predictive claim, propose ≥3 independent tests:
+# --- FALSIFICATION PLAN (>=3 tests per major claim) ------------
+# For EACH major/causal/predictive claim, propose >=3 independent tests:
 falsification:
   - claim_id: C-xxx
     tests:
@@ -298,14 +311,14 @@ falsification:
   #   - Holdout study (exclude one study, retrain, does claim replicate?)
   #   - Label permutation (random labels, is DE still "significant"? Red flag if yes.)
 
-# ─── ABLATION MATRIX ────────────────────────────────────────────
+# --- ABLATION MATRIX --------------------------------------------
 ablation:
-  - variable: [what to change — e.g., batch_key, n_HVG, n_latent]
+  - variable: [what to change -- e.g., key hyperparameters, feature count, latent dimensions]
     values_to_test: [list of values]
     expected_impact: [what should happen]
     red_flag: [what would indicate a problem]
 
-# ─── RED-TEAM ALTERNATIVES ──────────────────────────────────────
+# --- RED-TEAM ALTERNATIVES --------------------------------------
 alternative_explanations:
   - explanation: [alternative interpretation of the results]
     plausibility: high | medium | low
@@ -314,19 +327,19 @@ alternative_explanations:
     plausibility: high | medium | low
     test_to_distinguish: [how to distinguish]
 
-# ─── DECISION ────────────────────────────────────────────────────
+# --- DECISION ----------------------------------------------------
 decision: ACCEPT | WEAK_ACCEPT | WEAK_REJECT | REJECT
 motivation: [exactly 3 lines — no more, no less]
 conditions_for_upgrade: [if WEAK_*, what would change the decision]
 
-# ─── WHAT WOULD CONVINCE ME ─────────────────────────────────────
+# --- WHAT WOULD CONVINCE ME -------------------------------------
 # For each WEAK_REJECT or REJECT: exact artifacts that would upgrade verdict
 convince_me:
   - artifact: "[specific plot/table/test/file]"
     why: "[how this addresses a specific flaw]"
     verdict_if_provided: "[what decision becomes if this is satisfactory]"
 
-# ─── SALVAGED SEEDS (v5.0 — mandatory when kill_reason requires salvagente) ──
+# --- SALVAGED SEEDS (v5.0 — mandatory when kill_reason requires salvagente) --
 salvaged_seeds:
   - seed_id: SEED-xxx
     source_claim_id: C-xxx
@@ -336,7 +349,7 @@ salvaged_seeds:
     existing_evidence: "[what data exists]"
     estimated_test_cost: LOW | MEDIUM | HIGH
 
-# ─── BLIND-FIRST PASS COMPARISON (v5.0 — FORCED reviews only) ─────────────
+# --- BLIND-FIRST PASS COMPARISON (v5.0 — FORCED reviews only) -------------
 blind_assessment_comparison:
   - claim_id: C-xxx
     phase1_assessment: SUSPICIOUS | PLAUSIBLE | STRONG
@@ -351,31 +364,31 @@ blind_assessment_comparison:
 ### R2-Methods Checklist
 
 ```
-□ Search strategy covers ≥2 databases (Scopus, PubMed, OpenAlex)
-□ Keywords include synonyms and MeSH terms where applicable
-□ Date range justified (not arbitrary)
-□ Snowball search performed (forward + backward citations)
-□ Negative results reported (searches that found nothing)
-□ Tool selection justified (why this tool, not alternatives)
-□ Protocol matches stated goals (e.g., not using bulk RNA-seq methods on scRNA data)
-□ Sample selection described with inclusion/exclusion criteria
-□ No cherry-picking: all relevant results discussed, not just supporting ones
+[ ] Search strategy covers >=2 databases (Scopus, PubMed, OpenAlex)
+[ ] Keywords include synonyms and MeSH terms where applicable
+[ ] Date range justified (not arbitrary)
+[ ] Snowball search performed (forward + backward citations)
+[ ] Negative results reported (searches that found nothing)
+[ ] Tool selection justified (why this tool, not alternatives)
+[ ] Protocol matches stated goals (e.g., not using methods designed for one data type on another)
+[ ] Sample selection described with inclusion/exclusion criteria
+[ ] No cherry-picking: all relevant results discussed, not just supporting ones
 ```
 
 ### R2-Stats Checklist — "Statistical Smell Tests"
 
 ```
-□ BIAS: Selection bias in dataset choice? Survivor bias in results?
-□ LEAKAGE: Information from test set leaking into training? Future data used?
-□ CONFOUNDING: Batch, platform, donor, composition controlled?
-□ SAMPLE SIZE: n sufficient for the statistical test used? Power analysis?
-□ P-HACKING: Multiple comparisons corrected? FDR method appropriate?
-□ METRICS: Metrics appropriate for the question? (e.g., accuracy on imbalanced data = red flag)
-□ EFFECT SIZE: Reported alongside p-value? Clinically/biologically meaningful?
-□ DISTRIBUTION: Assumptions of statistical test met? (normality, independence, etc.)
-□ OVERFITTING: Cross-validation or holdout used? Training vs test gap?
-□ COMPOSITIONAL: For single-cell data, are results confounded by cell-type proportions?
-□ NO FREE LUNCH: If metric A improved, what happened to metric B? Trade-off documented?
+[ ] BIAS: Selection bias in dataset choice? Survivor bias in results?
+[ ] LEAKAGE: Information from test set leaking into training? Future data used?
+[ ] CONFOUNDING: Batch, platform, donor, composition controlled?
+[ ] SAMPLE SIZE: n sufficient for the statistical test used? Power analysis?
+[ ] P-HACKING: Multiple comparisons corrected? FDR method appropriate?
+[ ] METRICS: Metrics appropriate for the question? (e.g., accuracy on imbalanced data = red flag)
+[ ] EFFECT SIZE: Reported alongside p-value? Clinically/biologically meaningful?
+[ ] DISTRIBUTION: Assumptions of statistical test met? (normality, independence, etc.)
+[ ] OVERFITTING: Cross-validation or holdout used? Training vs test gap?
+[ ] COMPOSITIONAL: Are results confounded by subgroup proportions or compositional effects?
+[ ] NO FREE LUNCH: If metric A improved, what happened to metric B? Trade-off documented?
 ```
 
 ### R2-Stats: Confounding Audit Table (mandatory for multi-batch/multi-study data)
@@ -387,7 +400,7 @@ When reviewing integration, DE, or any cross-dataset analysis, R2-Stats MUST pro
 |-------------|--------------------------|-----------------|-----------|--------------------------|
 | batch       | [list batches]           | tissue/platform | YES/NO    | [e.g., "batch1=kidney only"] |
 | tissue      | [list tissues]           | batch/donor     | YES/NO    |                          |
-| platform    | [10X v2, v3, Smart-seq2] | batch           | YES/NO    |                          |
+| platform    | [list platforms/instruments] | batch      | YES/NO    |                          |
 | donor/sample| [list]                   | batch/condition | YES/NO    |                          |
 | condition   | [disease/control]        | batch/tissue    | YES/NO    |                          |
 ```
@@ -395,41 +408,39 @@ When reviewing integration, DE, or any cross-dataset analysis, R2-Stats MUST pro
 Rules:
 - If variable X is **fully confounded** with variable Y (e.g., all disease samples from batch 1, all control from batch 2) → R2 MUST state: "Cannot distinguish X effect from Y effect. Any claim about X is UNFALSIFIABLE in this design."
 - If partially confounded → flag and demand stratified analysis
-- This table is **not optional** when the data has ≥2 batches or ≥2 studies
+- This table is **not optional** when the data has >=2 batches or >=2 studies
 
-### R2-Bio Checklist
+### R2-Domain Checklist
+
+R2-Domain searches for `domain-config.yaml` in the project `.vibe-science/` directory. If found, it loads domain-specific checklists (e.g., instrument calibration for physics, diagnostic criteria for medicine, marker validation for biology). If absent, this generic checklist applies:
 
 ```
-□ Gene names match organism (human vs mouse gene symbols — MT- vs mt-)
-□ Cell type annotations consistent with known markers (dotplot/DE required, not just clustering)
-□ Pathway interpretations consistent with known biology
-□ Tissue-specific expression patterns make sense
-□ Disease-gene associations have independent validation
-□ No overinterpretation of computational predictions as biological truth
-□ Developmental/temporal context considered
-□ Known artifacts of the technology accounted for (doublets, ambient RNA, etc.)
-□ Cross-species extrapolation flagged and justified
-□ NO FREE LUNCH (bio): If integration improved mixing, what happened to cell-type resolution?
-   If DE found more genes, is this real signal or overcorrection artifact?
-□ MARKER GATE: No cell type label accepted without ≥3 canonical markers confirmed
-   (if markers absent or contradictory → label is PROVISIONAL, not CONFIRMED)
+[ ] Measurement validity — instruments/methods appropriate for the construct measured
+[ ] Construct operationalisation — abstract concepts properly defined and measured
+[ ] Known field-specific artifacts accounted for (technology, measurement, sampling)
+[ ] Standard reporting requirements for the domain met
+[ ] Terminology consistent with established definitions in the field
+[ ] No overinterpretation of computational predictions as domain truth
+[ ] Cross-domain extrapolation flagged and justified
+[ ] NO FREE LUNCH (domain): If one metric improved, what happened to the trade-off metric?
+   Is the improvement real signal or an artifact of the correction?
 ```
 
 ### R2-Engineering Checklist
 
 ```
-□ Random seeds set and documented
-□ Package versions recorded (exact, not ranges)
-□ Input data integrity verified (checksums/hashes)
-□ Output data integrity verified (checksums/hashes)
-□ dtype consistency (int vs float, categorical vs string)
-□ Memory usage appropriate (no silent OOM kills)
-□ No hardcoded paths (parameterized)
-□ Error handling present (what happens on malformed input?)
-□ Intermediate results saved (pipeline can resume)
-□ Code runs end-to-end from clean state
-□ GPU/CPU behavior matches expectations
-□ No deprecated API calls
+[ ] Random seeds set and documented
+[ ] Package versions recorded (exact, not ranges)
+[ ] Input data integrity verified (checksums/hashes)
+[ ] Output data integrity verified (checksums/hashes)
+[ ] dtype consistency (int vs float, categorical vs string)
+[ ] Memory usage appropriate (no silent OOM kills)
+[ ] No hardcoded paths (parameterized)
+[ ] Error handling present (what happens on malformed input?)
+[ ] Intermediate results saved (pipeline can resume)
+[ ] Code runs end-to-end from clean state
+[ ] GPU/CPU behavior matches expectations
+[ ] No deprecated API calls
 ```
 
 ## Red Flag Checklist (Mandatory at Every FORCED/BATCH Review)
@@ -438,33 +449,33 @@ At every FORCED or BATCH review, R2 MUST walk through this checklist BEFORE rend
 
 ### Statistical Red Flags
 ```
-□ CAUSAL FROM CORRELATIONAL: Are causal claims made from correlational/observational data?
+[ ] CAUSAL FROM CORRELATIONAL: Are causal claims made from correlational/observational data?
   → If checked: DEMAND interventional evidence OR triangulation from 3+ independent methods
-□ MULTIPLE TESTING: Multiple comparisons without correction (Bonferroni, FDR, permutation)?
+[ ] MULTIPLE TESTING: Multiple comparisons without correction (Bonferroni, FDR, permutation)?
   → If checked: DEMAND appropriate correction. Recalculate significance.
-□ SAMPLE SIZE: Is n justified for the statistical test used? Power analysis?
+[ ] SAMPLE SIZE: Is n justified for the statistical test used? Power analysis?
   → If checked: DEMAND power analysis or justify why n is sufficient
-□ EFFECT SIZE MISSING: Only p-values reported without effect sizes (Cohen's d, OR, RR)?
+[ ] EFFECT SIZE MISSING: Only p-values reported without effect sizes (Cohen's d, OR, RR)?
   → If checked: DEMAND effect sizes with confidence intervals
-□ ASSUMPTIONS VIOLATED: Statistical test assumptions not verified (normality, independence, homoscedasticity)?
+[ ] ASSUMPTIONS VIOLATED: Statistical test assumptions not verified (normality, independence, homoscedasticity)?
   → If checked: DEMAND assumption verification or switch to non-parametric test
-□ CHERRY-PICKED RESULTS: Only best run shown? Best seed? Best subset?
+[ ] CHERRY-PICKED RESULTS: Only best run shown? Best seed? Best subset?
   → If checked: DEMAND all runs, or at minimum mean ± std across seeds
 ```
 
 ### Methodological Red Flags
 ```
-□ OVERCLAIMING: Conclusions stronger than evidence supports?
+[ ] OVERCLAIMING: Conclusions stronger than evidence supports?
   → If checked: DEMAND language downgrade to match confidence level
-□ MECHANISTIC WITHOUT MECHANISM: Mechanistic claims without mechanistic data?
+[ ] MECHANISTIC WITHOUT MECHANISM: Mechanistic claims without mechanistic data?
   → If checked: DEMAND mechanistic evidence or downgrade to "correlative"
-□ MISSING NEGATIVE CONTROLS: No baseline, no random comparison, no null model?
+[ ] MISSING NEGATIVE CONTROLS: No baseline, no random comparison, no null model?
   → If checked: DEMAND appropriate negative control
-□ GENERALIZABILITY WITHOUT VALIDATION: Cross-dataset/cross-assay claims without cross-validation?
+[ ] GENERALIZABILITY WITHOUT VALIDATION: Cross-dataset/cross-assay claims without cross-validation?
   → If checked: DEMAND cross-validation or restrict claims to tested dataset
-□ CONFIRMATION BIAS: Only supporting evidence sought? Counter-evidence not searched?
+[ ] CONFIRMATION BIAS: Only supporting evidence sought? Counter-evidence not searched?
   → If checked: DEMAND counter-evidence search (see evidence-engine.md Counter-Evidence Search)
-□ SINGLE TIMEPOINT: Temporal claims from single timepoint data?
+[ ] SINGLE TIMEPOINT: Temporal claims from single timepoint data?
   → If checked: DEMAND temporal data or restrict claims to observed timepoint
 ```
 
@@ -488,7 +499,7 @@ The reviewer:
 
 **Penalizes:**
 - Claim without artifact (claim C-xxx has no associated file/figure → MAJOR FLAW)
-- Metrics without context (iLISI=0.89 means nothing without baseline comparison → DEMANDED EVIDENCE)
+- Metrics without context (a metric value means nothing without baseline comparison → DEMANDED EVIDENCE)
 - "I chose X because" without trade-off analysis → MAJOR FLAW
 - Missing ablation when alternatives exist → add to ABLATION MATRIX
 - Missing replication when stochastic methods used → DEMANDED EVIDENCE
@@ -555,9 +566,9 @@ Attack each claim on three orthogonal levels. A finding can have perfect logic b
 - **"No Free Lunch" rule**: if a result improves metric A, R2 MUST ask what was sacrificed on metric B. Every gain has a cost — demand the trade-off analysis.
 
 **L3 — Data/Implementation**: Is the execution correct?
-- Apply domain-specific checklist (R2-Eng, R2-Bio)
+- Apply domain-specific checklist (R2-Eng, R2-Domain)
 - Check: input data matches what's claimed (dimensions, dtypes, organism)
-- Check: pipeline steps are in correct order (e.g., HVG before or after integration?)
+- Check: pipeline steps are in correct order (e.g., feature selection before or after transformation?)
 - Check: versions, seeds, parameters documented
 - Check: output artifacts exist and are non-empty
 
@@ -566,7 +577,7 @@ Attack each claim on three orthogonal levels. A finding can have perfect logic b
 Only after all flaws are identified in Pass 1:
 1. For each FATAL flaw → state the minimal fix (not a suggestion — a requirement)
 2. For each MAJOR flaw → state demanded evidence with deadline
-3. Generate falsification plan (≥3 tests for major claims)
+3. Generate falsification plan (>=3 tests for major claims)
 4. Fill ablation matrix for hyperparameter choices
 5. Generate 2 red-team alternative explanations
 6. Fill "What Would Convince Me" section
@@ -605,7 +616,7 @@ Contents: the mandatory output schema above, plus:
 After review:
 - Claims with FATAL FLAW → status: REJECTED
 - Claims with MAJOR FLAW → status: CHALLENGED (pending fix)
-- Claims that survived → status: VERIFIED (if confidence ≥ 0.60)
+- Claims that survived → status: VERIFIED (if confidence >= 0.60)
 - Add `reviewer2: ENS-YYYYMMDD-NNN` to each reviewed claim
 
 ## Review Severity Guide
@@ -623,7 +634,7 @@ Each flaw gets a numeric score. The **overall decision** is determined by the hi
 - All flaws <30 → ACCEPT
 - Highest flaw 30-59 → WEAK_ACCEPT (address concerns)
 - Highest flaw 60-79 → WEAK_REJECT (major revision required)
-- Any flaw ≥80 → REJECT
+- Any flaw >=80 → REJECT
 
 **FATAL FLAW** — Finding/run MUST be rejected. No negotiation. Examples:
 - Core claim not supported by any verified source
@@ -631,8 +642,8 @@ Each flaw gets a numeric score. The **overall decision** is determined by the hi
 - Statistical interpretation fundamentally wrong (e.g., confusing correlation and causation)
 - Data leakage between training and test sets
 - Claim contradicts the cited evidence
-- Running scVI on normalized data instead of raw counts
-- Wrong organism gene symbols used throughout
+- Running a model on pre-processed data when it expects raw input
+- Wrong identifiers or nomenclature used throughout
 
 **MAJOR FLAW** — Cannot proceed without addressing. Examples:
 - Key alternative explanation not considered
@@ -644,7 +655,55 @@ Each flaw gets a numeric score. The **overall decision** is determined by the hi
 - No seed replication for stochastic methods
 
 **DEMANDED EVIDENCE** — Specific items that must be provided. Examples:
-- "Show me iLISI/cLISI before AND after correction, not just after"
-- "Show me the ELBO convergence plot with training vs validation loss"
-- "Provide the overlap percentage between HVGs and known disease genes"
+- "Show me the key metric before AND after correction, not just after"
+- "Show me the convergence plot with training vs validation loss"
+- "Provide the overlap between selected features and domain-relevant reference sets"
 - "Show batch classifier accuracy on latent space to prove no leakage"
+
+## Multi-Agent Delegation (v6.0)
+
+### Spawning R2 as a Sub-Agent
+
+In Claude Code environments, R2 reviewers are spawned as sub-agents via the Task tool. Each reviewer receives: (a) the R2 system prompt with behavioral requirements, (b) its specific concern scope, and (c) the claims to review.
+
+**Important:** R2 sub-agents do NOT have web search permissions. All literature searches, PubMed queries, and web fetches must be performed by the orchestrator or researcher BEFORE packaging the review context for R2.
+
+### R2-DEEP vs R2-INLINE
+
+| Property          | R2-DEEP                          | R2-INLINE                        |
+|-------------------|----------------------------------|----------------------------------|
+| Model             | claude-opus-4-6                  | claude-sonnet-4-6                |
+| Reasoning effort  | High                             | Medium                           |
+| Used in modes     | FORCED, BATCH, VETO              | BRAINSTORM, SHADOW, REDIRECT, INLINE |
+| Token budget      | Up to 16k output                 | Up to 4k output                  |
+| Full SFI/BFP      | Yes                              | No                               |
+| Checklist scope   | All 4 reviewers, full verdict    | Single-reviewer or 7-point only  |
+
+When operating in SOLO mode (single-agent, no sub-agent infrastructure), R2 functions are executed inline by the main agent. The agent must explicitly switch to the R2 disposition and document the switch in the logbook.
+
+---
+
+## v6.0 TEMPORAL DECAY CALIBRATION
+
+### Overview
+R2's historical performance is tracked across sessions with exponential temporal decay. Recent reviews weigh more than older ones:
+```
+weight = exp(-0.02 * ageWeeks)
+```
+A weakness from 50 weeks ago contributes only ~37% of its original weight.
+
+### Calibration Data
+At session start, the SessionStart hook loads R2 calibration data:
+- **Top weaknesses**: Most frequently missed review categories (decay-weighted)
+- **SFI weak categories**: Fault types R2 misses most often
+- **J0 trend**: improving/declining/stable based on weighted recent vs older scores
+
+### How R2 Should Use Calibration
+When SessionStart injects `[R2 CALIBRATION]` hints:
+1. Read the hint carefully
+2. Prioritize historically weak areas during review
+3. If hint says "R2 has historically missed X", actively search for X-type issues
+4. If J0 trend is "declining", apply extra rigor
+
+### Tracking
+PostToolUse hook logs R2 review events to DB. Stop hook extracts patterns. This creates a feedback loop: weaknesses -> hints -> improved reviews -> fewer weaknesses.
