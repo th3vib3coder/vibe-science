@@ -2,6 +2,14 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.21] — 2026-03-05 — Canonical number verification R35: CLAUDE.md terminology
+
+> **Trigger:** Round 35 paranoid deep debug — full canonical number consistency scan across all live files. Verified: 12 Laws, 32 gates (8 schema-enforced), 12 schema files, 7 lifecycle hooks, 36 reference documents, 7 agent roles (AGENTS.md), 6 permission roles (Permission Engine), 21 protocols, 12 SQLite tables, 6 Python scripts, 7 skill asset files. Found terminological ambiguity: CLAUDE.md said "6 agent types" while README.md uses "7 agent roles" — these refer to different classification systems (Permission Engine vs AGENTS.md sub-agent definitions).
+
+### Fixed — Terminology Clarification (CLAUDE.md)
+- **Line 41:** `all 6 agent types` → `all 6 permission roles` with explanatory note distinguishing from the 7 AGENTS.md agent types
+- **WHY:** CLAUDE.md used "agent types" for the 6 Permission Engine roles (researcher, R2, serendipity, experimenter, lead, judge), which could be confused with the 7 AGENTS.md sub-agent definitions (researcher, r2-deep, r2-inline, observer, explorer, r3-judge, instinct-scanner). These are intentionally different classification systems: Permission Engine controls access control in TEAM mode, AGENTS.md defines model selection and disposition for sub-agent spawning.
+
 ## [6.0.20] — 2026-03-05 — Domain generalization R34: ARCHITECTURE.md
 
 > **Trigger:** Round 34 paranoid deep debug — full repo-wide grep sweep across all live files (excluding archive/, CHANGELOG.md, SKILL.md, fault-taxonomy.yaml, domain-config-template.json). Found `AnnData schema contract` in ARCHITECTURE.md. Historical/provenance references in ARCHITECTURE.md (lines 25, 168, 374 — CRISPR research origin story) and blueprints/ are intentional context, not domain assumptions.
