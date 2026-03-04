@@ -151,9 +151,13 @@ L-1+ is domain-aware with a 4-layer architecture:
 | `r2-calibration.js` | 196 | Cross-session R2 learning |
 | `schema.sql` | ~250 | 12 tables + indices |
 | `stop.js` | 171 | Session end enforcement |
+| `pre-compact.js` | 175 | Context resilience snapshots |
+| `pre-tool-use.js` | 88 | CLAIM-LEDGER write guard (v6.0.1) |
+| `subagent-stop.js` | 98 | Salvagente Rule enforcement (v6.0.1) |
+| `pattern-extractor.js` | 111 | Cross-session pattern detection |
 | `setup.js` | 363 | DB init, dependency install, worker daemon launch |
 | `literature-registry.json` | ~800 | 102 databases, 12 categories |
-| **Total new code** | **~6,600+** | |
+| **Total new code** | **~7,100+** | |
 
 ---
 

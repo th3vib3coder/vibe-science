@@ -9,7 +9,7 @@ Blocking gates that stop-the-line if failed. No analysis proceeds past a failed 
 
 Gates are not optional checks — they are **blocking barriers**. The pipeline cannot continue if a gate fails. This prevents the accumulation of errors that produce "beautiful but fragile" outputs.
 
-v4.0 adds: Tree Gates (T0-T3), Brainstorm Gate (B0), and Stage Gates (S1-S5).
+v4.0 adds: Tree Gates (T0-T3), Brainstorm Gate (B0), Stage Gates (S1-S5). v5.0 adds: V0 (Vigilance), J0 (Judge). v5.5 adds: L-1 (Literature), DQ1-DQ4 (Data Quality), DD0 (Data Dictionary), DC0 (Design Compliance). Total: 32 gates.
 
 ---
 

@@ -302,15 +302,17 @@ vibe-science/
 │   └── agents/
 │       └── claude-code.yaml     ← Model tier config
 │
-├── plugin/                      ← Enforcement engine (~6,600 LOC)
-│   ├── scripts/                 ← 7 JS hook implementations
+├── plugin/                      ← Enforcement engine (~7,100 LOC)
+│   ├── scripts/                 ← 7 hook scripts + 2 utilities
 │   │   ├── session-start.js     ← Context injection + auto-setup
 │   │   ├── prompt-submit.js     ← Role detection + semantic recall
 │   │   ├── post-tool-use.js     ← Gate enforcement + auto-logging
+│   │   ├── pre-tool-use.js      ← CLAIM-LEDGER write guard (v6.0.1)
 │   │   ├── stop.js              ← Narrative summary + stop blocking
 │   │   ├── pre-compact.js       ← Context resilience snapshots
-│   │   ├── setup.js             ← DB initialization
-│   │   └── worker-embed.js      ← Background embedding daemon
+│   │   ├── subagent-stop.js     ← Salvagente Rule enforcement (v6.0.1)
+│   │   ├── setup.js             ← DB initialization (utility)
+│   │   └── worker-embed.js      ← Background embedding daemon (utility)
 │   ├── lib/                     ← 8 engine modules
 │   │   ├── db.js                ← SQLite operations
 │   │   ├── gate-engine.js       ← DQ/DC/DD/L-1+ enforcement

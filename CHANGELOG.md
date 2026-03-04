@@ -2,6 +2,21 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.9] — 2026-03-04 — README/ARCHITECTURE Script Listings + Gate History
+
+> **Trigger:** Round 21 paranoid deep debug — audited README.md, ARCHITECTURE.md, and gates/gates.md (files never previously scanned in debug mode). README.md script directory tree listed only 7 entries and omitted `pre-tool-use.js` and `subagent-stop.js` (added in v6.0.1), while labeling utility scripts (`setup.js`, `worker-embed.js`) as "hook implementations". ARCHITECTURE.md code table was missing 4 files (pre-compact.js, pre-tool-use.js, subagent-stop.js, pattern-extractor.js) and understated total LOC at ~6,600 when actual is ~7,100. gates/gates.md inline comment only mentioned v4.0 additions, omitting v5.0 (V0, J0) and v5.5 (L-1, DQ1-DQ4, DD0, DC0) gate additions — contradicting the correct header block.
+
+### Fixed
+- **README.md**: Script directory tree now lists all 9 files (7 hooks + 2 utilities) with correct descriptions. `pre-tool-use.js` (CLAIM-LEDGER write guard) and `subagent-stop.js` (Salvagente Rule enforcement) added. `setup.js` and `worker-embed.js` marked as utilities. LOC total updated ~6,600 → ~7,100
+- **ARCHITECTURE.md**: Code table gains 4 missing rows: `pre-compact.js` (175), `pre-tool-use.js` (88), `subagent-stop.js` (98), `pattern-extractor.js` (111). Total updated ~6,600+ → ~7,100+
+- **gates/gates.md**: Inline gate history expanded from v4.0-only to include v5.0 (V0, J0) and v5.5 (L-1, DQ1-DQ4, DD0, DC0) additions with "Total: 32 gates"
+
+### Not Fixed (by design)
+- Archive brainstorm-engine.md copies (v5.0/v5.5/photonics) still have stale "(0-15)" serendipity scale — these are historical snapshots and should reflect what each version actually contained, bugs included
+
+### Test Results
+- **50/50 tracked pass, 51/51 total, 0 fail**
+
 ## [6.0.8] — 2026-03-04 — Reference Docs Sync (Version Tags + Schema List)
 
 > **Trigger:** Round 20 paranoid deep debug — audited all 34 .md files in `skills/vibe/references/` (the skill-bundled copies of protocol docs). Found 2 files still carrying pre-v6.0 version headers that had already been fixed in `protocols/` during Round 19, plus `schema-validation.md` referencing the old `vibe-science-v5.0/` directory name and listing only 9 schemas when there are now 12 (3 new v6.0 schemas: data-quality-gate, finding-validation, spine-entry were missing).
