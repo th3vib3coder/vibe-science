@@ -207,6 +207,19 @@ CREATE INDEX IF NOT EXISTS idx_prompt_session ON prompt_log(session_id);
 --     +created_at TEXT
 -- );
 
+-- Fallback table when sqlite-vec is not available.
+-- Created by worker-embed.js at runtime, defined here for documentation.
+-- NOT counted in the "12 tables" total — this is an optional fallback.
+CREATE TABLE IF NOT EXISTS memory_embeddings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    text TEXT NOT NULL,
+    embedding BLOB NOT NULL,
+    metadata TEXT,
+    project_path TEXT,
+    created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_memembed_project ON memory_embeddings(project_path);
+
 -- =====================================================
 -- EMBED QUEUE: Async embedding processing (worker)
 -- =====================================================
