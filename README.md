@@ -342,7 +342,7 @@ vibe-science/
 │
 ├── protocols/                   ← 21 methodology protocols
 ├── gates/gates.md               ← Gate specification
-├── schemas/                     ← 9 root-level JSON schemas
+├── schemas/                     ← 12 JSON schemas
 ├── assets/                      ← Fault taxonomy, rubrics, templates
 ├── logos/                       ← SVG logos (v3.5 → v6.0)
 │
@@ -397,7 +397,7 @@ The jump from v5.5 to v6.0 is architectural, not incremental. The methodology (s
 - Context resilience: PreCompact snapshots, progressive context building, crash recovery
 - Silent observer with periodic health checks
 - LAW 12 — INSTINCT: learned patterns inform current behavior, decay with time
-- 34 reference documents (28 from v5.5 + 6 new), 12 JSON schemas (9 + 3 new), 6 Python enforcement scripts
+- 34 reference documents (28 from v5.5 + 6 new), 12 JSON schemas (9 v5.0 + 3 v5.5), 6 Python enforcement scripts
 
 **Codex → Claude Code migration:** v5.0 and v5.5 had Codex-specific variants (`archive/vibe-science-v5.0-codex/`, `archive/vibe-science-v5.5-codex/`). v6.0 is Claude Code native — no Codex variant needed.
 

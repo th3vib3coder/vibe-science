@@ -23,7 +23,7 @@
 ## Validation Protocol
 
 ```
-WHEN: At every gate check for the 9 schema-enforced artifacts above.
+WHEN: At every gate check for the 9 artifacts above (8 gates + serendipity-seed).
 HOW:  Before evaluating gate criteria, validate artifact against JSON Schema.
 
 1. Gate check begins.

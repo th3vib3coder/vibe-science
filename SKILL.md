@@ -264,7 +264,7 @@ For FORCED reviews, R2 first receives claims WITHOUT the researcher's justificat
 8 critical gates enforce structure via JSON Schema. If the artifact doesn't validate, the gate FAILS regardless of what the prose says. Catches "hallucinated compliance."
 
 **Protocol**: `protocols/schema-validation.md`
-**Schemas**: `schemas/*.schema.json` (9 files: 8 gates + serendipity-seed)
+**Schemas**: `schemas/*.schema.json` (12 files: 8 gate schemas + serendipity-seed + data-quality-gate + finding-validation + spine-entry)
 
 ### Enhancement A: R2 Salvagente
 When R2 kills a claim with reason INSUFFICIENT_EVIDENCE/CONFOUNDED/PREMATURE, R2 MUST produce a serendipity seed. Discovery preservation built into the adversarial loop.
