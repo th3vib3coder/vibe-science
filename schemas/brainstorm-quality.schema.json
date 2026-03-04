@@ -144,7 +144,7 @@
         "domain": {
           "type": "string",
           "minLength": 1,
-          "description": "Scientific domain or subdomain of the hypothesis (e.g. genomics, transcriptomics, immunology)"
+          "description": "Scientific domain or subdomain of the hypothesis (e.g. materials science, climate modeling, drug discovery)"
         }
       }
     },
