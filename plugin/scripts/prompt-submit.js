@@ -17,7 +17,7 @@
  * AUTOMATICALLY in this hook, before the agent sees the prompt.
  */
 
-import { createHash, randomUUID } from 'node:crypto';
+import { createHash } from 'node:crypto';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -28,16 +28,18 @@ const __dirname = dirname(__filename);
 // Graceful lib imports -- if a module doesn't exist, provide fallbacks
 // ---------------------------------------------------------------------------
 
-let openDB, closeDB;
+let openDB, initDB, closeDB;
 let identifyAgentRole;
 let vecSearch;
 
 try {
     const dbMod = await import('../lib/db.js');
     openDB = dbMod.openDB;
+    initDB = dbMod.initDB;
     closeDB = dbMod.closeDB;
 } catch {
     openDB = null;
+    initDB = null;
     closeDB = null;
 }
 
@@ -145,6 +147,7 @@ async function main(event) {
     if (openDB) {
         try {
             db = openDB();
+            if (db && initDB) initDB(db);
             dbAvailable = true;
         } catch (err) {
             warnings.push(`DB open failed: ${err.message}`);

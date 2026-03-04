@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "vibe-science-v5.0/claim-promotion",
+  "$id": "vibe-science-v6.0/claim-promotion",
   "title": "Claim Promotion Gate Artifact (D1)",
   "description": "Artifact produced when a claim passes Gate D1 (Claim Promotion). Enforces verified evidence chains, geometric confidence scoring, confounder harness, and mandatory counter-evidence search.",
   "type": "object",

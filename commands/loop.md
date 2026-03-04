@@ -29,7 +29,7 @@ After `/vibe-science:init` or to continue an existing session.
 One complete cycle of the research loop:
 
 ```
-1. CRYSTALLIZE → 2. SEARCH → 3. ANALYZE → 4. EXTRACT → 5. VALIDATE → 6. CHECK STOP
+1. OBSERVE → 2. THINK → 3. ACT → 4. EVALUATE → 5. CHECK STOP
 ```
 
 ## Process

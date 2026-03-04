@@ -557,7 +557,8 @@ function extractSignificantNumbers(text) {
         const value = parseFloat(numStr);
 
         // Skip trivially small integers (section numbers, list indices, etc.)
-        if (Number.isInteger(value) && Math.abs(value) <= 10) continue;
+        // Threshold aligned with gate-engine.js extractNumbers (< 4)
+        if (Number.isInteger(value) && Math.abs(value) < 4 && !numStr.includes('.')) continue;
 
         // Skip date-like patterns
         const before = text.substring(Math.max(0, match.index - 10), match.index);
@@ -631,17 +632,24 @@ function isApproximateMatch(a, b) {
 
 /**
  * Extract a claim ID from text content.
- * Claim IDs follow the pattern: CNNN, C-NNN, or CLAIM-NNN.
- * The compact format (C001) is used by gate-engine.js; the hyphenated
- * format (C-001) is a legacy variant.  Both are accepted.
+ * Claim IDs follow the pattern: CNNN (compact, 3 digits) or CLAIM-N (legacy).
+ * Aligned with gate-engine.js extractClaimId.
  *
  * @param {string} content
  * @returns {string|null}
  */
 function extractClaimId(content) {
-    if (!content) return null;
-    const match = content.match(/\b(C-?\d{1,6}|CLAIM-\d{1,6})\b/i);
-    return match ? match[1].toUpperCase() : null;
+    if (!content || typeof content !== 'string') return null;
+
+    // Try compact format first (C followed by 3 digits) — same as gate-engine.js
+    const compactMatch = content.match(/\bC(\d{3})\b/);
+    if (compactMatch) return compactMatch[0];
+
+    // Try legacy format (CLAIM- followed by digits)
+    const legacyMatch = content.match(/\bCLAIM-(\d+)\b/);
+    if (legacyMatch) return legacyMatch[0];
+
+    return null;
 }
 
 /**
@@ -912,7 +920,6 @@ function checkSalvagenteRule(db, sessionId, toolInput) {
             WHERE (
                 narrative LIKE ? OR narrative LIKE ?
                 OR causal_question LIKE ? OR causal_question LIKE ?
-                OR source = 'SALVAGED_FROM_R2'
             )
             AND created_session IN (
                 SELECT id FROM sessions WHERE project_path IN (

@@ -514,7 +514,7 @@ export function createAlert(db, alert) {
  * @returns {import('better-sqlite3').RunResult}
  */
 export function queueForEmbedding(db, text, metadata = null) {
-    const meta = typeof metadata === 'object' ? JSON.stringify(metadata) : metadata;
+    const meta = typeof metadata === 'object' && metadata !== null ? JSON.stringify(metadata) : metadata;
     return stmt(db,
         `INSERT INTO embed_queue (text, metadata, created_at) VALUES (?, ?, ?)`
     ).run(text, meta, new Date().toISOString());

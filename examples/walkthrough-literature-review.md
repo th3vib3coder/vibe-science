@@ -24,7 +24,7 @@ Constitution loaded. R2 Ensemble armed. Gates active.
 ### Initialization
 
 Creates `.vibe-science/` with:
-- `STATE.md` (version: 3.5.1, phase: discovery, cycle: 1)
+- `STATE.md` (version: 6.0.0, phase: discovery, cycle: 1)
 - `PROGRESS.md`, `CLAIM-LEDGER.md`, `ASSUMPTION-REGISTER.md`, `SERENDIPITY.md`
 - `RQ-001-ot-trajectory/RQ.md`
 

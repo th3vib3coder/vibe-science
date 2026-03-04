@@ -50,7 +50,7 @@ All Vibe Science state lives in `.vibe-science/` at the project root:
 - `TREE-STATE.json` — full tree serialization
 - `SERENDIPITY.md` — unexpected discovery log
 - `ASSUMPTION-REGISTER.md` — all assumptions with risk
-- `schemas/*.schema.json` — 9 JSON Schema files (READ-ONLY, no agent can modify)
+- `schemas/*.schema.json` — 12 JSON Schema files (READ-ONLY, no agent can modify)
 - `protocols/` — SFI, Judge, BFP, Schema-Validation, Circuit-Breaker protocols
 - `assets/fault-taxonomy.yaml` — SFI fault definitions (HUMAN-ONLY modification)
 - `assets/judge-rubric.yaml` — R3 scoring rubric

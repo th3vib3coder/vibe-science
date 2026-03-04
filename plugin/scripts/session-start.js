@@ -45,20 +45,25 @@ try {
 } catch {
     // db.js not available -- will use null db path below
     openDB = null;
+    closeDB = null;
+    createSession = null;
+    getLastSession = null;
+    getUnresolvedAlerts = null;
     getActivePatterns = null;
 }
 
 try {
     const r2Mod = await import('../lib/r2-calibration.js');
     loadR2CalibrationData = r2Mod.loadR2CalibrationData;
+    loadPendingSeeds = r2Mod.loadPendingSeeds;
 } catch {
     loadR2CalibrationData = null;
+    loadPendingSeeds = null;
 }
 
 // Optional: context-builder and vec-search may not be implemented yet
 let buildContext = null;
 let formatContextForInjection = null;
-let loadPendingSeeds = null;
 
 try {
     const ctxMod = await import('../lib/context-builder.js');
@@ -66,13 +71,6 @@ try {
     formatContextForInjection = ctxMod.formatContextForInjection;
 } catch {
     // context-builder.js not yet implemented -- use inline fallback
-}
-
-try {
-    const r2Ext = await import('../lib/r2-calibration.js');
-    loadPendingSeeds = r2Ext.loadPendingSeeds;
-} catch {
-    // Already handled above
 }
 
 // ---------------------------------------------------------------------------

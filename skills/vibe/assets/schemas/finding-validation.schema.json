@@ -1,8 +1,10 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vibe-science-v6.0/finding-validation",
   "title": "Finding Validation",
   "description": "Schema for DQ4 post-finding document quality validation",
   "type": "object",
+  "additionalProperties": false,
   "required": ["finding_id", "numbers_verified", "sample_size_reported", "r2_inline_checklist"],
   "properties": {
     "finding_id": { "type": "string" },

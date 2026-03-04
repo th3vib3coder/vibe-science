@@ -91,7 +91,7 @@ Deviations are appended to `.vibe-science/DEVIATIONS.md`.
 python scripts/gate_check.py --gate DC0 --design RQ.md --spine SPINE.md --deviations DEVIATIONS.md
 
 # Quiet mode (only report failures)
-python scripts/dc0_gate.py --design RQ.md --spine SPINE.md --deviations DEVIATIONS.md --quiet
+python scripts/dq_gate.py --gate DC0 --design RQ.md --spine SPINE.md --deviations DEVIATIONS.md --quiet
 ```
 
 **Arguments:**

@@ -4,6 +4,8 @@ All notable changes to Vibe Science are documented here.
 
 ## [6.0.2] — 2026-03-04 — Hardening & Modular Rules
 
+> **Trigger:** Paranoid debug audit — systematic file-by-file review of the entire repo found ~80 consistency bugs across 50 files (stale version numbers, wrong gate/hook/law/table counts, broken column references in JS, Python logic errors, phantom script references, archive desync). Additionally, best-practices research on Claude Code hook specification revealed missing fields and non-standard frontmatter.
+
 ### Added
 - **`permissions.deny`**: Structural protection for schemas — `Edit(.vibe-science/schemas/*)` and `Write(.vibe-science/schemas/*)` denied at settings level
 - **Modular rules directory**: `.claude/rules/roles.md` (6 agent role constraints) and `.claude/rules/enforcement.md` (v5.0 structural enforcement protocols)
@@ -51,6 +53,8 @@ All notable changes to Vibe Science are documented here.
 
 ## [6.0.1] — 2026-03-04 — Best Practices Upgrade
 
+> **Trigger:** Research into Claude Code best practices (official hook specification, command frontmatter fields, tool restrictions, environment variables) revealed gaps between the plugin implementation and the platform spec.
+
 ### Added
 - **PreToolUse hook**: Blocks Write to CLAIM-LEDGER without confounder_status (LAW 9 structural enforcement)
 - **SubagentStop hook**: Enforces Salvagente Rule — killed claims must produce serendipity seed
@@ -74,8 +78,10 @@ All notable changes to Vibe Science are documented here.
 
 ## [6.0.0] — 2026-02-20 — NEXUS (Plugin Architecture)
 
+> **Trigger:** Realization that prompt-only enforcement (SKILL.md instructions) is insufficient — agents drift, skip gates, and ignore R2. Moving enforcement from suggestions to code-level hooks with exit-code blocking creates structural guarantees.
+
 ### Added
-- **Plugin architecture**: 5 lifecycle hooks (Setup, SessionStart, UserPromptSubmit, PostToolUse, Stop)
+- **Plugin architecture**: 7 lifecycle hooks (SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, PreCompact, Stop, SubagentStop)
 - **Gate Engine**: DQ1-DQ4, DC0, DD0, L-1+ enforcement with exit code 2 blocking
 - **Permission Engine**: TEAM mode with 6 roles (researcher, reviewer2, judge, serendipity, lead, experimenter)
 - **Research Spine**: Automatic structured logging of every significant action
@@ -85,7 +91,7 @@ All notable changes to Vibe Science are documented here.
 - **Vector Search**: sqlite-vec integration with keyword fallback
 - **Silent Observer**: Periodic checks for stale STATE.md, FINDINGS/JSON desync, orphaned data, design drift, literature staleness
 - **Literature Registry**: 102 scientific databases across 12 categories
-- **SQLite persistence**: 11 tables (sessions, spine_entries, claim_events, r2_reviews, serendipity_seeds, gate_checks, literature_searches, observer_alerts, calibration_log, prompt_log, embed_queue)
+- **SQLite persistence**: 12 tables (sessions, spine_entries, claim_events, r2_reviews, serendipity_seeds, gate_checks, literature_searches, observer_alerts, calibration_log, prompt_log, embed_queue, research_patterns)
 - **Embedding Worker**: Background daemon for async vector embedding
 - **Domain Config Template**: Cross-domain DQ gate thresholds
 
@@ -106,6 +112,8 @@ All notable changes to Vibe Science are documented here.
 
 ## [5.5.0] — 2026-02-19 — ORO (Post-Mortem Driven)
 
+> **Trigger:** Post-mortem of 21 CP+CRISPR research sprints revealed 12 specific failure modes (confounded claims, undocumented data columns, design drift, fabricated numbers passing review). Each new gate maps to a real mistake.
+
 ### Added
 - 7 new gates: L-1, DQ1-DQ4, DD0, DC0 (32 total)
 - R2 INLINE mode (7th activation mode)
@@ -113,12 +121,15 @@ All notable changes to Vibe Science are documented here.
 - Structured logbook protocol
 - Data dictionary gate (DD0)
 - Design compliance gate (DC0)
+- 3 new JSON schemas: data-quality-gate, finding-validation, spine-entry (12 total)
 
 ### Changed
 - All changes trace to 12 specific mistakes from CP+CRISPR post-mortem
 - Post-mortem driven development: each gate maps to a real error
 
 ## [5.0.0] — 2026-02-16 — IUDEX (Verification Release)
+
+> **Trigger:** Discovery that R2 adversarial review alone is insufficient — R2 can be anchored by researcher justifications, and there is no way to verify R2 is actually doing its job. Solution: SFI (test R2), BFP (break anchoring), R3 Judge (meta-review R2), and schema validation (eliminate prose claims).
 
 ### Added
 - Seeded Fault Injection (SFI) — mutation testing for scientific claims
@@ -136,6 +147,8 @@ All notable changes to Vibe Science are documented here.
 
 ## [4.5.0] — 2026-02-14 — ARBOR VITAE (Pruned)
 
+> **Trigger:** v4.0 SKILL.md exceeded effective context limits — adherence dropped with file length. Aggressive pruning (-381 lines) via progressive disclosure pattern. Also added brainstorming phase (Phase 0) to prevent premature convergence.
+
 ### Added
 - Phase 0 Brainstorm Engine (10-step ideation)
 - R2 expanded to 6 modes (+shadow, +veto, +redirect)
@@ -147,6 +160,8 @@ All notable changes to Vibe Science are documented here.
 - Gates: 26 -> 25 (consolidated)
 
 ## [4.0.0] — 2026-02-12 — ARBOR VITAE (Tree Search)
+
+> **Trigger:** Flat OTAE loop couldn't handle multi-hypothesis investigations — it explored one path linearly with no branching or backtracking. Tree search architecture enables parallel exploration of multiple hypotheses with best-first selection.
 
 ### Added
 - OTAE-Tree architecture (flat loop -> branching tree search)
@@ -163,6 +178,8 @@ All notable changes to Vibe Science are documented here.
 - Protocols: 9 -> 16
 
 ## [3.5.0] — 2026-02-07 — TERTIUM DATUR (R2 Upgrade)
+
+> **Trigger:** R2 v3.0 was too generic — a single hostile prompt couldn't catch domain-specific errors (wrong statistical tests, biological implausibility, data quality issues). Split into 4-specialist ensemble with typed claims and scaled evidence standards.
 
 ### Changed
 - **Reviewer 2 Ensemble → v3.5**: Major protocol upgrade
@@ -187,6 +204,8 @@ All notable changes to Vibe Science are documented here.
 
 ## [3.0.0] — 2026-02-07 — TERTIUM DATUR
 
+> **Trigger:** v2.0 11-phase loop was rigid and sequential — no way to checkpoint, resume, or detect diminishing returns. OTAE cycle (Observe-Think-Act-Evaluate) with explicit Checkpoint and Crystallize phases enables resumability and context rot recovery.
+
 ### Changed
 - Loop architecture: 6-phase → OTAE (Observe-Think-Act-Evaluate-Checkpoint-Crystallize)
 - State management: aligned with OpenAI Codex unrolled agent loop pattern
@@ -203,6 +222,8 @@ All notable changes to Vibe Science are documented here.
 - Infinite loop detection
 
 ## [2.0.0] — 2026-02-06 — NULLIS SECUNDUS
+
+> **Trigger:** v1.0 was too simple — single hostile R2 prompt missed statistical errors, confidence was subjective (HIGH/MEDIUM/LOW), and there was no structured evidence tracking. Added quantitative confidence formula, 4-specialist R2 ensemble, and structured protocols.
 
 ### Changed
 - Loop: 6 phases → 11 phases (added refine search, competitor scan, orthogonal validation)
@@ -225,6 +246,8 @@ All notable changes to Vibe Science are documented here.
 - Serendipity triage with priority scoring
 
 ## [1.0.0] — 2025-01 — Original
+
+> **Trigger:** Need for a systematic research methodology that prevents AI agents from hallucinating findings, skipping validation, and declaring premature completion during scientific investigations.
 
 ### Added
 - Core 6-phase loop: Crystallize → Search → Analyze → Extract → Validate → Stop Check

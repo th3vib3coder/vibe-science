@@ -1,4 +1,4 @@
-# Quality Gates v5.5
+# Quality Gates v6.0
 
 > **v5.0 IUDEX upgrades**: 2 new gates (V0, J0), schema enforcement on 8 gates, exploration budget in T3, S5 poison pill.
 > **v5.5 ORO upgrades**: 7 new gates (DQ1-DQ4, DC0, DD0, L-1) for data quality, design compliance, and operational integrity. Total: 32 gates. 8 schema-enforced.

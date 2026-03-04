@@ -79,7 +79,7 @@ export function generateNarrativeSummary({ entries, claims, gates, sessionId, pr
         sections.push('');
         sections.push('### Gates Failed');
         for (const g of failedGates) {
-            const message = g.message || g.details || g.gate_id;
+            const message = g.details || g.gate_id;
             sections.push(`- **${g.gate_id}**: ${message}`);
         }
     }
@@ -174,19 +174,25 @@ export function updateStateMdFromDB(db, sessionId, projectPath) {
     lines.push('## Active Claims');
     try {
         const activeClaims = db.prepare(`
-            SELECT claim_id, event_type, confidence, narrative
-            FROM claim_events
-            WHERE session_id IN (
-                SELECT id FROM sessions WHERE project_path = ?
-            )
-            AND claim_id NOT IN (
+            SELECT ce.claim_id, ce.event_type, ce.confidence, ce.narrative
+            FROM claim_events ce
+            INNER JOIN (
+                SELECT claim_id, MAX(id) AS max_id
+                FROM claim_events
+                WHERE session_id IN (
+                    SELECT id FROM sessions WHERE project_path = ?
+                )
+                GROUP BY claim_id
+            ) latest ON ce.id = latest.max_id
+            WHERE ce.claim_id NOT IN (
                 SELECT DISTINCT claim_id FROM claim_events
                 WHERE event_type IN ('KILLED', 'VERIFIED')
+                  AND session_id IN (
+                      SELECT id FROM sessions WHERE project_path = ?
+                  )
             )
-            GROUP BY claim_id
-            HAVING id = MAX(id)
-            ORDER BY confidence DESC
-        `).all(projectPath);
+            ORDER BY ce.confidence DESC
+        `).all(projectPath, projectPath);
 
         if (activeClaims.length > 0) {
             for (const c of activeClaims) {

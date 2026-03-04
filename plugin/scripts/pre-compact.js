@@ -50,7 +50,7 @@ try {
 async function main(event) {
     const sessionId = event.session_id ?? event.sessionId ?? null;
     const trigger = event.trigger ?? 'unknown';
-    const projectPath = event.cwd ?? event.project_path ?? process.cwd();
+    const projectPath = event.project_path || event.cwd || process.cwd();
 
     if (!sessionId) {
         return; // Nothing to snapshot without a session
@@ -76,8 +76,13 @@ async function main(event) {
               AND ce.claim_id NOT IN (
                   SELECT claim_id FROM claim_events
                   WHERE event_type IN ('KILLED', 'DISPUTED', 'R2_REVIEWED', 'VERIFIED')
+                    AND session_id IN (
+                        SELECT id FROM sessions WHERE project_path IN (
+                            SELECT project_path FROM sessions WHERE id = ?
+                        )
+                    )
               )
-        `).all(sessionId);
+        `).all(sessionId, sessionId);
 
         // Query spine entry count for this session
         const spineCount = db.prepare(

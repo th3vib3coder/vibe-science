@@ -82,7 +82,8 @@
         },
         "verdict": {
           "type": "string",
-          "description": "The R2 ensemble verdict for this finding (e.g., ACCEPT, WEAK_ACCEPT, REVISE, REJECT)."
+          "enum": ["ACCEPT", "WEAK_ACCEPT", "REVISE", "REJECT"],
+          "description": "The R2 ensemble verdict for this finding."
         },
         "reviewed_at": {
           "type": "string",

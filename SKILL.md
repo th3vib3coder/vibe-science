@@ -12,7 +12,7 @@ metadata:
     changelog: "v4.0.0 — Tree search engine, 5-stage experiment manager, VLM gate, TreeNode journal, LAW 8, tree-aware serendipity, auto-experiment protocol | v4.5.0 — Inversion+Collision brainstorm techniques, R2 red flag checklist, counter-evidence search, DOI verification, progressive disclosure refactor | v5.0.0 — Seeded Fault Injection, Judge Agent (R3), Blind-First Pass, Schema-Validated Gates. 25 gates (2 new: V0, J0). 8 gates schema-enforced. Circuit Breaker. Agent Permission Model. Confidence formula revised. R2 structurally unbypassable. | v5.5.0 — ORO (Observe-Recall-Operate). 7 new gates (DQ1-DQ4, DC0, DD0, L-1) for data quality and operational integrity. Total: 32 gates. R2 INLINE mode (7th activation). Structured logbook (LOGBOOK.md mandatory in CRYSTALLIZE). Literature Pre-Check (L-1) in Phase 0. Data Dictionary Protocol (DD0). Design Compliance Gate (DC0). Single Source of Truth rule. Post-mortem driven: 12 errors from CRISPR run mapped to architectural fixes."
 ---
 
-# Vibe Science v5.5 — ORO
+# Vibe Science v6.0 — NEXUS
 
 > Research engine: agentic tree search over hypotheses, OTAE discipline at every node, infinite loops until discovery.
 

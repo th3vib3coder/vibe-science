@@ -1,8 +1,10 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vibe-science-v6.0/data-quality-gate",
   "title": "Data Quality Gate Result",
   "description": "Schema for DQ1-DQ4 gate validation artifacts",
   "type": "object",
+  "additionalProperties": false,
   "required": ["gate", "status", "checks", "timestamp"],
   "properties": {
     "gate": { "type": "string", "enum": ["DQ1", "DQ2", "DQ3", "DQ4"] },

@@ -7,7 +7,7 @@ abstract: >-
   transforms LLM agents into rigorous scientific investigators through structural
   enforcement, not just prompting. Grounded in Huang et al. (ICLR 2024), who
   proved that LLMs cannot self-correct reasoning without external feedback, v5.0
-  introduces four architectural innovations that make adversarial review
+  introduced four architectural innovations that make adversarial review
   structurally unbypassable: Seeded Fault Injection (SFI), which injects known
   errors into claim sets before review to calibrate reviewer vigilance; Blind-First
   Pass (BFP), which forces the reviewer to assess claims without seeing the

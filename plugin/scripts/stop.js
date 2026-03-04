@@ -42,7 +42,7 @@ try {
     updateStateMdFromDB = narMod.updateStateMdFromDB;
 } catch {
     generateNarrativeSummary = () => ({ text: 'Session summary unavailable (narrative-engine not loaded).', tokenEstimate: 0 });
-    updateStateMdFromDB = async () => {};
+    updateStateMdFromDB = () => {};
 }
 
 try {
@@ -65,7 +65,7 @@ try {
 
 async function main(event) {
     const sessionId = event.session_id ?? event.sessionId ?? null;
-    const projectPath = event.cwd ?? event.project_path ?? process.cwd();
+    const projectPath = event.project_path || event.cwd || process.cwd();
 
     // Guard against infinite loops: if Claude is already continuing from a
     // previous stop hook block, allow the stop to proceed unconditionally.
@@ -134,25 +134,9 @@ async function main(event) {
         const gatesPassed = gateChecks.filter(g => g.status === 'PASS').length;
         const gatesFailed = gateChecks.filter(g => g.status === 'FAIL').length;
 
-        // Save to sessions table
-        endSession(db, sessionId, {
-            narrative_summary: summary.text,
-            total_actions: spineEntries.length,
-            claims_created: claimsCreated,
-            claims_killed: claimsKilled,
-            gates_passed: gatesPassed,
-            gates_failed: gatesFailed
-        });
-
-        // Queue summary for async embedding by the worker
-        queueForEmbedding(db, summary.text, {
-            session_id: sessionId,
-            type: 'narrative_summary',
-            project_path: projectPath
-        });
-
         // =========================================================
         // 2. ENFORCEMENT CHECKS (LAW 4: R2 is co-pilot)
+        //    Must run BEFORE endSession to avoid setting ended_at prematurely
         // =========================================================
 
         const unreviewedClaims = db.prepare(`
@@ -184,11 +168,28 @@ async function main(event) {
             };
         }
 
+        // Save to sessions table (only after enforcement passes)
+        endSession(db, sessionId, {
+            narrative_summary: summary.text,
+            total_actions: spineEntries.length,
+            claims_created: claimsCreated,
+            claims_killed: claimsKilled,
+            gates_passed: gatesPassed,
+            gates_failed: gatesFailed
+        });
+
+        // Queue summary for async embedding by the worker
+        queueForEmbedding(db, summary.text, {
+            session_id: sessionId,
+            type: 'narrative_summary',
+            project_path: projectPath
+        });
+
         // =========================================================
         // 3. STATE EXPORT (LAW 7: resumability)
         // =========================================================
 
-        await updateStateMdFromDB(db, sessionId, projectPath);
+        updateStateMdFromDB(db, sessionId, projectPath);
 
         // =========================================================
         // 4. PATTERN EXTRACTION (cross-session recurring patterns)

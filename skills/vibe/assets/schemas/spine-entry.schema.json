@@ -1,14 +1,16 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vibe-science-v6.0/spine-entry",
   "title": "Research Spine Entry",
   "description": "Schema for structured logbook entries in SPINE.md",
   "type": "object",
+  "additionalProperties": false,
   "required": ["timestamp", "action_type", "action"],
   "properties": {
     "timestamp": { "type": "string" },
     "action_type": {
       "type": "string",
-      "enum": ["INIT", "DATA_LOAD", "EXTRACT", "MODEL_TRAIN", "CALIBRATE", "FINDING", "REVIEW", "BUG_FIX", "DESIGN_CHANGE", "GATE_CHECK", "LITERATURE_SEARCH", "DATASET_DOWNLOAD"]
+      "enum": ["INIT", "DATA_LOAD", "EXTRACT", "MODEL_TRAIN", "CALIBRATE", "CALIBRATION", "CONFORMAL_PREDICT", "FINDING", "REVIEW", "BUG_FIX", "DESIGN_CHANGE", "GATE_CHECK", "LITERATURE_SEARCH", "DATASET_DOWNLOAD", "TOOL_USE", "COMPACT_SNAPSHOT"]
     },
     "action": { "type": "string", "minLength": 1, "maxLength": 500 },
     "input": { "type": ["string", "null"] },

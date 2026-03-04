@@ -257,7 +257,7 @@ def check_dq4(data, thresholds):
         "check": "numbers_match",
         "passed": len(mismatches) == 0,
         "detail": f"{len(mismatches)} mismatches" if mismatches else "OK",
-        "flagged": mismatches[:5],
+        "flagged": [f"{m['key']}: reported={m['reported']}, source={m['source']}" for m in mismatches[:5]],
     })
 
     # Check: sample size reported
@@ -268,9 +268,8 @@ def check_dq4(data, thresholds):
         "detail": "Sample size reported" if has_n else "Sample size NOT reported in finding",
     })
 
-    # Check: alternative explanations
+    # Check: alternative explanations (unconditional — always required)
     alternatives = data.get("alternative_explanations", [])
-    is_surprising = data.get("is_surprising", False)
     alt_ok = len(alternatives) >= 1
     checks.append({
         "check": "alternatives",
@@ -312,10 +311,12 @@ def main():
     checks = gate_funcs[args.gate](data, thresholds)
     all_passed = all(c["passed"] for c in checks)
 
+    from datetime import datetime, timezone
     result = {
         "gate": args.gate,
         "status": "PASS" if all_passed else "FAIL",
         "checks": checks,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
     print(json.dumps(result, indent=2))

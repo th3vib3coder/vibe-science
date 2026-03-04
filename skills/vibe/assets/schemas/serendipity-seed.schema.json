@@ -27,7 +27,7 @@
     },
     "status": {
       "type": "string",
-      "enum": ["PENDING_TRIAGE", "QUEUED", "EXPLORED", "KILLED"],
+      "enum": ["PENDING_TRIAGE", "QUEUED", "TESTING", "KILLED", "PROMOTED_TO_CLAIM"],
       "description": "Current lifecycle status of the seed"
     },
     "source": {
@@ -113,7 +113,7 @@
     "resolution": {
       "type": "string",
       "minLength": 1,
-      "description": "How the seed was resolved. Only applicable when status is KILLED."
+      "description": "How the seed was resolved. Only applicable when status is KILLED or PROMOTED_TO_CLAIM."
     }
   },
   "allOf": [
@@ -145,7 +145,7 @@
     {
       "if": {
         "properties": {
-          "status": { "enum": ["KILLED"] }
+          "status": { "enum": ["KILLED", "PROMOTED_TO_CLAIM"] }
         },
         "required": ["status"]
       },

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "vibe-science-v5.0/stage4-exit",
+  "$id": "vibe-science-v6.0/stage4-exit",
   "title": "Stage 4 Exit Gate Artifact (S4)",
   "description": "Ablation & Validation Exit — verifies that every promoted claim survives ablation testing, multi-seed replication, and confounder harness review before advancing to Stage 5.",
   "type": "object",
