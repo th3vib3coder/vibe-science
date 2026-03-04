@@ -167,7 +167,7 @@ CREATE TABLE IF NOT EXISTS calibration_log (
     claim_id TEXT NOT NULL,
     predicted_confidence REAL NOT NULL,
     actual_outcome TEXT NOT NULL,  -- VERIFIED/REJECTED/ARTIFACT/CONFOUNDED/ROBUST
-    r2_verdict TEXT,
+    r2_verdict TEXT,               -- ACCEPT/REJECT/DEFER (from claim_events at resolution time)
     stage_at_resolution INTEGER,
     session_id TEXT NOT NULL,
     timestamp TEXT NOT NULL,

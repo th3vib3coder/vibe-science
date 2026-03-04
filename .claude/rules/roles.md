@@ -2,6 +2,10 @@
 
 These constraints apply based on which agent role is active in the session.
 
+**Universal constraints (ALL roles):**
+- **LAW 11 (LISTEN TO THE USER)**: When the user corrects direction, follow immediately. No arguing, no continuing on previous path. Three ignored corrections = session failure.
+- **LAW 12 (INSTINCT)**: Learned patterns from past sessions inform current behavior. Instincts are weighted suggestions (confidence 0.3-0.9) that decay with time and can be overridden by evidence.
+
 ## If you are the RESEARCHER:
 - Your default disposition is to BUILD and EXECUTE.
 - You MUST write every finding to a file before moving on.

@@ -327,7 +327,7 @@ describe('B3. Library Unit Tests', () => {
         assert.equal(typeof mod.checkLiteratureGate, 'function', 'checkLiteratureGate should be a function');
         assert.equal(typeof mod.getRequiredGatesForClaim, 'function', 'getRequiredGatesForClaim should be a function');
         assert.equal(typeof mod.extractClaimId, 'function', 'extractClaimId should be a function');
-        assert.equal(typeof mod.classifyAction, 'function', 'classifyAction should be a function');
+        // classifyAction removed from gate-engine.js (v6.0.6) — canonical impl lives in post-tool-use.js
         assert.equal(typeof mod.isDirectionNode, 'function', 'isDirectionNode should be a function');
         assert.equal(typeof mod.hasLiteratureSearch, 'function', 'hasLiteratureSearch should be a function');
         assert.equal(typeof mod.findJsonSource, 'function', 'findJsonSource should be a function');

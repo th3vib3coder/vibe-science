@@ -1,4 +1,4 @@
-# v5.0 Structural Enforcement
+# v6.0 Structural Enforcement
 
 ## Seeded Fault Injection (SFI)
 The orchestrator injects known faults into claim sets before FORCED R2 reviews. R2 does not know which claims are seeded. If R2 misses seeded faults, the review is INVALID. This is not a test of R2's knowledge — it is a test of R2's vigilance.

@@ -2,6 +2,22 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.6] — 2026-03-04 — Schema Enum Alignment & Dead Code Removal
+
+> **Trigger:** Round 18 paranoid deep debug — cross-validated every `classifyAction()` return value against `spine-entry.schema.json` action_type enum. Found 10 non-schema values in `post-tool-use.js` (CONFIGURATION, FEATURE_EXTRACTION, EVALUATION, VISUALIZATION, CODE_WRITE, OTHER, DOCUMENTATION, DATA_INSPECT, FILE_READ, SEARCH) and an entire dead duplicate in `gate-engine.js` (~160 lines, 26 wrong values, never imported by any hook). Also found `data-quality-gate.schema.json` missing WARN status that `finding-validation.schema.json` already had, version tag "v5.0" in enforcement.md, missing LAW 11 & 12 in roles.md, and undocumented `r2_verdict` column in calibration_log.
+
+### Fixed
+- **post-tool-use.js**: Remapped `classifyAction()` — all 16 return values now match `spine-entry.schema.json` enum exactly. Added DATASET_DOWNLOAD (wget/curl), DESIGN_CHANGE (architecture files). Grep/Glob returns null (not logged). All WebSearch/WebFetch returns LITERATURE_SEARCH.
+- **gate-engine.js**: Removed dead `classifyAction()` duplicate (~160 lines). Function was exported but never imported — all hook scripts use the inline version in post-tool-use.js. Added removal comment documenting why.
+- **data-quality-gate.schema.json**: Added WARN to status enum (`["PASS", "FAIL"]` → `["PASS", "FAIL", "WARN"]`) — consistent with finding-validation.schema.json. Synced to all 3 copies (schemas/, skills/vibe/assets/schemas/, archive/vibe-science-v6.0-claude-code/assets/schemas/).
+- **enforcement.md**: Version tag corrected: "v5.0 Structural Enforcement" → "v6.0 Structural Enforcement"
+- **roles.md**: Added universal constraints section with LAW 11 (LISTEN TO THE USER) and LAW 12 (INSTINCT) — were in CLAUDE.md and SKILL.md but missing from the rules file agents actually read.
+- **schema.sql**: Documented `r2_verdict` column in `calibration_log` table (was undocumented, now: "ACCEPT/REJECT/DEFER from claim_events at resolution time")
+- **__test_e2e.mjs**: Removed `classifyAction` export assertion from gate-engine test (function no longer exists there)
+
+### Test Results
+- **50/50 tracked pass, 51/51 total, 0 fail**
+
 ## [6.0.5] — 2026-03-04 — Hook Pattern Docs & Python Sync
 
 > **Trigger:** Cross-reference audit of CLAUDE.md hook output patterns against actual code found 2 prefix mismatches (agents pattern-matching on documented strings would not match). Python audit of all 18 .py files found spine_entry.py VALID_TYPES missing 4 schema-valid action types and an unused variable in dq_gate.py.

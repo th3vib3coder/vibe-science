@@ -16,7 +16,7 @@
  *   checkLiteratureGate()    — L-1+ enforcement (pre-direction)
  *   getRequiredGatesForClaim() — which gates a claim needs
  *   extractClaimId()         — regex extraction of claim IDs
- *   classifyAction()         — classify tool actions for spine logging
+ *   (classifyAction removed — canonical implementation lives in post-tool-use.js)
  *   isDirectionNode()        — does tool_input create an OTAE direction node?
  *   hasLiteratureSearch()    — has a lit search been logged this session?
  *   findJsonSource()         — FINDINGS.md → companion JSON
@@ -461,163 +461,11 @@ export function checkLiteratureGate(db, sessionId, toolInput) {
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// classifyAction
+// classifyAction — REMOVED (v6.0.6)
 // ─────────────────────────────────────────────────────────────────────
-
-/**
- * Classify a tool action for automatic Research Spine logging.
- *
- * @param {string} toolName   — name of the tool invoked
- * @param {object} toolInput  — the tool's input payload
- * @param {object} toolOutput — the tool's output (may be large; we only peek)
- * @returns {string|null}     — action classification, or null if unclassifiable
- */
-export function classifyAction(toolName, toolInput, toolOutput) {
-    if (!toolName) return null;
-
-    const filePath = (toolInput?.file_path || '').toLowerCase().replace(/\\/g, '/');
-    const content = (
-        toolInput?.content || toolInput?.new_string || toolInput?.command || ''
-    ).toLowerCase();
-    const query = (toolInput?.query || toolInput?.pattern || '').toLowerCase();
-    const output = typeof toolOutput === 'string'
-        ? toolOutput.slice(0, 1000).toLowerCase()
-        : '';
-
-    // ── Read-only tools ──────────────────────────────────────────
-    if (toolName === 'WebSearch' || toolName === 'WebFetch') {
-        return 'LITERATURE_SEARCH';
-    }
-
-    if (toolName === 'Glob' || toolName === 'Grep') {
-        if (query.includes('data') || query.includes('dataset'))
-            return 'DATA_DISCOVERY';
-        if (query.includes('finding') || query.includes('result'))
-            return 'FINDING_REVIEW';
-        if (query.includes('error') || query.includes('bug') || query.includes('fix'))
-            return 'BUG_INVESTIGATION';
-        return 'CODE_SEARCH';
-    }
-
-    if (toolName === 'Read') {
-        if (filePath.includes('finding') || filePath.includes('result'))
-            return 'FINDING_REVIEW';
-        if (filePath.includes('data') || filePath.includes('02-data'))
-            return 'DATA_REVIEW';
-        if (filePath.includes('model'))
-            return 'MODEL_REVIEW';
-        if (filePath.includes('paper') || filePath.includes('doi') || filePath.includes('pmid'))
-            return 'LITERATURE_SEARCH';
-        return null; // routine reads are not logged
-    }
-
-    // ── Write / Edit tools ───────────────────────────────────────
-    if (toolName === 'Write' || toolName === 'Edit') {
-        // Feature extraction
-        if (filePath.includes('feature') || filePath.includes('03-analysis'))
-            return 'FEATURE_EXTRACT';
-
-        // Model training
-        if (filePath.includes('model') || filePath.includes('train'))
-            return 'MODEL_TRAIN';
-
-        // Findings / results
-        if (filePath.includes('finding') || filePath.includes('result'))
-            return 'FINDING_FORMULATE';
-
-        // Data loading / processing
-        if (filePath.includes('data') || filePath.includes('02-data'))
-            return 'DATA_LOAD';
-
-        // Claim ledger
-        if (filePath.includes('claim-ledger') || filePath.includes('claim_ledger'))
-            return 'CLAIM_UPDATE';
-
-        // Direction / research direction
-        if (filePath.includes('direction') || filePath.includes('01-direction'))
-            return 'DIRECTION_SET';
-
-        // Reviewer 2 reports
-        if (filePath.includes('05-reviewer2') || filePath.includes('reviewer'))
-            return 'R2_REVIEW';
-
-        // Serendipity
-        if (filePath.includes('serendipity'))
-            return 'SERENDIPITY_LOG';
-
-        // Design documents
-        if (filePath.includes('design') || filePath.includes('architecture'))
-            return 'DESIGN_CHANGE';
-
-        // Configuration
-        if (filePath.includes('config') || filePath.includes('settings'))
-            return 'CONFIG_CHANGE';
-
-        // Content-based classification for generic paths
-        if (content.includes('feature') || content.includes('extract'))
-            return 'FEATURE_EXTRACT';
-        if (content.includes('model') || content.includes('train'))
-            return 'MODEL_TRAIN';
-        if (content.includes('finding') || content.includes('result'))
-            return 'FINDING_FORMULATE';
-        if (content.includes('data') || content.includes('load'))
-            return 'DATA_LOAD';
-        if (content.includes('bug') || content.includes('fix'))
-            return 'BUG_FIX';
-        if (content.includes('direction'))
-            return 'DIRECTION_SET';
-
-        return 'FILE_EDIT';
-    }
-
-    // ── Bash ─────────────────────────────────────────────────────
-    if (toolName === 'Bash') {
-        const cmd = toolInput?.command || '';
-        const cmdLower = cmd.toLowerCase();
-
-        // Python / data processing
-        if (cmdLower.includes('python') || cmdLower.includes('jupyter')
-            || cmdLower.includes('.py')) {
-            if (cmdLower.includes('train') || cmdLower.includes('model'))
-                return 'MODEL_TRAIN';
-            if (cmdLower.includes('feature') || cmdLower.includes('extract'))
-                return 'FEATURE_EXTRACT';
-            if (cmdLower.includes('data') || cmdLower.includes('download')
-                || cmdLower.includes('preprocess'))
-                return 'DATA_LOAD';
-            if (cmdLower.includes('calibrat') || cmdLower.includes('conformal'))
-                return 'MODEL_CALIBRATE';
-            if (cmdLower.includes('test') || cmdLower.includes('pytest'))
-                return 'TEST_RUN';
-            return 'SCRIPT_EXECUTE';
-        }
-
-        // Git
-        if (cmdLower.includes('git'))
-            return 'VERSION_CONTROL';
-
-        // Package management
-        if (cmdLower.includes('pip ') || cmdLower.includes('npm ')
-            || cmdLower.includes('conda') || cmdLower.includes('bun '))
-            return 'DEPENDENCY_INSTALL';
-
-        // Download
-        if (cmdLower.includes('wget') || cmdLower.includes('curl')
-            || cmdLower.includes('download'))
-            return 'DATA_DOWNLOAD';
-
-        // Tests
-        if (cmdLower.includes('test') || cmdLower.includes('pytest')
-            || cmdLower.includes('jest'))
-            return 'TEST_RUN';
-
-        return 'COMMAND_EXECUTE';
-    }
-
-    // ── Task (lead orchestration) ────────────────────────────────
-    if (toolName === 'Task') {
-        return 'ORCHESTRATION';
-    }
-
-    return null;
-}
+// The canonical classifyAction() lives in post-tool-use.js.
+// It was duplicated here with 26 non-schema-valid return values (e.g.
+// FEATURE_EXTRACT, DATA_DISCOVERY, CODE_SEARCH, MODEL_CALIBRATE, etc.)
+// that did NOT match spine-entry.schema.json action_type enum.
+// Removed to eliminate confusion. The post-tool-use.js version now
+// returns ONLY schema-valid values.

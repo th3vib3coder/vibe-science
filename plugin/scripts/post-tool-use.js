@@ -1094,6 +1094,11 @@ function autoLog(db, event) {
  * @returns {string|null} Action type, or null if too trivial to log
  */
 function classifyAction(toolName, toolInput = {}, toolOutput = '') {
+    // Returns ONLY values from spine-entry.schema.json action_type enum:
+    // INIT, DATA_LOAD, EXTRACT, MODEL_TRAIN, CALIBRATE, CALIBRATION,
+    // CONFORMAL_PREDICT, FINDING, REVIEW, BUG_FIX, DESIGN_CHANGE,
+    // GATE_CHECK, LITERATURE_SEARCH, DATASET_DOWNLOAD, TOOL_USE, COMPACT_SNAPSHOT
+    // Returns null for trivial actions that should not be logged.
     const filePath = (toolInput.file_path || '').toLowerCase();
     const content = (toolInput.content || toolInput.new_string || '').toLowerCase();
     const command = (toolInput.command || '').toLowerCase();
@@ -1102,41 +1107,41 @@ function classifyAction(toolName, toolInput = {}, toolOutput = '') {
 
     // -- Bash commands --
     if (toolName === 'Bash') {
-        if (/\b(wget|curl|download|fetch|git\s+clone)\b/.test(command)) return 'DATA_LOAD';
-        if (/\b(pip|npm|conda|apt|brew)\s+(install|update)\b/.test(command)) return 'CONFIGURATION';
+        if (/\b(wget|curl|download|fetch|git\s+clone)\b/.test(command)) return 'DATASET_DOWNLOAD';
+        if (/\b(pip|npm|conda|apt|brew)\s+(install|update)\b/.test(command)) return 'TOOL_USE';
         if (/\b(python|python3|node)\b.*\b(train|fit|model)\b/.test(command)) return 'MODEL_TRAIN';
         if (/\b(python|python3|node)\b.*\b(calibrat|conformal)\b/.test(command)) return 'CALIBRATION';
-        if (/\b(python|python3|node)\b.*\b(feature|extract|preprocess)\b/.test(command)) return 'FEATURE_EXTRACTION';
-        if (/\b(python|python3|node)\b.*\b(eval|test|benchmark|metric)\b/.test(command)) return 'EVALUATION';
-        if (/\b(python|python3|node)\b.*\b(plot|fig|visual|chart)\b/.test(command)) return 'VISUALIZATION';
-        if (/\b(python|python3|node)\b/.test(command)) return 'CODE_WRITE';
-        if (/\b(git)\b/.test(command)) return 'CONFIGURATION';
+        if (/\b(python|python3|node)\b.*\b(feature|extract|preprocess)\b/.test(command)) return 'EXTRACT';
+        if (/\b(python|python3|node)\b.*\b(eval|test|benchmark|metric)\b/.test(command)) return 'GATE_CHECK';
+        if (/\b(python|python3|node)\b.*\b(plot|fig|visual|chart)\b/.test(command)) return 'TOOL_USE';
+        if (/\b(python|python3|node)\b/.test(command)) return 'TOOL_USE';
+        if (/\b(git)\b/.test(command)) return 'TOOL_USE';
         if (/\b(error|fix|debug|traceback)\b/.test(outputStr.toLowerCase().substring(0, 500))) return 'BUG_FIX';
-        return 'OTHER';
+        return 'TOOL_USE';
     }
 
     // -- Write/Edit: classify by target file --
     if (toolName === 'Write' || toolName === 'Edit') {
-        if (/findings|claim|ledger/i.test(filePath)) return 'DOCUMENTATION';
+        if (/findings|claim|ledger/i.test(filePath)) return 'FINDING';
         if (/review|r2|report/i.test(filePath)) return 'REVIEW';
+        if (/design|architecture|direction/i.test(filePath)) return 'DESIGN_CHANGE';
         if (/\.(py|r|jl|ipynb)$/.test(filePath)) {
             if (/train|fit|model/i.test(content)) return 'MODEL_TRAIN';
             if (/calibrat|conformal/i.test(content)) return 'CALIBRATION';
-            if (/feature|extract|preprocess/i.test(content)) return 'FEATURE_EXTRACTION';
-            if (/eval|test|benchmark|metric/i.test(content)) return 'EVALUATION';
-            if (/plot|fig|visual|chart|matplotlib|seaborn|plotly/i.test(content)) return 'VISUALIZATION';
-            return 'CODE_WRITE';
+            if (/feature|extract|preprocess/i.test(content)) return 'EXTRACT';
+            if (/eval|test|benchmark|metric/i.test(content)) return 'GATE_CHECK';
+            return 'TOOL_USE';
         }
-        if (/\.(json|yaml|yml|toml|cfg|ini|env)$/.test(filePath)) return 'CONFIGURATION';
-        if (/\.(md|txt|rst)$/.test(filePath)) return 'DOCUMENTATION';
+        if (/\.(json|yaml|yml|toml|cfg|ini|env)$/.test(filePath)) return 'TOOL_USE';
+        if (/\.(md|txt|rst)$/.test(filePath)) return 'TOOL_USE';
         if (/\.(csv|tsv|parquet|h5|hdf5)$/.test(filePath)) return 'DATA_LOAD';
-        return 'CODE_WRITE';
+        return 'TOOL_USE';
     }
 
     // -- Read: data inspection --
     if (toolName === 'Read') {
-        if (/\.(csv|tsv|parquet|h5|json)$/.test(filePath)) return 'DATA_INSPECT';
-        return 'FILE_READ';
+        if (/\.(csv|tsv|parquet|h5|json)$/.test(filePath)) return 'DATA_LOAD';
+        return null; // routine file reads not logged
     }
 
     // -- WebSearch/WebFetch: literature or general search --
@@ -1144,19 +1149,19 @@ function classifyAction(toolName, toolInput = {}, toolOutput = '') {
         if (LITERATURE_PATTERNS.some(p => p.test(query) || p.test(toolInput.url || ''))) {
             return 'LITERATURE_SEARCH';
         }
-        return 'SEARCH';
+        return 'LITERATURE_SEARCH'; // all web searches are research-relevant
     }
 
     // -- Grep/Glob: codebase search --
     if (toolName === 'Grep' || toolName === 'Glob') {
-        return 'SEARCH';
+        return null; // routine code searches not logged
     }
 
-    // -- Task: depends on context, default to OTHER --
-    if (toolName === 'Task') return 'OTHER';
+    // -- Task: depends on context --
+    if (toolName === 'Task') return 'TOOL_USE';
 
     // Catch-all
-    return 'OTHER';
+    return 'TOOL_USE';
 }
 
 // ── Summary Helpers ─────────────────────────────────────────────────
