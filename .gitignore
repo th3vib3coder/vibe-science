@@ -18,3 +18,4 @@ CHANGELOG_V2.md
 
 # Node modules (plugin dependencies)
 node_modules/
+__pycache__
