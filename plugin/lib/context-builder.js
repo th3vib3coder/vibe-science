@@ -131,7 +131,8 @@ export function buildContext(db, projectPath, sessionId) {
  * Format the context object into a plain-text string suitable for
  * injection into the agent's system prompt.
  *
- * Sections: [STATE], [MEMORY], [ALERTS], [R2 CALIBRATION], [PENDING SEEDS]
+ * Sections: [PURPOSE], [STATE], [MEMORY], [ALERTS], [R2 CALIBRATION], [PENDING SEEDS]
+ * Note: [PATTERNS] section is injected by session-start.js after formatting.
  * Target: ~700 tokens total.
  *
  * @param {object} context - Object returned by buildContext()

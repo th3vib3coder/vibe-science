@@ -89,6 +89,6 @@ All hooks degrade gracefully if DB unavailable. They never hard-crash.
 
 **SessionStart** injects tagged context: `[PURPOSE]`, `[STATE]`, `[MEMORY]`, `[ALERTS]`, `[R2 CALIBRATION]`, `[PENDING SEEDS]`, `[PATTERNS]`.
 
-**PostToolUse** stderr advisories: `GATE DQ4 FAIL`, `GATE L-1+ FAIL`, `PERMISSION DENIED`, `OBSERVER HALT`, `SALVAGENTE FAIL`, `SEED ESCALATION`.
+**PostToolUse** stderr advisories: `GATE DQ4 FAIL`, `GATE L-1+ FAIL`, `PERMISSION DENIED`, `OBSERVER HALT`, `GATE SALVAGENTE FAIL`, `SERENDIPITY ESCALATION`, `SERENDIPITY INTERRUPT`.
 
 **Stop** stderr block: `STOP BLOCKED: N unreviewed claims without R2 review`.

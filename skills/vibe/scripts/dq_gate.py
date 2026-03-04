@@ -52,7 +52,6 @@ def check_dq1(data, thresholds):
     """Post-Extraction Data Quality."""
     checks = []
     features = data.get("features", [])
-    labels = data.get("labels", [])
     n_samples = data.get("n_samples", 0)
     n_features = data.get("n_features", 0)
 

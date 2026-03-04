@@ -2,6 +2,17 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.5] — 2026-03-04 — Hook Pattern Docs & Python Sync
+
+> **Trigger:** Cross-reference audit of CLAUDE.md hook output patterns against actual code found 2 prefix mismatches (agents pattern-matching on documented strings would not match). Python audit of all 18 .py files found spine_entry.py VALID_TYPES missing 4 schema-valid action types and an unused variable in dq_gate.py.
+
+### Fixed
+- **CLAUDE.md**: PostToolUse advisory prefixes corrected: `SALVAGENTE FAIL` → `GATE SALVAGENTE FAIL`, `SEED ESCALATION` → `SERENDIPITY ESCALATION` / `SERENDIPITY INTERRUPT` (match actual code output)
+- **spine_entry.py**: Added 4 missing action types to `VALID_TYPES`: `CALIBRATION`, `CONFORMAL_PREDICT`, `TOOL_USE`, `COMPACT_SNAPSHOT` (now matches spine-entry.schema.json enum)
+- **dq_gate.py**: Removed unused `labels` variable in `check_dq1()` (dead code)
+- **context-builder.js**: Updated docstring to include `[PURPOSE]` section and note about `[PATTERNS]` injection by session-start.js
+- Archive synced for changed Python scripts
+
 ## [6.0.4] — 2026-03-04 — Critical SessionStart Hook Fix
 
 > **Trigger:** Running the e2e test suite (`node --test __test_e2e.mjs`) for the first time revealed that `session-start.js` crashes with `ReferenceError: loadPendingSeeds is not defined`. The variable was assigned on lines 58 and 61 but never declared with `let`. In ES modules (strict mode), this causes an immediate crash at module load time, meaning the SessionStart hook has been silently failing since it was written — falling back to Claude Code's default error handling instead of injecting Vibe Science context.
