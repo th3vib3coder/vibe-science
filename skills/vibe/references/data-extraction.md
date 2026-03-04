@@ -90,6 +90,48 @@ For each paper with relevant supplementary data:
 **Claim IDs populated:** C-xxx, C-yyy
 ```
 
+## Data Dictionary Protocol (v5.5) — Gate DD0
+
+### The Problem
+
+Column names lie. `measurement_value` may not be what you expect. `score` may be computed differently than assumed. Using a column based on its name alone leads to silent bugs that propagate through the entire pipeline (hours of wasted work when assumptions about column semantics turn out to be wrong).
+
+### The Rule
+
+**Before using ANY column from a dataset for the FIRST TIME in a session**, you MUST:
+
+1. **INSPECT**: Print ALL columns with their dtype and 3-5 example values.
+2. **DOCUMENT**: For each column you will USE in analysis, write a one-line definition:
+   - What does it represent?
+   - What are its units or categories?
+   - How was it computed or measured? (if known from documentation)
+3. **VERIFY**: Cross-check your understanding against the dataset's README, metadata, publication, or supplementary materials. NEVER trust the column name alone.
+4. **RECORD**: Write the data dictionary to `data-dictionary.md` (or equivalent) in the project directory. This is persistent — it survives context window compaction.
+
+### Template
+
+```markdown
+# Data Dictionary — {dataset_name}
+
+| Column | dtype | Example | Meaning | Source | Verified? |
+|--------|-------|---------|---------|--------|-----------|
+| sample_id | str | "S001" | Unique identifier for each sample | README | YES |
+| feature_name | str | "feat_42" | Name of the measured feature | README | YES |
+| raw_count | int | 3 | Raw measurement count before normalization | Computed | YES — matches manual count |
+| normalized_score | float | 0.42 | Normalized measurement value (method in paper) | Paper Table S1 | YES |
+```
+
+### Gate DD0 Check
+
+Before analysis proceeds, verify:
+- All columns used in the analysis appear in the data dictionary
+- Each column has a verified meaning (not just assumed from name)
+- Cross-checks performed where possible (e.g., recomputing a count and comparing)
+
+DD0 FAIL → HALT. Document the column before using it.
+
+---
+
 ## Cross-Referencing Protocol
 
 When a finding depends on data from multiple papers:

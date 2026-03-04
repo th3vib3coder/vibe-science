@@ -9,8 +9,8 @@ If a step can be a script, it MUST be a script. If a step can be a command, it M
 | Bad (descriptive) | Good (executable) |
 |---|---|
 | "Run QC on the data" | `scripts/01_qc.py` with exact parameters |
-| "Check for batch effects" | `scripts/02_batch_check.py` producing `figures/batch_umap.png` |
-| "The model converged" | `training_log.csv` with ELBO values + `figures/convergence.png` |
+| "Check for confounding effects" | `scripts/02_confound_check.py` producing `figures/confound_plot.png` |
+| "The model converged" | `training_log.csv` with loss values + `figures/convergence.png` |
 
 ## Artifact Contract
 
@@ -24,8 +24,8 @@ run-YYYYMMDD-HHMMSS/
 │   ├── [descriptive-name].png
 │   └── ...
 ├── metrics.json           # REQUIRED — all computed metrics
-├── output.h5ad            # CONDITIONAL — if scRNA/omics pipeline
-├── model/                 # CONDITIONAL — if model trained (scVI, etc.)
+├── output.[format]        # CONDITIONAL — domain-specific output (e.g., .parquet, .csv, .hdf5)
+├── model/                 # CONDITIONAL — if model trained
 │   ├── model.pt
 │   └── model_params.json
 ├── scripts/               # REQUIRED — all scripts used (or symlinks)
@@ -44,46 +44,41 @@ run-YYYYMMDD-HHMMSS/
   "run_id": "run-20250207-143022",
   "created": "2025-02-07T14:30:22Z",
   "rq": "RQ-001",
-  "description": "scVI batch correction, n_latent=30, n_HVG=3000",
+  "description": "[model/method] applied to [dataset], [key parameters]",
   "parameters": {
-    "n_latent": 30,
-    "n_hidden": 128,
-    "n_layers": 2,
-    "n_epochs": 400,
-    "batch_key": "study_id",
-    "categorical_covariates": ["platform", "sex"],
-    "continuous_covariates": ["pct_mito"],
-    "n_hvg": 3000,
-    "hvg_flavor": "seurat_v3",
-    "min_genes": 200,
-    "min_cells": 3,
-    "max_pct_mito": 20
+    "model_param_1": "value",
+    "model_param_2": "value",
+    "grouping_key": "study_id",
+    "covariates": ["covariate_1", "covariate_2"],
+    "n_features": 3000,
+    "feature_selection_method": "method_name",
+    "qc_threshold_1": "value",
+    "qc_threshold_2": "value"
   },
   "seeds": [42, 123],
   "versions": {
-    "python": "3.11.7",
-    "scanpy": "1.10.0",
-    "scvi-tools": "1.1.2",
-    "anndata": "0.10.3",
-    "torch": "2.1.2"
+    "language": "version",
+    "framework": "version",
+    "key_library_1": "version",
+    "key_library_2": "version"
   },
   "input": {
-    "files": ["merged_raw.h5ad"],
+    "files": ["input_data.format"],
     "sha256": ["abc123..."],
-    "n_cells": 145230,
-    "n_genes": 33694,
-    "n_studies": 12
+    "n_samples": 145230,
+    "n_features_raw": 33694,
+    "n_groups": 12
   },
   "output": {
-    "files": ["output.h5ad", "model/model.pt"],
+    "files": ["output_data.format", "model/model.pt"],
     "sha256": ["def456...", "ghi789..."],
-    "n_cells_post_qc": 132847,
-    "n_hvg": 3000
+    "n_samples_post_qc": 132847,
+    "n_features_selected": 3000
   },
   "gates_passed": ["G0", "G1", "G2", "G3", "G4", "G5"],
-  "decision": "ACCEPTED — iLISI improved 0.61→0.89, cLISI stable at 0.92",
+  "decision": "ACCEPTED — primary metric improved X→Y, secondary metric stable",
   "previous_run": "run-20250206-091500",
-  "comparison_summary": "Improved mixing (+46%) without losing cell-type separation (-0.3%)"
+  "comparison_summary": "Improved [primary objective] without degrading [secondary objective]"
 }
 ```
 
@@ -101,9 +96,9 @@ run-YYYYMMDD-HHMMSS/
 ## Gate Results
 | Gate | Status | Notes |
 |------|--------|-------|
-| G0 — Input Sanity | ✅ PASS | raw counts verified, integer dtype |
-| G1 — Schema | ✅ PASS | obs schema normalized |
-| G2 — Design | ✅ PASS | batch_key=study_id justified by PCA |
+| G0 — Input Sanity | ✅ PASS | data types verified, values in range |
+| G1 — Schema | ✅ PASS | schema normalized per data-dictionary.md |
+| G2 — Design | ✅ PASS | grouping key justified by exploratory analysis |
 | G3 — Training | ✅ PASS | converged at epoch 280, no overfit |
 | G4 — Metrics | ✅ PASS | see table below |
 | G5 — Artifacts | ✅ PASS | all files present |
@@ -112,29 +107,27 @@ run-YYYYMMDD-HHMMSS/
 
 | Metric | Run A (prev) | Run B (this) | Δ | Decision |
 |--------|-------------|-------------|---|----------|
-| iLISI (batch mixing) | 0.61 | 0.89 | +0.28 | ✅ improved |
-| cLISI (cell type) | 0.93 | 0.92 | -0.01 | ✅ stable |
-| Silhouette (cell type) | 0.45 | 0.47 | +0.02 | ✅ improved |
-| ARI (clustering) | 0.72 | 0.74 | +0.02 | ✅ improved |
-| kBET acceptance | 0.23 | 0.78 | +0.55 | ✅ improved |
-| Batch classifier acc | 0.89 | 0.52 | -0.37 | ✅ (closer to chance=0.5) |
+| Primary metric 1 | 0.61 | 0.89 | +0.28 | ✅ improved |
+| Primary metric 2 | 0.93 | 0.92 | -0.01 | ✅ stable |
+| Secondary metric 1 | 0.45 | 0.47 | +0.02 | ✅ improved |
+| Secondary metric 2 | 0.72 | 0.74 | +0.02 | ✅ improved |
 
 ## Figures
-- `figures/umap_batch.png` — UMAP colored by batch
-- `figures/umap_celltype.png` — UMAP colored by cell type
-- `figures/convergence.png` — ELBO training curve
+- `figures/overview_plot.png` — Primary visualization
+- `figures/diagnostic_plot.png` — Diagnostic/QC visualization
+- `figures/convergence.png` — Training/objective convergence curve
 - `figures/metrics_comparison.png` — Bar chart Run A vs Run B
 
 ## Decision
-**ACCEPTED.** Batch mixing improved substantially (+46% iLISI) without degrading cell-type separation (cLISI stable, silhouette improved). kBET acceptance rate tripled. Batch classifier accuracy dropped to near-chance, confirming batch information removed from latent space.
+**ACCEPTED.** Primary metric improved substantially without degrading secondary metrics. [Domain-specific interpretation of what the numbers mean.]
 
 ## Assumptions Active
-- A-001: Platform effects treatable as batch effects
-- A-002: Raw counts verified integer
+- A-001: [Key assumption about data]
+- A-002: [Key assumption about method]
 
 ## Open Issues
-- [ ] Need ablation: n_HVG=2000 vs 3000 vs 5000
-- [ ] Need ablation: n_latent=10 vs 30 vs 50
+- [ ] Need ablation: [parameter_1] across range
+- [ ] Need ablation: [parameter_2] across range
 ```
 
 ## Run Plan Template
@@ -183,28 +176,28 @@ When hyperparameters are chosen, produce an ablation matrix:
 
 | Variable | Values | Baseline | Rationale |
 |----------|--------|----------|-----------|
-| n_HVG | [2000, 3000, 5000] | 3000 | Standard range; 2000 may miss rare genes, 5000 may add noise |
-| n_latent | [10, 20, 30, 50] | 30 | scVI default=10, but complex multi-study data may need more |
-| batch_key | [study_id, platform, donor_id] | study_id | Need to justify which level of batch is primary |
-| categorical_covariates | [none, platform, sex, both] | [platform, sex] | Ablate to see if covariates help or overfit |
+| n_features | [low, default, high] | default | Standard range for domain; fewer may miss signal, more may add noise |
+| model_complexity | [small, medium, large] | medium | Default may underfit complex data or overfit simple data |
+| grouping_key | [group_A, group_B, group_C] | group_A | Need to justify which grouping level is primary |
+| covariates | [none, set_A, set_B, both] | [set_A, set_B] | Ablate to see if covariates help or overfit |
 
 ## Execution Plan
 
 Run all combinations? No — use one-at-a-time (OAT) ablation from baseline:
-1. Baseline: n_HVG=3000, n_latent=30, batch_key=study_id, covariates=[platform, sex]
-2. Vary n_HVG: 2000, 5000 (keep rest at baseline)
-3. Vary n_latent: 10, 20, 50 (keep rest at baseline)
-4. Vary batch_key: platform, donor_id (keep rest at baseline)
-5. Vary covariates: none, platform only, sex only (keep rest at baseline)
+1. Baseline: n_features=default, model_complexity=medium, grouping_key=group_A, covariates=[set_A, set_B]
+2. Vary n_features: low, high (keep rest at baseline)
+3. Vary model_complexity: small, large (keep rest at baseline)
+4. Vary grouping_key: group_B, group_C (keep rest at baseline)
+5. Vary covariates: none, set_A only, set_B only (keep rest at baseline)
 
-Total: 1 (baseline) + 2 + 3 + 2 + 3 = 11 runs
+Total: 1 (baseline) + 2 + 2 + 2 + 3 = 10 runs
 
 ## Comparison Table (fill after execution)
 
-| Run | Δ from baseline | iLISI | cLISI | Silhouette | Decision |
-|-----|----------------|-------|-------|------------|----------|
+| Run | Δ from baseline | Metric 1 | Metric 2 | Metric 3 | Decision |
+|-----|----------------|----------|----------|----------|----------|
 | baseline | — | | | | |
-| n_HVG=2000 | | | | | |
+| n_features=low | | | | | |
 | ... | | | | | |
 ```
 
@@ -227,34 +220,34 @@ When generating scripts, follow these patterns. Route to scientific-skills MCP f
 
 ### QC Script Pattern
 ```python
-# Route to: scanpy skill for implementation
+# Route to: domain-appropriate scientific-skills MCP skill
 # Produces: figures/qc_violin.png, figures/qc_scatter.png
 # Gate: G0 (Input Sanity)
-# Decisions: min_genes, min_cells, max_pct_mito thresholds
+# Decisions: QC thresholds appropriate for the domain
 ```
 
 ### Preprocessing Script Pattern
 ```python
-# Route to: scanpy + anndata skills
-# Produces: preprocessed.h5ad
+# Route to: domain-appropriate scientific-skills MCP skill
+# Produces: preprocessed.[format]
 # Gate: G1 (Schema)
-# Decisions: normalization method, HVG selection, scaling
+# Decisions: normalization method, feature selection, scaling
 ```
 
-### Integration Script Pattern
+### Modeling Script Pattern
 ```python
-# Route to: scvi-tools skill
-# Produces: model/, integrated.h5ad, figures/convergence.png
+# Route to: domain-appropriate scientific-skills MCP skill
+# Produces: model/, output.[format], figures/convergence.png
 # Gate: G2 (Design) + G3 (Training)
-# Decisions: batch_key, covariates, architecture, epochs
+# Decisions: grouping key, covariates, architecture, epochs
 ```
 
 ### Metrics Script Pattern
 ```python
-# Route to: scvi-tools + scanpy skills
+# Route to: domain-appropriate scientific-skills MCP skill
 # Produces: metrics.json, figures/metrics_comparison.png
 # Gate: G4 (Metrics)
-# Standard metrics: iLISI, cLISI, kBET, silhouette, ARI/NMI, batch classifier, DE preservation
+# Standard metrics: domain-appropriate primary + secondary metrics
 ```
 
 ### Report Generator Pattern

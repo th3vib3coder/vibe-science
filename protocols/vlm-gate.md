@@ -73,11 +73,11 @@ vlm_score = mean(readability, labeling, trend_metric, accessibility, integrity)
 
 ```
 PASS criteria:
-□ Figures are readable (not garbled, not blank)
-□ Axes are labeled with units
-□ Trends visible in figures match quantitative metrics
-□ Color schemes are colorblind-friendly
-□ VLM quality score >= 0.6
+[ ] Figures are readable (not garbled, not blank)
+[ ] Axes are labeled with units
+[ ] Trends visible in figures match quantitative metrics
+[ ] Color schemes are colorblind-friendly
+[ ] VLM quality score >= 0.6
 
 FAIL actions:
 - Garbled/blank figures → regenerate

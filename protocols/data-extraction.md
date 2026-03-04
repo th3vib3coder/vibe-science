@@ -12,43 +12,33 @@ When reading supplementary files, data tables, or any research data:
 
 ## Data Schema Contracts
 
-### AnnData Contract (scRNA-seq)
+### Structured Data Contract
 
-Before any analysis, verify the h5ad file meets this minimum schema. Route to `anndata` skill for inspection.
+Before any analysis, verify the data file meets the minimum schema for its format. Use appropriate domain tools for inspection.
 
-```python
-# REQUIRED in .obs (per cell)
-obs_required = {
-    'study_id': 'category',      # Source study identifier
-    'sample_id': 'category',     # Biological sample within study
-    'cell_type': 'category',     # Cell type annotation (standardized)
-    'platform': 'category',      # Sequencing platform (10X_v2, 10X_v3, SmartSeq2, etc.)
+```
+# REQUIRED metadata (per record/sample)
+metadata_required = {
+    'source_id': 'category',        # Source identifier (study, experiment, batch)
+    'sample_id': 'category',        # Individual sample/record identifier
+    'group_label': 'category',      # Group/class/condition label
+    'collection_method': 'category', # How data was collected (platform, instrument, survey type)
 }
 
-# RECOMMENDED in .obs
-obs_recommended = {
-    'donor_id': 'category',      # Individual donor
-    'sex': 'category',           # M/F/Unknown
-    'age': 'float32',            # Age in years (NaN if unknown)
-    'disease': 'category',       # Disease status (healthy, disease_name)
-    'tissue': 'category',        # Tissue of origin (standardized ontology)
-    'n_genes': 'int32',          # QC: genes per cell
-    'n_counts': 'float32',       # QC: total counts per cell
-    'pct_mito': 'float32',       # QC: mitochondrial percentage
-    'pct_ribo': 'float32',       # QC: ribosomal percentage
-    'doublet_score': 'float32',  # Scrublet/DoubletFinder score
+# RECOMMENDED metadata
+metadata_recommended = {
+    'subject_id': 'category',       # Individual subject/entity
+    'demographic_1': 'category',    # Key demographic variable (varies by domain)
+    'demographic_2': 'category',    # Secondary demographic variable
+    'condition': 'category',        # Experimental condition or disease status
+    'quality_score': 'float',       # Data quality metric
+    'collection_date': 'date',      # When data was collected
 }
 
-# REQUIRED data layers
-layers_required = {
-    'X': 'raw integer counts (or in .raw.X if X is normalized)',
-    'raw': 'backup of raw counts if X is transformed'
-}
-
-# REQUIRED in .var
-var_required = {
-    'gene_symbols': 'unique gene names (index or column)',
-    'ensembl_ids': 'Ensembl gene IDs (for unambiguous cross-referencing)'
+# REQUIRED data properties
+data_required = {
+    'feature_names': 'unique identifiers for each feature/variable',
+    'raw_values': 'original unprocessed values (or clear provenance if transformed)'
 }
 ```
 
@@ -68,13 +58,13 @@ When data violates the contract:
 
 | Violation | Severity | Fix |
 |-----------|----------|-----|
-| X contains float (not int counts) | P0 — Critical | Check .raw.X; if absent, investigate normalization history |
-| Missing study_id | P0 — Critical | Cannot proceed without batch identifier |
-| Missing cell_type | P1 — Major | Can proceed with clustering, but cannot validate annotations |
-| String instead of category | P2 — Minor | Convert with obs-normalizer (see assets/obs-normalizer.md) |
-| Missing pct_mito | P1 — Major | Compute from gene annotations before QC |
-| Duplicate gene names | P1 — Major | Make unique (var_names_make_unique) |
-| Mixed gene ID formats | P1 — Major | Standardize to one format + mapping table |
+| Values are pre-transformed (not raw) | P0 — Critical | Check for raw data layer; if absent, investigate transformation history |
+| Missing source_id | P0 — Critical | Cannot proceed without batch/source identifier |
+| Missing group_label | P1 — Major | Can proceed with clustering, but cannot validate annotations |
+| Wrong data types | P2 — Minor | Convert to correct types with appropriate tools |
+| Missing quality metrics | P1 — Major | Compute from data before quality control |
+| Duplicate feature names | P1 — Major | Make unique (deduplicate with suffix) |
+| Mixed identifier formats | P1 — Major | Standardize to one format + mapping table |
 
 ## Supplementary Material Extraction
 
@@ -88,9 +78,9 @@ For each paper with relevant supplementary data:
 **Journal:** [journal name]
 
 **Files identified:**
-- [ ] Table S1 — Gene list (CSV) — downloaded / not accessible
+- [ ] Table S1 — Data list (CSV) — downloaded / not accessible
 - [ ] Table S2 — Statistical results (XLSX) — downloaded / not accessible
-- [ ] Data S1 — Raw sequencing (link to GEO/SRA) — accession: GSEXXXXX
+- [ ] Data S1 — Raw data (link to repository) — accession: ID-XXXXX
 
 **Extraction notes:**
 - Table S1: N rows, columns: [list], key observations: [...]
@@ -104,7 +94,7 @@ For each paper with relevant supplementary data:
 
 ### The Problem
 
-Column names lie. `Protospacer_sequence` may not be the designed protospacer. `mismatch_count` may be computed differently than you expect. Using a column based on its name alone leads to silent bugs that propagate through the entire pipeline (M7: CHANGE-seq alignment bug, hours of wasted work).
+Column names lie. `measurement_value` may not be what you expect. `score` may be computed differently than assumed. Using a column based on its name alone leads to silent bugs that propagate through the entire pipeline (hours of wasted work when assumptions about column semantics turn out to be wrong).
 
 ### The Rule
 
@@ -125,10 +115,10 @@ Column names lie. `Protospacer_sequence` may not be the designed protospacer. `m
 
 | Column | dtype | Example | Meaning | Source | Verified? |
 |--------|-------|---------|---------|--------|-----------|
-| guide_id | str | "sg001" | Unique identifier for each guide RNA | README | YES |
-| off_target_seq | str | "ATCG..." | Genomic sequence at off-target site | README | YES |
-| mismatch_count | int | 3 | Number of mismatches between guide and off-target | Computed | YES — matches manual count |
-| activity_score | float | 0.42 | Normalized read count (CHANGE-seq signal) | Paper Table S1 | YES |
+| sample_id | str | "S001" | Unique identifier for each sample | README | YES |
+| feature_name | str | "feat_42" | Name of the measured feature | README | YES |
+| raw_count | int | 3 | Raw measurement count before normalization | Computed | YES — matches manual count |
+| normalized_score | float | 0.42 | Normalized measurement value (method in paper) | Paper Table S1 | YES |
 ```
 
 ### Gate DD0 Check
@@ -155,9 +145,9 @@ When a finding depends on data from multiple papers:
 
 Route to appropriate database skills:
 
-1. Record accession numbers or identifiers
-2. Document: organism/system, conditions, technology/methodology
+1. Record accession numbers or dataset identifiers
+2. Document: subject matter, conditions, collection method, technology
 3. Note sample sizes per condition
-4. Check if processed data available
-5. Prefer processed data over raw files unless specifically needed
-6. Verify data integrity (correct types, expected ranges) before accepting
+4. Check if processed data (derived tables, matrices) available
+5. Prefer processed data over raw unless specifically needed
+6. Verify data integrity (correct types, expected value ranges) before accepting

@@ -2,6 +2,34 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.15] — 2026-03-04 — Domain generalization R28: data-extraction, analysis-orchestrator, vlm-gate Unicode
+
+> **Trigger:** Round 28 paranoid deep debug — full scan of all 20 protocols/ and 36 references/ files. Found domain-specific content leakage in 2 protocol files that had been missed in earlier rounds, plus Unicode □ in vlm-gate (both copies).
+
+### Fixed — Domain Generalization (protocols/data-extraction.md)
+- **AnnData Contract (scRNA-seq):** Entire section (lines 15-52) replaced with domain-agnostic Structured Data Contract. Removed: `.obs`, `.var`, `.X`, `.raw.X`, `cell_type`, `platform`, `10X_v2`, `10X_v3`, `SmartSeq2`, `n_genes`, `n_counts`, `pct_mito`, `pct_ribo`, `doublet_score`, `Scrublet`, `DoubletFinder`, `gene_symbols`, `ensembl_ids`, `anndata`, `h5ad`. Replaced with: `source_id`, `sample_id`, `group_label`, `collection_method`, `feature_names`, `raw_values`.
+- **Schema Violation Triage (lines 69-77):** Replaced scRNA-specific violations (`X contains float`, `.raw.X`, `cell_type`, `obs-normalizer`, `pct_mito`, `MT- gene prefix`, `var_names_make_unique`) with domain-agnostic violations (`Values pre-transformed`, `Missing source_id`, `Missing group_label`, `Wrong data types`, `Missing quality metrics`, `Duplicate feature names`, `Mixed identifier formats`).
+- **DD0 Gate examples (lines 107, 128-131):** Replaced CRISPR-specific references (`M7: CHANGE-seq alignment bug`, `guide_id`, `off_target_seq`, `guide RNA`, `CHANGE-seq signal`) with domain-agnostic examples (`sample_id`, `feature_name`, `raw_count`, `normalized_score`).
+- File now matches references/ version (both include DD0 section).
+
+### Fixed — Domain Generalization (protocols/analysis-orchestrator.md)
+- Overwritten with generalized references/ version (already fixed in R26). Removed residual scRNA-seq content: `scVI`, `n_latent`, `n_HVG`, `batch_key`, `pct_mito`, `hvg_flavor`, `seurat_v3`, `scanpy`, `scvi-tools`, `anndata`, `h5ad`, `iLISI`, `cLISI`, `kBET`. protocols/ copy had been missed when references/ was generalized in R26.
+
+### Fixed — Unicode Normalization (vlm-gate.md)
+- **protocols/vlm-gate.md:** replace_all □ (U+25A1) → `[ ]` (5 occurrences at lines 76-80, Gate G6 Pass/Fail checklist)
+- **references/vlm-gate.md:** Same fix, 5 occurrences. Both copies now ASCII-clean.
+
+### Added — DD0 Section (references/data-extraction.md)
+- Added Data Dictionary Protocol (v5.5) — Gate DD0 section that existed in protocols/ but was missing from references/. Domain-agnostic examples used. Both copies now identical.
+
+### Validation
+- `protocols/data-extraction.md`: 0 domain-specific terms (AnnData/scRNA/CRISPR/h5ad/obs/var/pct_mito/Scrublet/CHANGE-seq) — CLEAN
+- `protocols/analysis-orchestrator.md`: 0 domain-specific terms — CLEAN (matches references/)
+- `protocols/vlm-gate.md`: 0 Unicode □ — CLEAN
+- `references/vlm-gate.md`: 0 Unicode □ — CLEAN
+- `references/data-extraction.md`: DD0 section present, 0 domain-specific terms — CLEAN
+- protocols/ and references/ copies are now identical for: data-extraction.md, analysis-orchestrator.md, vlm-gate.md
+
 ## [6.0.14] — 2026-03-04 — Cross-file consistency + missing reference files
 
 > **Trigger:** Round 26 paranoid deep debug — full repo scan for cross-file consistency (gate counts, schema counts, law counts, file references) + identification of 3 protocol files missing from references/.
