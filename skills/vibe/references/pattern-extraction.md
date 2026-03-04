@@ -46,7 +46,7 @@ Where `fail_count` is the total number of failures across all sessions. Examples
 ```json
 {
   "action_type": "literature_search",
-  "input_summary": "CRISPR off-target effects single-cell",
+  "input_summary": "optimal transport data integration methods",
   "sessions": [
     {"session_id": "abc123", "occurrences": 4, "timestamp": "2026-01-15T10:00:00Z"},
     {"session_id": "def456", "occurrences": 2, "timestamp": "2026-01-18T14:00:00Z"}
@@ -60,7 +60,7 @@ Where `occurrences` is the total count across all sessions. Examples:
 - 3 occurrences across 2 sessions: confidence = 0.45
 - 7 occurrences across 3 sessions: confidence = 1.0
 
-**Actionable output:** "Literature search for 'CRISPR off-target effects single-cell' has been performed 6 times across 3 sessions. Consider caching results or refining the query."
+**Actionable output:** "Literature search for 'optimal transport data integration methods' has been performed 6 times across 3 sessions. Consider caching results or refining the query."
 
 ---
 
@@ -205,7 +205,7 @@ The SessionStart hook queries active patterns and includes them in the `[PATTERN
 ```
 [PATTERNS] 3 active patterns:
   GATE_FAILURE_CLUSTER: DQ1 fails on zero-variance columns (confidence: 0.6, last: 2 days ago)
-  REPEATED_ACTION: Literature search "CRISPR off-target" repeated 6x (confidence: 0.9, last: 1 day ago)
+  REPEATED_ACTION: Literature search "optimal transport integration" repeated 6x (confidence: 0.9, last: 1 day ago)
   CLAIM_LIFECYCLE: Claims killed for CONFOUNDED/batch_effect 3x (confidence: 0.75, last: 3 days ago)
 ```
 

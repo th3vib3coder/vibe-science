@@ -2,6 +2,24 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.18] — 2026-03-04 — Domain generalization R31: audit-reproducibility, handoff-protocol, pattern-extraction
+
+> **Trigger:** Round 31 paranoid deep debug — full content-diff of protocols/ (21 files) vs skills/vibe/references/ (36 files). Found `batch_key` in both copies of audit-reproducibility.md, CRISPR examples in references/handoff-protocol.md and references/pattern-extraction.md (3 occurrences). Also confirmed: the two directories are intentionally different versions (protocols/ = full operational specs, references/ = condensed plugin references), not copies that drifted.
+
+### Fixed — Domain Generalization (protocols/audit-reproducibility.md + references/audit-reproducibility.md)
+- **Line 71:** `batch_key | source_id | source_id | same` → `group_label | treatment | treatment | same`
+- **WHY:** `batch_key` is a scRNA-seq/scVI-specific parameter name. The audit parameter diff table should use domain-neutral names.
+
+### Fixed — Domain Generalization (references/handoff-protocol.md)
+- **Lines 117-129:** Replaced CRISPR-specific handoff example: "batch-corrected DE signature in CRISPR perturbation data" → "batch-corrected integration signature in treatment-response data", "library size" → "sample size"
+- **WHY:** Handoff examples between R2 and Researcher should demonstrate the protocol mechanics without assuming a specific research domain.
+
+### Fixed — Domain Generalization (references/pattern-extraction.md)
+- **Line 49:** JSON example `"CRISPR off-target effects single-cell"` → `"optimal transport data integration methods"`
+- **Line 63:** Actionable output example replaced CRISPR query with domain-neutral query
+- **Line 208:** SessionStart pattern example `"CRISPR off-target"` → `"optimal transport integration"`
+- **WHY:** Pattern extraction examples demonstrate the REPEATED_ACTION detection pattern — the example queries should be domain-agnostic.
+
 ## [6.0.17] — 2026-03-04 — Domain generalization R30: commands, protocols, gates
 
 > **Trigger:** Round 30 paranoid deep debug — full scan of gates/, commands/, agents/, .claude-plugin/, protocols/, and ARCHITECTURE.md. Found CRISPR/GUIDE-seq examples in 2 command templates, scRNA-seq/CRISPR examples in 1 protocol, and a protospacer example in gates.

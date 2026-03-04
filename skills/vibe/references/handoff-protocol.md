@@ -114,15 +114,15 @@ Optional but recommended. A quick count of system state that the target agent ca
 **Session:** a1b2c3d4 | **RQ:** RQ-001 | **Stage:** T3 | **Cycle:** 12
 
 ### Context
-Adversarial review of C-003 (batch-corrected DE signature in CRISPR
-perturbation data, confidence 0.65) and C-007 (sex-differential
-response to perturbation, confidence 0.45). Both claims originated
+Adversarial review of C-003 (batch-corrected integration signature in
+treatment-response data, confidence 0.65) and C-007 (sex-differential
+response to treatment, confidence 0.45). Both claims originated
 from branch T3-explore-2, cycle 10.
 
 ### Findings
 - C-003 (confidence 0.65 --> 0.40): Confounder harness revealed that
-  the DE signature collapses by 60% after propensity matching for
-  library size. Status: CREATED --> CONFOUNDED (downgraded, not killed).
+  the integration signature collapses by 60% after propensity matching for
+  sample size. Status: CREATED --> CONFOUNDED (downgraded, not killed).
   Evidence: `.vibe-science/harness/C-003-propensity.json`
 - C-007 (confidence 0.45 --> 0.45): Insufficient power to evaluate.
   Only 12 female samples vs. 45 male. Cannot distinguish real

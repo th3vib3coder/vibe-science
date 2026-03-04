@@ -68,7 +68,7 @@ When multiple runs exist, produce a structured comparison in `07-audit/run-compa
 |-----------|-------|-------|-------|
 | param_1 | 3000 | 5000 | +2000 |
 | param_2 | 30 | 30 | 0 |
-| batch_key | source_id | source_id | same |
+| group_label | treatment | treatment | same |
 
 ## Metric Diff
 
