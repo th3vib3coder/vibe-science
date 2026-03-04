@@ -2,6 +2,30 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.13] — 2026-03-04 — gates.md + SKILL.md domain generalization & Unicode cleanup
+
+> **Trigger:** Round 25 paranoid deep debug — scanned all remaining .md files for Unicode symbols, domain-specific biology terms, and stale version references. Found 3 targets: `gates/gates.md` (177 Unicode checkboxes + biology-specific G0/G1/G2/G3/G5/L-1 gate content), `SKILL.md` (stale serendipity threshold).
+
+### Fixed — Unicode Normalization (gates/gates.md)
+- **replace_all** □ (U+25A1) → `[ ]` (177 occurrences) — checkbox symbols incompatible with ASCII-only rendering
+- **replace_all** ≥ (U+2265) → `>=` (6 occurrences) — mathematical symbols to ASCII
+
+### Fixed — Domain Generalization (gates/gates.md)
+- **G0 (Input Sanity):** Replaced `.X contains integer counts`, `.X.max()`, `.raw.X`, `gene names`, `UMI data`, `normalization history` with generic: `Types match expected format`, `Value ranges plausible`, `Raw/original preserved`, `Identifiers present`
+- **G1 (Schema Compliance):** Replaced `.obs`, `study_id`, `category dtype`, `pct_mito`, `scVI`, `scanpy-only workflow`, `MT- gene prefix`, `obs-normalizer`, `HVG selection` with generic: `Schema matches expectation`, `grouping columns correct types`, `Domain-appropriate QC metrics`, `data-dictionary.md`
+- **G2 (Design Justification):** Replaced `batch_key` → `Grouping key`, `n_HVG` → `Feature count`, `HVG selection method stated (seurat_v3, cell_ranger, etc.)` → `Feature selection method stated and justified`, `batch_key and biology` → `grouping key and signal of interest`
+- **G3 (Training Integrity):** `ELBO/loss` → `Loss/objective`, `reduce n_latent` → `reduce model complexity`, `non-integer counts` → `check input format`
+- **G5 (Artifact Completeness):** `h5ad, model` → `data, model`
+- **L-1 (Literature Pre-Check):** `"CRISPR off-target"` example → `"domain application"` generic example
+
+### Fixed — Stale Threshold (SKILL.md)
+- Line 1053: serendipity threshold `>= 12` → `>= 15` — was still at v4.0 scale, v6.0 uses 0-20 scale with threshold 15
+
+### Validation
+- `gates/gates.md`: 0 matches for scVI/HVG/ELBO/pct_mito/MT-/CRISPR/seurat_v3/cell_ranger/batch_key/n_HVG/n_latent/h5ad/scRNA/AnnData/.obs/.X/gene_name — CLEAN
+- `gates/gates.md`: 0 Unicode symbols (□/≥/≤/─) — CLEAN
+- `SKILL.md`: 0 Unicode symbols — CLEAN (biology-specific content like R2-Bio, CRISPR intentionally preserved — SKILL.md is biology instance, not generic template)
+
 ## [6.0.12] — 2026-03-04 — reviewer2-ensemble.md v5.5→v6.0 Architectural Rewrite
 
 > **Trigger:** Round 24 paranoid deep debug — the final deferred file from Round 23. `protocols/reviewer2-ensemble.md` (650+ lines) had extensive unique content not present in `skills/vibe/references/reviewer2-ensemble.md` (327 lines), so it required targeted edits rather than full replacement. The protocols/ copy was still at v5.5 with biology-specific language, old INLINE checklist format, missing v6.0 sections (Multi-Agent Delegation, Temporal Decay Calibration), and Unicode symbols throughout.

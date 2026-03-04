@@ -21,61 +21,60 @@ v4.0 adds: Tree Gates (T0-T3), Brainstorm Gate (B0), Stage Gates (S1-S5). v5.0 a
 
 ```
 PASS criteria (ALL must be true):
-□ .X contains integer counts (dtype int32/int64, or float with all .0 values)
-□ .X.max() is reasonable (typically < 50000 for UMI data)
-□ .raw.X exists if .X has been transformed
-□ No NaN/Inf in count matrix
-□ Gene names are present and non-empty
-□ n_cells > 0, n_genes > 0
-□ File loads without error
+[ ] File loads without error
+[ ] Dimensions non-zero (rows > 0, columns > 0)
+[ ] Types match expected format (see domain-config.yaml if available)
+[ ] No NaN/Inf in primary data matrix (or within documented tolerance)
+[ ] Value ranges plausible for the domain
+[ ] Raw/original data preserved if transformations applied
+[ ] Identifiers present and non-empty
 
 FAIL actions:
-- Float counts with non-integer values → STOP. Investigate normalization history.
-- raw.X missing and X is float → STOP. Cannot proceed without raw counts.
-- NaN in counts → STOP. Data corruption.
+- Load error or wrong types → STOP. Investigate data format and provenance.
+- Raw data missing and primary matrix is transformed → STOP. Cannot proceed without originals.
+- NaN in primary data → STOP. Data corruption or extraction error.
 ```
 
 ### Gate 1 — Schema Compliance
 
-**When:** After QC filtering, before HVG selection.
-**Route to:** `assets/obs-normalizer.md` for dtype fixes.
+**When:** After initial filtering, before feature selection or modeling.
 
 ```
 PASS criteria (ALL must be true):
-□ .obs contains: study_id, sample_id (at minimum)
-□ All categorical columns are dtype 'category' (not string/object)
-□ Categories are frozen (no unused categories lingering)
-□ No NaN in categorical columns used as batch/covariate keys
-□ study_id has ≥2 levels (otherwise no batch to correct)
-□ platform column present and consistent with known platform names
-□ pct_mito computed and stored
-□ Gene symbols unique (var_names_make_unique applied if needed)
+[ ] Schema matches expectation (required fields present per domain-config.yaml or data dictionary)
+[ ] All categorical/grouping columns have correct types (not raw strings)
+[ ] No unused or invalid categories lingering
+[ ] No NaN in key/grouping columns used as batch or covariate keys
+[ ] Sufficient grouping levels for the analysis design (>=2 for any batch/group variable)
+[ ] Identifiers unique (no duplicates in primary ID column)
+[ ] Domain-appropriate QC metrics computed and stored
+[ ] Schema documented in data-dictionary.md
 
 FAIL actions:
-- String dtypes in batch columns → Run obs-normalizer, re-gate
-- NaN in batch_key column → Drop cells with NaN or impute from metadata, document decision
-- Single-study data → Cannot use scVI for batch correction; switch to scanpy-only workflow
-- Missing pct_mito → Compute from MT- gene prefix, add to .obs
+- Wrong types in grouping columns → Fix types, re-gate
+- NaN in key columns → Drop affected records or impute from metadata, document decision
+- Insufficient grouping levels → Cannot use group-based methods; switch to alternative workflow
+- Missing QC metrics → Compute from domain-appropriate annotations before proceeding
 ```
 
 ### Gate 2 — Design Justification
 
-**When:** After choosing batch_key, covariates, n_HVG. Before training model.
+**When:** After choosing key parameters, covariates, feature count. Before training model.
 
 ```
 PASS criteria (ALL must be true):
-□ batch_key choice justified with evidence (variance decomposition, PCA plot, or literature)
-□ batch_key has between 2 and ~50 levels (too many → encoder overfitting risk)
-□ categorical_covariates justified (not just "because they exist")
-□ n_HVG choice justified (default=3000 is acceptable with documented reasoning)
-□ HVG selection method stated (seurat_v3, cell_ranger, etc.)
-□ Decision logged in decision-log.md with alternatives considered
-□ Confounding between batch_key and biology assessed
+[ ] Grouping key choice justified with evidence (variance decomposition, exploratory plot, or literature)
+[ ] Grouping key has between 2 and ~50 levels (too many → encoder overfitting risk)
+[ ] Covariates justified (not just "because they exist")
+[ ] Feature count choice justified (domain-appropriate default acceptable with documented reasoning)
+[ ] Feature selection method stated and justified
+[ ] Decision logged in decision-log.md with alternatives considered
+[ ] Confounding between grouping key and signal of interest assessed
 
 FAIL actions:
-- batch_key not justified → Run PCA variance decomposition, document, re-gate
-- batch_key perfectly confounded with biology → STOP. Cannot separate batch from signal.
-- Covariates correlated with batch_key → Document risk in ASSUMPTION-REGISTER.md
+- Grouping key not justified → Run variance decomposition, document, re-gate
+- Grouping key perfectly confounded with signal of interest → STOP. Cannot separate batch from signal.
+- Covariates correlated with grouping key → Document risk in ASSUMPTION-REGISTER.md
 ```
 
 ### Gate 3 — Training / Execution Integrity
@@ -84,18 +83,18 @@ FAIL actions:
 
 ```
 PASS criteria (ALL must be true):
-□ ELBO/loss converged (visual inspection of convergence plot)
-□ No training-validation divergence (overfitting check)
-□ Final loss is not NaN or Inf
-□ Model saved successfully (model.pt exists and loads)
-□ At least 2 seed replicates run (or 1 with documented justification)
-□ Training completed without errors (stderr.log clean)
-□ Memory usage did not cause silent OOM
+[ ] Loss/objective converged (visual inspection of convergence plot)
+[ ] No training-validation divergence (overfitting check)
+[ ] Final loss is not NaN or Inf
+[ ] Model saved successfully (model.pt exists and loads)
+[ ] At least 2 seed replicates run (or 1 with documented justification)
+[ ] Training completed without errors (stderr.log clean)
+[ ] Memory usage did not cause silent OOM
 
 FAIL actions:
 - Non-convergence → Increase epochs, reduce learning rate, check data
-- Overfitting (train-val gap > 10%) → Add regularization, reduce n_latent
-- NaN loss → Data issue (likely non-integer counts or extreme outliers)
+- Overfitting (train-val gap > 10%) → Add regularization, reduce model complexity
+- NaN loss → Data issue (check input format and extreme outliers)
 - Single seed only → Run second seed before accepting results
 ```
 
@@ -105,12 +104,12 @@ FAIL actions:
 
 ```
 PASS criteria (ALL must be true):
-□ Standard metric suite computed (mixing + conservation + clustering metrics)
-□ Metrics contextualized (compared to baseline or previous run)
-□ Direction of improvement documented
-□ Trade-offs between metrics explicit (No Free Lunch)
-□ Decision motivated with metric evidence
-□ No metric gaming flagged
+[ ] Standard metric suite computed (mixing + conservation + clustering metrics)
+[ ] Metrics contextualized (compared to baseline or previous run)
+[ ] Direction of improvement documented
+[ ] Trade-offs between metrics explicit (No Free Lunch)
+[ ] Decision motivated with metric evidence
+[ ] No metric gaming flagged
 
 FAIL actions:
 - One metric improved at significant cost to another → Investigate
@@ -124,13 +123,13 @@ FAIL actions:
 
 ```
 PASS criteria (ALL must be true):
-□ manifest.json present and valid
-□ report.md present, following standard template
-□ figures/ directory present with expected figures
-□ metrics.json present with all computed values
-□ output files present (h5ad, model, etc. as applicable)
-□ scripts/ directory present
-□ logs/ directory present
+[ ] manifest.json present and valid
+[ ] report.md present, following standard template
+[ ] figures/ directory present with expected figures
+[ ] metrics.json present with all computed values
+[ ] output files present (data, model, etc. as applicable)
+[ ] scripts/ directory present
+[ ] logs/ directory present
 
 FAIL actions:
 - Missing manifest → Run is invalid. Cannot audit. Regenerate.
@@ -144,11 +143,11 @@ FAIL actions:
 
 ```
 PASS criteria:
-□ Figures are readable (not garbled, not blank)
-□ Axes are labeled with units
-□ Trends visible in figures match quantitative metrics
-□ Color schemes are colorblind-friendly
-□ VLM quality score >= 0.6
+[ ] Figures are readable (not garbled, not blank)
+[ ] Axes are labeled with units
+[ ] Trends visible in figures match quantitative metrics
+[ ] Color schemes are colorblind-friendly
+[ ] VLM quality score >= 0.6
 
 FAIL actions:
 - Garbled/blank figures → Regenerate
@@ -167,11 +166,11 @@ OPTIONAL: If no VLM access, skip this gate. Not blocking.
 
 ```
 PASS criteria (ALL must be true):
-□ PubMed + bioRxiv + arXiv searched for the EXACT intersection (method + domain + application)
-□ Components searched SEPARATELY (e.g., "conformal prediction" alone, "CRISPR off-target" alone)
-□ If prior work found: explicit decision to PIVOT or DIFFERENTIATE, with rationale documented
-□ If no prior work found: search queries and null results documented
-□ Decision logged in decision-log.md
+[ ] PubMed + bioRxiv + arXiv searched for the EXACT intersection (method + domain + application)
+[ ] Components searched SEPARATELY (e.g., "method name" alone, "domain application" alone)
+[ ] If prior work found: explicit decision to PIVOT or DIFFERENTIATE, with rationale documented
+[ ] If no prior work found: search queries and null results documented
+[ ] Decision logged in decision-log.md
 
 FAIL actions:
 - Prior work found and not addressed → HALT. Cannot claim novelty without differentiation.
@@ -181,29 +180,29 @@ FAIL actions:
 
 ### Gate L0 — Source Validity
 ```
-□ All cited DOIs verified (accessible via web_fetch)
-□ No training-knowledge-only claims marked as DATA
-□ All claims registered in CLAIM-LEDGER.md
-□ Confidence scores computed (not guessed)
-□ Artifact validates against JSON Schema (structural completeness check)
+[ ] All cited DOIs verified (accessible via web_fetch)
+[ ] No training-knowledge-only claims marked as DATA
+[ ] All claims registered in CLAIM-LEDGER.md
+[ ] Confidence scores computed (not guessed)
+[ ] Artifact validates against JSON Schema (structural completeness check)
 ```
 **Schema**: `schemas/source-validity.schema.json`
 
 ### Gate L1 — Coverage Adequacy
 ```
-□ ≥2 databases searched
-□ ≥3 search strategies used (keyword, snowball, author trail, etc.)
-□ Negative results documented (what was NOT found)
-□ Source dedup applied (no double-counting)
+[ ] >=2 databases searched
+[ ] >=3 search strategies used (keyword, snowball, author trail, etc.)
+[ ] Negative results documented (what was NOT found)
+[ ] Source dedup applied (no double-counting)
 ```
 
 ### Gate L2 — Review Completeness
 ```
-□ All major findings reviewed by ensemble
-□ All FATAL FLAWS resolved or finding rejected
-□ All DEMANDED EVIDENCE provided or finding downgraded
-□ Counter-evidence explicitly searched for every conclusion
-□ Artifact validates against JSON Schema (structural completeness check)
+[ ] All major findings reviewed by ensemble
+[ ] All FATAL FLAWS resolved or finding rejected
+[ ] All DEMANDED EVIDENCE provided or finding downgraded
+[ ] Counter-evidence explicitly searched for every conclusion
+[ ] Artifact validates against JSON Schema (structural completeness check)
 ```
 **Schema**: `schemas/review-completeness.schema.json`
 
@@ -213,25 +212,25 @@ FAIL actions:
 
 ### Gate D0 — Decision Justification
 ```
-□ Decision logged in decision-log.md with DEC-YYYYMMDD-NNN format
-□ ≥2 alternatives considered and documented with rejection reasons
-□ Trade-offs explicitly stated (what we lose)
-□ Reversibility assessed (HIGH/MEDIUM/LOW)
-□ Affected claims listed (claim_ids)
-□ Evidence-based justification (not opinion-based)
+[ ] Decision logged in decision-log.md with DEC-YYYYMMDD-NNN format
+[ ] >=2 alternatives considered and documented with rejection reasons
+[ ] Trade-offs explicitly stated (what we lose)
+[ ] Reversibility assessed (HIGH/MEDIUM/LOW)
+[ ] Affected claims listed (claim_ids)
+[ ] Evidence-based justification (not opinion-based)
 ```
 
 ### Gate D1 — Claim Promotion
 ```
-□ Claim has ≥1 verifiable source with DOI/PMID
-□ Confidence computed with formula (not subjective)
-□ Evidence floor gate passed (E ≥ 0.2)
-□ Counter-evidence actively searched
-□ Confounder harness completed (LAW 9) — raw, conditioned, matched
-□ Dependencies checked (all depends_on claims are ≥ VERIFIED)
-□ Assumptions listed and registered
-□ At least 3 falsification attempts performed
-□ Artifact validates against JSON Schema (structural completeness check)
+[ ] Claim has >=1 verifiable source with DOI/PMID
+[ ] Confidence computed with formula (not subjective)
+[ ] Evidence floor gate passed (E >= 0.2)
+[ ] Counter-evidence actively searched
+[ ] Confounder harness completed (LAW 9) — raw, conditioned, matched
+[ ] Dependencies checked (all depends_on claims are >= VERIFIED)
+[ ] Assumptions listed and registered
+[ ] At least 3 falsification attempts performed
+[ ] Artifact validates against JSON Schema (structural completeness check)
 
 FAIL actions:
 - E < 0.2 → Cannot promote. Seek verifiable source first.
@@ -243,17 +242,17 @@ FAIL actions:
 
 ### Gate D2 — RQ Conclusion
 ```
-□ All success/kill criteria from RQ.md explicitly addressed
-□ All major claims R2-reviewed (final review completed)
-□ No unresolved FATAL FLAWS from R2
-□ All promoted claims have passed confounder harness (LAW 9)
-□ CLAIM-LEDGER.md consistent (no UNVERIFIED claims cited in conclusion)
-□ Cross-assay/cross-dataset validation attempted for generalizable claims
-□ Knowledge base updated
-□ PROGRESS.md complete (no gaps)
-□ Reproducibility contract satisfied
-□ Tree visualization final snapshot saved
-□ Artifact validates against JSON Schema (structural completeness check)
+[ ] All success/kill criteria from RQ.md explicitly addressed
+[ ] All major claims R2-reviewed (final review completed)
+[ ] No unresolved FATAL FLAWS from R2
+[ ] All promoted claims have passed confounder harness (LAW 9)
+[ ] CLAIM-LEDGER.md consistent (no UNVERIFIED claims cited in conclusion)
+[ ] Cross-assay/cross-dataset validation attempted for generalizable claims
+[ ] Knowledge base updated
+[ ] PROGRESS.md complete (no gaps)
+[ ] Reproducibility contract satisfied
+[ ] Tree visualization final snapshot saved
+[ ] Artifact validates against JSON Schema (structural completeness check)
 ```
 **Schema**: `schemas/rq-conclusion.schema.json`
 
@@ -266,11 +265,11 @@ FAIL actions:
 
 ```
 PASS criteria:
-□ Node has a valid type (draft|debug|improve|hyperparameter|ablation|replication|serendipity)
-□ Node has a valid parent (exists in TREE-STATE.json)
-□ Node has a non-empty action plan (think_plan is not empty)
-□ Node type is appropriate for current stage (e.g., hyperparameter only in Stage 2+)
-□ Parent is not pruned
+[ ] Node has a valid type (draft|debug|improve|hyperparameter|ablation|replication|serendipity)
+[ ] Node has a valid parent (exists in TREE-STATE.json)
+[ ] Node has a non-empty action plan (think_plan is not empty)
+[ ] Node type is appropriate for current stage (e.g., hyperparameter only in Stage 2+)
+[ ] Parent is not pruned
 
 FAIL actions:
 - Invalid type → Fix type assignment
@@ -284,9 +283,9 @@ FAIL actions:
 
 ```
 PASS criteria:
-□ debug_attempts <= 3 for the node being debugged
-□ Each debug attempt addresses a DIFFERENT root cause (not repeating the same fix)
-□ Debug attempt is documented with: what was tried, why, result
+[ ] debug_attempts <= 3 for the node being debugged
+[ ] Each debug attempt addresses a DIFFERENT root cause (not repeating the same fix)
+[ ] Debug attempt is documented with: what was tried, why, result
 
 FAIL actions:
 - debug_attempts > 3 → PRUNE the node. Mark as pruned with reason.
@@ -299,9 +298,9 @@ FAIL actions:
 
 ```
 PASS criteria:
-□ Sibling nodes differ in at least 1 substantive parameter or approach
-□ No exact duplicate configurations exist among siblings
-□ Diversity documented (what differs between siblings)
+[ ] Sibling nodes differ in at least 1 substantive parameter or approach
+[ ] No exact duplicate configurations exist among siblings
+[ ] Diversity documented (what differs between siblings)
 
 FAIL actions:
 - Duplicate configuration → Merge or differentiate
@@ -313,10 +312,10 @@ FAIL actions:
 
 ```
 PASS criteria:
-□ good_nodes / total_nodes >= 0.2 (at least 20% of nodes are productive)
-□ No branch has 5+ consecutive non-improving nodes
-□ At least 2 branches explored (LAW 8) unless tree_mode = LINEAR
-□ Exploration ratio >= 0.20 (serendipity + draft + novel ablation nodes / total nodes)
+[ ] good_nodes / total_nodes >= 0.2 (at least 20% of nodes are productive)
+[ ] No branch has 5+ consecutive non-improving nodes
+[ ] At least 2 branches explored (LAW 8) unless tree_mode = LINEAR
+[ ] Exploration ratio >= 0.20 (serendipity + draft + novel ablation nodes / total nodes)
   WARNING if < 0.20, FAIL if < 0.10 (LAW 8 quantified enforcement)
 
 FAIL actions:
@@ -337,16 +336,16 @@ FAIL actions:
 
 ```
 PASS criteria (ALL must be true):
-□ At least 3 gaps identified with evidence
-□ At least 1 gap verified as not-yet-addressed (preprint check)
-□ Data availability confirmed for chosen hypothesis (DATA_AVAILABLE >= 0.5)
-□ Hypothesis is falsifiable (null hypothesis stated)
-□ Predictions stated (if true → X, if false → Y)
-□ R2 brainstorm review: WEAK_ACCEPT or better
-□ User approved the chosen direction
+[ ] At least 3 gaps identified with evidence
+[ ] At least 1 gap verified as not-yet-addressed (preprint check)
+[ ] Data availability confirmed for chosen hypothesis (DATA_AVAILABLE >= 0.5)
+[ ] Hypothesis is falsifiable (null hypothesis stated)
+[ ] Predictions stated (if true → X, if false → Y)
+[ ] R2 brainstorm review: WEAK_ACCEPT or better
+[ ] User approved the chosen direction
 
 B0 MUST PASS before any OTAE cycle begins.
-□ Artifact validates against JSON Schema (structural completeness check)
+[ ] Artifact validates against JSON Schema (structural completeness check)
 
 FAIL actions:
 - Insufficient gaps → More literature search needed
@@ -367,10 +366,10 @@ FAIL actions:
 
 ```
 PASS criteria:
-□ At least 1 good node with valid metrics exists
-□ Metrics are meaningful (not trivially achieved)
-□ Multi-seed validation of best node (minimum 2 seeds)
-□ R2 batch review at transition (BLOCKING)
+[ ] At least 1 good node with valid metrics exists
+[ ] Metrics are meaningful (not trivially achieved)
+[ ] Multi-seed validation of best node (minimum 2 seeds)
+[ ] R2 batch review at transition (BLOCKING)
 
 FAIL actions:
 - No good nodes → Continue Stage 1, try different approaches
@@ -383,10 +382,10 @@ FAIL actions:
 
 ```
 PASS criteria:
-□ Best metric confirmed improved over Stage 1 best
-□ Improvement tested on 2+ configurations (not just 1 lucky config)
-□ Ablation of at least 1 key hyperparameter completed
-□ R2 batch review at transition
+[ ] Best metric confirmed improved over Stage 1 best
+[ ] Improvement tested on 2+ configurations (not just 1 lucky config)
+[ ] Ablation of at least 1 key hyperparameter completed
+[ ] R2 batch review at transition
 
 FAIL actions:
 - No improvement → Consider that Stage 1 approach may be suboptimal
@@ -398,10 +397,10 @@ FAIL actions:
 
 ```
 PASS criteria:
-□ All planned sub-experiments attempted or time budget exceeded
-□ Results documented for each sub-experiment
-□ At least 3 draft nodes explored (LAW 8)
-□ R2 batch review at transition
+[ ] All planned sub-experiments attempted or time budget exceeded
+[ ] Results documented for each sub-experiment
+[ ] At least 3 draft nodes explored (LAW 8)
+[ ] R2 batch review at transition
 
 FAIL actions:
 - Planned experiments remaining → Complete or document why skipped
@@ -413,12 +412,12 @@ FAIL actions:
 
 ```
 PASS criteria:
-□ All key components ablated, contribution quantified
-□ Multi-seed validation complete (minimum 3 seeds for best config)
-□ Cross-dataset/cross-assay validation attempted (if generalizable claims)
-□ Confounder harness run for ALL promoted claims (LAW 9)
-□ R2 batch review at transition
-□ Artifact validates against JSON Schema (structural completeness check)
+[ ] All key components ablated, contribution quantified
+[ ] Multi-seed validation complete (minimum 3 seeds for best config)
+[ ] Cross-dataset/cross-assay validation attempted (if generalizable claims)
+[ ] Confounder harness run for ALL promoted claims (LAW 9)
+[ ] R2 batch review at transition
+[ ] Artifact validates against JSON Schema (structural completeness check)
 
 FAIL actions:
 - Missing ablations → Complete ablation matrix
@@ -433,15 +432,15 @@ FAIL actions:
 
 ```
 PASS criteria:
-□ R2 full ensemble verdict: ACCEPT
-□ Gate D2 (RQ Conclusion) PASS
-□ All claims have status VERIFIED or CONFIRMED (no UNVERIFIED in conclusion)
-□ No claims with status DISPUTED (S5 Poison Pill — circuit breaker resolution required)
-□ All confounder harnesses completed and documented (LAW 9)
-□ Tree visualization final snapshot saved
-□ Knowledge base updated
-□ All artifacts crystallized to files (LAW 10)
-□ Artifact validates against schemas/stage5-exit.schema.json
+[ ] R2 full ensemble verdict: ACCEPT
+[ ] Gate D2 (RQ Conclusion) PASS
+[ ] All claims have status VERIFIED or CONFIRMED (no UNVERIFIED in conclusion)
+[ ] No claims with status DISPUTED (S5 Poison Pill — circuit breaker resolution required)
+[ ] All confounder harnesses completed and documented (LAW 9)
+[ ] Tree visualization final snapshot saved
+[ ] Knowledge base updated
+[ ] All artifacts crystallized to files (LAW 10)
+[ ] Artifact validates against schemas/stage5-exit.schema.json
 
 FAIL actions:
 - R2 not ACCEPT → Address demands, re-review
@@ -463,15 +462,15 @@ These gates address a blind spot in v5.0: all 25 existing gates verify *claim qu
 
 ```
 PASS criteria (ALL must be true):
-□ No zero-variance features (constant columns carry no information)
-□ No features with >50% missing values (unless documented and justified)
-□ Feature distributions inspected and plausible for the domain
+[ ] No zero-variance features (constant columns carry no information)
+[ ] No features with >50% missing values (unless documented and justified)
+[ ] Feature distributions inspected and plausible for the domain
   (e.g., no all-zero columns, no values outside physically possible range)
-□ Computed values cross-checked against metadata or source documentation
+[ ] Computed values cross-checked against metadata or source documentation
   when available (e.g., if dataset reports mismatch count, verify it matches
   your computed mismatch count)
-□ No feature has |correlation| > 0.95 with the label (leakage check)
-□ Feature count and sample count match expectations from the data description
+[ ] No feature has |correlation| > 0.95 with the label (leakage check)
+[ ] Feature count and sample count match expectations from the data description
 
 FAIL actions:
 - Zero-variance features detected → Remove and document. Re-gate.
@@ -485,13 +484,13 @@ FAIL actions:
 
 ```
 PASS criteria (ALL must be true):
-□ Model outperforms trivial baseline (majority class for classification,
+[ ] Model outperforms trivial baseline (majority class for classification,
   mean predictor for regression). If not → the model has not learned.
-□ No single feature contributes >50% of total importance
+[ ] No single feature contributes >50% of total importance
   (single-feature dominance suggests feature leakage or degenerate model)
-□ Fold-level or seed-level metrics are stable (coefficient of variation < 0.50)
-□ No evidence of train-test leakage (train metric >> test metric by implausible margin)
-□ Number of groups/strata in cross-validation adequate for the splitting strategy
+[ ] Fold-level or seed-level metrics are stable (coefficient of variation < 0.50)
+[ ] No evidence of train-test leakage (train metric >> test metric by implausible margin)
+[ ] Number of groups/strata in cross-validation adequate for the splitting strategy
   (e.g., leave-one-group-out requires sufficient groups)
 
 FAIL actions:
@@ -506,12 +505,12 @@ FAIL actions:
 
 ```
 PASS criteria (ALL must be true):
-□ Key metric (coverage, p-value, confidence interval width, etc.) is within
+[ ] Key metric (coverage, p-value, confidence interval width, etc.) is within
   the plausible range for the method and data
-□ Result is not suspiciously perfect (e.g., coverage = 1.000, p = 0.000)
-□ Sample size is adequate for the claimed precision
+[ ] Result is not suspiciously perfect (e.g., coverage = 1.000, p = 0.000)
+[ ] Sample size is adequate for the claimed precision
   (e.g., claiming 3-decimal precision from n=20 is implausible)
-□ Result is reproducible across seeds/splits (if applicable)
+[ ] Result is reproducible across seeds/splits (if applicable)
 
 FAIL actions:
 - Metric outside plausible range → HALT. Investigate methodology, potential bugs.
@@ -524,13 +523,13 @@ FAIL actions:
 
 ```
 PASS criteria (ALL must be true):
-□ Every number in the finding text matches the source data file (JSON, CSV, or script output)
+[ ] Every number in the finding text matches the source data file (JSON, CSV, or script output)
   Tolerance: numbers must match to the precision reported.
-□ Sample size (n) is reported in the finding
-□ For surprising or negative results: at least 1 alternative explanation is listed
-□ Terminology is consistent across ALL documents
+[ ] Sample size (n) is reported in the finding
+[ ] For surprising or negative results: at least 1 alternative explanation is listed
+[ ] Terminology is consistent across ALL documents
   (same finding is not called "F6" in one file and "F7" in another)
-□ Finding references its evidence source (file path or data key)
+[ ] Finding references its evidence source (file path or data key)
 
 FAIL actions:
 - Number mismatch → HALT. Identify source of discrepancy. Fix document or recompute.
@@ -548,14 +547,14 @@ FAIL actions:
 
 ```
 PASS criteria (ALL must be true):
-□ All columns of the dataset printed with dtype and example values (head)
-□ Each column USED in analysis has a documented meaning
+[ ] All columns of the dataset printed with dtype and example values (head)
+[ ] Each column USED in analysis has a documented meaning
   (what does it represent? what are its units? what is its source?)
-□ Column name verified against actual semantics
+[ ] Column name verified against actual semantics
   (NEVER assume a column name implies its meaning — verify from documentation,
    metadata, or inspection. E.g., "Protospacer_sequence" may not be
    the designed protospacer.)
-□ Documentation recorded in a persistent file (data-dictionary.md or equivalent)
+[ ] Documentation recorded in a persistent file (data-dictionary.md or equivalent)
 
 FAIL actions:
 - Column used without documentation → HALT. Document before proceeding.
@@ -572,10 +571,10 @@ FAIL actions:
 
 ```
 PASS criteria (ALL must be true):
-□ Current actions match the research design (RQ.md, planned tree branches)
-□ All data sources specified in the design are being used (no specified datasets ignored)
-□ Methods match those specified in the design
-□ Any deviations from design are EXPLICITLY documented with:
+[ ] Current actions match the research design (RQ.md, planned tree branches)
+[ ] All data sources specified in the design are being used (no specified datasets ignored)
+[ ] Methods match those specified in the design
+[ ] Any deviations from design are EXPLICITLY documented with:
   - What changed
   - Why it changed
   - Decision logged in decision-log.md
@@ -597,10 +596,10 @@ FAIL actions:
 
 ```
 PASS criteria (ALL must be true):
-□ All non-EQUIV seeded faults caught by R2 (caught=true)
-□ RMS (Review Miss Score) >= 0.80: faults_caught / faults_injected (EQUIV excluded from denominator)
-□ FAR (False Accusation Rate) <= 0.10: false_accusations / real_claims_count
-□ Schema validation: artifact validates against schemas/vigilance-check.schema.json
+[ ] All non-EQUIV seeded faults caught by R2 (caught=true)
+[ ] RMS (Review Miss Score) >= 0.80: faults_caught / faults_injected (EQUIV excluded from denominator)
+[ ] FAR (False Accusation Rate) <= 0.10: false_accusations / real_claims_count
+[ ] Schema validation: artifact validates against schemas/vigilance-check.schema.json
 
 FAIL actions:
 - R2 missed seeded faults → review INVALID, R2 must re-review ENTIRE claim set
@@ -621,9 +620,9 @@ FAIL actions:
 
 ```
 PASS criteria (ALL must be true):
-□ R3 rubric total >= 12 (out of 18)
-□ No dimension scored 0 (all 6 aspects addressed)
-□ Counter-evidence search dimension >= 2 (must actually search, not rubber-stamp)
+[ ] R3 rubric total >= 12 (out of 18)
+[ ] No dimension scored 0 (all 6 aspects addressed)
+[ ] Counter-evidence search dimension >= 2 (must actually search, not rubber-stamp)
 
 FAIL actions:
 - Total < 12 → R2 must redo FORCED review with R3's specific feedback

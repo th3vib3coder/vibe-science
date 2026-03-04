@@ -1050,7 +1050,7 @@ T3 fails (good/total < 0.2) AND no pending debug nodes → All branches failing.
 | Minor finding | ACCUMULATE | Log, batch review at 3 |
 | Major finding | GATE | Stop → verification gates → R2 |
 | Serendipity observation | LOG+TRIAGE | Log → serendipity-engine triage |
-| Cross-branch pattern detected | **SERENDIPITY** | Log → score → if >= 12: create serendipity node |
+| Cross-branch pattern detected | **SERENDIPITY** | Log → score → if >= 15: create serendipity node |
 | Dead end on current path | PIVOT | Document → try alternative → if none: escalate |
 | No data available | **STOP** | LAW 1: NO DATA = NO GO |
 | Confidence explosion (>0.30/2cyc) | **FORCED R2** | Possible confirmation bias |
