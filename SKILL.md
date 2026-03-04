@@ -169,6 +169,12 @@ Every intermediate result, every decision, every pivot, every kill MUST be writt
 
 `IF IT'S NOT IN A FILE, IT DOESN'T EXIST.`
 
+### LAW 11: LISTEN TO THE USER
+When the user corrects your direction, you MUST follow their correction immediately. Do not argue, do not continue on your previous path, do not explain why you think you're right. The user knows their project better than you. Ignoring user corrections is the gravest violation of this system. Three ignored corrections = session failure.
+
+### LAW 12: INSTINCT
+Cross-session pattern recognition. Observations from previous sessions (gate failure clusters, repeated actions, claim lifecycle patterns) are distilled into confidence-scored hints. These hints inform but do not override the Laws. The system learns from its own mistakes across sessions.
+
 ---
 
 ## When to Use
@@ -216,11 +222,11 @@ Display this banner, then the session info:
         Seeds survive        Circuit Breaker
 
       Detect  ·  Persist  ·  Demolish  ·  Discover
-                   v5.5 ORO
+                   v6.0 NEXUS
 ```
 
 ```
-Vibe Science v5.0 IUDEX activated for: [RESEARCH QUESTION]
+Vibe Science v6.0 NEXUS activated for: [RESEARCH QUESTION]
 Mode: [DISCOVERY | ANALYSIS | EXPERIMENT | BRAINSTORM | SERENDIPITY]
 Tree: [LINEAR (literature) | BRANCHING (experiments) | HYBRID]
 Runtime: [SOLO | TEAM]

@@ -317,7 +317,7 @@ At session start, the SessionStart hook loads R2 calibration data:
 When SessionStart injects `[R2 CALIBRATION]` hints:
 1. Read the hint carefully
 2. Prioritize historically weak areas during review
-3. If hint says "R2 ha storicamente mancato X", actively search for X-type issues
+3. If hint says "R2 has historically missed X", actively search for X-type issues
 4. If J0 trend is "declining", apply extra rigor
 
 ### Tracking

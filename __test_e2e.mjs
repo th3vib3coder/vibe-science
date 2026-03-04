@@ -633,23 +633,26 @@ describe('B5. Package & Config Tests', () => {
         pass('plugin-json');
     });
 
-    it('all 9 schema JSON files in schemas/ are valid JSON', () => {
+    it('all 12 schema JSON files in schemas/ are valid JSON', () => {
         const schemasDir = rel('schemas');
         assert.ok(fs.existsSync(schemasDir), 'schemas/ directory should exist');
 
         const schemaFiles = fs.readdirSync(schemasDir).filter(f => f.endsWith('.schema.json'));
         assert.equal(
-            schemaFiles.length, 9,
-            `Expected 9 schema files, found ${schemaFiles.length}: ${schemaFiles.join(', ')}`
+            schemaFiles.length, 12,
+            `Expected 12 schema files, found ${schemaFiles.length}: ${schemaFiles.join(', ')}`
         );
 
         const expectedSchemas = [
             'brainstorm-quality.schema.json',
             'claim-promotion.schema.json',
+            'data-quality-gate.schema.json',
+            'finding-validation.schema.json',
             'review-completeness.schema.json',
             'rq-conclusion.schema.json',
             'serendipity-seed.schema.json',
             'source-validity.schema.json',
+            'spine-entry.schema.json',
             'stage4-exit.schema.json',
             'stage5-exit.schema.json',
             'vigilance-check.schema.json',
