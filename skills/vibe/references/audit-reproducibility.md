@@ -1,6 +1,6 @@
 # Audit & Reproducibility
 
-Pillar 4 of Vibe Science v3.5 — TERTIUM DATUR. Every decision logged, every run traceable, every comparison documented. If you cannot reproduce it, it did not happen.
+Part of Vibe Science v6.0 NEXUS (originated as Pillar 4 in v3.5). Every decision logged, every run traceable, every comparison documented. If you cannot reproduce it, it did not happen.
 
 ## Decision Log
 

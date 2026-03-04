@@ -2,6 +2,18 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.8] — 2026-03-04 — Reference Docs Sync (Version Tags + Schema List)
+
+> **Trigger:** Round 20 paranoid deep debug — audited all 34 .md files in `skills/vibe/references/` (the skill-bundled copies of protocol docs). Found 2 files still carrying pre-v6.0 version headers that had already been fixed in `protocols/` during Round 19, plus `schema-validation.md` referencing the old `vibe-science-v5.0/` directory name and listing only 9 schemas when there are now 12 (3 new v6.0 schemas: data-quality-gate, finding-validation, spine-entry were missing).
+
+### Fixed
+- **references/evidence-engine.md**: Version tag "Pillar 1 of v4.0 — ARBOR VITAE" → "Part of v6.0 NEXUS (originated as Pillar 1 in v4.0)" — now matches protocols/ copy
+- **references/audit-reproducibility.md**: Version tag "Pillar 4 of v3.5 — TERTIUM DATUR" → "Part of v6.0 NEXUS (originated as Pillar 4 in v3.5)" — now matches protocols/ copy
+- **references/schema-validation.md**: Directory name `vibe-science-v5.0/` → `vibe-science/`. Schema file list expanded from 9 → 12 entries with v6.0 additions annotated: `data-quality-gate.schema.json` (DQ1-DQ4 gate artifacts), `finding-validation.schema.json` (DQ4 finding validation), `spine-entry.schema.json` (research spine entries)
+
+### Test Results
+- **50/50 tracked pass, 51/51 total, 0 fail**
+
 ## [6.0.7] — 2026-03-04 — Protocol Version Tags & Serendipity Scale Fix
 
 > **Trigger:** Round 19 paranoid deep debug — audited all 21 protocol .md files that hadn't been read in previous rounds. Found 4 protocols still referencing v3.5 TERTIUM DATUR / v4.0 ARBOR VITAE instead of v6.0 NEXUS (agent-teams, analysis-orchestrator, audit-reproducibility, evidence-engine). Also found 3 protocols using the old 5-component serendipity scale (0-15) instead of the v5.0+ 7-component scale (0-20) — agent-teams, brainstorm-engine, loop-otae. The response thresholds in loop-otae were also stale (0-3/4-7/8-11/12-15 instead of 0-4/5-9/10-14/15-20).
