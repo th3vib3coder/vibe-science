@@ -34,7 +34,7 @@ When a task arrives, classify it:
 
 | Step | Dispatch to | Vibe-Science Gate |
 |------|-----------|-------------------|
-| Load data, inspect structure | Domain data skill (e.g., `anndata`, `polars`, `pandas`) | G0: Input Sanity |
+| Load data, inspect structure | Domain data skill (e.g., `polars`, `pandas`, `dask`) | G0: Input Sanity |
 | QC (quality filtering) | Domain analysis skill | G0: data types correct, quality metrics ok |
 | Normalize metadata schema | `assets/obs-normalizer.md` (internal) | G1: Schema Compliance |
 | Feature selection | Domain analysis skill | G2: justify feature selection criteria |

@@ -275,7 +275,7 @@ brainstorm_review: ENS-xxx (B0 verdict)
 - **Method:** [test used]
 
 ## Conditioned Estimate
-- **Confounders controlled:** [list: n_mm, affinity, PAM, region, guide RE, etc.]
+- **Confounders controlled:** [list: age, treatment, batch, site, collection_method, etc.]
 - **Effect:** [coefficient / OR / difference]
 - **Sign:** [positive | negative]
 - **Magnitude:** [value]

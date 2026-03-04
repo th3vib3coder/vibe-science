@@ -2,6 +2,18 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.19] — 2026-03-04 — Domain generalization R33: templates, skill-router
+
+> **Trigger:** Round 32-33 paranoid deep debug — scanned 16 references-only files (all PASS), agent-teams.md (PASS), plugin/ directory, hooks/, .claude-plugin/, root-level files, schemas/, and assets/. Found CRISPR-specific confounder list in templates.md and `anndata` as first tool example in skill-router.md.
+
+### Fixed — Domain Generalization (assets/templates.md)
+- **Line 278:** Confounder harness template `[list: n_mm, affinity, PAM, region, guide RE, etc.]` → `[list: age, treatment, batch, site, collection_method, etc.]`
+- **WHY:** The confounder harness template is domain-agnostic. Example confounders should demonstrate the concept without assuming a specific research domain. `n_mm` (mismatches), `PAM`, and `guide RE` are CRISPR-specific terms.
+
+### Fixed — Domain Generalization (assets/skill-router.md)
+- **Line 37:** Tool examples `(e.g., anndata, polars, pandas)` → `(e.g., polars, pandas, dask)`
+- **WHY:** `anndata` is a single-cell-specific Python library. The tool example list should reference domain-agnostic data tools.
+
 ## [6.0.18] — 2026-03-04 — Domain generalization R31: audit-reproducibility, handoff-protocol, pattern-extraction
 
 > **Trigger:** Round 31 paranoid deep debug — full content-diff of protocols/ (21 files) vs skills/vibe/references/ (36 files). Found `batch_key` in both copies of audit-reproducibility.md, CRISPR examples in references/handoff-protocol.md and references/pattern-extraction.md (3 occurrences). Also confirmed: the two directories are intentionally different versions (protocols/ = full operational specs, references/ = condensed plugin references), not copies that drifted.
