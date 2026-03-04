@@ -251,7 +251,7 @@ weight = exp(-0.02 * ageWeeks)
 
 A weakness from 50 weeks ago contributes only ~37% of its original weight. This prevents stale calibration data from persisting indefinitely.
 
-SessionStart injects calibration hints like: "R2 ha storicamente mancato 'batch_effect_check' (peso decaduto: 2.3). Priorita' alta."
+SessionStart injects calibration hints like: "R2 historically weak on 'batch_effect_check' (decay-weighted score: 2.3). High priority."
 
 > Full protocol: `references/r2-calibration.md`
 

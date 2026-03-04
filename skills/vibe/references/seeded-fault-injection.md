@@ -172,7 +172,7 @@ SFI results are logged to the `r2_reviews` table:
 
 ### R2 Calibration Integration
 Missed faults feed back into R2 calibration hints via temporal decay:
-- If R2 repeatedly misses "confounded_effect" faults, SessionStart will inject: "SFI: R2 manca piu' spesso fault tipo 'confounded_effect'. Iniettare faults di questa categoria con priorita'."
+- If R2 repeatedly misses "confounded_effect" faults, SessionStart will inject: "SFI: R2 most frequently misses fault type 'confounded_effect'. Inject faults of this category with priority."
 - This creates a self-improving feedback loop: miss → hint → focus → catch
 
 See `references/r2-calibration.md` for the decay formula.

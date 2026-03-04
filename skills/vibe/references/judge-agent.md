@@ -205,6 +205,6 @@ weight = exp(-0.02 * ageWeeks)
 
 ### Session-Start Warning
 If J0 trend is "declining", SessionStart injects a warning:
-"J0 score in calo nelle ultime sessioni. R2 review quality sta degradando."
+"J0 score declining in recent sessions. R2 review quality is degrading."
 
 This warns the researcher that R2's meta-review quality is dropping, prompting extra attention to review rigor.

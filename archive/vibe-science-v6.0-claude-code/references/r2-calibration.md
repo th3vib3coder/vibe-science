@@ -101,14 +101,13 @@ All calibration data comes from the `r2_reviews` table:
 |--------|------|-------------|
 | `id` | INTEGER PRIMARY KEY | Auto-increment |
 | `session_id` | TEXT | Session that produced this review |
-| `review_mode` | TEXT | `INLINE`, `FORCED`, `SFI` |
+| `review_mode` | TEXT | `INLINE`, `FORCED`, `BATCH`, `SHADOW`, `BRAINSTORM` |
 | `r2_weaknesses` | TEXT (JSON) | Array of weakness category strings |
 | `sfi_caught` | INTEGER | Number of seeded faults caught (SFI mode only) |
 | `sfi_injected` | INTEGER | Number of seeded faults injected (SFI mode only) |
 | `sfi_missed` | TEXT (JSON) | Array of missed fault categories (SFI mode only) |
 | `j0_score` | REAL | Judge Agent score, 0-100 (null if not judged) |
 | `timestamp` | TEXT | ISO 8601 timestamp of the review |
-| `project_path` | TEXT | RQ directory path |
 
 ---
 

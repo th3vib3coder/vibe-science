@@ -117,20 +117,20 @@ function generateR2Hint(weaknesses, sfiStats, j0Trend) {
     // Weakness-based hints
     const sorted = Object.entries(weaknesses).sort((a, b) => b[1] - a[1]);
     if (sorted.length > 0 && sorted[0][1] >= 1.5) {
-        hints.push(`R2 ha storicamente mancato "${sorted[0][0]}" (peso decaduto: ${sorted[0][1].toFixed(1)}). Priorita' alta.`);
+        hints.push(`R2 historically weak on "${sorted[0][0]}" (decay-weighted score: ${sorted[0][1].toFixed(1)}). High priority.`);
     }
 
     // SFI-based hints
     if (sfiStats.length > 0) {
         hints.push(
-            `SFI: R2 manca piu' spesso fault tipo "${sfiStats[0].fault_type}". ` +
-            `Iniettare faults di questa categoria con priorita'.`
+            `SFI: R2 most frequently misses fault type "${sfiStats[0].fault_type}". ` +
+            `Inject faults of this category with priority.`
         );
     }
 
     // J0 trend
     if (j0Trend === 'declining') {
-        hints.push(`J0 score in calo nelle ultime sessioni. R2 review quality sta degradando.`);
+        hints.push(`J0 score declining in recent sessions. R2 review quality is degrading.`);
     }
 
     return hints.length > 0 ? hints.join(' ') : null;
@@ -172,7 +172,7 @@ export function loadResearcherPatterns(db, projectPath) {
         repeatedErrors: errors,
         gateWeakpoints: gateFailures,
         hint: errors.length > 0
-            ? `Attenzione: errore "${errors[0].input_summary}" ripetuto ${errors[0].occurrences} volte.`
+            ? `Warning: error "${errors[0].input_summary}" repeated ${errors[0].occurrences} times.`
             : null
     };
 }

@@ -2,6 +2,20 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.3] — 2026-03-04 — Language & Schema Doc Consistency
+
+> **Trigger:** Deep audit of previously unread files (pre-tool-use.js, subagent-stop.js, setup.js, r2-calibration.js, pattern-extractor.js, vec-search.js) found Italian text in R2 calibration hint strings and documentation examples. Since the actual code now outputs English, all documentation (SKILL.md, judge-agent.md, seeded-fault-injection.md, blueprint pseudocode) and SQL comments were aligned to English. Also fixed r2-calibration.md reference doc claiming a non-existent `project_path` column in `r2_reviews` table and incorrect review_mode enum values.
+
+### Fixed
+- **r2-calibration.js**: 4 Italian hint strings → English (matched CLAUDE.md expected output format)
+- **SKILL.md**: Italian calibration hint example → English
+- **judge-agent.md**: Italian J0 warning example → English
+- **seeded-fault-injection.md**: Italian SFI hint example → English
+- **v6.0-NEXUS-BLUEPRINT.md**: 5 Italian strings in pseudocode → English
+- **r2-calibration.md**: Removed non-existent `project_path` column from `r2_reviews` table doc; fixed `review_mode` enum: `INLINE, FORCED, SFI` → `INLINE, FORCED, BATCH, SHADOW, BRAINSTORM`
+- **schema.sql**: 4 Italian SQL comments → English (lines 54, 76, 119, 137)
+- Archive synced for all changed files
+
 ## [6.0.2] — 2026-03-04 — Hardening & Modular Rules
 
 > **Trigger:** Paranoid debug audit — systematic file-by-file review of the entire repo found ~80 consistency bugs across 50 files (stale version numbers, wrong gate/hook/law/table counts, broken column references in JS, Python logic errors, phantom script references, archive desync). Additionally, best-practices research on Claude Code hook specification revealed missing fields and non-standard frontmatter.

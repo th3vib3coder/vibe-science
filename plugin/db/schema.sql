@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS claim_events (
     r2_verdict TEXT,  -- ACCEPT/REJECT/DEFER/NULL
     kill_reason TEXT,  -- INSUFFICIENT_EVIDENCE/CONFOUNDED/ARTIFACT/LOGICALLY_FALSE/NULL
     gate_id TEXT,
-    narrative TEXT,  -- Descrizione umana dell'evento
+    narrative TEXT,  -- Human-readable event description
     timestamp TEXT NOT NULL,
     FOREIGN KEY (session_id) REFERENCES sessions(id)
 );
@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS r2_reviews (
     sfi_injected INTEGER DEFAULT 0,
     sfi_caught INTEGER DEFAULT 0,
     sfi_missed TEXT,  -- JSON array of missed fault IDs
-    r2_weaknesses TEXT,  -- JSON array: cio' che R2 ha mancato (per calibration)
+    r2_weaknesses TEXT,  -- JSON array: what R2 missed (for calibration)
     timestamp TEXT NOT NULL,
     FOREIGN KEY (session_id) REFERENCES sessions(id)
 );
@@ -116,7 +116,7 @@ CREATE TABLE IF NOT EXISTS gate_checks (
     checks_passed INTEGER,
     checks_warned INTEGER,
     checks_failed INTEGER,
-    details TEXT,  -- JSON con check specifici
+    details TEXT,  -- JSON with specific check details
     timestamp TEXT NOT NULL,
     FOREIGN KEY (session_id) REFERENCES sessions(id)
 );
@@ -134,7 +134,7 @@ CREATE TABLE IF NOT EXISTS literature_searches (
     sources TEXT NOT NULL,         -- JSON array: ["pubmed", "biorxiv"]
     results_count INTEGER,
     relevant_count INTEGER,
-    key_papers TEXT,               -- JSON array di DOI/PMID/titoli
+    key_papers TEXT,               -- JSON array of DOI/PMID/titles
     search_layer TEXT NOT NULL,    -- MCP / SKILL / RAG / MANUAL / WEBSEARCH
     gate_context TEXT,             -- L1_PRE_DIRECTION / OTAE_CONTINUOUS / AD_HOC
     timestamp TEXT NOT NULL,
