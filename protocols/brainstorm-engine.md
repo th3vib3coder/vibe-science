@@ -241,9 +241,9 @@ After generating domain-internal hypotheses, force at least 1 cross-domain colli
 4. Identify:
    - Where the analogy HOLDS → potential mechanism insight
    - Where the analogy BREAKS → that's the research frontier
-5. Score the collision hypothesis using the serendipity formula (0-15)
-6. If score ≥ 8 → promote to hypothesis list with tag `[COLLISION]`
-7. If score < 8 → log in `00-brainstorm/hypotheses.md` as "Explored collision, dismissed because [reason]"
+5. Score the collision hypothesis using the serendipity formula (0-20)
+6. If score ≥ 10 → promote to hypothesis list with tag `[COLLISION]`
+7. If score < 10 → log in `00-brainstorm/hypotheses.md` as "Explored collision, dismissed because [reason]"
 
 **Output:** Append to `00-brainstorm/hypotheses.md`:
 ```
@@ -292,7 +292,7 @@ After scoring all hypotheses, check for productive tensions that should be prese
 **Protocol:**
 1. Compare the top 2 scored hypotheses
 2. If BOTH conditions are true:
-   - Score difference < 10% (e.g., 8.2 vs 7.6 on a 0-15 scale)
+   - Score difference < 10% (e.g., 10.9 vs 10.1 on a 0-20 scale)
    - They represent genuinely DIFFERENT paradigms (not minor variations)
    Then: **PRESERVE BOTH.** Do NOT eliminate one.
 3. Document: "H-A is preferred IF [condition]. H-B is preferred IF [condition]."

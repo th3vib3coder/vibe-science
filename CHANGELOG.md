@@ -2,6 +2,21 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.7] — 2026-03-04 — Protocol Version Tags & Serendipity Scale Fix
+
+> **Trigger:** Round 19 paranoid deep debug — audited all 21 protocol .md files that hadn't been read in previous rounds. Found 4 protocols still referencing v3.5 TERTIUM DATUR / v4.0 ARBOR VITAE instead of v6.0 NEXUS (agent-teams, analysis-orchestrator, audit-reproducibility, evidence-engine). Also found 3 protocols using the old 5-component serendipity scale (0-15) instead of the v5.0+ 7-component scale (0-20) — agent-teams, brainstorm-engine, loop-otae. The response thresholds in loop-otae were also stale (0-3/4-7/8-11/12-15 instead of 0-4/5-9/10-14/15-20).
+
+### Fixed
+- **agent-teams.md**: Updated 3 system prompt templates from "v4.0 (ARBOR VITAE)" → "v6.0 NEXUS". Fixed serendipity formula reference: "5-component (0-15)" → "7-component (0-20)"
+- **analysis-orchestrator.md**: Header updated from "Pillar 3 of v3.5 — TERTIUM DATUR" → "Part of v6.0 NEXUS (originated as Pillar 3 in v3.5)"
+- **audit-reproducibility.md**: Header updated from "Pillar 4 of v3.5 — TERTIUM DATUR" → "Part of v6.0 NEXUS (originated as Pillar 4 in v3.5)"
+- **evidence-engine.md**: Header updated from "Pillar 1 of v4.0 — ARBOR VITAE" → "Part of v6.0 NEXUS (originated as Pillar 1 in v4.0)"
+- **brainstorm-engine.md**: Collision scoring scale "(0-15)" → "(0-20)", promotion threshold 8 → 10, example scores rescaled for 0-20
+- **loop-otae.md**: OTAE serendipity scoring updated to 7-component formula (0-20) with Falsifiability (0-3) and Urgency (0-2). Response thresholds aligned with serendipity-engine.md canonical matrix (NOISE 0-4, FILE 5-9, QUEUE 10-14, INTERRUPT 15-20)
+
+### Test Results
+- **50/50 tracked pass, 51/51 total, 0 fail**
+
 ## [6.0.6] — 2026-03-04 — Schema Enum Alignment & Dead Code Removal
 
 > **Trigger:** Round 18 paranoid deep debug — cross-validated every `classifyAction()` return value against `spine-entry.schema.json` action_type enum. Found 10 non-schema values in `post-tool-use.js` (CONFIGURATION, FEATURE_EXTRACTION, EVALUATION, VISUALIZATION, CODE_WRITE, OTHER, DOCUMENTATION, DATA_INSPECT, FILE_READ, SEARCH) and an entire dead duplicate in `gate-engine.js` (~160 lines, 26 wrong values, never imported by any hook). Also found `data-quality-gate.schema.json` missing WARN status that `finding-validation.schema.json` already had, version tag "v5.0" in enforcement.md, missing LAW 11 & 12 in roles.md, and undocumented `r2_verdict` column in calibration_log.
