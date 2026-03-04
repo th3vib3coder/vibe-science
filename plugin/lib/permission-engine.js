@@ -122,7 +122,10 @@ function minimatch(filePath, pattern) {
     // Normalise separators to forward slashes
     const normalised = filePath.replace(/\\/g, '/');
     const re = globToRegex(pattern);
-    return re.test(normalised);
+    // Match against full path or basename-only (trailing portion)
+    if (re.test(normalised)) return true;
+    const basename = normalised.split('/').pop();
+    return re.test(basename);
 }
 
 // ─────────────────────────────────────────────────────────────────────

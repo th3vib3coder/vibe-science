@@ -1,4 +1,4 @@
-# Judge Agent (R3) Protocol v5.0
+# Judge Agent (R3) Protocol v6.0
 
 Pillar 2 extension of Vibe Science v5.0 — IUDEX. A third agent meta-reviews R2's review quality, not the claims themselves. R3 answers the question: "Who reviews the reviewer?"
 

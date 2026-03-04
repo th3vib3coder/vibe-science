@@ -23,7 +23,7 @@
 
 import path from 'node:path';
 import { vecSearch } from './vec-search.js';
-import { loadR2CalibrationData } from './r2-calibration.js';
+import { loadR2CalibrationData, loadPendingSeeds as _loadPendingSeeds } from './r2-calibration.js';
 
 // =====================================================
 // Public API
@@ -208,11 +208,8 @@ export function truncate(text, maxLen) {
 }
 
 /**
- * Load pending serendipity seeds for a project.
- * Inline implementation (simple DB query) per Blueprint Section 6.5.
- *
- * Returns seeds with status PENDING_TRIAGE or QUEUED, sorted by score
- * descending, limited to 5.
+ * Load pending serendipity seeds from the database.
+ * Delegates to r2-calibration.js (single source of truth) with try/catch fallback.
  *
  * @param {import('better-sqlite3').Database} db
  * @param {string} projectPath
@@ -220,16 +217,7 @@ export function truncate(text, maxLen) {
  */
 function loadPendingSeeds(db, projectPath) {
     try {
-        return db.prepare(`
-            SELECT seed_id, causal_question, discriminating_test, score, created_at
-            FROM serendipity_seeds
-            WHERE status IN ('PENDING_TRIAGE', 'QUEUED')
-            AND created_session IN (
-                SELECT id FROM sessions WHERE project_path = ?
-            )
-            ORDER BY score DESC
-            LIMIT 5
-        `).all(projectPath);
+        return _loadPendingSeeds(db, projectPath);
     } catch {
         return [];
     }

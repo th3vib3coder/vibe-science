@@ -66,7 +66,6 @@ const MODEL_NAME = 'Xenova/all-MiniLM-L6-v2';
 
 let embeddingPipeline = null;
 let modelReady = false;
-let modelLoadError = null;
 
 // =====================================================
 // Logging
@@ -162,7 +161,6 @@ async function loadEmbeddingModel() {
         modelReady = true;
         log('INFO', 'Real embeddings active — model loaded successfully.');
     } catch (err) {
-        modelLoadError = err;
         modelReady = false;
         log('WARN', `Embedding model failed to load: ${err.message}. Continuing with hash fallback.`);
     }
@@ -291,49 +289,6 @@ function fetchPending(db) {
          ORDER BY created_at ASC
          LIMIT ?`
     ).all(BATCH_SIZE);
-}
-
-/**
- * Process a single embed_queue entry:
- *   1. Compute embedding vector
- *   2. Insert into vec_memories (or fallback table)
- *   3. Mark the queue entry as processed
- *
- * @param {import('better-sqlite3').Database} db
- * @param {object} entry - Row from embed_queue
- * @param {boolean} useVec - Whether vec_memories is available
- */
-async function processEntry(db, entry, useVec) {
-    const embedding = await embed(entry.text);
-    const embeddingBuf = Buffer.from(embedding.buffer, embedding.byteOffset, embedding.byteLength);
-
-    // Extract project_path from metadata if available
-    let projectPath = null;
-    if (entry.metadata) {
-        try {
-            const meta = JSON.parse(entry.metadata);
-            projectPath = meta.project_path ?? null;
-        } catch { /* ignore malformed metadata */ }
-    }
-
-    if (useVec) {
-        // Insert into sqlite-vec virtual table
-        db.prepare(
-            `INSERT INTO vec_memories (embedding, text, metadata, project_path, created_at)
-             VALUES (?, ?, ?, ?, ?)`
-        ).run(embeddingBuf, entry.text, entry.metadata, projectPath, entry.created_at);
-    } else {
-        // Fallback: insert into regular table
-        db.prepare(
-            `INSERT INTO memory_embeddings (text, embedding, metadata, project_path, created_at)
-             VALUES (?, ?, ?, ?, ?)`
-        ).run(entry.text, embeddingBuf, entry.metadata, projectPath, entry.created_at);
-    }
-
-    // Mark as processed
-    db.prepare(
-        `UPDATE embed_queue SET processed = 1 WHERE id = ?`
-    ).run(entry.id);
 }
 
 /**
