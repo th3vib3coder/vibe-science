@@ -1,4 +1,4 @@
-# Vibe Science v5.5 ORO — Seeded Fault Injection (SFI) Taxonomy
+# Vibe Science v6.0 NEXUS — Seeded Fault Injection (SFI) Taxonomy (originated in v5.5 ORO)
 # Purpose: Realistic faults injected into claim sets before R2 review.
 #          R2 knows CATEGORIES but not WHICH faults hit WHICH claims.
 # Origin:  Real errors from 21 CRISPR research sprints.

@@ -2,6 +2,29 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.10] — 2026-03-04 — Cross-Cutting Consistency Sweep (8 checks, 8 fixes)
+
+> **Trigger:** Round 22 paranoid deep debug — cross-cutting audit searching for the SAME fact stated differently in different files. Ran 8 systematic checks across ALL live files: gate count, law count, hook count, schema count, DB table count, LOC count, serendipity scale, version strings. Found mismatches in 8 files across 4 of the 8 check categories.
+
+### Fixed
+- **README.md:115**: Section heading LOC "6,600" → "~7,100" (was missed when ARCHITECTURE.md was updated in Round 21)
+- **ARCHITECTURE.md:445**: Last remaining live-file serendipity scale "(0-15)" → "(0-20)" in the v4.0 protocol summary table
+- **blueprints/v6.0-NEXUS-BLUEPRINT.md:2330**: "Gate totali" row confused schema FILE count (12) with schema-ENFORCED gate count (8). Fixed v5.5 column "32 (12 schema)" → "32 (8 schema)" and v6.0 column "32 (12 schema, enforced via code)" → "32 (8 schema, enforced via code)". The total schema file count was already correct in the separate "Schema totali" row below.
+- **assets/judge-rubric.yaml:1**: Version header "v5.0 IUDEX" → "v6.0 NEXUS (originated in v5.0 IUDEX)"
+- **assets/fault-taxonomy.yaml:1**: Version header "v5.5 ORO" → "v6.0 NEXUS (originated in v5.5 ORO)"
+- **assets/templates.md:1**: Version header "v4.0 Templates" → "v6.0 NEXUS Templates (originated in v4.0)"
+- **protocols/judge-agent.md:3**: Attribution "Pillar 2 extension of v5.0 — IUDEX" → "Part of v6.0 NEXUS (originated as Pillar 2 extension in v5.0 IUDEX)" — consistent with format used across all other protocol headers
+- **skills/vibe/references/judge-agent.md:1,3**: Header "v5.0" → "v6.0" and same attribution format fix as protocols/ copy
+
+### Checks Passed (no issues)
+- Gate count (32/8): CLEAN across all live files
+- Law count (12, LAW 11+12 present): CLEAN
+- Hook count (7, PreToolUse+SubagentStop present): CLEAN
+- DB table count (12): CLEAN
+
+### Test Results
+- **50/50 tracked pass, 51/51 total, 0 fail**
+
 ## [6.0.9] — 2026-03-04 — README/ARCHITECTURE Script Listings + Gate History
 
 > **Trigger:** Round 21 paranoid deep debug — audited README.md, ARCHITECTURE.md, and gates/gates.md (files never previously scanned in debug mode). README.md script directory tree listed only 7 entries and omitted `pre-tool-use.js` and `subagent-stop.js` (added in v6.0.1), while labeling utility scripts (`setup.js`, `worker-embed.js`) as "hook implementations". ARCHITECTURE.md code table was missing 4 files (pre-compact.js, pre-tool-use.js, subagent-stop.js, pattern-extractor.js) and understated total LOC at ~6,600 when actual is ~7,100. gates/gates.md inline comment only mentioned v4.0 additions, omitting v5.0 (V0, J0) and v5.5 (L-1, DQ1-DQ4, DD0, DC0) gate additions — contradicting the correct header block.

@@ -112,7 +112,7 @@ Every cycle scans for unexpected findings. Score >= 10 → QUEUE for triage. Sco
 
 ---
 
-## Plugin Subsystems (6,600 LOC)
+## Plugin Subsystems (~7,100 LOC)
 
 ### 7 Lifecycle Hooks
 

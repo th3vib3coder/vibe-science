@@ -1,6 +1,6 @@
-# Judge Agent (R3) Protocol v5.0
+# Judge Agent (R3) Protocol v6.0
 
-Pillar 2 extension of Vibe Science v5.0 — IUDEX. A third agent meta-reviews R2's review quality, not the claims themselves. R3 answers the question: "Who reviews the reviewer?"
+Part of Vibe Science v6.0 NEXUS (originated as Pillar 2 extension in v5.0 IUDEX). A third agent meta-reviews R2's review quality, not the claims themselves. R3 answers the question: "Who reviews the reviewer?"
 
 **Rationale**: Huang et al. (ICLR 2024) prove LLMs cannot self-correct reasoning without external feedback. R2 can rubber-stamp, anchor on researcher framing, or satisfy checklists perfunctorily. R3 provides structural accountability by scoring R2's review on a rubric with explicit criteria. Brevity is not penalized; specificity is rewarded (PMC 2024 — length bias in meta-review).
 

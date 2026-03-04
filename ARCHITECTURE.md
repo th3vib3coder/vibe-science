@@ -442,7 +442,7 @@ FLOOR: E < 0.2 → capped at 0.20
 | Reviewer 2 Ensemble | 4-domain adversarial review, double-pass |
 | Search Protocol | Source priority (Scopus > PubMed > OpenAlex > bioRxiv > web) |
 | Analysis Orchestrator | Artifact contract (manifest + report + figures + metrics + scripts) |
-| Serendipity Engine | Quantitative triage (0-15), scheduled Sprints |
+| Serendipity Engine | Quantitative triage (0-20), scheduled Sprints |
 | Knowledge Base | Cross-RQ persistence: library.json, patterns.md, dead-ends.md |
 | Data Extraction | NO TRUNCATION rule, AnnData schema contract |
 | Audit & Reproducibility | Decision log, run comparison, 10-point reproducibility contract |

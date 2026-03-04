@@ -1,4 +1,4 @@
-# Vibe Science v4.0 Templates
+# Vibe Science v6.0 NEXUS Templates (originated in v4.0)
 
 All templates for creating files in the `.vibe-science/` folder structure.
 
