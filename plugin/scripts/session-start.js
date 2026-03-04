@@ -32,7 +32,7 @@ const __dirname = dirname(__filename);
 // ---------------------------------------------------------------------------
 
 let openDB, closeDB, createSession, getLastSession, getUnresolvedAlerts, getActivePatterns;
-let loadR2CalibrationData;
+let loadR2CalibrationData, loadPendingSeeds;
 
 try {
     const dbMod = await import('../lib/db.js');

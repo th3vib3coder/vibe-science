@@ -2,6 +2,17 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.4] — 2026-03-04 — Critical SessionStart Hook Fix
+
+> **Trigger:** Running the e2e test suite (`node --test __test_e2e.mjs`) for the first time revealed that `session-start.js` crashes with `ReferenceError: loadPendingSeeds is not defined`. The variable was assigned on lines 58 and 61 but never declared with `let`. In ES modules (strict mode), this causes an immediate crash at module load time, meaning the SessionStart hook has been silently failing since it was written — falling back to Claude Code's default error handling instead of injecting Vibe Science context.
+
+### Fixed
+- **session-start.js**: Added `loadPendingSeeds` to `let` declaration on line 35 (was: `let loadR2CalibrationData;`, now: `let loadR2CalibrationData, loadPendingSeeds;`). This undeclared variable caused `ReferenceError` in ES strict mode whenever the module loaded, crashing the entire SessionStart hook.
+- **__test_e2e.mjs**: B6 "forbidden personal names" test now excludes files that legitimately contain author attribution (README.md, CITATION.cff, LICENSE, NOTICE, .claude-plugin/*, SKILL.md). These files require author names for academic citation, GitHub publishing, and skill metadata.
+
+### Test Results
+- **50/50 tracked pass, 51/51 total, 0 fail** (was 48 pass, 2 fail before fix)
+
 ## [6.0.3] — 2026-03-04 — Language & Schema Doc Consistency
 
 > **Trigger:** Deep audit of previously unread files (pre-tool-use.js, subagent-stop.js, setup.js, r2-calibration.js, pattern-extractor.js, vec-search.js) found Italian text in R2 calibration hint strings and documentation examples. Since the actual code now outputs English, all documentation (SKILL.md, judge-agent.md, seeded-fault-injection.md, blueprint pseudocode) and SQL comments were aligned to English. Also fixed r2-calibration.md reference doc claiming a non-existent `project_path` column in `r2_reviews` table and incorrect review_mode enum values.

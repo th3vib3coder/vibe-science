@@ -726,9 +726,25 @@ describe('B6. Content Integrity Tests', () => {
         // Exclude this test file itself (it contains the names as search patterns)
         const thisFile = path.resolve(fileURLToPath(import.meta.url));
 
+        // Files that legitimately contain author attribution (citation, readme, plugin manifest, skill metadata)
+        const AUTHOR_FILES = new Set([
+            'README.md', 'CITATION.cff', 'LICENSE', 'NOTICE',
+        ]);
+        const AUTHOR_PATH_SEGMENTS = [
+            '.claude-plugin', // plugin.json contains repository URLs
+        ];
+
         for (const filePath of files) {
             // Skip this test file — it lists the forbidden names as search patterns
             if (path.resolve(filePath) === thisFile) continue;
+
+            // Skip files that legitimately contain author attribution
+            const relativePath = path.relative(ROOT, filePath);
+            const baseName = path.basename(filePath);
+            if (AUTHOR_FILES.has(baseName)) continue;
+            if (AUTHOR_PATH_SEGMENTS.some(seg => relativePath.includes(seg))) continue;
+            // Skip SKILL.md files — skill metadata header contains author field
+            if (baseName === 'SKILL.md') continue;
 
             let content;
             try {
