@@ -358,7 +358,7 @@ function enforceGates(db, event) {
         // ---------------------------------------------------------
         // Gate: CLAIM-LEDGER.md requires all prerequisite gates
         // ---------------------------------------------------------
-        if (filePath.includes('CLAIM-LEDGER')) {
+        if (filePath.includes('CLAIM-LEDGER') || filePath.includes('claim-ledger')) {
             const content = tool_input.content || tool_input.new_string || '';
             const claimId = extractClaimId(content);
 
@@ -641,8 +641,8 @@ function isApproximateMatch(a, b) {
 function extractClaimId(content) {
     if (!content || typeof content !== 'string') return null;
 
-    // Try compact format first (C followed by 3 digits) — same as gate-engine.js
-    const compactMatch = content.match(/\bC(\d{3})\b/);
+    // Try compact format first (C or C- followed by 3 digits) — same as gate-engine.js
+    const compactMatch = content.match(/\bC-?(\d{3})\b/);
     if (compactMatch) return compactMatch[0];
 
     // Try legacy format (CLAIM- followed by digits)

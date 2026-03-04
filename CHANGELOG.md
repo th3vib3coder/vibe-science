@@ -2,6 +2,20 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.22] — 2026-03-05 — Claim ID regex + case sensitivity fix R37: gate-engine.js, post-tool-use.js
+
+> **Trigger:** Round 37 paranoid deep debug — JavaScript code logic audit of gate-engine.js and post-tool-use.js. Found critical claim ID format mismatch: ALL templates/protocols use `C-001` format (with hyphen, 643 occurrences across 109 files), but `extractClaimId()` regexes only matched `C001` (without hyphen). This caused gate checks and Salvagente rule to silently skip all claims using the canonical `C-xxx` format. Also found asymmetric case sensitivity: prerequisite gate check only matched `CLAIM-LEDGER` (uppercase), while Salvagente check matched both cases.
+
+### Fixed — Claim ID Format Mismatch (CRITICAL)
+- **gate-engine.js line 74:** `extractClaimId` regex `/\bC(\d{3})\b/` → `/\bC-?(\d{3})\b/` — now matches both `C001` and `C-001`
+- **gate-engine.js line 98:** `getRequiredGatesForClaim` regex `/^C(\d)\d{2}$/` → `/^C-?(\d)\d{2}$/` — now matches both formats for tier extraction
+- **post-tool-use.js line 645:** `extractClaimId` regex `/\bC(\d{3})\b/` → `/\bC-?(\d{3})\b/` — same fix, kept in sync with gate-engine.js
+- **WHY:** Templates universally use `C-001` format (with hyphen). The old regexes required `C001` (no hyphen), causing all gate prerequisite checks, tier-based gate routing, and Salvagente rule enforcement to silently fail. Claims were written to the ledger without gate validation because `extractClaimId` returned null for the canonical format.
+
+### Fixed — Case Sensitivity Inconsistency
+- **post-tool-use.js line 361:** `filePath.includes('CLAIM-LEDGER')` → `filePath.includes('CLAIM-LEDGER') || filePath.includes('claim-ledger')`
+- **WHY:** The prerequisite gate check (line 361) only matched uppercase `CLAIM-LEDGER`, while the Salvagente check (line 384) already matched both cases. A lowercase `claim-ledger.md` path would bypass prerequisite gates but still trigger Salvagente — asymmetric enforcement.
+
 ## [6.0.21] — 2026-03-05 — Canonical number verification R35: CLAUDE.md terminology
 
 > **Trigger:** Round 35 paranoid deep debug — full canonical number consistency scan across all live files. Verified: 12 Laws, 32 gates (8 schema-enforced), 12 schema files, 7 lifecycle hooks, 36 reference documents, 7 agent roles (AGENTS.md), 6 permission roles (Permission Engine), 21 protocols, 12 SQLite tables, 6 Python scripts, 7 skill asset files. Found terminological ambiguity: CLAUDE.md said "6 agent types" while README.md uses "7 agent roles" — these refer to different classification systems (Permission Engine vs AGENTS.md sub-agent definitions).

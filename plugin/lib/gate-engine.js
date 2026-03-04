@@ -70,8 +70,8 @@ const TIER_GATES = {
 export function extractClaimId(content) {
     if (!content || typeof content !== 'string') return null;
 
-    // Try compact format first (C followed by 3 digits)
-    const compactMatch = content.match(/\bC(\d{3})\b/);
+    // Try compact format first (C or C- followed by 3 digits)
+    const compactMatch = content.match(/\bC-?(\d{3})\b/);
     if (compactMatch) return compactMatch[0];
 
     // Try legacy format (CLAIM- followed by digits)
@@ -88,14 +88,14 @@ export function extractClaimId(content) {
 /**
  * Determine which gates must pass before a claim can be committed.
  *
- * @param {string} claimId — e.g. 'C001', 'C213', 'CLAIM-5'
+ * @param {string} claimId — e.g. 'C001', 'C-001', 'C213', 'C-213', 'CLAIM-5'
  * @returns {string[]}     — array of gate IDs
  */
 export function getRequiredGatesForClaim(claimId) {
     if (!claimId) return [...BASE_CLAIM_GATES];
 
-    // Compact format: Cxxx — first digit is the tier
-    const compactMatch = claimId.match(/^C(\d)\d{2}$/);
+    // Compact format: Cxxx or C-xxx — first digit is the tier
+    const compactMatch = claimId.match(/^C-?(\d)\d{2}$/);
     if (compactMatch) {
         const tier = parseInt(compactMatch[1], 10);
         return TIER_GATES[tier] || TIER_GATES[1]; // fallback to tier 1
