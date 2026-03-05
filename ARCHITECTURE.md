@@ -336,7 +336,7 @@ R2 REVIEW → COMMIT
 | Exploration | Sequential | **Best-first** with branching + pruning |
 | Serendipity | Linear scanning | **Cross-branch** pattern detection |
 | Laws | 7 | **10** (+Explore, +Confounder Harness, +Crystallize) |
-| Gates | 12 | **26** (+Tree T0-T3, +Brainstorm B0, +Stage S1-S5) |
+| Gates | 12 | **23** (+G6, +Tree T0-T3, +Brainstorm B0, +Stage S1-S5) |
 | Protocols | 9 | **16** (+7 new) |
 | Agents | Single context | **SOLO + TEAM** modes |
 | Paper output | Manual | **Writeup Engine** (IMRAD from verified claims) |
@@ -440,7 +440,7 @@ Floor: prevents "unknown" from killing confidence
 - **Data Quality (DQ1-DQ4)**: Post-Extraction, Post-Training, Calibration, Finding Formulation
 - **Data Dictionary (DD0)**: Column Documentation
 - **Design Compliance (DC0)**: Design vs Execution Match
-- **Validation (V0)**: Voice/Validation Metrics (RMS >= 0.80, FAR <= 0.10)
+- **Vigilance (V0)**: R2 Vigilance Check (RMS >= 0.80, FAR <= 0.10)
 - **Judge (J0)**: R3 Scoring Complete
 
 8 gates schema-enforced.

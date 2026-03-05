@@ -50,11 +50,11 @@ Runtime state lives in `.vibe-science/` at the project root:
 - `SERENDIPITY.md` — unexpected discovery log
 - `ASSUMPTION-REGISTER.md` — all assumptions with risk
 
-Static definitions at the project root:
-- `schemas/*.schema.json` — 12 JSON Schema files (READ-ONLY, no agent can modify)
-- `protocols/` — SFI, Judge, BFP, Schema-Validation, Circuit-Breaker protocols
-- `assets/fault-taxonomy.yaml` — SFI fault definitions (HUMAN-ONLY modification)
-- `assets/judge-rubric.yaml` — R3 scoring rubric
+Static definitions (bundled with skill):
+- `skills/vibe/assets/schemas/*.schema.json` — 12 JSON Schema files (READ-ONLY, no agent can modify)
+- `protocols/` — 21 protocol files (SFI, Judge, BFP, Schema-Validation, Circuit-Breaker, and 16 operational protocols)
+- `skills/vibe/assets/fault-taxonomy.yaml` — SFI fault definitions (HUMAN-ONLY modification)
+- `skills/vibe/assets/judge-rubric.yaml` — R3 scoring rubric
 
 ## HOOKS ENFORCEMENT
 

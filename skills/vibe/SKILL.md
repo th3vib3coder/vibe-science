@@ -395,7 +395,7 @@ Python scripts for deterministic checks. Exit code 0 = PASS, non-zero = FAIL. No
 | `dq_gate.py` | DQ1-DQ4 data quality checks | `python scripts/dq_gate.py --gate DQ1 --data data.json` |
 | `sync_check.py` | SSOT: numbers in markdown match JSON source | `python scripts/sync_check.py --json results.json --md FINDINGS.md` |
 | `tree_health.py` | T3 gate: exploration ratio, good/total ratio | `python scripts/tree_health.py --state STATE.md` |
-| `gate_check.py` | Generic gate: validate artifact against JSON Schema | `python scripts/gate_check.py --gate B0 --artifact out.json --schema schemas/brainstorm-quality.schema.json` |
+| `gate_check.py` | Generic gate: validate artifact against JSON Schema | `python scripts/gate_check.py --gate B0 --artifact out.json --schema assets/schemas/brainstorm-quality.schema.json` |
 | `spine_entry.py` | Create/validate Research Spine entries | `python scripts/spine_entry.py --spine SPINE.md --type DATA_LOAD --action "Loaded dataset"` |
 | `observer.py` | Observer checks: orphans, desync, drift, naming | `python scripts/observer.py --project .vibe-science/` |
 
@@ -467,6 +467,7 @@ Load ONLY when needed. Never load all at once.
 | Tree Search | `references/tree-search.md` | THINK-experiment / tree init |
 | Experiment Manager | `references/experiment-manager.md` | Stage transitions |
 | Auto-Experiment | `references/auto-experiment.md` | ACT-experiment |
+| Analysis Orchestrator | `references/analysis-orchestrator.md` | ACT-analysis |
 | Evidence Engine | `references/evidence-engine.md` | EVALUATE phase |
 | R2 Ensemble | `references/reviewer2-ensemble.md` | CHECKPOINT-r2 |
 | Search Protocol | `references/search-protocol.md` | ACT-search |
@@ -476,6 +477,7 @@ Load ONLY when needed. Never load all at once.
 | Writeup Engine | `references/writeup-engine.md` | Stage 5 |
 | Audit | `references/audit-reproducibility.md` | Run manifests |
 | All Gates | `references/gates-complete.md` | EVALUATE phase |
+| VLM Gate | `references/vlm-gate.md` | EVALUATE-vlm (optional) |
 | DQ Gates | `references/dq-gates.md` | DQ1-DQ4 checks |
 | Data Dictionary | `references/data-dictionary.md` | DD0 — new data |
 | Design Compliance | `references/design-compliance.md` | DC0 — stage transitions |

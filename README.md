@@ -293,7 +293,7 @@ vibe-science/
 │   └── marketplace.json         ← Marketplace config
 │
 ├── skills/vibe/                 ← v6.0 NEXUS Skill (served by plugin)
-│   ├── SKILL.md                 ← Full methodology (527 lines)
+│   ├── SKILL.md                 ← Full methodology (528 lines)
 │   ├── AGENTS.md                ← 7 agent roles with YAML frontmatter
 │   ├── references/              ← 36 reference documents
 │   ├── scripts/                 ← 6 Python enforcement scripts
@@ -338,7 +338,7 @@ vibe-science/
 ├── .claude/settings.json        ← Hook definitions (dev mode)
 │
 ├── CLAUDE.md                    ← Project constitution (12 laws)
-├── SKILL.md                     ← Legacy v5.5 methodology (1,369 lines)
+├── SKILL.md                     ← Legacy v5.5 methodology (1,368 lines)
 ├── ARCHITECTURE.md              ← Deep technical architecture
 ├── CHANGELOG.md                 ← Full version history
 │
@@ -350,25 +350,26 @@ vibe-science/
 │
 └── archive/                     ← Historical versions + blueprints
     ├── v6.0-NEXUS-BLUEPRINT.md
+    ├── v6.0.1-BEST-PRACTICES-BLUEPRINT.md
     ├── v5.5-ORO-BLUEPRINT.md
     ├── v5.0-IUDEX-BLUEPRINT.md
     ├── PHOTONICS-BLUEPRINT.md
     ├── vibe-science-v6.0-claude-code/  ← Archive copy of v6.0 skill
     ├── vibe-science-v5.5/
-    ├── vibe-science-v5.5-codex/
     ├── vibe-science-v5.0/
     ├── vibe-science-v5.0-codex/
     ├── vibe-science-v4.5/
     ├── vibe-science-v4.0/
     ├── vibe-science-v3.5/
-    └── vibe-science-photonics/
+    ├── vibe-science-photonics/
+    └── vibe-science-legacy-pre-v5.0/
 ```
 
 ---
 
 ## Using Without Claude Code
 
-You can use the methodology with any LLM: upload `skills/vibe/SKILL.md` as a system prompt, plus the `references/` directory. Note: without the plugin, gates are prompt-enforced only (voluntary compliance). The v5.5 `SKILL.md` at root (1,369 lines) is the legacy standalone version.
+You can use the methodology with any LLM: upload `skills/vibe/SKILL.md` as a system prompt, plus the `references/` directory. Note: without the plugin, gates are prompt-enforced only (voluntary compliance). The v5.5 `SKILL.md` at root (1,368 lines) is the legacy standalone version.
 
 ---
 
@@ -380,7 +381,7 @@ You can use the methodology with any LLM: upload `skills/vibe/SKILL.md` as a sys
 | **v2.0** | NULLIS SECUNDUS | 2026-02-06 | R2 Ensemble (4 specialists), quantitative confidence (0-1), 12 gates | — |
 | **v3.0** | TERTIUM DATUR | 2026-02-07 | OTAE loop, serendipity engine, knowledge base, MCP integration | — |
 | **v3.5** | TERTIUM DATUR | 2026-02-07 | R2 double-pass, 3-level attack (Logic/Stats/Data), typed claims | — |
-| **v4.0** | ARBOR VITAE | 2026-02-12 | Tree search, 7 node types, 5-stage experiment manager, 26 gates, 10 laws | — |
+| **v4.0** | ARBOR VITAE | 2026-02-12 | Tree search, 7 node types, 5-stage experiment manager, 23 gates, 10 laws | — |
 | **v4.5** | ARBOR VITAE (Pruned) | 2026-02-14 | Phase 0 brainstorm, R2 6 modes, -381 lines via progressive disclosure | — |
 | **v5.0** | IUDEX | 2026-02-16 | SFI, blind-first pass, R3 judge, schema-validated gates, circuit breaker | [IUDEX](archive/v5.0-IUDEX-BLUEPRINT.md) |
 | **v5.5** | ORO | 2026-02-19 | DQ1-DQ4 gates, DD0, DC0, R2 INLINE, SSOT rule (post-mortem driven) | [ORO](archive/v5.5-ORO-BLUEPRINT.md) |
@@ -401,7 +402,7 @@ The jump from v5.5 to v6.0 is architectural, not incremental. The methodology (s
 - LAW 12 — INSTINCT: learned patterns inform current behavior, decay with time
 - 36 reference documents (28 from v5.5 + 6 new in v6.0 + 2 added in v6.0.x), 12 JSON schemas (9 v5.0 + 3 v5.5), 6 Python enforcement scripts
 
-**Codex → Claude Code migration:** v5.0 and v5.5 had Codex-specific variants (`archive/vibe-science-v5.0-codex/`, `archive/vibe-science-v5.5-codex/`). v6.0 is Claude Code native — no Codex variant needed.
+**Codex → Claude Code migration:** v5.0 had a Codex-specific variant (`archive/vibe-science-v5.0-codex/`). v6.0 is Claude Code native — no Codex variant needed.
 
 ### Detailed Changelog
 
@@ -430,6 +431,7 @@ Every major version has a **blueprint** documenting its design rationale, innova
 | Blueprint | Content |
 |-----------|---------|
 | [v6.0-NEXUS-BLUEPRINT.md](archive/v6.0-NEXUS-BLUEPRINT.md) | 9 innovations, hook architecture, cross-session learning, lineage from v5.5 |
+| [v6.0.1-BEST-PRACTICES-BLUEPRINT.md](archive/v6.0.1-BEST-PRACTICES-BLUEPRINT.md) | Best practices upgrade from community analysis, Claude Code spec cross-reference |
 | [v5.5-ORO-BLUEPRINT.md](archive/v5.5-ORO-BLUEPRINT.md) | Post-mortem analysis, 12 mistakes → 7 new gates, evidence-driven development |
 | [v5.0-IUDEX-BLUEPRINT.md](archive/v5.0-IUDEX-BLUEPRINT.md) | Verification architecture, SFI, BFP, R3 judge, schema-validated gates |
 | [PHOTONICS-BLUEPRINT.md](archive/PHOTONICS-BLUEPRINT.md) | Domain fork for photonics research |

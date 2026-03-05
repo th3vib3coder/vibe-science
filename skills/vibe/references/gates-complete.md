@@ -273,7 +273,7 @@ RETRY: max 3 per session. After 3 --> ESCALATE to human.
 [ ] R3 total >= 12/18 | No dimension = 0 | Counter-evidence >= 2
 FAIL: < 12 / any 0 --> R2 redoes with R3 feedback. RETRY: max 2 consecutive. After 2 --> ESCALATE.
 ```
-Dimensions (0-3 each): Specificity | Independence | Counter-Evidence | Confounder Analysis | Falsification Demand | Escalation.
+Dimensions (0-3 each): Specificity | Counter-Evidence Search | Confounder Analysis | Falsification Demand | Independence | Escalation.
 
 ---
 
@@ -310,7 +310,7 @@ Schemas are READ-ONLY. Protocol: `references/schema-validation.md`.
 | Group | Gates | Count | Schema | New in v5.5 |
 |-------|-------|-------|--------|-------------|
 | Pipeline | G0-G6 | 7 | -- | -- |
-| Literature | L-1, L0-L2 | 4 | L0 | L-1 |
+| Literature | L-1, L0-L2 | 4 | L0, L2 | L-1 |
 | Decision | D0-D2 | 3 | D1, D2 | -- |
 | Tree | T0-T3 | 4 | -- | -- |
 | Brainstorm | B0 | 1 | B0 | -- |

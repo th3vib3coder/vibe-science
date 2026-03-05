@@ -879,7 +879,7 @@ All notable changes to Vibe Science are documented here.
 > **Trigger:** Paranoid debug audit — systematic file-by-file review of the entire repo found ~80 consistency bugs across 50 files (stale version numbers, wrong gate/hook/law/table counts, broken column references in JS, Python logic errors, phantom script references, archive desync). Additionally, best-practices research on Claude Code hook specification revealed missing fields and non-standard frontmatter.
 
 ### Added
-- **`permissions.deny`**: Structural protection for schemas — `Edit(.vibe-science/schemas/*)` and `Write(.vibe-science/schemas/*)` denied at settings level
+- **`permissions.deny`**: Structural protection for schemas — `Edit(**/schemas/*)` and `Write(**/schemas/*)` denied at settings level
 - **Modular rules directory**: `.claude/rules/roles.md` (6 agent role constraints) and `.claude/rules/enforcement.md` (v5.0 structural enforcement protocols)
 - **Hook timeouts**: All 7 hooks now have explicit `timeout` field (10-30s) to prevent hangs
 - **Regex matcher on PreToolUse**: Matcher upgraded from `"Write"` to `"Write|Edit"` — prevents LAW 9 bypass via Edit tool
