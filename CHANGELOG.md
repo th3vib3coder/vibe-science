@@ -2,6 +2,26 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.35] — 2026-03-05 — Fix 3 stale values: BATCH threshold, confidence formula, walkthrough (R54)
+
+> **Trigger:** Round 54 paranoid deep debug — audited commands/, schemas/, all reference cards, and remaining protocols. Found 3 real bugs + 2 false positives (brainstorm 0-15 scale is correct for hypothesis scoring; plugin/schemas/ doesn't exist because hooks don't use schemas).
+
+### Fixed — protocols/loop-otae.md Line 282: BATCH ">=3" (MEDIUM)
+- `minor_findings_pending >= 3` → `unreviewed_claims_pending >= 5`
+- **WHY:** R53 fixed lines 230/237 in this file but missed the R2 trigger table at line 282
+
+### Fixed — examples/walkthrough-literature-review.md Line 100: BATCH ">=3" (LOW)
+- `minor_findings_pending >= 3` → `minor_findings_pending >= 5`
+- **WHY:** Example walkthrough still showed old threshold
+
+### Fixed — ARCHITECTURE.md Line 423: Stale v4.5 Confidence Formula (MEDIUM)
+- Replaced additive formula `E×0.30 + R×0.25 + C×0.20 + K×0.15 + D×0.10` with v5.0 IUDEX formula `E * D * (R_eff * C_eff * K_eff)^(1/3)`
+- **WHY:** v5.0 replaced the additive formula with a hybrid (hard veto on E,D + geometric mean on R,C,K). ARCHITECTURE.md still showed the obsolete v4.5 version
+
+### Verified FALSE POSITIVE (R54)
+- **brainstorm-engine.md "0-15 scale":** CORRECT — brainstorm hypothesis scoring uses 5 dimensions × 0-3 = max 15 points. This is NOT the serendipity scale (0-20). Agent initially flagged this; investigated and confirmed correct
+- **plugin/schemas/ empty:** NOT A BUG — plugin/schemas/ doesn't exist because plugin JS hooks don't reference schemas at all. Schemas live in schemas/ and skills/vibe/assets/schemas/ only
+
 ## [6.0.34] — 2026-03-05 — Fix 6 remaining BATCH "3 minor" references across 4 files (R53)
 
 > **Trigger:** Round 53 paranoid deep debug — audited ALL plugin JS code (17 files), cross-referenced ALL gate definitions repo-wide, verified CLAUDE.md F: vs D: consistency, and deep-audited skills/vibe/ directory. R52 fixed the BATCH threshold in protocols/reviewer2-ensemble.md but missed 6 occurrences in 4 other active files.

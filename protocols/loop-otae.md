@@ -279,7 +279,7 @@ T3 FAIL → STOP expanding. R2 emergency review. Strategy revision. Do NOT add m
 | Stage transition | FORCED | Full ensemble review (BLOCKING) |
 | Confidence explosion (>0.30 in 2 cycles) | FORCED | Confirmation bias check (BLOCKING) |
 | Pivot decision | FORCED | Full ensemble review (BLOCKING) |
-| minor_findings_pending >= 3 | BATCH | Single-pass batch review (BLOCKING) |
+| unreviewed_claims_pending >= 5 | BATCH | Single-pass batch review (BLOCKING) |
 | Every 3 cycles automatically | SHADOW | Passive review — see Shadow Protocol |
 | R2 spots fatal flaw during any mode | VETO | Halts branch or entire tree (BLOCKING, cannot override except by human) |
 | R2 identifies better direction | REDIRECT | Proposes alternative (soft — user chooses) |

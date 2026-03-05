@@ -97,7 +97,7 @@ Key finds:
 **minor_findings_pending:** 4 (accumulated).
 
 ### CHECKPOINT
-minor_findings_pending >= 3 → **R2 BATCH REVIEW TRIGGERED**.
+minor_findings_pending >= 5 → **R2 BATCH REVIEW TRIGGERED**.
 
 **Load:** `reviewer2-ensemble.md`
 **Activated:** R2-Methods (search completeness check)

@@ -420,9 +420,11 @@ Shortcuts: Literature-only: S1 → S5 | Analysis: S1 → S2 → S4 → S5
 ### Evidence Engine
 
 ```
-confidence = E×0.30 + R×0.25 + C×0.20 + K×0.15 + D×0.10
+confidence = E * D * (R_eff * C_eff * K_eff)^(1/3)
 
-FLOOR: E < 0.2 → capped at 0.20
+E, D: product (hard veto — zero kills)
+R, C, K: geometric mean (softer, compensatory)
+Floor: prevents "unknown" from killing confidence
 ```
 
 **4 typed claims**: `descriptive` · `correlative` · `causal` · `predictive`
