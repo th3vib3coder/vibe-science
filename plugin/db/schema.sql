@@ -218,7 +218,7 @@ CREATE TABLE IF NOT EXISTS memory_embeddings (
     project_path TEXT,
     created_at TEXT NOT NULL
 );
-CREATE INDEX IF NOT EXISTS idx_memembed_project ON memory_embeddings(project_path);
+CREATE INDEX IF NOT EXISTS idx_membed_project ON memory_embeddings(project_path, created_at);
 
 -- =====================================================
 -- EMBED QUEUE: Async embedding processing (worker)

@@ -2,6 +2,30 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.24] — 2026-03-05 — Schema index fix + full non-JS audit R39: schema.sql, 6 Python scripts, configs
+
+> **Trigger:** Round 39 paranoid deep debug — audited all 16 remaining non-JavaScript files: schema.sql (DB schema), hooks.json (plugin hooks), __test_e2e.mjs (E2E tests), plugin.json, package.json, marketplace.json, domain-config-template.json, literature-registry.json, claude-code.yaml, and 6 Python scripts (gate_check.py, sync_check.py, tree_health.py, observer.py, spine_entry.py, dq_gate.py). One real bug found: index name typo + column mismatch between schema.sql and worker-embed.js.
+
+### Fixed — Schema Index Inconsistency (LOW)
+- **schema.sql line 221:** `idx_memembed_project ON memory_embeddings(project_path)` → `idx_membed_project ON memory_embeddings(project_path, created_at)`
+- **WHY:** Two problems: (1) Typo in index name — `idx_memembed_project` (double 'm') vs `idx_membed_project` in worker-embed.js (correct spelling). Since SQLite treats these as different indexes, both would be created, causing redundancy. (2) Column mismatch — schema.sql had a single-column index on `(project_path)`, while worker-embed.js correctly created a composite index on `(project_path, created_at)`. The composite index is strictly better: it covers both project filtering AND temporal ordering (used by vector search queries). Now both schema.sql and worker-embed.js create the same index with the same name.
+
+### Verified — CLEAN Files (no changes needed)
+- **hooks.json:** All 7 hooks present, correct script paths via `${CLAUDE_PLUGIN_ROOT}`, correct matchers ✓
+- **__test_e2e.mjs:** B1-B7 test suite. 12 EXPECTED_TABLES correct (memory_embeddings is optional fallback, excluded). Index check covers 14 of ~17 ✓
+- **plugin.json:** Plugin manifest, version 6.0.0, Apache-2.0 ✓
+- **package.json:** Dependencies correct (better-sqlite3, @huggingface/transformers, onnxruntime-node), engines >=18.0.0 ✓
+- **marketplace.json:** "32 quality gates" matches canonical number ✓
+- **domain-config-template.json:** Multi-domain template with CRISPR/photonics/particle-physics examples (known exception) ✓
+- **literature-registry.json:** 108-database registry, reference data only ✓
+- **claude-code.yaml:** 7 agent types match AGENTS.md, model tiers logical, web search rule present ✓
+- **gate_check.py:** Lightweight JSON Schema validator, correct type/required/properties/items/min/max/enum handling ✓
+- **sync_check.py:** Number extraction with tolerance, percentage conversion fallback, correct skip patterns ✓
+- **tree_health.py:** T3 gate checks — good ratio, exploration ratio (LAW 8), stale branches, branch diversity ✓
+- **observer.py:** Orphan detection, desync check, design drift, naming consistency. Dual stage format check covers patterns ✓
+- **spine_entry.py:** Entry creation with argparse validation, VALID_TYPES enforced. CALIBRATE/CALIBRATION intentional distinct types ✓
+- **dq_gate.py:** DQ1-DQ4 checks with configurable thresholds, YAML/JSON config fallback, Bessel's correction in CV calculation ✓
+
 ## [6.0.23] — 2026-03-05 — Per-claim error handling + Windows path fix R38: subagent-stop.js, r2-calibration.js, worker-embed.js
 
 > **Trigger:** Round 38 paranoid deep debug — full JavaScript code audit of all 16 plugin/ files (8 hook scripts + 8 lib modules). Launched Explore agents to audit each file, then manually verified every finding against actual code. Most agent findings were FALSE POSITIVES (e.g., better-sqlite3 `.all()` null check — it always returns array; vecSearch uncaught error — already wrapped in try/catch; db null in fallbackBuildContext — caller already guards). Three REAL bugs survived verification.
