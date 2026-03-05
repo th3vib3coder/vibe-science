@@ -266,7 +266,7 @@ FAIL actions:
 ```
 PASS criteria:
 [ ] Node has a valid type (draft|debug|improve|hyperparameter|ablation|replication|serendipity)
-[ ] Node has a valid parent (exists in TREE-STATE.json)
+[ ] Node has a valid parent (exists in tree state)
 [ ] Node has a non-empty action plan (think_plan is not empty)
 [ ] Node type is appropriate for current stage (e.g., hyperparameter only in Stage 2+)
 [ ] Parent is not pruned
@@ -567,7 +567,7 @@ FAIL actions:
 ## Design Compliance Gate (DC0) — NEW in v5.5
 
 ### Gate DC0 — Design Compliance
-**When:** At every stage transition. Also at any point where execution deviates from the design document (RQ.md, TREE-STATE.json planned branches).
+**When:** At every stage transition. Also at any point where execution deviates from the design document (RQ.md, planned tree branches).
 
 ```
 PASS criteria (ALL must be true):

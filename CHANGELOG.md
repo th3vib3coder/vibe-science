@@ -2,6 +2,23 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.48] — 2026-03-05 — CLAUDE.md constitution fixes + gates TREE-STATE cleanup (R68)
+
+> **Trigger:** Round 68 paranoid deep debug — 6 parallel agents audited hooks.json+settings.json, all 12 schemas, root docs (CLAUDE.md, ARCHITECTURE.md), pre-compact.js, skills/vibe/, .claude/. Found 3 bugs in CLAUDE.md + gates.md; 6 pre-compact.js findings triaged as design choices.
+
+### Fixed
+- **CLAUDE.md LAW 7 (line 31):** Removed stale `TREE-STATE.json` reference — file doesn't exist, v6.0 uses SQLite DB for tree state. Now reads "resumable from STATE.md alone (database enriches but is not required)."
+- **CLAUDE.md FILE STRUCTURE (lines 46-56):** `schemas/`, `protocols/`, `assets/` were listed under `.vibe-science/` but they live at project root. Split section into "Runtime state" (`.vibe-science/`) and "Static definitions" (project root). Removed non-existent `TREE-STATE.json` entry.
+- **gates/gates.md:269:** `(exists in TREE-STATE.json)` → `(exists in tree state)` — file doesn't exist.
+- **gates/gates.md:570:** `(RQ.md, TREE-STATE.json planned branches)` → `(RQ.md, planned tree branches)` — same stale reference.
+
+### Triaged — Not Bugs
+- **pre-compact.js:78:** `R2_REVIEWED` in terminal state exclusion — INTENTIONAL (same pattern as stop.js:150, identifies claims needing R2 attention).
+- **pre-compact.js:79-83:** Cross-session claim resolution query — INTENTIONAL (compaction needs project-wide claim state, unlike stop.js which checks current session only for LAW 4).
+- **pre-compact.js:72:** DISTINCT without ORDER BY — NOT A BUG (each claim_id has one CREATED event).
+- **pre-compact.js:120-124:** Seed snapshot omits `discriminating_test` — BY DESIGN (summary only; full data remains in DB).
+- **ARCHITECTURE.md R3 dimensions:** Not named — STYLE CHOICE (count "6 dimensions" is correct; judge-rubric.yaml is source of truth).
+
 ## [6.0.47] — 2026-03-05 — ARCHITECTURE.md action type count + stale sweep clean (R67)
 
 > **Trigger:** Round 67 paranoid deep debug — 6 parallel agents audited plugin/lib/ (8 files), ARCHITECTURE.md, examples/, codebase-wide stale action type sweep, blueprint-vs-schema.sql comparison, worker-embed.js. Found 1 bug; stale action types fully purged.

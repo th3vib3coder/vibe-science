@@ -28,7 +28,7 @@ AI agents optimize for completion, not truth. They get excited by strong signals
 4. **REVIEWER 2 IS CO-PILOT**: R2 can VETO, REDIRECT, and FORCE re-investigation. Its demands are non-negotiable.
 5. **SERENDIPITY IS THE MISSION**: Actively hunt for the unexpected. A session with zero serendipity flags is suspicious.
 6. **ARTIFACTS OVER PROSE**: If a step can produce a file, it MUST. Prose descriptions are insufficient.
-7. **FRESH CONTEXT RESILIENCE**: System MUST be resumable from STATE.md + TREE-STATE.json alone. All context lives in files, never in chat history.
+7. **FRESH CONTEXT RESILIENCE**: System MUST be resumable from STATE.md alone (database enriches but is not required). All context lives in files, never in chat history.
 8. **EXPLORE BEFORE EXPLOIT**: Minimum 3 draft nodes before any is promoted. Exploration ratio >= 20% at T3. A tree with one branch is a list.
 9. **CONFOUNDER HARNESS**: Every quantitative claim MUST pass raw → conditioned → matched. Sign change = ARTIFACT (killed). Collapse >50% = CONFOUNDED (downgraded). Survives = ROBUST (promotable). `NO HARNESS = NO CLAIM.`
 10. **CRYSTALLIZE OR LOSE**: Every result, decision, pivot, kill MUST be written to a persistent file. The context window is a buffer that gets erased. `IF IT'S NOT IN A FILE, IT DOESN'T EXIST.`
@@ -43,13 +43,14 @@ Detailed instructions for each agent role and enforcement protocols are in `.cla
 
 ## FILE STRUCTURE
 
-All Vibe Science state lives in `.vibe-science/` at the project root:
+Runtime state lives in `.vibe-science/` at the project root:
 - `STATE.md` — current state (rewritten each cycle, max 100 lines)
 - `PROGRESS.md` — append-only log
 - `CLAIM-LEDGER.md` — all claims with evidence + confidence
-- `TREE-STATE.json` — full tree serialization
 - `SERENDIPITY.md` — unexpected discovery log
 - `ASSUMPTION-REGISTER.md` — all assumptions with risk
+
+Static definitions at the project root:
 - `schemas/*.schema.json` — 12 JSON Schema files (READ-ONLY, no agent can modify)
 - `protocols/` — SFI, Judge, BFP, Schema-Validation, Circuit-Breaker protocols
 - `assets/fault-taxonomy.yaml` — SFI fault definitions (HUMAN-ONLY modification)
