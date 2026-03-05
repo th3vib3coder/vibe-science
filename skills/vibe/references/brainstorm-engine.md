@@ -250,7 +250,7 @@ After scoring all hypotheses, check for productive tensions that should be prese
 **Protocol:**
 1. Compare the top 2 scored hypotheses
 2. If BOTH conditions are true:
-   - Score difference < 10% (e.g., 8.2 vs 7.6 on a 0-20 scale)
+   - Score difference < 10% (e.g., 8.2 vs 7.6 on a 0-15 scale)
    - They represent genuinely DIFFERENT paradigms (not minor variations)
    Then: **PRESERVE BOTH.** Do NOT eliminate one.
 3. Document: "H-A is preferred IF [condition]. H-B is preferred IF [condition]."

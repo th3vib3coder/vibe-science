@@ -327,7 +327,7 @@ All numbers in documents must originate from structured data files. No manual tr
 - R2 Ensemble (4 reviewers): unchanged
 - SFI, BFP, R3 Judge: unchanged
 - All 27 v5.0 gates: unchanged (7 new gates added, none removed)
-- All 9 JSON schemas: unchanged (read-only)
+- All 9 v5.0 JSON schemas: unchanged (3 new schemas added in v5.5: data-quality-gate, finding-validation, spine-entry; total: 12)
 - Agent Permission Model: unchanged
 - Circuit Breaker: unchanged
 

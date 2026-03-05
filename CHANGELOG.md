@@ -2,6 +2,24 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.25] — 2026-03-05 — Cross-directory consistency audit R40: SKILL.md schema count, brainstorm scoring scale
+
+> **Trigger:** Round 40 paranoid deep debug — full cross-directory consistency audit comparing `protocols/` vs `skills/vibe/references/` (20 common files) and `assets/` vs `skills/vibe/assets/` (6 common files). Verified that content divergence between directories is BY DESIGN (protocols/ = full implementation docs with TEAM mode + v5.5 sections; references/ = condensed domain-agnostic reference cards). Confirmed 13 same-size files are content-identical (only LF vs CRLF line endings). Two real bugs found.
+
+### Fixed — SKILL.md Schema Count Misleading (LOW)
+- **SKILL.md line 330:** `All 9 JSON schemas: unchanged (read-only)` → `All 9 v5.0 JSON schemas: unchanged (3 new schemas added in v5.5: data-quality-gate, finding-validation, spine-entry; total: 12)`
+- **WHY:** Line 329 explicitly mentions gate additions from v5.5, but line 330 still said "9 schemas" without mentioning the 3 new schemas added in v5.5. The canonical schema count is 12 (9 original v5.0 + 3 new v5.5). A reader comparing these adjacent lines would think schemas weren't updated, contradicting the actual file count in `schemas/`.
+
+### Fixed — Brainstorm Engine Scoring Scale Wrong (LOW)
+- **skills/vibe/references/brainstorm-engine.md line 253:** `0-20 scale` → `0-15 scale`
+- **WHY:** The hypothesis scoring system uses 5 dimensions scored 0-3 each, for a maximum of 15 points. The canonical definition at `protocols/brainstorm-engine.md:263` correctly says "5 dimensions (0-3 each, max 15)". The Near-Tie Rule example in the references/ copy said "0-20 scale", which is wrong — the protocols/ copy correctly says "0-15 scale" at line 295. This would cause agents using the references/ version to miscalculate the 10% score difference threshold.
+
+### Verified — Cross-Directory Consistency (no changes needed)
+- **13 files content-identical** (protocols/ vs references/): analysis-orchestrator, audit-reproducibility, auto-experiment, blind-first-pass, circuit-breaker, data-extraction, judge-agent, schema-validation, search-protocol, seeded-fault-injection, tree-search, vlm-gate, writeup-engine ✓
+- **6 files with expected larger protocols/** (TEAM mode, v5.5 sections): brainstorm-engine (+59 lines), reviewer2-ensemble (+383 lines, completely different structure), evidence-engine (+25 lines), experiment-manager (+26 lines), loop-otae (+27 lines), serendipity-engine (+13 lines) ✓
+- **1 expected biology-vs-generic difference**: knowledge-base.md (CRISPR DOIs vs generic placeholders) ✓
+- **6 asset files with expected domain differences**: fault-taxonomy.yaml, judge-rubric.yaml, metric-parser.md, node-schema.md, stage-prompts.md, templates.md ✓
+
 ## [6.0.24] — 2026-03-05 — Schema index fix + full non-JS audit R39: schema.sql, 6 Python scripts, configs
 
 > **Trigger:** Round 39 paranoid deep debug — audited all 16 remaining non-JavaScript files: schema.sql (DB schema), hooks.json (plugin hooks), __test_e2e.mjs (E2E tests), plugin.json, package.json, marketplace.json, domain-config-template.json, literature-registry.json, claude-code.yaml, and 6 Python scripts (gate_check.py, sync_check.py, tree_health.py, observer.py, spine_entry.py, dq_gate.py). One real bug found: index name typo + column mismatch between schema.sql and worker-embed.js.
