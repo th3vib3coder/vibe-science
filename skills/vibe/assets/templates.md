@@ -17,7 +17,7 @@ cycle: 1
 tree_mode: linear|branching|hybrid
 current_node: node-001
 last_updated: YYYY-MM-DDTHH:MM:SSZ
-minor_findings_pending: 0
+unreviewed_claims_pending: 0
 queries_run: 0
 claims_total: 0
 claims_verified: 0

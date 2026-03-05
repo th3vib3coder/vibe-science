@@ -94,10 +94,10 @@ Key finds:
 - C-003: "Neural OT extends WOT by learning continuous transport maps instead of discrete couplings" (Type: INFERENCE, E=0.8, C=0.6, Confidence: 0.64)
 - C-004: "Steady-state OT trajectory inference does not require time-series data" (Type: DATA, E=0.8, Confidence: 0.72)
 
-**minor_findings_pending:** 4 (accumulated).
+**unreviewed_claims_pending:** 4 (accumulated).
 
 ### CHECKPOINT
-minor_findings_pending >= 5 → **R2 BATCH REVIEW TRIGGERED**.
+unreviewed_claims_pending >= 5 → **R2 BATCH REVIEW TRIGGERED**.
 
 **Load:** `reviewer2-ensemble.md`
 **Activated:** R2-Methods (search completeness check)

@@ -2,6 +2,24 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.36] — 2026-03-05 — Rename minor_findings_pending → unreviewed_claims_pending across 6 files (R55)
+
+> **Trigger:** Round 55 paranoid deep debug — 6 parallel audit agents covered internal links, examples, README/config, AGENTS.md, CHANGELOG, and JS hook logic. Found the variable name `minor_findings_pending` was never renamed to `unreviewed_claims_pending` despite R53 changing the terminology everywhere else.
+
+### Fixed — Stale `minor_findings_pending` Variable Name in 6 Active Files
+- **examples/walkthrough-literature-review.md lines 97, 100:** Variable name in prose
+- **assets/templates.md line 20:** STATE.md template YAML key
+- **skills/vibe/assets/templates.md line 20:** Condensed STATE.md template YAML key
+- **protocols/loop-otae.md line 40:** OBSERVE phase reference
+- **skills/vibe/references/loop-otae.md line 40:** Condensed OBSERVE phase reference
+- **WHY:** R53-R54 changed the BATCH trigger description from "3 minor findings" to "5 unreviewed claims" but never renamed the underlying STATE.md frontmatter key or the protocol references to it. JS code (stop.js) already uses `unreviewed_claims`. This completes the rename.
+
+### Verified FALSE POSITIVE (R55)
+- **ARCHITECTURE.md TOC anchors:** All 7 links are CORRECT — GFM strips em-dashes from headings, so `## v6.0 — NEXUS` → slug `#v60--nexus`
+- **agent-teams.md Researcher model "Sonnet":** DESIGN CHOICE for TEAM mode cost optimization. AGENTS.md (Opus) is the canonical definition; TEAM roster intentionally suggests Sonnet as budget alternative
+- **subagent-stop.js LIKE wildcards:** LOW RISK — claim IDs are system-generated (`C-001` format), will never contain `%` or `_`
+- **CHANGELOG 6.0.31 references [6.0.24]:** Historical append-only doc, attribution error doesn't affect system behavior
+
 ## [6.0.35] — 2026-03-05 — Fix 3 stale values: BATCH threshold, confidence formula, walkthrough (R54)
 
 > **Trigger:** Round 54 paranoid deep debug — audited commands/, schemas/, all reference cards, and remaining protocols. Found 3 real bugs + 2 false positives (brainstorm 0-15 scale is correct for hypothesis scoring; plugin/schemas/ doesn't exist because hooks don't use schemas).

@@ -37,7 +37,7 @@ Each cycle produces ONE meaningful action. No multi-step bundles. One action, ve
 1. `STATE.md` — entire file (max 100 lines)
 2. `TREE-STATE.json` — current tree structure, current node, best node
 3. `PROGRESS.md` — last 20 lines
-4. Check: `minor_findings_pending` count in STATE.md frontmatter
+4. Check: `unreviewed_claims_pending` count in STATE.md frontmatter
 5. Check: `cycle` number (warn at 15, force review at 20)
 6. Identify current stage (1-5) from STATE.md frontmatter
 7. [v5.5] Check Observer alerts. Check SPINE.md last entry.
