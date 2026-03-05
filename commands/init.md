@@ -99,13 +99,13 @@ mkdir -p .vibe-science/RQ-001-[slug]/{01-discovery,02-analysis,03-data,04-valida
 For each file below, READ the template first, then WRITE the populated version.
 The templates live in `skills/vibe/assets/templates.md` relative to the project root.
 
-| Target file | Template source | Populate |
-|-------------|----------------|----------|
-| `.vibe-science/STATE.md` | `templates/STATE.md` | Fill frontmatter: rq, phase=discovery, cycle=1 |
-| `.vibe-science/PROGRESS.md` | `templates/PROGRESS.md` | Add first entry with Cycle 0 init |
-| `.vibe-science/SERENDIPITY.md` | `templates/SERENDIPITY.md` | No changes needed |
-| `.vibe-science/ASSUMPTION-REGISTER.md` | `templates/ASSUMPTIONS.md` | Fill frontmatter: rq |
-| `.vibe-science/RQ-001-[slug]/RQ.md` | `templates/RQ.md` | Fill all sections from Steps 1-3 |
+| Target file | Section in templates.md | Populate |
+|-------------|------------------------|----------|
+| `.vibe-science/STATE.md` | `## STATE.md Template` | Fill frontmatter: rq, phase=discovery, cycle=1 |
+| `.vibe-science/PROGRESS.md` | `## PROGRESS.md Template` | Add first entry with Cycle 0 init |
+| `.vibe-science/SERENDIPITY.md` | `## SERENDIPITY.md Template` | No changes needed |
+| `.vibe-science/ASSUMPTION-REGISTER.md` | `## ASSUMPTION-REGISTER.md Template` | Fill frontmatter: rq |
+| `.vibe-science/RQ-001-[slug]/RQ.md` | `## RQ.md Template` | Fill all sections from Steps 1-3 |
 
 **Why this matters:** The STATE.md template has YAML frontmatter (`rq`, `phase`, `cycle`, `last_updated`) that `stop.js` and `narrative-engine.js` parse. Writing a free-form STATE.md will break the stop hook. The PROGRESS.md template defines entry format (`### Cycle N - HH:MM` with Action/Result/Decision/Serendipity fields) that downstream scripts expect.
 

@@ -2,6 +2,22 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.30] — 2026-03-05 — Fix misleading template path references in init command (R49)
+
+> **Trigger:** Round 49 paranoid deep debug — audited commands/ and agents/ directories, cross-referenced protocol ↔ reference card mappings, verified archive directory integrity, and checked F: ↔ D: drive consistency.
+
+### Fixed — init.md Template Source Column Uses Non-Existent File Paths (LOW)
+- **commands/init.md lines 102-108:** Table column header `Template source` with values like `templates/STATE.md` → `Section in templates.md` with values like `## STATE.md Template`
+- **WHY:** The templates live in a single file `skills/vibe/assets/templates.md` with section headers like `## STATE.md Template`. The table's "Template source" column used `templates/STATE.md` format, which looks like a file path to a standalone file that doesn't exist. An agent following the table literally would attempt to read `templates/STATE.md` and fail. Line 100 of the same file correctly states the templates location, but the table contradicted it with path-like references.
+
+### Verified CLEAN (R49)
+- **F: ↔ D: drive consistency:** All 5 critical files (CLAUDE.md, roles.md, enforcement.md, settings.json, hooks.json) byte-identical across both drives after git sync
+- **Archive directory (552 files):** Well-organized across 9 version directories. All README.md archive references point to existing files. No orphaned active files that should be archived
+- **Protocol ↔ reference card cross-refs:** 20 of 21 protocols have reference cards (95%). Missing: agent-teams.md — intentional omission (TEAM mode is experimental, multi-agent-config.md reference already covers role configuration)
+- **Python script thresholds:** All 6 scripts (dq_gate.py, gate_check.py, spine_entry.py, sync_check.py, tree_health.py, observer.py) — thresholds match gates/gates.md exactly
+- **agents/ directory:** Only reviewer2.md present — BY DESIGN (other roles are behavioral dispositions, not spawnable subagents)
+- **32 gate count re-verified:** G(7) + L(4) + D(3) + T(4) + B(1) + S(5) + DQ(4) + DD(1) + DC(1) + V(1) + J(1) = 32, all 8 schema-enforced gates confirmed
+
 ## [6.0.29] — 2026-03-05 — Remove unused onnxruntime-node dependency (R48)
 
 > **Trigger:** Round 48 paranoid deep debug — audited package.json dependencies vs actual imports across all plugin JavaScript files. Found `onnxruntime-node` listed as a dependency but never imported or referenced anywhere in the codebase.
