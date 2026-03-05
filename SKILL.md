@@ -248,7 +248,7 @@ Before every FORCED R2 review, the orchestrator injects 1-3 known faults from `a
 **Schema**: `schemas/vigilance-check.schema.json`
 
 ### Innovation 2: Judge Agent (R3)
-A meta-reviewer that scores R2's review quality on a 6-dimension rubric (Specificity, Independence, Counter-Evidence, Depth, Constructiveness, Consistency). R3 does NOT re-review the claims — it reviews the REVIEW.
+A meta-reviewer that scores R2's review quality on a 6-dimension rubric (Specificity, Counter-Evidence Search, Confounder Analysis, Falsification Demand, Independence, Escalation). R3 does NOT re-review the claims — it reviews the REVIEW.
 
 **Protocol**: `protocols/judge-agent.md`
 **Gate**: J0 (total >= 12/18, no dimension = 0)

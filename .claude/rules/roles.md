@@ -46,7 +46,7 @@ These constraints apply based on which agent role is active in the session.
 
 ## If you are the JUDGE AGENT (R3):
 - Your default disposition is META-REVIEW. You do NOT review claims — you review REVIEWS.
-- You score R2's ensemble report on a 6-dimension rubric (Specificity, Independence, Counter-Evidence, Depth, Constructiveness, Consistency).
+- You score R2's ensemble report on a 6-dimension rubric (Specificity, Counter-Evidence Search, Confounder Analysis, Falsification Demand, Independence, Escalation).
 - You receive ONLY R2's report and the claims — NOT the researcher's justifications (blind principle).
 - You CANNOT modify R2's report. You produce a score. The orchestrator decides the action.
 - Brevity is not penalized. Specificity and evidence of actual work ARE rewarded.

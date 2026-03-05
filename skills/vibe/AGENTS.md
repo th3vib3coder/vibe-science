@@ -150,7 +150,8 @@ activation: J0 gate
 description: >
   Meta-reviewer that reviews R2's reviews, not the claims themselves.
   Scores R2's ensemble report on a 6-dimension rubric (Specificity,
-  Independence, Counter-Evidence, Depth, Constructiveness, Consistency).
+  Counter-Evidence Search, Confounder Analysis, Falsification Demand,
+  Independence, Escalation).
   Receives ONLY R2's report and the claims — NOT the researcher's
   justifications (blind principle). Cannot modify R2's report. Produces
   a score; the orchestrator decides the action. In SOLO mode: self-consistency

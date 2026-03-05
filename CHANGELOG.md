@@ -2,6 +2,25 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.38] — 2026-03-05 — R3 rubric dimension names wrong in 4 files (R57)
+
+> **Trigger:** Round 57 paranoid deep debug — 6 parallel agents audited JSON schemas, hook scripts, protocols, top-level docs, config/settings, and skills/vibe/references. Found R3 Judge dimension names in 4 docs didn't match the actual rubric YAML.
+
+### Fixed — R3 Rubric Dimension Names Mismatch
+- **Source of truth:** `assets/judge-rubric.yaml` + `protocols/judge-agent.md` define 6 dimensions: Specificity, Counter-Evidence Search, Confounder Analysis, Falsification Demand, Independence, Escalation
+- **4 files had wrong names** ("Depth, Constructiveness, Consistency" instead of "Confounder Analysis, Falsification Demand, Escalation"):
+  - `.claude/rules/roles.md:49`
+  - `SKILL.md:251`
+  - `skills/vibe/references/constitution.md:118`
+  - `skills/vibe/AGENTS.md:152-153`
+
+### Verified FALSE POSITIVE
+- `schemas/claim-promotion.schema.json:179` — `v5.0-geometric` is the formula's own version identifier (introduced in v5.0 IUDEX), not the project version. Formula unchanged in v6.0.
+- `CLAUDE.md` `.vibe-science/` paths — these describe the structure created in *user projects*, not this repo's layout
+- `skills/vibe/references/brainstorm-engine.md:253` "0-15 scale" — correctly refers to brainstorm hypothesis scoring (5 dims × 0-3), not serendipity (0-20)
+
+---
+
 ## [6.0.37] — 2026-03-05 — 4 stale refs in commands/loop.md & commands/reviewer2.md (R56)
 
 > **Trigger:** Round 56 paranoid deep debug — 6 parallel audit agents covered commands/, examples/, YAML frontmatter, table cross-refs, JS hooks, and protocol gate definitions. Found 4 remaining stale `minor findings` references in command docs.

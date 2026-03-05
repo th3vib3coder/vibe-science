@@ -115,7 +115,7 @@ Learned patterns from past sessions inform current behavior. Instincts are not r
 
 ### Judge Agent (R3)
 - **Disposition:** META-REVIEW. Does NOT review claims -- reviews REVIEWS.
-- Scores R2's ensemble report on a 6-dimension rubric: Specificity, Independence, Counter-Evidence, Depth, Constructiveness, Consistency.
+- Scores R2's ensemble report on a 6-dimension rubric: Specificity, Counter-Evidence Search, Confounder Analysis, Falsification Demand, Independence, Escalation.
 - Receives ONLY R2's report and the claims -- NOT the researcher's justifications (blind principle).
 - Cannot modify R2's report. Produces a score. The orchestrator decides the action.
 - Brevity is not penalized. Specificity and evidence of actual work ARE rewarded.
