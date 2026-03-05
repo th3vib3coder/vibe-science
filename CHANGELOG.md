@@ -2,6 +2,20 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.32] — 2026-03-05 — Fix dangling AGENTS.md reference in CLAUDE.md (R51)
+
+> **Trigger:** Round 51 paranoid deep debug — audited all internal markdown links across 88 .md files, cross-checked CLAUDE.md consistency between F: and D: drives, validated all 12 JSON schema files (3 copies each), and verified hooks configuration parity between settings.json and hooks.json.
+
+### Fixed — CLAUDE.md Dangling Reference to Root-Level AGENTS.md (LOW)
+- **CLAUDE.md line 41:** `` `AGENTS.md` `` → `` `skills/vibe/AGENTS.md` ``
+- **WHY:** CLAUDE.md references `AGENTS.md` without a path prefix, implying it exists at the repo root. But no `AGENTS.md` exists at root — the active copy lives at `skills/vibe/AGENTS.md` (with archived versions in `archive/`). An agent reading CLAUDE.md and attempting to read `AGENTS.md` from the repo root would get a file-not-found error. The reference needs the full relative path.
+
+### Verified CLEAN (R51)
+- **Internal markdown links:** All 13 links across 88 .md files resolve to existing targets. Zero broken links
+- **JSON Schemas (12 files):** All valid JSON, all `$id` match filenames, all `$ref` resolve, all enum values consistent across 3 copies (root schemas/, skills/vibe/assets/schemas/, archive/). Informational: `CALIBRATE` is a legacy enum value in spine-entry.schema.json never emitted by JS code (only `CALIBRATION` is used) — not harmful, just unused
+- **Hooks configuration:** Both `.claude/settings.json` and `hooks/hooks.json` define identical 7 hooks with matching timeouts, matchers, and script references. All 7 scripts exist. All lib module imports resolve. Blocking behavior matches CLAUDE.md documentation
+- **CLAUDE.md F: vs D: consistency:** Both files byte-identical after git sync. Gate count (32), schema count (12), hook count (7), law count (12 including INSTINCT) all correct and consistent
+
 ## [6.0.31] — 2026-03-05 — Fix literature-registry stale total_databases and revert wrong category count (R50)
 
 > **Trigger:** Round 50 paranoid deep debug — deep-audited README.md, ARCHITECTURE.md, CITATION.cff, NOTICE, marketplace.json, plugin.json, and BEHAVIOR-LOGBOOK references. Found 2 bugs: stale `total_databases` metadata field and a wrong category count introduced by a previous erroneous "fix" in [6.0.24].

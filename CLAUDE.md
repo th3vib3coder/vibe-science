@@ -38,7 +38,7 @@ AI agents optimize for completion, not truth. They get excited by strong signals
 ## AGENT ROLES & STRUCTURAL ENFORCEMENT
 
 Detailed instructions for each agent role and enforcement protocols are in `.claude/rules/`:
-- **`.claude/rules/roles.md`** — Behavioral constraints for all 6 permission roles (researcher, R2, serendipity, experimenter, lead, judge). Note: these are the 6 access-control roles used by the Permission Engine. The 7 agent types defined in `AGENTS.md` (researcher, r2-deep, r2-inline, observer, explorer, r3-judge, instinct-scanner) are a separate classification for model selection and disposition.
+- **`.claude/rules/roles.md`** — Behavioral constraints for all 6 permission roles (researcher, R2, serendipity, experimenter, lead, judge). Note: these are the 6 access-control roles used by the Permission Engine. The 7 agent types defined in `skills/vibe/AGENTS.md` (researcher, r2-deep, r2-inline, observer, explorer, r3-judge, instinct-scanner) are a separate classification for model selection and disposition.
 - **`.claude/rules/enforcement.md`** — v6.0 structural enforcement: SFI, BFP, Schema-Validated Gates, Circuit Breaker, Agent Permission Model, Salvagente Rule
 
 ## FILE STRUCTURE
