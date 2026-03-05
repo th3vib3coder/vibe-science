@@ -121,7 +121,7 @@
 
     "pubmed": {
       "name": "PubMed/MEDLINE",
-      "category": ["biology_life_sciences", "biomedical"],
+      "category": ["biology_life_sciences", "medicine_clinical"],
       "access": "free",
       "api": true,
       "mcp_server": "openags/paper-search-mcp",
@@ -157,7 +157,7 @@
     },
     "pmc": {
       "name": "PubMed Central",
-      "category": ["biology_life_sciences", "biomedical"],
+      "category": ["biology_life_sciences", "medicine_clinical"],
       "access": "free",
       "api": true,
       "mcp_server": "benedict2310/Scientific-Papers-MCP",

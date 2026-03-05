@@ -2,6 +2,14 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.43] — 2026-03-05 — Blueprint R3 dimensions + literature-registry undefined category (R62)
+
+> **Trigger:** Round 62 paranoid deep debug — 6 parallel agents audited references/, blueprints/, scripts/agents, root SKILL.md 700-1369, plugin/db, line counts. Found 2 real bugs.
+
+### Fixed
+- **blueprints/v6.0-NEXUS-BLUEPRINT.md:953:** DB schema comment listed only 2 of 6 R3 dimensions with ellipsis. Now lists all 6: specificity, counter_evidence_search, confounder_analysis, falsification_demand, independence, escalation.
+- **plugin/db/literature-registry.json:124,160:** pubmed and pmc entries had undefined category `"biomedical"` (not in canonical 12). Changed to `"medicine_clinical"`.
+
 ## [6.0.42] — 2026-03-05 — 5 stale BATCH/terminology fixes across protocols, examples, SKILL.md, UPGRADE_PLAN (R61)
 
 > **Trigger:** Round 61 paranoid deep debug — 6 parallel agents audited 21 protocols, plugin/lib JS, examples, cross-file enums, config metadata, root SKILL.md. Found 5 real bugs across 4 files.
