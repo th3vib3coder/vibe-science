@@ -2,6 +2,21 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.29] — 2026-03-05 — Remove unused onnxruntime-node dependency (R48)
+
+> **Trigger:** Round 48 paranoid deep debug — audited package.json dependencies vs actual imports across all plugin JavaScript files. Found `onnxruntime-node` listed as a dependency but never imported or referenced anywhere in the codebase.
+
+### Fixed — Unused onnxruntime-node Dependency in package.json (MEDIUM)
+- **package.json line 13:** Removed `"onnxruntime-node": "^1.21.0"` from dependencies
+- **WHY:** Cross-referencing all `require()` and dynamic `import()` statements across 17 plugin JS files (7 hooks + 8 lib modules + 2 utilities) found that only `better-sqlite3` (3 files) and `@huggingface/transformers` (1 file) are actually used. `onnxruntime-node` has zero references — it was a historical artifact from early development when ONNX runtime was considered for model inference, but the implementation settled on `@huggingface/transformers` instead. The unused dependency adds native compilation overhead (`onnxruntime-node` requires platform-specific binaries) and installation time for zero functionality.
+
+### Verified CLEAN (R48)
+- **Stale number sweep (9 categories):** All previously fixed numbers (32 gates, 12 schemas, ~7,800 LOC, /15 triage, 0-3 per dimension, 102 databases, 7 hooks, 12 Laws) remain correct across all active documentation
+- **Blueprints directory:** v6.0-NEXUS-BLUEPRINT.md — all canonical values correct, all referenced paths exist
+- **Orphaned files:** No orphaned .js files in plugin/. Two .gitignore'd planning files (UPGRADE_PLAN_V2.md, CHANGELOG_V2.md) are properly excluded from git — historical artifacts, not bugs
+- **LICENSE:** Apache 2.0, complete and properly formatted (192 lines)
+- **Cross-file path references:** All path references in .md and .js files resolve to existing files. All 13 primary directories verified. Dual-config hook strategy (dev vs plugin mode) confirmed synchronized
+
 ## [6.0.28] — 2026-03-05 — CLAUDE.md enforcement version label mismatch (R44)
 
 > **Trigger:** Round 44 paranoid deep debug — audited `.claude/rules/` files against CLAUDE.md. Found version label mismatch between CLAUDE.md file reference and enforcement.md's own header.
