@@ -305,7 +305,7 @@ This prevents context loss during agent transitions and satisfies LAW 7 (resilie
 |------|---------|-----------|------------|
 | **BRAINSTORM** | Phase 0 completion | YES — must WEAK_ACCEPT | R2-DEEP |
 | **FORCED** | Major finding, stage transition, pivot, confidence explosion (>0.30/2cyc) | YES | R2-DEEP (SFI+BFP+V0+J0) |
-| **BATCH** | 3 minor findings accumulated | YES | R2-DEEP |
+| **BATCH** | 5 unreviewed claims accumulated | YES | R2-DEEP |
 | **SHADOW** | Every 3 cycles automatically | NO — can ESCALATE to FORCED | R2-DEEP |
 | **VETO** | R2 spots fatal flaw | YES — cannot be overridden except by human | R2-DEEP |
 | **REDIRECT** | R2 identifies better direction | Soft — user chooses | R2-DEEP |

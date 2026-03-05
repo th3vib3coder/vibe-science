@@ -598,7 +598,7 @@ Each node executes one complete OTAE cycle (Observe parent → Think plan → Ac
 ║  │  R2 CO-PILOT CHECK (expanded triggers):              │    ║
 ║  │    FORCED: major finding / stage transition /         │    ║
 ║  │      confidence explosion / pivot / brainstorm        │    ║
-║  │    BATCH:  3 minor findings accumulated              │    ║
+║  │    BATCH:  5 unreviewed claims accumulated           │    ║
 ║  │    SHADOW: every 3 cycles, R2 passively reviews      │    ║
 ║  │      tree health + claim ledger + assumption drift.   │    ║
 ║  │      Shadow can escalate to FORCED if it spots risk.  │    ║
@@ -676,7 +676,7 @@ In v3.5, Reviewer 2 was a gate. In v4.0, **Reviewer 2 is a co-pilot that flies w
 |------|---------|-------|-----------|
 | **BRAINSTORM** | Phase 0 completion | Reviews gap analysis, hypothesis quality, data availability | YES — must WEAK_ACCEPT before OTAE starts |
 | **FORCED** | Major finding, stage transition, pivot, confidence explosion (>0.30/2cyc) | Full ensemble (4 reviewers), double-pass | YES — demands must be addressed |
-| **BATCH** | 3 minor findings accumulated | Single-pass batch review, R2-Methods lead | YES — demands must be addressed |
+| **BATCH** | 5 unreviewed claims accumulated | Single-pass batch review, R2-Methods lead | YES — demands must be addressed |
 | **SHADOW** | Every 3 cycles automatically | Passive review of tree health, claim ledger drift, assumption register, serendipity log | NO — but can ESCALATE to FORCED |
 | **VETO** | R2 spots fatal flaw during any mode | Halts current branch or entire tree | YES — cannot be overridden except by human |
 | **REDIRECT** | R2 identifies better direction during review | Proposes alternative branch, alternative hypothesis, or return to Phase 0 | Soft — user chooses whether to follow |

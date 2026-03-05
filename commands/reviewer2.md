@@ -13,7 +13,7 @@ Invoke Reviewer 2 adversarial review.
 
 Automatically invoked by `/vibe-science:loop` when:
 - Major finding discovered
-- 3 minor findings accumulated
+- 5 unreviewed claims accumulated
 - Research question concluding
 - Pivot being considered
 

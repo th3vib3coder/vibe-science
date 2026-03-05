@@ -174,7 +174,7 @@ During the loop, these trigger Reviewer 2:
 | Trigger | Action |
 |---------|--------|
 | Major finding | STOP loop, invoke `/vibe-science:reviewer2` |
-| 3 minor findings | STOP loop, invoke `/vibe-science:reviewer2 --batch` |
+| 5 unreviewed claims | STOP loop, invoke `/vibe-science:reviewer2 --batch` |
 
 After Reviewer 2 completes, loop resumes.
 

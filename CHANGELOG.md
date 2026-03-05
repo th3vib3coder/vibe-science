@@ -2,6 +2,26 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.34] — 2026-03-05 — Fix 6 remaining BATCH "3 minor" references across 4 files (R53)
+
+> **Trigger:** Round 53 paranoid deep debug — audited ALL plugin JS code (17 files), cross-referenced ALL gate definitions repo-wide, verified CLAUDE.md F: vs D: consistency, and deep-audited skills/vibe/ directory. R52 fixed the BATCH threshold in protocols/reviewer2-ensemble.md but missed 6 occurrences in 4 other active files.
+
+### Fixed — BATCH Trigger Threshold "3 minor findings" → "5 unreviewed claims" in 4 Active Files
+- **skills/vibe/SKILL.md line 308:** `"3 minor findings accumulated"` → `"5 unreviewed claims accumulated"` (condensed skill mode table)
+- **skills/vibe/references/loop-otae.md line 265:** `"minor_findings_pending >= 3"` → `"unreviewed_claims_pending >= 5"` (condensed loop reference R2 trigger table)
+- **SKILL.md line 601:** `"BATCH:  3 minor findings accumulated"` → `"BATCH:  5 unreviewed claims accumulated"` (ASCII art diagram)
+- **SKILL.md line 679:** `"3 minor findings accumulated"` → `"5 unreviewed claims accumulated"` (R2 mode table)
+- **commands/loop.md line 177:** `"3 minor findings"` → `"5 unreviewed claims"` (loop R2 trigger table)
+- **commands/reviewer2.md line 16:** `"3 minor findings accumulated"` → `"5 unreviewed claims accumulated"` (reviewer2 auto-invocation list)
+- **WHY:** R52 correctly established >= 5 as the canonical BATCH threshold (matching the formal mode table in protocols/reviewer2-ensemble.md line 33 and the reference card line 55), but only fixed 2 of 8 total stale references. These 6 occurrences in the root SKILL.md, condensed skill, commands, and condensed references were missed because the R52 audit focused on protocols/ only. The `protocols/reviewer2-ensemble.md` line 58 ("v5.0 BATCH mode accumulates 3 minor findings") is correctly left as-is — it's historical context describing old v5.0 behavior.
+
+### Verified CLEAN (R53)
+- **Plugin JS code (17 files):** All canonical values correct. Gate IDs, serendipity thresholds (10/15), temporal decay (-0.02/week), DB schema (12 tables), hook count (7), version (6.0.0) — all match
+- **KNOWN_ROLES array:** Has 6 entries — CORRECT (6 permission roles ≠ 7 agent types; these are separate classifications per CLAUDE.md line 41)
+- **Gate cross-reference (entire repo):** All 32 gates correctly defined. Zero phantom gates (G7, S0, DQ0, L3, L-2). Zero stale "34" or "27" remaining
+- **CLAUDE.md:** F: and D: byte-identical (8118 bytes, 95 lines). All canonical values correct
+- **skills/vibe/ package:** All canonical values correct except BATCH threshold (now fixed)
+
 ## [6.0.33] — 2026-03-05 — Fix 8 stale values across SKILL.md, ARCHITECTURE.md, protocols (R52)
 
 > **Trigger:** Round 52 paranoid deep debug — deep-audited root SKILL.md (~1,370 lines), condensed SKILL.md (~528 lines), 36 reference cards, and 21 protocols. Found 6 bugs + 2 gaps across 5 files.
