@@ -2,6 +2,20 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.44] — 2026-03-05 — BATCH threshold + spine action types desync (R64)
+
+> **Trigger:** Round 64 paranoid deep debug — 6 parallel agents audited hooks/, schemas/, plugin/lib/, examples/, JSON validity, stale string sweep. Found 3 real bugs (1 stale threshold, 2 schema-vs-doc action type mismatches).
+
+### Fixed
+- **skills/vibe/SKILL.md:514:** "batch review at 3" → "batch review at 5" (last remaining stale BATCH threshold)
+- **protocols/loop-otae.md:341:** Spine action_type list used `FEATURE_EXTRACTION`/`R2_REVIEW` (don't exist in schema). Replaced with full 16-type enum from spine-entry.schema.json: EXTRACT, REVIEW, + 4 missing types (CALIBRATE, CONFORMAL_PREDICT, TOOL_USE, COMPACT_SNAPSHOT).
+- **blueprints/v6.0-NEXUS-BLUEPRINT.md:906:** DB schema comment listed `FEATURE_EXTRACTION` → `EXTRACT` to match schema.
+
+### Triaged — Not Bugs
+- **spine-entry.schema.json:** CALIBRATE + CALIBRATION dual enum values — already documented in [6.0.24] as legacy/unused, not harmful.
+- **serendipity-seed.schema.json:** source_claim_id IS required for SALVAGED_FROM_R2 (line 138). Agent misread. FALSE POSITIVE.
+- **vigilance-check.schema.json:** Escalation logic at orchestrator level, not schema level — DESIGN CHOICE.
+
 ## [6.0.43] — 2026-03-05 — Blueprint R3 dimensions + literature-registry undefined category (R62)
 
 > **Trigger:** Round 62 paranoid deep debug — 6 parallel agents audited references/, blueprints/, scripts/agents, root SKILL.md 700-1369, plugin/db, line counts. Found 2 real bugs.

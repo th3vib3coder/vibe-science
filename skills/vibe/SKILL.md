@@ -511,7 +511,7 @@ Load ONLY when needed. Never load all at once.
 |-----------|--------|
 | Search query typo | AUTO-FIX silently, log |
 | Missing database in search | ADD database, log, continue |
-| Minor finding | ACCUMULATE — batch review at 3 |
+| Minor finding | ACCUMULATE — batch review at 5 |
 | Major finding | GATE — stop → verification → R2 FORCED |
 | Serendipity observation | LOG+TRIAGE → serendipity-engine |
 | Cross-branch pattern | SERENDIPITY — score → if >= 15: INTERRUPT — create node |

@@ -338,7 +338,7 @@ This is not optional. Every result of every cycle MUST be saved to disk. Context
 - **Note:** [anything notable — errors found, assumptions made, deviations from design]
 ```
 
-ACTION_TYPE is one of: `INIT`, `DATA_LOAD`, `FEATURE_EXTRACTION`, `MODEL_TRAIN`, `CALIBRATION`, `FINDING`, `R2_REVIEW`, `BUG_FIX`, `DESIGN_CHANGE`, `GATE_CHECK`, `LITERATURE_SEARCH`, `DATASET_DOWNLOAD`.
+ACTION_TYPE is one of: `INIT`, `DATA_LOAD`, `EXTRACT`, `MODEL_TRAIN`, `CALIBRATE`, `CALIBRATION`, `CONFORMAL_PREDICT`, `FINDING`, `REVIEW`, `BUG_FIX`, `DESIGN_CHANGE`, `GATE_CHECK`, `LITERATURE_SEARCH`, `DATASET_DOWNLOAD`, `TOOL_USE`, `COMPACT_SNAPSHOT`.
 
 **The logbook is NOT optional and NOT retroactive.** It is written AT THE END OF EVERY CYCLE as part of CRYSTALLIZE. A session without LOGBOOK.md entries is a session without audit trail. LAW 10 applies: if it's not in the logbook, it didn't happen.
 
