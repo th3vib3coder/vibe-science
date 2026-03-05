@@ -53,6 +53,11 @@ TreeNode:
   gate_results: dict        # e.g. {G0: pass, G2: pass, T0: pass}
   r2_ensemble_id: str | null
 
+  # v5.5 additions
+  spine_entry_id: str | null      # Reference to SPINE.md entry
+  dq_gate_results: dict | null    # {DQ1: pass, DQ2: pass, ...}
+  r2_inline_result: dict | null   # 7-point checklist result
+
   # Serendipity
   serendipity_flags: list[str]  # Unexpected observations from this node
 
@@ -154,7 +159,10 @@ confidence: 0.0
 vlm_feedback: null
 vlm_score: null
 gate_results: {}
+dq_gate_results: null
 r2_ensemble_id: null
+r2_inline_result: null
+spine_entry_id: null
 serendipity_flags: []
 ablation_target: null
 ablation_impact: null

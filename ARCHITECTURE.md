@@ -138,7 +138,7 @@ L-1+ is domain-aware with a 4-layer architecture:
 
 | Component | Lines | Purpose |
 |-----------|------:|---------|
-| `post-tool-use.js` | 1,765 | Gate enforcement, permissions, auto-logging, observer |
+| `post-tool-use.js` | 1,767 | Gate enforcement, permissions, auto-logging, observer |
 | `session-start.js` | 446 | Context injection, R2 calibration, domain config |
 | `worker-embed.js` | 475 | Background embedding daemon |
 | `gate-engine.js` | 471 | DQ/DC/DD/L-1+ gate logic |

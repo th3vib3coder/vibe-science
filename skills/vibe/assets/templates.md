@@ -10,7 +10,7 @@ Max 100 lines. Rewritten each cycle (not append-only).
 ---
 vibe_science_version: 6.0.0
 rq: RQ-001
-runtime: solo
+runtime: solo|team
 phase: brainstorm|discovery|analysis|data|validation|pipeline|synthesis
 stage: 1|2|3|4|5
 cycle: 1
