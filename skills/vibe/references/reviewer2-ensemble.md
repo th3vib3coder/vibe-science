@@ -201,7 +201,7 @@ R2 **MUST** produce a serendipity seed. This is mandatory. The seed captures:
 - What adjacent investigation the killed claim's data could inform
 
 Failure to produce a serendipity seed on a kill is a J0-scorable offense (R3 will
-penalise the review on the Constructiveness dimension).
+penalise the review on the Escalation dimension).
 
 ```yaml
 salvagente:

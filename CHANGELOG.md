@@ -2,6 +2,28 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.39] — 2026-03-05 — Stale R3 dimension + root templates.md sync to v6.0 (R58)
+
+> **Trigger:** Round 58 paranoid deep debug — 6 parallel agents audited R3 dimension completeness, CITATION/README, examples, YAML configs, assets templates, and internal links (84 verified). Found 1 remaining stale R3 dimension name and root templates.md significantly behind plugin version.
+
+### Fixed — Stale R3 Dimension Name
+- **skills/vibe/references/reviewer2-ensemble.md:204:** "Constructiveness" → "Escalation" (matches judge-rubric.yaml)
+
+### Fixed — Root assets/templates.md Synced to v6.0
+- **TREE-STATE version:** `"4.0.0"` → `"6.0.0"`
+- **TREE-STATE:** Added missing `"cycle": 1` field
+- **STATE.md template:** Added v6.0 gate fields (dq_gates, new_gates: DD0/DC0/L-1, observer_alerts, spine_entries)
+- **tree_health:** Added missing `exploration_ratio: 0.0` (LAW 8)
+- **CLAIM-LEDGER template:** Added missing `R2 INLINE` field (v5.5+)
+- **Added 3 v6.0 templates:** Handoff Document, Instinct Entry, Pattern Report
+
+### Verified FALSE POSITIVE
+- `claude-code.yaml:18` — `claude-haiku-4-5` is a comment showing model family name, not the deployment ID
+- `assets/templates.md` queries_deduped field — present in root (full reference), absent in plugin (minimal) — design choice
+- `fault-taxonomy.yaml` structural split — root has domain-specific faults, plugin has meta-faults only — intentional
+
+---
+
 ## [6.0.38] — 2026-03-05 — R3 rubric dimension names wrong in 4 files (R57)
 
 > **Trigger:** Round 57 paranoid deep debug — 6 parallel agents audited JSON schemas, hook scripts, protocols, top-level docs, config/settings, and skills/vibe/references. Found R3 Judge dimension names in 4 docs didn't match the actual rubric YAML.
