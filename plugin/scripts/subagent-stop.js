@@ -61,13 +61,18 @@ async function main(event) {
     // Check each killed claim for a serendipity seed
     const missingSeeds = [];
     for (const { claim_id } of killedClaims) {
-      const seed = db.prepare(`
-        SELECT seed_id FROM serendipity_seeds
-        WHERE narrative LIKE '%' || ? || '%'
-           OR causal_question LIKE '%' || ? || '%'
-      `).get(claim_id, claim_id);
+      try {
+        const seed = db.prepare(`
+          SELECT seed_id FROM serendipity_seeds
+          WHERE narrative LIKE '%' || ? || '%'
+             OR causal_question LIKE '%' || ? || '%'
+        `).get(claim_id, claim_id);
 
-      if (!seed) {
+        if (!seed) {
+          missingSeeds.push(claim_id);
+        }
+      } catch {
+        // Query failed (e.g., table missing) — treat as missing seed
         missingSeeds.push(claim_id);
       }
     }

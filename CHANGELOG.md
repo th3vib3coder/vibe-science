@@ -2,6 +2,37 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.23] — 2026-03-05 — Per-claim error handling + Windows path fix R38: subagent-stop.js, r2-calibration.js, worker-embed.js
+
+> **Trigger:** Round 38 paranoid deep debug — full JavaScript code audit of all 16 plugin/ files (8 hook scripts + 8 lib modules). Launched Explore agents to audit each file, then manually verified every finding against actual code. Most agent findings were FALSE POSITIVES (e.g., better-sqlite3 `.all()` null check — it always returns array; vecSearch uncaught error — already wrapped in try/catch; db null in fallbackBuildContext — caller already guards). Three REAL bugs survived verification.
+
+### Fixed — Per-Claim Error Handling in subagent-stop.js (MEDIUM)
+- **subagent-stop.js lines 63-77:** Wrapped individual seed-check query in try/catch inside the for-loop
+- **WHY:** If one claim's seed query failed (e.g., `serendipity_seeds` table missing or corrupted row), the entire for-loop threw an unhandled exception. The outer catch (line 98) caught it but exited with code 0 (allow), meaning the Salvagente Rule was silently bypassed for ALL killed claims — not just the one that failed. Now each failed query treats that individual claim as "missing seed" and continues checking the rest.
+
+### Fixed — Per-Seed Error Handling in r2-calibration.js (MEDIUM)
+- **r2-calibration.js `updateSeedStatuses` lines 208-216:** Wrapped individual `stmt.run()` in try/catch inside the for-loop
+- **WHY:** Same pattern as subagent-stop.js. If `stmt.run()` threw for one seed update (e.g., seed_id not found, constraint violation), all subsequent seed updates in the batch were lost. Now each failed update is silently skipped and remaining seeds are still processed.
+
+### Fixed — Windows Path Handling in worker-embed.js (LOW)
+- **worker-embed.js line 26:** Added `import { fileURLToPath } from 'node:url'`
+- **worker-embed.js line 56:** `path.dirname(new URL(import.meta.url).pathname)` → `path.dirname(fileURLToPath(import.meta.url))`
+- **WHY:** On Windows with Node < 21 (where `import.meta.dirname` is unavailable), `new URL(import.meta.url).pathname` returns `/F:/path/...` with a leading forward slash. `fs.existsSync()` at line 217 fails because `/F:/path` is not a valid Windows path. `fileURLToPath()` from `node:url` correctly strips the `file://` protocol and handles Windows drive letters, returning `F:\path\...`.
+
+### Verified — FALSE POSITIVES from Agent Audit (no changes needed)
+- **session-start.js:** `fallbackBuildContext(db)` null — caller at line 282 guards `if (db && dbAvailable)` ✓
+- **stop.js:** `.all()` null check — better-sqlite3 `.all()` always returns array ✓
+- **pre-compact.js:** Cross-session query — intentional (different semantics from stop.js) ✓
+- **db.js:** `JSON.parse(null)` in upsertPattern — catch block handles gracefully ✓
+- **context-builder.js:** vecSearch uncaught — lines 78-87 already have try/catch ✓
+- **vec-search.js:** Keyword splitting `C-001` — regex `[^a-z0-9\s-]` preserves hyphens ✓
+- **r2-calibration.js:** Decay docstring "2% per week" — `e^(-0.02) ≈ 0.98`, accurate for small rates ✓
+- **r2-calibration.js:** Silent JSON parse failure — explicit graceful degradation by design ✓
+- **worker-embed.js:** `loadEmbeddingModel()` not awaited — intentional non-blocking (line 470 comment) ✓
+- **worker-embed.js:** Race condition `modelReady`/`embeddingPipeline` — JS single-threaded, assignment order safe ✓
+- **prompt-submit.js, pre-tool-use.js, setup.js:** CLEAN — no issues found ✓
+- **narrative-engine.js, pattern-extractor.js, permission-engine.js:** CLEAN — no issues found ✓
+
 ## [6.0.22] — 2026-03-05 — Claim ID regex + case sensitivity fix R37: gate-engine.js, post-tool-use.js
 
 > **Trigger:** Round 37 paranoid deep debug — JavaScript code logic audit of gate-engine.js and post-tool-use.js. Found critical claim ID format mismatch: ALL templates/protocols use `C-001` format (with hyphen, 643 occurrences across 109 files), but `extractClaimId()` regexes only matched `C001` (without hyphen). This caused gate checks and Salvagente rule to silently skip all claims using the canonical `C-xxx` format. Also found asymmetric case sensitivity: prerequisite gate check only matched `CLAIM-LEDGER` (uppercase), while Salvagente check matched both cases.

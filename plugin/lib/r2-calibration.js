@@ -206,12 +206,16 @@ export function updateSeedStatuses(db, seedUpdates) {
     `);
 
     for (const update of seedUpdates) {
-        stmt.run(
-            update.status,
-            update.resolution || null,
-            update.sessionId,
-            new Date().toISOString(),
-            update.seedId
-        );
+        try {
+            stmt.run(
+                update.status,
+                update.resolution || null,
+                update.sessionId,
+                new Date().toISOString(),
+                update.seedId
+            );
+        } catch {
+            // Individual seed update failed — continue with remaining seeds
+        }
     }
 }

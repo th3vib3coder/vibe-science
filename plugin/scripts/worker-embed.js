@@ -25,6 +25,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
+import { fileURLToPath } from 'node:url';
 
 // Dynamic import: better-sqlite3 requires native compilation.
 let Database = null;
@@ -53,7 +54,7 @@ function getLogPath() {
     return path.join(LOG_DIR, `worker-${date}.log`);
 }
 const SCHEMA_PATH = path.join(
-    import.meta.dirname ?? path.dirname(new URL(import.meta.url).pathname),
+    import.meta.dirname ?? path.dirname(fileURLToPath(import.meta.url)),
     '..', 'db', 'schema.sql'
 );
 
