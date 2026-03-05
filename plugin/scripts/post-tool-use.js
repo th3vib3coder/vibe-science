@@ -1070,23 +1070,23 @@ function autoLog(db, event) {
 /**
  * Classify a tool use into a research action type.
  *
- * Categories (from blueprint):
+ * Returns ONLY values from spine-entry.schema.json action_type enum:
+ *   INIT               - Project initialization
  *   DATA_LOAD          - Loading/downloading datasets
- *   DATA_INSPECT        - Reading/exploring data files
- *   FEATURE_EXTRACTION  - Computing features from raw data
- *   MODEL_TRAIN         - Training ML models
- *   CALIBRATION         - Conformal prediction, calibration
- *   EVALUATION          - Metrics, benchmarks, tests
- *   VISUALIZATION       - Plots, figures
- *   LITERATURE_SEARCH   - Searching scientific literature
- *   CODE_WRITE          - Writing/editing code
- *   DOCUMENTATION       - Writing docs, findings, claims
- *   BUG_FIX             - Fixing errors
- *   CONFIGURATION       - Config, setup, environment
- *   FILE_READ           - Reading files (low priority for logging)
- *   SEARCH              - Searching codebase
- *   REVIEW              - R2 review activity
- *   OTHER               - Uncategorized
+ *   EXTRACT            - Feature extraction from raw data
+ *   MODEL_TRAIN        - Training ML models
+ *   CALIBRATE          - Calibrating predictions, adjusting thresholds
+ *   CALIBRATION        - Conformal prediction, calibration
+ *   CONFORMAL_PREDICT  - Conformal prediction step
+ *   FINDING            - Formulating a finding for the claim ledger
+ *   REVIEW             - R2 review activity
+ *   BUG_FIX            - Fixing errors
+ *   DESIGN_CHANGE      - Changing research design or methodology
+ *   GATE_CHECK         - Running quality gates (DQ1-DQ4, DD0, etc.)
+ *   LITERATURE_SEARCH  - Searching scientific literature
+ *   DATASET_DOWNLOAD   - Downloading a new dataset
+ *   TOOL_USE           - General tool usage (code, config, git, etc.)
+ *   COMPACT_SNAPSHOT   - Pre-compaction state snapshot
  *
  * @param {string} toolName
  * @param {object} toolInput
@@ -1732,15 +1732,17 @@ function detectDrift(declaredPhase, recentActions) {
     if (!recentActions || recentActions.length === 0) return null;
 
     // Map phases to expected dominant action types
+    // Values MUST match spine-entry.schema.json action_type enum
+    // (what classifyAction() actually returns)
     const phaseExpectedActions = {
-        'EXPLORATION': ['SEARCH', 'LITERATURE_SEARCH', 'FILE_READ', 'DATA_INSPECT'],
-        'DIRECTION': ['LITERATURE_SEARCH', 'DOCUMENTATION', 'SEARCH'],
-        'DATA': ['DATA_LOAD', 'DATA_INSPECT', 'CONFIGURATION'],
-        'FEATURES': ['FEATURE_EXTRACTION', 'CODE_WRITE', 'DATA_INSPECT'],
-        'TRAINING': ['MODEL_TRAIN', 'CODE_WRITE', 'EVALUATION'],
-        'CALIBRATION': ['CALIBRATION', 'CODE_WRITE', 'EVALUATION'],
-        'EVALUATION': ['EVALUATION', 'VISUALIZATION', 'DOCUMENTATION'],
-        'WRITING': ['DOCUMENTATION', 'VISUALIZATION', 'REVIEW'],
+        'EXPLORATION': ['LITERATURE_SEARCH', 'TOOL_USE', 'DATA_LOAD'],
+        'DIRECTION': ['LITERATURE_SEARCH', 'TOOL_USE', 'DESIGN_CHANGE'],
+        'DATA': ['DATA_LOAD', 'DATASET_DOWNLOAD', 'TOOL_USE'],
+        'FEATURES': ['EXTRACT', 'TOOL_USE', 'DATA_LOAD'],
+        'TRAINING': ['MODEL_TRAIN', 'TOOL_USE', 'GATE_CHECK'],
+        'CALIBRATION': ['CALIBRATION', 'CALIBRATE', 'CONFORMAL_PREDICT', 'TOOL_USE', 'GATE_CHECK'],
+        'EVALUATION': ['GATE_CHECK', 'TOOL_USE', 'FINDING'],
+        'WRITING': ['TOOL_USE', 'REVIEW', 'FINDING'],
     };
 
     const expectedActions = phaseExpectedActions[declaredPhase];

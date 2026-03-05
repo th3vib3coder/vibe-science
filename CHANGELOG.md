@@ -2,6 +2,16 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.45] — 2026-03-05 — CRITICAL drift detection fix + spine docs + license (R65)
+
+> **Trigger:** Round 65 paranoid deep debug — 6 parallel agents audited commands/, references/, .claude-plugin/, package.json, action_type cross-ref, README line counts. Found 4 real bugs (1 critical).
+
+### Fixed
+- **CRITICAL: plugin/scripts/post-tool-use.js:1735-1744:** `phaseExpectedActions` used 9 invalid action type names (SEARCH, FILE_READ, DATA_INSPECT, FEATURE_EXTRACTION, CODE_WRITE, EVALUATION, VISUALIZATION, DOCUMENTATION, CONFIGURATION) that `classifyAction()` never returns. Drift detection was **silently broken** — always reporting drift for valid actions. Rewrote to use only spine-entry.schema.json enum values.
+- **plugin/scripts/post-tool-use.js:1073-1089:** JSDoc listed old blueprint vocabulary instead of schema enum. Replaced with accurate 16-type enum documentation.
+- **skills/vibe/references/research-spine.md:32-45:** Action type table listed 12 of 16 types. Added 4 missing: CALIBRATION, CONFORMAL_PREDICT, TOOL_USE, COMPACT_SNAPSHOT. Also fixed field names `inputs`→`input`, `outputs`→`output` to match schema (lines 22-23), and stale example `WEB_SEARCH`→`LITERATURE_SEARCH` in auto-logging section (line 151).
+- **package-lock.json:10:** Root package license said "MIT" while package.json says "Apache-2.0". Synced to Apache-2.0.
+
 ## [6.0.44] — 2026-03-05 — BATCH threshold + spine action types desync (R64)
 
 > **Trigger:** Round 64 paranoid deep debug — 6 parallel agents audited hooks/, schemas/, plugin/lib/, examples/, JSON validity, stale string sweep. Found 3 real bugs (1 stale threshold, 2 schema-vs-doc action type mismatches).

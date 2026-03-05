@@ -19,8 +19,8 @@ Each entry is a structured record with the following fields:
 | `timestamp` | ISO 8601 | Yes | When the action occurred |
 | `action_type` | Enum | Yes | Category of action (see below) |
 | `action` | String | Yes | Human-readable description of what was done |
-| `inputs` | List[String] | Yes | Files or data consumed |
-| `outputs` | List[String] | Yes | Files or artifacts produced |
+| `input` | String | Yes | Files or data consumed |
+| `output` | String | Yes | Files or artifacts produced |
 | `gate_status` | String | No | Gate result if a gate was run (PASS / FAIL / SKIP) |
 | `errors` | String | No | Any errors encountered |
 | `next_action` | String | Yes | What should happen next |
@@ -36,6 +36,8 @@ Each entry is a structured record with the following fields:
 | `EXTRACT` | Feature extraction from raw data |
 | `MODEL_TRAIN` | Training a model or running a statistical test |
 | `CALIBRATE` | Calibrating predictions, adjusting thresholds |
+| `CALIBRATION` | Conformal prediction, calibration step |
+| `CONFORMAL_PREDICT` | Conformal prediction pass |
 | `FINDING` | Formulating a finding for the claim ledger |
 | `REVIEW` | R2 review pass (inline or forced) |
 | `BUG_FIX` | Fixing a bug in code or data processing |
@@ -43,6 +45,8 @@ Each entry is a structured record with the following fields:
 | `GATE_CHECK` | Running any quality gate (DQ1--DQ4, DD0, DC0, L-1) |
 | `LITERATURE_SEARCH` | Searching literature, databases, or prior art |
 | `DATASET_DOWNLOAD` | Downloading a new dataset from a repository |
+| `TOOL_USE` | General tool usage (code, config, git, scripts) |
+| `COMPACT_SNAPSHOT` | Pre-compaction state snapshot |
 
 ---
 
@@ -148,7 +152,7 @@ Both are kept in sync. The file is the source of truth; the DB enables cross-ses
 
 ### Auto-Logging
 The PostToolUse hook automatically creates spine entries for every tool invocation:
-- `action_type`: derived from tool name (e.g., "DATA_LOAD", "WEB_SEARCH", "FILE_WRITE")
+- `action_type`: derived from tool name via `classifyAction()` (e.g., "DATA_LOAD", "LITERATURE_SEARCH", "TOOL_USE")
 - `input_summary`: first 200 chars of tool input
 - `output_summary`: first 500 chars of tool output
 - `agent_role`: detected from prompt context
