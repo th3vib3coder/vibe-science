@@ -2,6 +2,48 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.33] — 2026-03-05 — Fix 8 stale values across SKILL.md, ARCHITECTURE.md, protocols (R52)
+
+> **Trigger:** Round 52 paranoid deep debug — deep-audited root SKILL.md (~1,370 lines), condensed SKILL.md (~528 lines), 36 reference cards, and 21 protocols. Found 6 bugs + 2 gaps across 5 files.
+
+### Fixed — SKILL.md Line 329: "27 v5.0 gates" Should Be "25" (HIGH)
+- **SKILL.md line 329:** `"All 27 v5.0 gates"` → `"All 25 v5.0 gates"`
+- **WHY:** This was the ROOT CAUSE of the persistent "34 gates" error seen in earlier rounds. The math: 27+7=34 (wrong) vs 25+7=32 (correct). v5.0 had 25 gates (G0-G6=7, L0-L2=3, D0-D2=3, T0-T3=4, B0=1, S1-S5=5, V0=1, J0=1 = 25). The stale "27" propagated through any reader who computed total gates from this line.
+
+### Fixed — SKILL.md Line 754: Serendipity "13/15" Uses Old Scale (MEDIUM)
+- **SKILL.md line 754:** `"scored 13/15"` → `"scored 13/15 (v4.0 scale; current scale is 0-20)"`
+- **WHY:** The CRISPR case study predates v5.0 when the serendipity scale was changed from 0-15 to 0-20. The "13/15" is historically accurate but confusing without annotation — readers would think the current scale is /15 when it's actually 0-20 (7-component scoring).
+
+### Fixed — protocols/agent-teams.md Line 129: Serendipity Alert "score >= 8" Should Be ">= 10" (MEDIUM)
+- **protocols/agent-teams.md line 129:** `"score >= 8"` → `"score >= 10"`
+- **WHY:** Score 8 falls in the FILE band (5-9), not the QUEUE band (10-14). The canonical thresholds are: NOISE (0-4), FILE (5-9), QUEUE (10-14), INTERRUPT (15-20). Creating an alert file at score 8 is wrong — alerts correspond to QUEUE threshold (>= 10). This value was likely never updated when the serendipity scale was recalibrated from 0-15 to 0-20.
+
+### Fixed — protocols/reviewer2-ensemble.md BATCH Threshold Inconsistency (MEDIUM)
+- **Lines 110, 133:** `"3 minor findings accumulated"` → `"5 unreviewed claims accumulated"`
+- **WHY:** The formal BATCH mode table (line 33) defines the trigger as ">= 5 unreviewed claims". The reference card also says ">= 5". But the explanatory text at line 110 and the "When to Invoke" table at line 133 still said "3" — the old v5.0 threshold before INLINE mode reduced BATCH frequency. Line 58 stays as-is because it explicitly describes "v5.0 BATCH mode" (historical context). The authoritative source is the formal mode table.
+
+### Fixed — ARCHITECTURE.md Line 430: "Quality Gates (12)" Stale v3.5 Count (MEDIUM)
+- **ARCHITECTURE.md line 430:** Updated "Quality Gates (12)" section with all 32 current gates
+- **WHY:** This section was frozen at the v3.5 gate count (12), listing only G0-G5, L0-L2, D0-D2. Current system has 32 gates across 11 categories: G0-G6, L-1+L0-L2, D0-D2, T0-T3, B0, S1-S5, DQ1-DQ4, DD0, DC0, V0, J0. Any reader of ARCHITECTURE.md would get a completely wrong picture of the gate system.
+
+### Fixed — protocols/loop-otae.md Missing L-1 and T3 in Gate Sections (LOW)
+- **Line 230:** Added `L-1: Literature pre-check` before L0 in Literature Gates section
+- **Line 237:** Added `T3: Tree health` after T2 in Tree Gates section
+- **WHY:** The gate listing in the EVALUATE phase was incomplete. L-1 (Literature Pre-Check, added in v5.5) and T3 (Tree Health Check, added in v4.0) were defined elsewhere in the document but missing from the gate summary sections. An agent reading only this section would not know these gates exist.
+
+### Fixed — SKILL.md LAW 12 Missing Canonical Parameters (LOW)
+- **SKILL.md line 175-176:** Added: confidence range (0.3-0.9), temporal decay formula (exp(-0.02 × weeks), half-life ~34.7 weeks), lifecycle stages (nascent→developing→established→proven), archival threshold (< 0.2)
+- **WHY:** LAW 12 INSTINCT was described qualitatively but lacked the canonical parameters defined in CLAUDE.md and the instinct scanner implementation. Without these values, the instinct system has no numeric boundaries.
+
+### Fixed — SKILL.md Frontmatter Missing v6.0.0 Changelog Entry (MEDIUM)
+- **SKILL.md line 12:** Added v6.0.0 NEXUS changelog entry
+- **WHY:** Frontmatter changelog listed versions v4.0.0 through v5.5.0 but was missing v6.0.0 despite `version: "6.0.0"` being set in line 6. Any tool reading the changelog field would not know what v6.0.0 changed.
+
+### Verified CLEAN (R52)
+- **Condensed SKILL.md:** Zero stale values, zero domain contamination across ~528 lines
+- **Reference cards:** 35/36 clean. 1 design-choice flag (brainstorm-engine.md collision threshold >= 8 vs canonical queue >= 10 — intentionally lower bar during brainstorming)
+- **Protocols:** 14/21 fully clean. Issues fixed in this commit cover all actionable findings
+
 ## [6.0.32] — 2026-03-05 — Fix dangling AGENTS.md reference in CLAUDE.md (R51)
 
 > **Trigger:** Round 51 paranoid deep debug — audited all internal markdown links across 88 .md files, cross-checked CLAUDE.md consistency between F: and D: drives, validated all 12 JSON schema files (3 copies each), and verified hooks configuration parity between settings.json and hooks.json.

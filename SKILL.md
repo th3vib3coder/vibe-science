@@ -9,7 +9,7 @@ metadata:
     architecture: OTAE-Tree (Observe-Think-Act-Evaluate inside Tree Search)
     lineage: "v3.5 TERTIUM DATUR + AI-Scientist-v2 reverse engineering"
     sources: Ralph, GSD, BMAD, Codex unrolled loop, Anthropic bio-research, ChatGPT Spec Kit, Sakana AI-Scientist-v2 (arXiv:2504.08066v1)
-    changelog: "v4.0.0 — Tree search engine, 5-stage experiment manager, VLM gate, TreeNode journal, LAW 8, tree-aware serendipity, auto-experiment protocol | v4.5.0 — Inversion+Collision brainstorm techniques, R2 red flag checklist, counter-evidence search, DOI verification, progressive disclosure refactor | v5.0.0 — Seeded Fault Injection, Judge Agent (R3), Blind-First Pass, Schema-Validated Gates. 25 gates (2 new: V0, J0). 8 gates schema-enforced. Circuit Breaker. Agent Permission Model. Confidence formula revised. R2 structurally unbypassable. | v5.5.0 — ORO (Observe-Recall-Operate). 7 new gates (DQ1-DQ4, DC0, DD0, L-1) for data quality and operational integrity. Total: 32 gates. R2 INLINE mode (7th activation). Structured logbook (LOGBOOK.md mandatory in CRYSTALLIZE). Literature Pre-Check (L-1) in Phase 0. Data Dictionary Protocol (DD0). Design Compliance Gate (DC0). Single Source of Truth rule. Post-mortem driven: 12 errors from CRISPR run mapped to architectural fixes."
+    changelog: "v4.0.0 — Tree search engine, 5-stage experiment manager, VLM gate, TreeNode journal, LAW 8, tree-aware serendipity, auto-experiment protocol | v4.5.0 — Inversion+Collision brainstorm techniques, R2 red flag checklist, counter-evidence search, DOI verification, progressive disclosure refactor | v5.0.0 — Seeded Fault Injection, Judge Agent (R3), Blind-First Pass, Schema-Validated Gates. 25 gates (2 new: V0, J0). 8 gates schema-enforced. Circuit Breaker. Agent Permission Model. Confidence formula revised. R2 structurally unbypassable. | v5.5.0 — ORO (Observe-Recall-Operate). 7 new gates (DQ1-DQ4, DC0, DD0, L-1) for data quality and operational integrity. Total: 32 gates. R2 INLINE mode (7th activation). Structured logbook (LOGBOOK.md mandatory in CRYSTALLIZE). Literature Pre-Check (L-1) in Phase 0. Data Dictionary Protocol (DD0). Design Compliance Gate (DC0). Single Source of Truth rule. Post-mortem driven: 12 errors from CRISPR run mapped to architectural fixes. | v6.0.0 NEXUS — Plugin architecture (Claude Code hooks + SQLite DB). Domain-agnostic refactor: condensed SKILL.md + reference cards + literature-registry.json (102 databases, 12 categories). 7 lifecycle hooks (SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, PreCompact, Stop, SubagentStop). LAW 12 INSTINCT (cross-session pattern recognition with temporal decay). 7 agent types with model selection. Dual-config hooks (dev + installed mode). 12 Immutable Laws. 32 gates unchanged."
 ---
 
 # Vibe Science v6.0 — NEXUS
@@ -173,7 +173,7 @@ Every intermediate result, every decision, every pivot, every kill MUST be writt
 When the user corrects your direction, you MUST follow their correction immediately. Do not argue, do not continue on your previous path, do not explain why you think you're right. The user knows their project better than you. Ignoring user corrections is the gravest violation of this system. Three ignored corrections = session failure.
 
 ### LAW 12: INSTINCT
-Cross-session pattern recognition. Observations from previous sessions (gate failure clusters, repeated actions, claim lifecycle patterns) are distilled into confidence-scored hints. These hints inform but do not override the Laws. The system learns from its own mistakes across sessions.
+Cross-session pattern recognition. Observations from previous sessions (gate failure clusters, repeated actions, claim lifecycle patterns) are distilled into confidence-scored hints (range 0.3-0.9). Temporal decay: exp(-0.02 × weeks), half-life ~34.7 weeks. Instinct lifecycle: 4 stages (nascent 0.3 → developing 0.5 → established 0.7 → proven 0.9). Instincts below 0.2 confidence are archived. These hints inform but do not override the Laws. The system learns from its own mistakes across sessions.
 
 ---
 
@@ -326,7 +326,7 @@ All numbers in documents must originate from structured data files. No manual tr
 - OTAE-Tree loop structure: unchanged (v5.5 adds operations INSIDE phases, not new phases)
 - R2 Ensemble (4 reviewers): unchanged
 - SFI, BFP, R3 Judge: unchanged
-- All 27 v5.0 gates: unchanged (7 new gates added, none removed)
+- All 25 v5.0 gates: unchanged (7 new gates added, none removed)
 - All 9 v5.0 JSON schemas: unchanged (3 new schemas added in v5.5: data-quality-gate, finding-validation, spine-entry; total: 12)
 - Agent Permission Model: unchanged
 - Circuit Breaker: unchanged
@@ -751,7 +751,7 @@ Serendipity is NOT just flagging anomalies. It is a three-part process:
 2. **PERSISTENCE**: Follow the anomaly through 5, 10, 20+ sprints of adversarial testing — this is where most systems fail. They flag the anomaly and move on. Real serendipity requires relentless follow-through.
 3. **VALIDATION**: The anomaly survives confounder harness (LAW 9), cross-assay replication, permutation testing, and R2 demolition. Only THEN is it a finding.
 
-In the CRISPR case study: UOT failed (Sprint 3) → Serendipity Engine scored 13/15 → investigation pivoted → 21 sprints of adversarial testing → 4 validated findings across 1.38M sites. The serendipity flag at Sprint 3 was the BEGINNING, not the end. Without the 18 subsequent sprints of falsification, the flag would have been meaningless.
+In the CRISPR case study: UOT failed (Sprint 3) → Serendipity Engine scored 13/15 (v4.0 scale; current scale is 0-20) → investigation pivoted → 21 sprints of adversarial testing → 4 validated findings across 1.38M sites. The serendipity flag at Sprint 3 was the BEGINNING, not the end. Without the 18 subsequent sprints of falsification, the flag would have been meaningless.
 
 **Implication for the system**: Serendipity flags MUST be tracked with the same persistence as research questions. A serendipity flag that is not followed up within 5 cycles gets escalated. A serendipity flag that IS followed up gets the full confounder harness treatment.
 

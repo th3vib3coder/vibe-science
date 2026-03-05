@@ -126,7 +126,7 @@ Teammates communicate via shared files. The filesystem is the message bus.
 
 ### Serendipity → Team Lead
 1. Serendipity writes flag to SERENDIPITY.md
-2. If score >= 8: creates `serendipity-alert-{id}.md` in root of `.vibe-science/`
+2. If score >= 10: creates `serendipity-alert-{id}.md` in root of `.vibe-science/`
 3. Team Lead reads alert and decides: create serendipity node or queue
 
 ### Team Lead → Experimenter

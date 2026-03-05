@@ -427,11 +427,21 @@ FLOOR: E < 0.2 → capped at 0.20
 
 **4 typed claims**: `descriptive` · `correlative` · `causal` · `predictive`
 
-### Quality Gates (12)
+### Quality Gates (32)
 
-- **Pipeline (G0-G5)**: Input Sanity, Schema, Design, Training, Metrics, Artifacts
-- **Literature (L0-L2)**: Source Validity (DOI verified), Coverage (>= 3 sources), Review Complete
+- **Pipeline (G0-G6)**: Input Sanity, Schema, Design, Training, Metrics, Artifacts, VLM (optional)
+- **Literature (L-1, L0-L2)**: Pre-Check, Source Validity, Coverage, Review Complete
 - **Decision (D0-D2)**: Decision Justified, Claim Promotion (R2 approved), RQ Conclusion
+- **Tree (T0-T3)**: Node Validity, Debug Limit, Branch Diversity, Tree Health
+- **Brainstorm (B0)**: Hypothesis Triage Complete
+- **Stage (S1-S5)**: Stage 1-5 Transition Gates
+- **Data Quality (DQ1-DQ4)**: Post-Extraction, Post-Training, Calibration, Finding Formulation
+- **Data Dictionary (DD0)**: Column Documentation
+- **Design Compliance (DC0)**: Design vs Execution Match
+- **Validation (V0)**: Voice/Validation Metrics (RMS >= 0.80, FAR <= 0.10)
+- **Judge (J0)**: R3 Scoring Complete
+
+8 gates schema-enforced.
 
 ### Protocols (9)
 

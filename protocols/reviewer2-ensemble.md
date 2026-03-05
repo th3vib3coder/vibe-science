@@ -107,7 +107,7 @@ inline_review:
 ### Interaction with other R2 modes
 
 - **INLINE does NOT replace FORCED.** If a finding triggers FORCED (major finding, stage transition, confidence explosion), FORCED runs WITH full SFI+BFP+R3 pipeline. INLINE is skipped for that finding.
-- **INLINE replaces most BATCH triggers.** Since every finding is reviewed individually, the "3 minor findings accumulated" BATCH trigger fires less often. BATCH remains as fallback if INLINE is disabled.
+- **INLINE replaces most BATCH triggers.** Since every finding is reviewed individually, the "5 unreviewed claims accumulated" BATCH trigger fires less often. BATCH remains as fallback if INLINE is disabled.
 - **SHADOW continues unchanged.** SHADOW monitors drift; INLINE monitors individual findings. Orthogonal concerns.
 
 ### Cost
@@ -130,7 +130,7 @@ INLINE is a single-pass checklist, not a full ensemble review. In SOLO mode, the
 | Trigger | Reviewers Activated | Urgency |
 |---------|-------------------|---------|
 | Major finding discovered | All 4 | STOP the loop, review now |
-| 3 minor findings accumulated | R2-Methods + most relevant specialist | Before next cycle |
+| 5 unreviewed claims accumulated | R2-Methods + most relevant specialist | Before next cycle |
 | Before concluding any RQ | All 4 (final review) | Before writing conclusion |
 | Serendipity pivot proposed | R2-Methods + R2-Domain | Before creating new RQ |
 | Computational pipeline complete | R2-Stats + R2-Eng (minimum) | Before accepting run |

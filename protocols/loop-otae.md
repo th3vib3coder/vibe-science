@@ -228,6 +228,7 @@ Apply ALL relevant gates for the action type:
 - G6: VLM validation? (if VLM available — OPTIONAL)
 
 **Literature Gates (search/extract actions):**
+- L-1: Literature pre-check (must search literature before defining research direction)
 - L0: Source validity (DOIs verified, no training-knowledge claims as DATA)
 - L1: Coverage adequacy (2+ databases, 3+ strategies, negative results documented)
 - L2: Review completeness (all findings reviewed, counter-evidence searched)
@@ -236,6 +237,7 @@ Apply ALL relevant gates for the action type:
 - T0: Node validity (valid type, valid parent, non-empty plan)
 - T1: Debug limit (<=3 attempts per buggy node)
 - T2: Branch diversity (siblings differ substantively)
+- T3: Tree health (every 5 cycles: >=20% good nodes, no 5+ non-improving branches, >=2 branches explored)
 
 Gate FAIL → stop, fix, re-gate. Do NOT continue past a failed gate.
 
