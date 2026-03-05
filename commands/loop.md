@@ -45,7 +45,7 @@ Current state:
 - RQ: RQ-001-transport-integration
 - Phase: discovery
 - Cycle: 7
-- Minor findings pending: 2
+- unreviewed_claims_pending: 2
 
 Resuming from: "Search PubMed for data integration methodology details"
 ```
@@ -94,7 +94,7 @@ Or:
 **Type:** MINOR - supporting evidence
 **Confidence:** MEDIUM - mentioned in discussion
 
-Minor findings pending: 3/3 → Batch Reviewer 2 triggered
+unreviewed_claims_pending: 5/5 → Batch Reviewer 2 triggered
 ```
 
 ### Step 4: Extract Data (if applicable)
@@ -156,7 +156,7 @@ Stop condition check:
 Updating STATE.md:
 - Cycle: 8
 - Phase: discovery (continuing)
-- Minor findings pending: 0 (cleared by batch review)
+- unreviewed_claims_pending: 0 (cleared by batch review)
 - Next action: Deep-dive Tsai 2015 methodology
 
 Appending to PROGRESS.md:

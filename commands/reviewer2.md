@@ -23,7 +23,7 @@ Can also be invoked manually for ad-hoc review.
 
 ```
 /vibe-science:reviewer2                    # Review latest major finding
-/vibe-science:reviewer2 --batch            # Review accumulated minor findings
+/vibe-science:reviewer2 --batch            # Review accumulated unreviewed claims
 /vibe-science:reviewer2 --final            # Final review before concluding RQ
 /vibe-science:reviewer2 --pivot [reason]   # Review pivot justification
 ```

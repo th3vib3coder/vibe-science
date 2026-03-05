@@ -2,6 +2,22 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.37] — 2026-03-05 — 4 stale refs in commands/loop.md & commands/reviewer2.md (R56)
+
+> **Trigger:** Round 56 paranoid deep debug — 6 parallel audit agents covered commands/, examples/, YAML frontmatter, table cross-refs, JS hooks, and protocol gate definitions. Found 4 remaining stale `minor findings` references in command docs.
+
+### Fixed — Stale Variable Name & Threshold in Command Docs
+- **commands/loop.md line 48:** `Minor findings pending: 2` → `unreviewed_claims_pending: 2`
+- **commands/loop.md line 97:** `Minor findings pending: 3/3` → `unreviewed_claims_pending: 5/5`
+- **commands/loop.md line 159:** `Minor findings pending: 0` → `unreviewed_claims_pending: 0`
+- **commands/reviewer2.md line 26:** `minor findings` → `unreviewed claims`
+
+### Verified FALSE POSITIVE (not bugs)
+- ARCHITECTURE.md TOC anchor links: GFM slug generation strips em-dashes correctly, links valid
+- plugin/scripts/subagent-stop.js SQL LIKE: claim IDs are system-generated `C-NNN`, no wildcard risk
+
+---
+
 ## [6.0.36] — 2026-03-05 — Rename minor_findings_pending → unreviewed_claims_pending across 6 files (R55)
 
 > **Trigger:** Round 55 paranoid deep debug — 6 parallel audit agents covered internal links, examples, README/config, AGENTS.md, CHANGELOG, and JS hook logic. Found the variable name `minor_findings_pending` was never renamed to `unreviewed_claims_pending` despite R53 changing the terminology everywhere else.
