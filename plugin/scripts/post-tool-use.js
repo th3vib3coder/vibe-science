@@ -1740,7 +1740,7 @@ function detectDrift(declaredPhase, recentActions) {
         'DATA': ['DATA_LOAD', 'DATASET_DOWNLOAD', 'TOOL_USE'],
         'FEATURES': ['EXTRACT', 'TOOL_USE', 'DATA_LOAD'],
         'TRAINING': ['MODEL_TRAIN', 'TOOL_USE', 'GATE_CHECK'],
-        'CALIBRATION': ['CALIBRATION', 'CALIBRATE', 'CONFORMAL_PREDICT', 'TOOL_USE', 'GATE_CHECK'],
+        'CALIBRATION': ['CALIBRATION', 'CONFORMAL_PREDICT', 'TOOL_USE', 'GATE_CHECK'],
         'EVALUATION': ['GATE_CHECK', 'TOOL_USE', 'FINDING'],
         'WRITING': ['TOOL_USE', 'REVIEW', 'FINDING'],
     };

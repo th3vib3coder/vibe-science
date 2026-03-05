@@ -51,7 +51,7 @@ function main(event) {
     }
 
     // Check for NOT_APPLICABLE marker
-    if (/confounder.*not.?applicable/i.test(content) || /confounder.*not.?applicable/i.test(oldContent)) {
+    if (/confounder\S*\s*[:=]?\s*not.?applicable/i.test(content) || /confounder\S*\s*[:=]?\s*not.?applicable/i.test(oldContent)) {
       allow();
       return;
     }

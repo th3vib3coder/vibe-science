@@ -216,7 +216,7 @@ export function getLastSession(db, projectPath) {
  * @param {import('better-sqlite3').Database} db
  * @param {object} entry
  * @param {string} entry.session_id
- * @param {string} entry.action_type - DATA_LOAD, FEATURE_EXTRACTION, MODEL_TRAIN, etc.
+ * @param {string} entry.action_type - DATA_LOAD, EXTRACT, MODEL_TRAIN, CALIBRATION, etc.
  * @param {string} [entry.timestamp] - ISO timestamp (defaults to now)
  * @param {string} [entry.tool_name]
  * @param {string} [entry.input_summary]

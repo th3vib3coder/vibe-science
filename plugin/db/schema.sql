@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS spine_entries (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     session_id TEXT NOT NULL REFERENCES sessions(id),
     timestamp TEXT NOT NULL,
-    action_type TEXT NOT NULL,  -- DATA_LOAD, FEATURE_EXTRACTION, MODEL_TRAIN, etc.
+    action_type TEXT NOT NULL,  -- DATA_LOAD, EXTRACT, MODEL_TRAIN, CALIBRATION, etc.
     tool_name TEXT,
     input_summary TEXT,
     output_summary TEXT,
@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS r2_reviews (
     review_mode TEXT NOT NULL,  -- INLINE/FORCED/BATCH/SHADOW/BRAINSTORM
     claims_reviewed TEXT NOT NULL,  -- JSON array of claim_ids
     j0_score INTEGER,  -- R3 Judge total score (NULL if not FORCED)
-    j0_dimensions TEXT,  -- JSON: {specificity: N, counter_evidence: N, ...}
+    j0_dimensions TEXT,  -- JSON: {specificity: N, counter_evidence_search: N, confounder_analysis: N, falsification_demand: N, independence: N, escalation: N}
     sfi_injected INTEGER DEFAULT 0,
     sfi_caught INTEGER DEFAULT 0,
     sfi_missed TEXT,  -- JSON array of missed fault IDs

@@ -2,6 +2,21 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.46] — 2026-03-05 — schema.sql stale comments + LAW 9 regex + dead enum (R66)
+
+> **Trigger:** Round 66 paranoid deep debug — 6 parallel agents audited session-start.js, prompt-submit.js, pre-tool-use.js, stop.js+subagent-stop.js, post-tool-use.js (full), all 21 protocols. Found 4 bugs.
+
+### Fixed
+- **plugin/db/schema.sql:25:** Comment listed `FEATURE_EXTRACTION` → `EXTRACT` to match spine-entry.schema.json.
+- **plugin/db/schema.sql:72:** `j0_dimensions` comment listed only 2 of 6 R3 dimensions with ellipsis (same bug fixed in blueprint R62, missed here). Now lists all 6.
+- **plugin/lib/db.js:219:** JSDoc `FEATURE_EXTRACTION` → `EXTRACT`.
+- **plugin/scripts/post-tool-use.js:1743:** Removed dead `CALIBRATE` from phaseExpectedActions CALIBRATION phase — `classifyAction()` never returns it.
+- **plugin/scripts/pre-tool-use.js:54:** Tightened LAW 9 NOT_APPLICABLE regex from `/confounder.*not.?applicable/` (greedy `.*` could match across unrelated text) to `/confounder\S*\s*[:=]?\s*not.?applicable/` (requires field-like context).
+
+### Triaged — Not Bugs
+- **prompt-submit.js:66:** `reviewer2` vs canonical `R2` — DESIGN CHOICE. Internal string consistently `reviewer2` across permission-engine, prompt-submit, stop hooks. Documentation says `R2` as shorthand.
+- **subagent-stop.js:65-69:** Salvagente query uses LIKE instead of FK — DESIGN GAP (no `source_claim_id` column in DB table). Tracked but not a bug per current schema.
+
 ## [6.0.45] — 2026-03-05 — CRITICAL drift detection fix + spine docs + license (R65)
 
 > **Trigger:** Round 65 paranoid deep debug — 6 parallel agents audited commands/, references/, .claude-plugin/, package.json, action_type cross-ref, README line counts. Found 4 real bugs (1 critical).
