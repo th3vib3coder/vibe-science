@@ -2,6 +2,17 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.42] — 2026-03-05 — 5 stale BATCH/terminology fixes across protocols, examples, SKILL.md, UPGRADE_PLAN (R61)
+
+> **Trigger:** Round 61 paranoid deep debug — 6 parallel agents audited 21 protocols, plugin/lib JS, examples, cross-file enums, config metadata, root SKILL.md. Found 5 real bugs across 4 files.
+
+### Fixed
+- **protocols/reviewer2-ensemble.md:58:** "accumulates 3 minor findings" → "accumulates 5 unreviewed claims"
+- **examples/walkthrough-literature-review.md:66:** "minor claims" → "unreviewed claims, BATCH threshold is 5"
+- **examples/walkthrough-literature-review.md:93-100:** Off-by-one BATCH trigger (4 claims triggered >= 5 gate). Added C-005, count now 5.
+- **UPGRADE_PLAN_V2.md:207:** `minor_findings_pending` → `unreviewed_claims_pending`
+- **SKILL.md:1050:** "batch review at 3" → "batch review at 5"
+
 ## [6.0.41] — 2026-03-05 — Hook comment, README line counts (R60)
 
 > **Trigger:** Round 60 paranoid deep debug — 6 parallel agents audited hook scripts, 12 JSON schemas, commands, .claude/ config, README.md, ARCHITECTURE.md. Found 3 real bugs, 3 false positives.

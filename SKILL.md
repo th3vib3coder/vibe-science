@@ -1047,7 +1047,7 @@ T3 fails (good/total < 0.2) AND no pending debug nodes → All branches failing.
 |-----------|----------|--------|
 | Search query typo | AUTO-FIX | Fix silently, log |
 | Missing database in search | ADD | Add, log, continue |
-| Minor finding | ACCUMULATE | Log, batch review at 3 |
+| Minor finding | ACCUMULATE | Log, batch review at 5 |
 | Major finding | GATE | Stop → verification gates → R2 |
 | Serendipity observation | LOG+TRIAGE | Log → serendipity-engine triage |
 | Cross-branch pattern detected | **SERENDIPITY** | Log → score → if >= 15: create serendipity node |

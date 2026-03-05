@@ -63,7 +63,7 @@ Papers flagged for deep-dive:
 - C-002: "TrajectoryNet extends OT to continuous normalizing flows for trajectory" (Type: DATA, E=0.8, Confidence: 0.68)
 
 ### CHECKPOINT
-No R2 trigger (no major finding yet, only 2 minor claims).
+No R2 trigger (only 2 unreviewed claims, BATCH threshold is 5).
 
 ### CRYSTALLIZE
 Update STATE.md: cycle=1, claims_total=2, queries_run=1.
@@ -93,8 +93,9 @@ Key finds:
 **Claims extracted:**
 - C-003: "Neural OT extends WOT by learning continuous transport maps instead of discrete couplings" (Type: INFERENCE, E=0.8, C=0.6, Confidence: 0.64)
 - C-004: "Steady-state OT trajectory inference does not require time-series data" (Type: DATA, E=0.8, Confidence: 0.72)
+- C-005: "Forward citation network from Schiebinger 2019 shows 89 citing works, indicating active subfield" (Type: DATA, E=0.6, Confidence: 0.55)
 
-**unreviewed_claims_pending:** 4 (accumulated).
+**unreviewed_claims_pending:** 5 (accumulated).
 
 ### CHECKPOINT
 unreviewed_claims_pending >= 5 → **R2 BATCH REVIEW TRIGGERED**.

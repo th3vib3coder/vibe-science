@@ -55,7 +55,7 @@ If ANY metric is concerning:
 
 ### Why INLINE exists
 
-v5.0 BATCH mode accumulates 3 minor findings before triggering review. This means problems in finding 1 are discovered only after finding 3 is formulated — wasting cycles and risking cascade errors. INLINE catches problems at formulation time.
+Pre-INLINE BATCH mode accumulates 5 unreviewed claims before triggering review. This means problems in finding 1 are discovered only after finding 5 is formulated — wasting cycles and risking cascade errors. INLINE catches problems at formulation time.
 
 ### When INLINE fires
 
