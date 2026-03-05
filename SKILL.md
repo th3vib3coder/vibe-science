@@ -135,7 +135,7 @@ Serendipity is not a side-effect to preserve — it is the primary engine of dis
 If a step can produce a script, a file, a figure, a manifest — it MUST. Prose descriptions of what "should" happen are insufficient.
 
 ### LAW 7: FRESH CONTEXT RESILIENCE
-The system MUST be resumable from `STATE.md` + `TREE-STATE.json` alone. All context lives in files, never in chat history.
+The system MUST be resumable from `STATE.md` alone (database enriches but is not required). All context lives in files, never in chat history.
 
 ### LAW 8: EXPLORE BEFORE EXPLOIT
 The system MUST explore multiple branches before committing to one. Premature convergence is as dangerous as no convergence. Minimum exploration: 3 draft nodes before any is promoted. A tree with one branch is a list — lists miss discoveries.
@@ -487,7 +487,7 @@ After R2 clearance:
 1. Finalize RQ.md with: question, hypothesis, predictions, success criteria, kill conditions
 2. Set tree mode: LINEAR | BRANCHING | HYBRID
 3. Create full folder structure
-4. Populate STATE.md, PROGRESS.md, TREE-STATE.json
+4. Populate STATE.md, PROGRESS.md
 5. Enter first OTAE cycle with a **solid foundation**
 
 ### Phase 0 Gate: B0 (Brainstorm Quality)
@@ -550,7 +550,7 @@ Each node executes one complete OTAE cycle (Observe parent → Think plan → Ac
 ╠═══════════════════════════════════════════════════════════════╣
 ║                                                               ║
 ║  ┌─── OBSERVE ──────────────────────────────────────────┐    ║
-║  │  Read STATE.md + TREE-STATE.json                     │    ║
+║  │  Read STATE.md (includes tree state)                  │    ║
 ║  │  Identify current stage (1-5)                        │    ║
 ║  │  Load current node context + parent chain            │    ║
 ║  │  Check pending: gates, R2 demands, stage transitions │    ║
@@ -629,7 +629,7 @@ Each node executes one complete OTAE cycle (Observe parent → Think plan → Ac
 ║                         ↓                                     ║
 ║  ┌─── CRYSTALLIZE (LAW 10: NOT IN FILE = DOESN'T EXIST) ──┐    ║
 ║  │  Update STATE.md (rewrite, max 100 lines)            │    ║
-║  │  Update TREE-STATE.json (full tree serialization)    │    ║
+║  │  Update STATE.md tree section                        │    ║
 ║  │  Write/update node file in 08-tree/nodes/            │    ║
 ║  │  Append PROGRESS.md (cycle summary)                  │    ║
 ║  │  Update CLAIM-LEDGER.md, ASSUMPTION-REGISTER.md      │    ║
@@ -939,12 +939,12 @@ Once chosen, the entire session follows that architecture. No switching mid-sess
 2. Version check: STATE.md must have vibe_science_version field.
    - If < 4.0.0 → WARN: "Session created with older version."
      Offer: continue linear (v3.5 compat) or upgrade to tree mode.
-   - If >= 4.0.0 → check TREE-STATE.json exists
+   - If >= 4.0.0 → check STATE.md has tree state fields
 3. Read runtime field: solo or team
    - If team → verify Agent Teams is enabled, check teammates alive
    - If team + teammates dead → offer: respawn team or continue solo
 4. Read last 20 lines of PROGRESS.md
-5. Read TREE-STATE.json (tree structure + current stage)
+5. Read tree state from STATE.md (tree structure + current stage)
 6. Read CLAIM-LEDGER.md frontmatter (counts, statuses)
 7. Check: pending R2? pending gate failures? pending debug nodes?
 8. Resume from "Next Action" in STATE.md
@@ -971,7 +971,7 @@ Once chosen, the entire session follows that architecture. No switching mid-sess
 4. Gate B0 must PASS before proceeding
 5. Determine tree mode: LINEAR | BRANCHING | HYBRID
 6. Create folder structure (see below)
-7. Populate RQ.md, STATE.md (with runtime field), PROGRESS.md, TREE-STATE.json
+7. Populate RQ.md, STATE.md (with runtime field), PROGRESS.md
 8. Enter first OTAE cycle
 ```
 
@@ -983,7 +983,6 @@ Once chosen, the entire session follows that architecture. No switching mid-sess
 ├── CLAIM-LEDGER.md             # All claims with evidence + confidence
 ├── ASSUMPTION-REGISTER.md      # All assumptions with risk + verification
 ├── SERENDIPITY.md              # Unexpected discovery log
-├── TREE-STATE.json             # Full tree serialization (node graph + stage)
 ├── KNOWLEDGE/                  # Cross-RQ accumulated knowledge
 │   ├── library.json            # Index of known papers, methods, datasets
 │   └── patterns.md             # Cross-domain patterns discovered
@@ -1162,7 +1161,7 @@ Roles are distributed across separate Claude Code instances using Agent Teams. E
 │  (Code + exec)  │
 └─────────────────┘
 
-Shared: STATE.md, CLAIM-LEDGER.md, TREE-STATE.json, PROGRESS.md, SERENDIPITY.md
+Shared: STATE.md, CLAIM-LEDGER.md, PROGRESS.md, SERENDIPITY.md
 ```
 
 **Pros:** R2 is genuinely adversarial (no shared bias), serendipity scans continuously, parallel exploration, no context rot.
@@ -1199,7 +1198,7 @@ REVIEWER2 reviews:
   4. Updates 05-reviewer2/ with review file
 
 SERENDIPITY scans (continuous background loop):
-  1. Reads TREE-STATE.json every N seconds
+  1. Reads STATE.md every N seconds
   2. Compares branches for cross-branch patterns
   3. Reads CLAIM-LEDGER.md for contradictions
   4. If flag found → messages lead: "Serendipity score 13 on cross-branch pattern between node-005 and node-011"

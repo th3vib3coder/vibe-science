@@ -3,7 +3,7 @@ name: vibe-science
 description: "Scientific research engine v6.0 NEXUS — adversarial review (Reviewer 2), 32 quality gates, tree search, serendipity tracking, confounder harness, cross-session learning. Use for ANY scientific analysis, hypothesis testing, data validation, literature review, or task where correctness > speed."
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, WebSearch, WebFetch, Task
 ---
-<!-- v6.0.1 | Apache-2.0 | Author: th3vib3coder | Requires: Python 3.8+ for enforcement scripts -->
+<!-- v6.0.0 | Apache-2.0 | Author: th3vib3coder | Requires: Node.js 18+ for enforcement hooks -->
 
 # Vibe Science v6.0 NEXUS — Observe · Recall · Operate
 
@@ -44,7 +44,7 @@ In Claude Code, R2 is a **separate sub-agent** launched via the Task tool with i
 **LAW 4: REVIEWER 2 IS CO-PILOT** — R2 can VETO, REDIRECT, FORCE re-investigation. Non-negotiable.
 **LAW 5: SERENDIPITY IS THE MISSION** — Hunt for the unexpected at every cycle. Score >= 10 → QUEUE. >= 15 → INTERRUPT.
 **LAW 6: ARTIFACTS OVER PROSE** — If a step can produce a file, it MUST.
-**LAW 7: FRESH CONTEXT RESILIENCE** — Resumable from STATE.md + TREE-STATE.json + DB snapshots. All context lives in files and DB, never in chat history.
+**LAW 7: FRESH CONTEXT RESILIENCE** — Resumable from STATE.md alone (database enriches but is not required). All context lives in files, never in chat history.
 **LAW 8: EXPLORE BEFORE EXPLOIT** — Min 3 draft nodes before promotion. Exploration ratio >= 20%.
 **LAW 9: CONFOUNDER HARNESS** — Every quantitative claim: raw → conditioned → matched. Sign change = ARTIFACT. Collapse >50% = CONFOUNDED. Survives = ROBUST. `NO HARNESS = NO CLAIM.`
 **LAW 10: CRYSTALLIZE OR LOSE** — Every result written to file. Context window is a buffer, not memory.
@@ -126,7 +126,7 @@ At session start, the SessionStart hook automatically provides:
 This context is injected into the agent's system prompt (~700 tokens). No manual loading required.
 
 ### If `.vibe-science/` exists → RESUME
-1. Read STATE.md, TREE-STATE.json, last 20 lines of PROGRESS.md
+1. Read STATE.md (includes tree state), last 20 lines of PROGRESS.md
 2. Read CLAIM-LEDGER.md frontmatter, SPINE.md last entry
 3. Check pending: R2 demands, gate failures, debug nodes, Observer alerts
 4. Check injected context: patterns, instincts, R2 calibration hints
@@ -136,7 +136,7 @@ This context is injected into the agent's system prompt (~700 tokens). No manual
 ### If `.vibe-science/` does NOT exist → INITIALIZE
 1. → Phase 0: SCIENTIFIC BRAINSTORM (mandatory)
 2. Gate B0 must PASS before any OTAE cycle
-3. Create folder structure, populate STATE.md, PROGRESS.md, TREE-STATE.json, SPINE.md
+3. Create folder structure, populate STATE.md, PROGRESS.md, SPINE.md
 
 ### Post-Compaction Recovery
 If the context was compacted (auto or manual), the PreCompact hook saved a snapshot to DB:
@@ -176,12 +176,12 @@ Each cycle: ONE meaningful action. Each tree node = one OTAE cycle.
 
 | Phase | Actions | v5.5 Insertions | v6.0 Hooks |
 |-------|---------|-----------------|------------|
-| **OBSERVE** | Read STATE.md + TREE-STATE.json. Check pending gates, R2 demands, debug nodes. | Check Observer alerts. Check SPINE.md last entry. | SessionStart injects context: state, alerts, R2 calibration, patterns, seeds. |
+| **OBSERVE** | Read STATE.md (includes tree state). Check pending gates, R2 demands, debug nodes. | Check Observer alerts. Check SPINE.md last entry. | SessionStart injects context: state, alerts, R2 calibration, patterns, seeds. |
 | **THINK** | Select next node or action. Plan: search, analyze, extract, compute, experiment. | **[DD0]** If new data: document all columns before use. **[L-1]** If new direction: literature pre-check. | Check instincts: any learned patterns relevant to current plan? |
 | **ACT** | Execute planned action. Produce artifacts. Debug if buggy (max 3, then prune). | **[DQ1]** After extraction. **[DQ2]** After training. **[DQ3]** After calibration. | PostToolUse auto-logs spine entries, runs observer checks. |
 | **EVALUATE** | Extract claims → CLAIM-LEDGER. Score confidence. Parse metrics. Detect serendipity. | **[DQ4]** Every finding: numbers match source. **[R2 INLINE]** 7-point checklist per finding. | Check instincts for relevant patterns. Update pattern confidence. |
 | **CHECKPOINT** | Stage gate (S1-S5). R2 co-pilot (FORCED/BATCH/SHADOW). Serendipity radar. Stop conditions. | **[DC0]** At stage transitions: design compliance check. | R2 calibration hints inform review priorities. |
-| **CRYSTALLIZE** | Update STATE.md, TREE-STATE.json, PROGRESS.md, CLAIM-LEDGER.md. | **[SPINE]** Mandatory structured entry. **[SSOT]** Run `sync_check.py`. | Stop hook generates narrative, exports STATE.md, extracts patterns. |
+| **CRYSTALLIZE** | Update STATE.md (including tree section), PROGRESS.md, CLAIM-LEDGER.md. | **[SPINE]** Mandatory structured entry. **[SSOT]** Run `sync_check.py`. | Stop hook generates narrative, exports STATE.md, extracts patterns. |
 
 ### v5.0 FORCED Review Path
 SFI injection → BFP Phase 1 (blind) → Full review Phase 2 → V0 gate → R3/J0 gate → Schema validation → Normal gate evaluation.
@@ -394,7 +394,7 @@ Python scripts for deterministic checks. Exit code 0 = PASS, non-zero = FAIL. No
 |--------|---------|-------------|
 | `dq_gate.py` | DQ1-DQ4 data quality checks | `python scripts/dq_gate.py --gate DQ1 --data data.json` |
 | `sync_check.py` | SSOT: numbers in markdown match JSON source | `python scripts/sync_check.py --json results.json --md FINDINGS.md` |
-| `tree_health.py` | T3 gate: exploration ratio, good/total ratio | `python scripts/tree_health.py --tree TREE-STATE.json` |
+| `tree_health.py` | T3 gate: exploration ratio, good/total ratio | `python scripts/tree_health.py --state STATE.md` |
 | `gate_check.py` | Generic gate: validate artifact against JSON Schema | `python scripts/gate_check.py --gate B0 --artifact out.json --schema schemas/brainstorm-quality.schema.json` |
 | `spine_entry.py` | Create/validate Research Spine entries | `python scripts/spine_entry.py --spine SPINE.md --type DATA_LOAD --action "Loaded dataset"` |
 | `observer.py` | Observer checks: orphans, desync, drift, naming | `python scripts/observer.py --project .vibe-science/` |
@@ -427,7 +427,6 @@ All scripts: Python 3.8+, stdlib only (no external dependencies). Domain-configu
 ├── SPINE.md                    # Research Spine (structured logbook)
 ├── ASSUMPTION-REGISTER.md      # All assumptions with risk
 ├── SERENDIPITY.md              # Unexpected discovery log
-├── TREE-STATE.json             # Full tree serialization
 ├── KNOWLEDGE/                  # Cross-RQ accumulated knowledge
 └── RQ-001-[slug]/              # Per Research Question
     ├── RQ.md                   # Question, hypothesis, criteria, kill conditions

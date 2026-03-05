@@ -150,7 +150,7 @@ See `protocols/evidence-engine.md` for full schema. Quick template:
 
 ---
 
-## TREE-STATE.json Template
+## Tree State Template (for STATE.md tree section reference)
 
 ```json
 {

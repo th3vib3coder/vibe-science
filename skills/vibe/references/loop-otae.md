@@ -35,7 +35,7 @@ Each cycle produces ONE meaningful action. No multi-step bundles. One action, ve
 
 ### What to Read
 1. `STATE.md` — entire file (max 100 lines)
-2. `TREE-STATE.json` — current tree structure, current node, best node
+2. Tree state from STATE.md — current tree structure, current node, best node
 3. `PROGRESS.md` — last 20 lines
 4. Check: `unreviewed_claims_pending` count in STATE.md frontmatter
 5. Check: `cycle` number (warn at 15, force review at 20)
@@ -43,17 +43,17 @@ Each cycle produces ONE meaningful action. No multi-step bundles. One action, ve
 7. [v5.5] Check Observer alerts. Check SPINE.md last entry.
 
 ### Load Node Context
-- Read current node from TREE-STATE.json (`current_node` field)
+- Read current node from STATE.md (`current_node` field)
 - Read parent chain: current → parent → ... → root
 - Load parent node's `evaluate_result` and `metrics` (this is the starting point for THINK)
 - Check: is current node pending, running, good, buggy, pruned?
 
 ### Consistency Check
-- Does STATE.md's "Current Tree State" match TREE-STATE.json?
+- Does STATE.md's tree section match node files on disk?
 - Does STATE.md's "Next Action" match what PROGRESS.md last recorded?
-- If STATE <-> TREE mismatch → TREE-STATE.json is authoritative (it's the structured format)
+- If STATE <-> node files mismatch → node files are authoritative (ground truth)
 - If STATE <-> PROGRESS mismatch → something was interrupted. Resume from PROGRESS.md (it's append-only, more reliable).
-- If STATE.md is corrupt or >100 lines → rewrite from PROGRESS.md last 5 entries + TREE-STATE.json.
+- If STATE.md is corrupt or >100 lines → rewrite from PROGRESS.md last 5 entries + node files.
 
 ### Context Assembly
 After reading, you should know:
@@ -128,7 +128,7 @@ Before acting, write to PROGRESS.md:
 ### Gate T0 Check
 Before expanding a new tree node, verify Gate T0 (Node Validity):
 - Node has valid type for current stage
-- Node has valid parent (exists in TREE-STATE.json, not pruned)
+- Node has valid parent (exists in tree state, not pruned)
 - Node has non-empty action plan (think_plan)
 - Gate T0 FAIL → fix type/parent/plan before proceeding
 
@@ -161,7 +161,7 @@ Before expanding a new tree node, verify Gate T0 (Node Validity):
 
 ### Debug Protocol (tree mode)
 If the node's execution fails (buggy):
-1. Mark node as `buggy` in TREE-STATE.json
+1. Mark node as `buggy` in STATE.md
 2. Create a `debug` child node
 3. Check Gate T1: debug_attempts <= 3 for the buggy parent
 4. If T1 PASS → attempt fix with a DIFFERENT root cause approach
@@ -303,7 +303,7 @@ This is not optional. Every result of every cycle MUST be saved to disk. Context
 
 1. **CLAIM-LEDGER.md** — add new claims, update existing statuses, record confounder harness results
 2. **ASSUMPTION-REGISTER.md** — add/update any assumptions, increment cycles_untested counter
-3. **TREE-STATE.json** — update node status, metrics, children, tree health counters
+3. **STATE.md tree section** — update node status, metrics, children, tree health counters
 4. **Node file** in `08-tree/nodes/{node_id}.md` — full OTAE content for this node
 5. **tree-visualization.md** in `08-tree/` — ASCII tree with current state
 6. **PROGRESS.md** — append cycle summary (format from templates.md)
@@ -316,7 +316,7 @@ This is not optional. Every result of every cycle MUST be saved to disk. Context
 ### Verification
 After writing all files, verify:
 - Every ACT result exists as a file on disk (not just in the context window)
-- TREE-STATE.json is valid JSON and consistent with STATE.md
+- STATE.md tree section is consistent with node files on disk
 - No claims exist only in prose — all are in CLAIM-LEDGER.md
 - No serendipity observations exist only in context — all are in SERENDIPITY.md
 
@@ -338,24 +338,17 @@ If you notice you're repeating yourself or contradicting earlier work:
 1. STOP immediately
 2. Read PROGRESS.md from the beginning (or last 50 lines)
 3. Read CLAIM-LEDGER.md
-4. Read TREE-STATE.json
+4. Read node files from 08-tree/nodes/
 5. Rewrite STATE.md from scratch based on these files
 6. Resume
 
 ### State File Corruption
 If STATE.md is missing or corrupt:
-1. Check TREE-STATE.json (structured, most reliable for tree state)
+1. Check `08-tree/nodes/` directory — node files are the ground truth for tree state
 2. Check PROGRESS.md (append-only, most reliable for chronology)
-3. Reconstruct STATE.md from these two sources
-4. Continue from there
-
-### Tree State Corruption
-If TREE-STATE.json is missing or corrupt:
-1. Check `08-tree/nodes/` directory — individual node files are the ground truth
-2. Check PROGRESS.md for node creation/update entries
-3. Reconstruct TREE-STATE.json from node files + PROGRESS.md
-4. Verify with STATE.md
-5. Re-run Gate T3 (tree health)
+3. Reconstruct STATE.md from node files + PROGRESS.md
+4. Re-run Gate T3 (tree health)
+5. Continue from there
 
 ### Infinite Loop Detection
 If cycle > 30 AND no new findings in last 5 cycles:

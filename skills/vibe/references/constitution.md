@@ -47,7 +47,7 @@ Actively hunt for the unexpected. A session with zero serendipity flags is suspi
 If a step can produce a file (table, plot, JSON, code), it MUST. Prose descriptions of results are insufficient. The artifact is the evidence; the prose is commentary.
 
 ### LAW 7 -- FRESH CONTEXT RESILIENCE
-The system MUST be resumable from `STATE.md` + `TREE-STATE.json` alone. All context lives in files, never solely in chat history. A new session with no prior context must be able to pick up where the last one left off.
+The system MUST be resumable from `STATE.md` alone (database enriches but is not required). All context lives in files, never solely in chat history. A new session with no prior context must be able to pick up where the last one left off.
 
 ### LAW 8 -- EXPLORE BEFORE EXPLOIT
 Minimum 3 draft nodes before any is promoted. Exploration ratio >= 20% at Tier 3. A tree with one branch is a list, not an investigation.
@@ -200,7 +200,7 @@ All state lives in `.vibe-science/` at the project root:
 - `STATE.md` -- current state (rewritten each cycle, max 100 lines)
 - `PROGRESS.md` -- append-only log
 - `CLAIM-LEDGER.md` -- all claims with evidence + confidence
-- `TREE-STATE.json` -- full tree serialization
+
 - `SERENDIPITY.md` -- unexpected discovery log
 - `ASSUMPTION-REGISTER.md` -- all assumptions with risk ratings
 - `schemas/*.schema.json` -- JSON Schema files (READ-ONLY)

@@ -632,10 +632,10 @@ FAIL actions:
 
 **Rubric dimensions** (see `assets/judge-rubric.yaml` for full scoring):
 1. Specificity (0-3): Did R2 cite exact files, lines, claim IDs?
-2. Independence (0-3): Did R2 generate its own concerns (BFP Phase 1)?
-3. Counter-Evidence (0-3): Did R2 actually search databases?
-4. Confounder Analysis (0-3): Did R2 demand raw/conditioned/matched estimates?
-5. Falsification Demand (0-3): Did R2 specify concrete falsification tests?
+2. Counter-Evidence Search (0-3): Did R2 actually search databases?
+3. Confounder Analysis (0-3): Did R2 demand raw/conditioned/matched estimates?
+4. Falsification Demand (0-3): Did R2 specify concrete falsification tests?
+5. Independence (0-3): Did R2 generate its own concerns (BFP Phase 1)?
 6. Escalation (0-3): Did R2 escalate unresolved issues appropriately?
 
 **Protocol**: `protocols/judge-agent.md`

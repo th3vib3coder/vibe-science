@@ -1,6 +1,6 @@
 # Context Resilience — LAW 7 Implementation
 
-LAW 7 states: "System MUST be resumable from STATE.md + TREE-STATE.json alone. All context lives in files, never in chat history." This document describes the three mechanisms that implement LAW 7, the four recovery paths they enable, and the design principle that governs them all.
+LAW 7 states: "System MUST be resumable from STATE.md alone (database enriches but is not required). All context lives in files, never in chat history." This document describes the three mechanisms that implement LAW 7, the four recovery paths they enable, and the design principle that governs them all.
 
 ---
 
@@ -16,13 +16,13 @@ The research process spans multiple sessions, sometimes dozens. Claims take cycl
 
 ### Mechanism 1: File-Based State (Always Available)
 
-The most robust layer. Two files on disk, readable by any agent at any time, with no dependencies on databases or services.
+The most robust layer. Files on disk, readable by any agent at any time, with no dependencies on databases or services. STATE.md is the single source of truth; node files in `08-tree/nodes/` provide the detailed tree structure.
 
 #### STATE.md
 
 **Location:** `.vibe-science/STATE.md`
 
-**Contents:** A snapshot of the current research state, rewritten each cycle. Maximum 100 lines. Structured as:
+**Contents:** A snapshot of the current research state including tree structure, rewritten each cycle. Maximum 100 lines. Structured as:
 
 ```markdown
 # STATE — [RQ-XXX] [Title]
@@ -56,17 +56,15 @@ The most robust layer. Two files on disk, readable by any agent at any time, wit
 
 **Why 100 lines:** This is approximately 1,500-2,000 tokens. Small enough to inject into any context without significant cost, large enough to capture the essential state.
 
-#### TREE-STATE.json
+#### Node Files (08-tree/nodes/)
 
-**Location:** `.vibe-science/TREE-STATE.json`
+**Location:** `.vibe-science/RQ-xxx/08-tree/nodes/{node_id}-{type}.yaml`
 
-**Contents:** Full serialization of the research tree. Every node, every branch, every status. This is the complete structural record of what was explored, what was promoted, what was killed.
+**Contents:** One YAML file per tree node. Contains the full TreeNode schema: parent, children, status, metrics, type, stage. These are the ground truth for tree structure — if STATE.md's tree section is corrupted, reconstruct from node files.
 
 **Update frequency:** Every time a tree operation occurs (branch, promote, kill, merge).
 
-**Size:** Unbounded, but typically 5-50KB for active research projects.
-
-**Why JSON:** Machine-readable. Can be loaded, queried, and validated programmatically. STATE.md is for humans; TREE-STATE.json is for machines.
+**Why separate files:** Each node is self-contained and independently readable. No single point of failure for the tree structure.
 
 ---
 
@@ -122,7 +120,7 @@ Different failure modes trigger different recovery paths. The system is designed
 4. Injects into agent context.
 5. Agent has full continuity.
 
-**What is available:** Everything. DB has the narrative summary, spine entries, embeddings, patterns. Files have STATE.md and TREE-STATE.json.
+**What is available:** Everything. DB has the narrative summary, spine entries, embeddings, patterns. Files have STATE.md and node files.
 
 ### Path 2: Post-Compaction (Mid-Session)
 
@@ -134,7 +132,7 @@ Different failure modes trigger different recovery paths. The system is designed
 3. On the next prompt, UserPromptSubmit performs semantic recall, which may surface the COMPACT_SNAPSHOT.
 4. SessionStart context (if still in the window) provides the broader session context.
 
-**What is available:** DB has the COMPACT_SNAPSHOT (active claims, pending seeds, STATE.md content at compaction time). Files have the current STATE.md and TREE-STATE.json (which may have been updated since the snapshot).
+**What is available:** DB has the COMPACT_SNAPSHOT (active claims, pending seeds, STATE.md content at compaction time). Files have the current STATE.md (which may have been updated since the snapshot).
 
 ### Path 3: Crash / No DB (Degraded)
 
@@ -143,12 +141,12 @@ Different failure modes trigger different recovery paths. The system is designed
 **Recovery chain:**
 1. SessionStart hook detects missing DB. Logs a warning. Skips DB operations.
 2. No progressive context is injected (no narrative summary, no calibration, no patterns).
-3. Agent must rely on STATE.md and TREE-STATE.json on disk.
-4. Manual resume: the user or agent reads STATE.md to understand current state, reads TREE-STATE.json to understand the research tree.
+3. Agent must rely on STATE.md and node files on disk.
+4. Manual resume: the user or agent reads STATE.md to understand current state and tree structure.
 
-**What is available:** Only files. STATE.md provides the essential state (active claims, pending gates, next steps). TREE-STATE.json provides the tree structure. No narrative continuity, no patterns, no calibration.
+**What is available:** Only files. STATE.md provides the essential state (active claims, pending gates, next steps, tree structure). Node files in `08-tree/nodes/` provide detailed per-node data. No narrative continuity, no patterns, no calibration.
 
-**This is why LAW 7 requires that STATE.md + TREE-STATE.json be sufficient for resumption.** These two files are the ultimate fallback.
+**This is why LAW 7 requires that STATE.md be sufficient for resumption.** It is the ultimate fallback.
 
 ### Path 4: Cross-Session (Long-Term)
 
@@ -160,7 +158,7 @@ Different failure modes trigger different recovery paths. The system is designed
 3. Narrative summaries from intermediate sessions are available via semantic recall if the UserPromptSubmit hook queries for them.
 4. STATE.md reflects the state at the end of the most recent session.
 
-**What is available:** DB has all session summaries, patterns, and spine entries (with temporal decay applied to relevance scoring). Files have the latest STATE.md and TREE-STATE.json.
+**What is available:** DB has all session summaries, patterns, and spine entries (with temporal decay applied to relevance scoring). Files have the latest STATE.md.
 
 ---
 
@@ -169,7 +167,7 @@ Different failure modes trigger different recovery paths. The system is designed
 | Component | Path 1 (Fresh) | Path 2 (Compact) | Path 3 (No DB) | Path 4 (Cross) |
 |-----------|:-:|:-:|:-:|:-:|
 | STATE.md | Available | Available | Available | Available |
-| TREE-STATE.json | Available | Available | Available | Available |
+| Node files | Available | Available | Available | Available |
 | Session summary | Available | Partial | Missing | Available |
 | Observer alerts | Available | Available | Missing | Available |
 | R2 calibration | Available | Available | Missing | Available (decayed) |
@@ -187,7 +185,7 @@ Different failure modes trigger different recovery paths. The system is designed
 This principle governs all resilience decisions:
 
 1. **Never trust the context window.** It will be erased. Anything important must be written to a file or the DB before the current turn ends.
-2. **Files are the ultimate fallback.** STATE.md and TREE-STATE.json must contain enough information to resume research with zero DB, zero context, and zero prior knowledge.
+2. **Files are the ultimate fallback.** STATE.md (and node files on disk) must contain enough information to resume research with zero DB, zero context, and zero prior knowledge.
 3. **The DB adds richness, not necessity.** Narrative summaries, patterns, calibration, and semantic recall make resumption smoother. But they are enhancements, not requirements.
 4. **Redundancy is deliberate.** The same information exists in multiple places (context, DB, files) because each layer has different failure modes. This is not waste — it is resilience.
 
@@ -198,7 +196,7 @@ This principle governs all resilience decisions:
 | Information | Written To | When | By Whom |
 |------------|-----------|------|---------|
 | Current state | STATE.md | Every CRYSTALLIZE phase | Researcher |
-| Tree structure | TREE-STATE.json | Every tree operation | Researcher |
+| Tree structure | STATE.md tree section + node files | Every tree operation | Researcher |
 | Session summary | DB (sessions table) | Stop hook | Stop hook |
 | Active claims | DB (COMPACT_SNAPSHOT) | PreCompact hook | PreCompact hook |
 | Patterns | DB (research_patterns) | Stop hook | Stop hook |

@@ -165,7 +165,7 @@ Append-only. Never edit previous entries. Newest at top.
 
 ---
 
-## TREE-STATE.json Template
+## Tree State Template (for STATE.md tree section reference)
 
 ```json
 {

@@ -49,14 +49,14 @@ For each parsed metric:
 - If out of range → log warning, do NOT discard
 
 ### Step 3: Compute Delta from Parent
-1. Load parent node's `metrics` dict from TREE-STATE.json
+1. Load parent node's `metrics` dict from its node file
 2. For each metric in BOTH current and parent:
    - `delta = current_value - parent_value`
 3. Store in node's `metric_delta` dict
 
 ### Step 4: Store Results
 1. Save parsed metrics to `metrics.json` in node directory
-2. Update node's `metrics` and `metric_delta` in TREE-STATE.json
+2. Update node's `metrics` and `metric_delta` in its node file
 
 ---
 

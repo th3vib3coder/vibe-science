@@ -130,7 +130,7 @@ FAIL: E < 0.2 / no harness (BLOCK) / no counter-evidence / < 3 tests --> Cannot 
 ### T0 — Node Validity | **When:** Before expanding a new node.
 ```
 [ ] Valid type (draft|debug|improve|hyperparameter|ablation|replication|serendipity) |
-    Valid parent in TREE-STATE.json, not pruned | Non-empty action plan | Type fits stage
+    Valid parent in tree state, not pruned | Non-empty action plan | Type fits stage
 FAIL: Fix type/parent. Empty plan --> complete THINK. Wrong type --> reassign.
 ```
 

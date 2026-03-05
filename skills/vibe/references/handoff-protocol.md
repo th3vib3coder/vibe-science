@@ -197,7 +197,7 @@ the discovery cohort.
   analysis results
 - `.vibe-science/SERENDIPITY.md` (appended): SEED-012, temporal
   dynamics observation
-- `.vibe-science/TREE-STATE.json`: T3-explore-4 node marked as
+- `.vibe-science/STATE.md` tree section: T3-explore-4 node marked as
   COMPLETED
 
 ### Open Questions

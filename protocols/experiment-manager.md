@@ -159,7 +159,7 @@ At every stage transition AND at any point where the researcher realizes executi
 
 ```
 DC0 Design Compliance:
-1. Read the research design (RQ.md, planned tree branches in TREE-STATE.json)
+1. Read the research design (RQ.md, planned tree branches in STATE.md)
 2. List: "What data sources does the design specify?"
    → Are ALL specified data sources being used? If not, why?
 3. List: "What methods does the design specify?"
@@ -190,8 +190,8 @@ At the end of each stage:
    a. R2 batch review at transition (BLOCKING)
    b. If R2 clears: advance stage
    c. Set best node as conceptual root for next stage
-   d. Update TREE-STATE.json: current_stage + 1
-   e. Add to stage_history in TREE-STATE.json
+   d. Update STATE.md: current_stage + 1
+   e. Add to stage_history in STATE.md
    f. Log in 08-tree/stage-transitions.log
    g. Update 08-tree/best-nodes.md
 4. If FAIL:

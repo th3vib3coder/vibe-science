@@ -285,7 +285,7 @@ When R2 reviews a serendipity-originated finding, it MUST:
 
 In TEAM mode, the Serendipity Scanner is a dedicated teammate:
 - Runs continuously in background (Haiku model for cost efficiency)
-- Reads TREE-STATE.json at regular intervals
+- Reads STATE.md at regular intervals
 - Compares branches without being biased by the researcher's current focus
 - Reports flags to the Team Lead via shared files
 - Lead decides: create serendipity node or queue

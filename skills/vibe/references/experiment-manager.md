@@ -164,8 +164,8 @@ At the end of each stage:
    a. R2 batch review at transition (BLOCKING)
    b. If R2 clears: advance stage
    c. Set best node as conceptual root for next stage
-   d. Update TREE-STATE.json: current_stage + 1
-   e. Add to stage_history in TREE-STATE.json
+   d. Update STATE.md: current_stage + 1
+   e. Add to stage_history in STATE.md
    f. Log in 08-tree/stage-transitions.log
    g. Update 08-tree/best-nodes.md
 4. If FAIL:

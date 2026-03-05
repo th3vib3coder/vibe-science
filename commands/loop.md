@@ -8,7 +8,7 @@ model: opus
 !`cat .vibe-science/STATE.md 2>/dev/null || echo "No STATE.md — run /vibe-science:init first"`
 
 ## Tree State
-!`python -c "import json; d=json.load(open('.vibe-science/TREE-STATE.json')); print(f'Nodes: {len(d.get(\"nodes\",[]))}, Active: {d.get(\"active_node\",\"none\")}')" 2>/dev/null || echo "No tree state"`
+!`cat .vibe-science/STATE.md 2>/dev/null | grep -A5 "Tree\|Stage\|Node" || echo "No tree state"`
 
 # vibe-science:loop
 

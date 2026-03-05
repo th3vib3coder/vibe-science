@@ -29,7 +29,7 @@ REQUIRED:
 [] ASSUMPTION-REGISTER.md — all assumptions with statuses
 [] CONFOUNDER-HARNESS files — for every promoted quantitative claim
 [] R2 final ensemble review — ACCEPT verdict
-[] TREE-STATE.json — full tree with best nodes identified
+[] STATE.md tree section — full tree with best nodes identified
 [] 08-tree/best-nodes.md — stage-best summaries
 [] RQ.md — original hypothesis, success criteria, kill conditions
 [] 00-brainstorm/ — context, landscape, gaps, hypotheses
@@ -54,7 +54,7 @@ RECOMMENDED:
 - Do NOT overclaim — use language consistent with what R2 approved
 
 ### 2. Methods
-**Source from:** TREE-STATE.json (approach), 08-tree/nodes/ (what was actually done), 06-runs/ (manifests), ASSUMPTION-REGISTER.md (stated assumptions)
+**Source from:** STATE.md tree section (approach), 08-tree/nodes/ (what was actually done), 06-runs/ (manifests), ASSUMPTION-REGISTER.md (stated assumptions)
 
 **Rules:**
 - Describe what was ACTUALLY done (not what was planned)

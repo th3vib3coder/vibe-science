@@ -341,7 +341,7 @@ If R2 REJECTS:
 3. Lock: RQ, hypothesis, null hypothesis, success criteria, kill conditions
 4. Determine tree mode: LINEAR | BRANCHING | HYBRID
 5. Create folder structure (see SKILL.md Session Initialization)
-6. Populate: RQ.md, STATE.md, PROGRESS.md, TREE-STATE.json
+6. Populate: RQ.md, STATE.md, PROGRESS.md
 
 ---
 

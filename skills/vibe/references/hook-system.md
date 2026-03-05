@@ -125,7 +125,7 @@ Periodic health checks that run every N tool invocations (configurable, default:
 - **Stale STATE.md** — If STATE.md has not been modified in more than 1 day (configurable), emit WARN.
 - **FINDINGS/JSON desync** — Compare modification timestamps of FINDINGS.md and its JSON source. If FINDINGS.md is newer, numbers may have been manually edited.
 - **Orphaned data** — Check for data files in `.vibe-science/` that are not referenced by any claim or finding.
-- **Design-execution drift** — Compare the planned tree path (from TREE-STATE.json) with actual executed steps. Flag divergences.
+- **Design-execution drift** — Compare the planned tree path (from STATE.md tree section) with actual executed steps. Flag divergences.
 - **Literature staleness** — Check if literature searches are older than the configured threshold (default: 14 days for active RQs).
 
 **Exit behavior:** Exit 2 + stderr for advisory feedback. The tool has already executed; the hook provides post-hoc guidance. Exit 0 if no issues found.
@@ -283,10 +283,10 @@ All hooks are designed to degrade gracefully when infrastructure is unavailable:
 |---------|----------|
 | DB file missing | SessionStart auto-creates it. Other hooks skip DB operations and log a warning. |
 | DB locked (concurrent access) | Retry 3 times with 100ms backoff. If still locked, skip DB operations. |
-| `better-sqlite3` not installed | All hooks skip DB operations entirely. File-based enforcement (STATE.md, TREE-STATE.json) still works. |
+| `better-sqlite3` not installed | All hooks skip DB operations entirely. File-based enforcement (STATE.md) still works. |
 | Embedding service unavailable | Entries are queued but not embedded. Queue persists for next attempt. |
 | STATE.md missing | SessionStart creates a minimal one. Other hooks warn but continue. |
-| TREE-STATE.json missing | Hooks that need tree data skip those checks. Observer flags the absence. |
+| STATE.md tree section missing | Hooks that need tree data skip those checks. Observer flags the absence. |
 | Malformed JSON in DB | Affected records are skipped with a warning. Other records still process. |
 
 **The design principle:** Infrastructure failure should never block the agent. A degraded session is better than no session. The agent can always fall back to manual file-based operation per LAW 7.

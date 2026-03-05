@@ -754,7 +754,7 @@ function getRequiredGatesForClaim(db, claimId) {
  * Direction nodes are identified by:
  *   1. Writing to a path containing "direction" or "01-direction"
  *   2. Content containing direction markers like "## Research Direction"
- *   3. Writing to TREE-STATE.json with direction node type
+ *   3. Content containing direction node type markers
  *
  * @param {object} toolInput
  * @returns {boolean}

@@ -4,7 +4,7 @@
 
 ## Overview
 
-Each node in the tree represents one complete OTAE cycle. Nodes are stored as individual YAML files in `08-tree/nodes/` and collectively in `TREE-STATE.json`.
+Each node in the tree represents one complete OTAE cycle. Nodes are stored as individual YAML files in `08-tree/nodes/` and summarized in the STATE.md tree section.
 
 ---
 

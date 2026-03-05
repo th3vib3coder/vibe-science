@@ -179,7 +179,7 @@ function fallbackFormatContext(context, alerts, r2Stats, researchPatterns) {
     if (context.pendingSeeds && context.pendingSeeds.length > 0) {
         parts.push('[PENDING SEEDS]');
         for (const s of context.pendingSeeds) {
-            parts.push(`  - ${s.seed_id}: ${truncate(s.causal_question, 100)} (score: ${s.score})`);
+            parts.push(`  - ${s.seed_id}: ${truncate(s.causal_question, 100)} (score: ${s.score ?? '?'})`);
         }
     }
 
@@ -188,7 +188,7 @@ function fallbackFormatContext(context, alerts, r2Stats, researchPatterns) {
     if (effectivePatterns.length > 0) {
         parts.push('[PATTERNS]');
         for (const p of effectivePatterns.slice(0, 5)) {
-            parts.push(`  - [${p.pattern_type}] ${p.description} (conf: ${p.confidence.toFixed(2)}, seen: ${p.occurrences}x)`);
+            parts.push(`  - [${p.pattern_type}] ${p.description} (conf: ${(p.confidence ?? 0).toFixed(2)}, seen: ${p.occurrences}x)`);
         }
     }
 
@@ -358,7 +358,7 @@ async function main(event) {
     if (researchPatterns.length > 0 && formatContextForInjection) {
         // External formatter doesn't know about patterns yet — inject before END marker
         const patternLines = researchPatterns.slice(0, 5).map(
-            p => `  - [${p.pattern_type}] ${p.description} (conf: ${p.confidence.toFixed(2)}, seen: ${p.occurrences}x)`
+            p => `  - [${p.pattern_type}] ${p.description} (conf: ${(p.confidence ?? 0).toFixed(2)}, seen: ${p.occurrences}x)`
         );
         const patternBlock = '\n[PATTERNS]\n' + patternLines.join('\n');
         contextString = contextString.replace('--- END CONTEXT ---', patternBlock + '\n--- END CONTEXT ---');

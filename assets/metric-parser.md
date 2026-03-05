@@ -56,7 +56,7 @@ For each parsed metric:
 - If out of range → log warning, do NOT discard (could be informative)
 
 ### Step 3: Compute Delta from Parent
-1. Load parent node's `metrics` dict from TREE-STATE.json
+1. Load parent node's `metrics` dict from its node file
 2. For each metric present in BOTH current and parent:
    - `delta = current_value - parent_value`
    - Sign indicates direction: positive = improvement for maximized metrics, negative = improvement for minimized metrics
@@ -64,8 +64,8 @@ For each parsed metric:
 
 ### Step 4: Store Results
 1. Save parsed metrics to `metrics.json` in node directory
-2. Update node's `metrics` field in TREE-STATE.json
-3. Update node's `metric_delta` field in TREE-STATE.json
+2. Update node's `metrics` field in its node file
+3. Update node's `metric_delta` field in its node file
 
 ---
 

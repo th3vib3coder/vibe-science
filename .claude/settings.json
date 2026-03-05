@@ -1,8 +1,8 @@
 {
   "permissions": {
     "deny": [
-      "Edit(.vibe-science/schemas/*)",
-      "Write(.vibe-science/schemas/*)"
+      "Edit(schemas/*)",
+      "Write(schemas/*)"
     ]
   },
   "hooks": {

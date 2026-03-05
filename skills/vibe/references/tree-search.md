@@ -16,7 +16,7 @@ The tree search engine is the core architectural difference between v4.0 and v3.
 | BRANCHING | Computational experiments, hypothesis testing | Full tree search. Multiple children per node. Best-first selection. |
 | HYBRID | Mixed research (discovery → experiments) | Start LINEAR for discovery, switch to BRANCHING when computational work begins. |
 
-Tree mode is set at session initialization (Phase 0 COMMIT) and stored in STATE.md and TREE-STATE.json. Mode can be changed at stage transitions with R2 approval.
+Tree mode is set at session initialization (Phase 0 COMMIT) and stored in STATE.md. Mode can be changed at stage transitions with R2 approval.
 
 ---
 
@@ -91,7 +91,7 @@ When creating a new node:
 
 1. **Gate T0 Check** (mandatory before expansion):
    - Node has valid type for current stage
-   - Node has valid parent (exists in TREE-STATE.json, parent not pruned)
+   - Node has valid parent (exists in tree state, parent not pruned)
    - Node has non-empty think_plan
    - If T0 FAIL → fix before creating
 
@@ -109,10 +109,10 @@ When creating a new node:
    - Set status = `pending`
    - All other fields empty/null/default
 
-5. **Update TREE-STATE.json**:
-   - Add node to `nodes` dict
-   - Add node_id to parent's `children_ids`
-   - Update `tree_health` counters
+5. **Update STATE.md tree section**:
+   - Add node to tree structure
+   - Link node to parent's children
+   - Update tree health counters
 
 6. **Create node file**: `08-tree/nodes/{node_id}-{type}.yaml`
 
@@ -129,7 +129,7 @@ When creating a new node:
 - Node produces metrics worse than random baseline → deprioritize
 
 ### Pruning Actions
-1. Mark node status = `pruned` in TREE-STATE.json
+1. Mark node status = `pruned` in STATE.md
 2. Record reason in node's YAML file
 3. Log in PROGRESS.md: "PRUNED node-xxx: [reason]"
 4. Run Gate T3 (tree health) — is the overall tree still healthy?
@@ -204,7 +204,7 @@ When a stage gate (S1-S5) passes:
 1. **Multi-seed validation** of best node (3 seeds minimum, 2 for S1)
 2. **R2 batch review** at transition (BLOCKING)
 3. **Set best node** as conceptual root for next stage
-4. **Update TREE-STATE.json**: `current_stage` + 1, add to `stage_history`
+4. **Update STATE.md**: `current_stage` + 1, add to stage history
 5. **Log**: append to `08-tree/stage-transitions.log`
 6. **Update**: `08-tree/best-nodes.md` with stage-best summary
 
@@ -222,19 +222,16 @@ When a stage gate (S1-S5) passes:
 
 ## Tree State Persistence
 
-### TREE-STATE.json
-Complete tree serialization. Updated every CRYSTALLIZE phase. Contains:
-- All nodes with full metadata
-- Current stage and stage history
+### STATE.md Tree Section
+Tree state summary updated every CRYSTALLIZE phase. Contains:
+- Current stage, current node, best node pointers
 - Tree health counters
-- Current and best node pointers
-
-See `assets/templates.md` for the full JSON template.
+- Stage history
 
 ### Node Files (08-tree/nodes/)
 One YAML file per node: `{node_id}-{type}.yaml`
 Contains the full TreeNode schema from SKILL.md.
-These are the ground truth — if TREE-STATE.json is corrupted, reconstruct from node files.
+These are the ground truth — if STATE.md is corrupted, reconstruct from node files.
 
 ### tree-visualization.md
 ASCII tree updated every cycle. Human-readable overview.

@@ -25,9 +25,9 @@ Research projects accumulate entropy. Files get created but never referenced. St
 
 ### Check 2 — Document Desync
 
-**What:** Compares key fields between `STATE.md` and `TREE-STATE.json`. Checks that the current node, active claims, and cycle count are consistent across both documents.
+**What:** Compares key fields between `STATE.md` frontmatter and its tree section. Checks that the current node, active claims, and cycle count are internally consistent and match node files on disk.
 
-**Why:** STATE.md and TREE-STATE.json are both updated during CRYSTALLIZE but by different code paths. If one is updated and the other is not, the next session will start with contradictory information.
+**Why:** STATE.md is the single source of truth for session state. If the frontmatter and tree section diverge (e.g., partial update during CRYSTALLIZE), the next session will start with contradictory information.
 
 **Alert levels:**
 - Minor field mismatch (e.g., cycle count off by 1): **WARN**

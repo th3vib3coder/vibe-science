@@ -50,12 +50,12 @@ Look for `.vibe-science/STATE.md` in the current workspace.
 2. Version check: STATE.md must have vibe_science_version field.
    - If < 4.0.0 → WARN: "Session created with older version."
      Offer: continue linear (v3.5 compat) or upgrade to tree mode.
-   - If >= 4.0.0 → check TREE-STATE.json exists
+   - If >= 4.0.0 → check STATE.md has tree state fields
 3. Read runtime field: solo or team
    - If team → verify Agent Teams is enabled, check teammates alive
    - If team + teammates dead → offer: respawn team or continue solo
 4. Read last 20 lines of PROGRESS.md
-5. Read TREE-STATE.json (tree structure + current stage)
+5. Read tree state from STATE.md (tree structure + current stage)
 6. Read CLAIM-LEDGER.md frontmatter (counts, statuses)
 7. Check: pending R2? pending gate failures? pending debug nodes?
 8. Resume from "Next Action" in STATE.md
@@ -113,6 +113,6 @@ Constitution: Data-first. Gates block. Reviewer 2 co-pilot. Explore before explo
 
 After Phase 0 completes and Gate B0 passes:
 1. Set tree mode based on RQ type
-2. Create root node in TREE-STATE.json
+2. Create root node in STATE.md
 3. Enter Stage 1: Preliminary Investigation
 4. Begin first OTAE cycle at OBSERVE phase
