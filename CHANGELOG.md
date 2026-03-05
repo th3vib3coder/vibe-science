@@ -2,6 +2,19 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.47] — 2026-03-05 — ARCHITECTURE.md action type count + stale sweep clean (R67)
+
+> **Trigger:** Round 67 paranoid deep debug — 6 parallel agents audited plugin/lib/ (8 files), ARCHITECTURE.md, examples/, codebase-wide stale action type sweep, blueprint-vs-schema.sql comparison, worker-embed.js. Found 1 bug; stale action types fully purged.
+
+### Fixed
+- **ARCHITECTURE.md:62:** "20+ action types classified" → "16 action types classified" to match spine-entry.schema.json enum (exactly 16 values).
+
+### Verified Clean
+- **plugin/lib/ (all 8 files):** No bugs, no stale values, no unused exports.
+- **Stale action type sweep:** FEATURE_EXTRACTION, R2_REVIEW, WEB_SEARCH, FILE_WRITE, CODE_WRITE, DATA_INSPECT, DOCUMENTATION — zero remaining occurrences outside archive/ and CHANGELOG.md.
+- **Blueprint vs schema.sql:** Column names, types, defaults, FKs, indexes all match. IF NOT EXISTS difference is intentional (idempotent schema.sql). vec_memories commented-out is documented design.
+- **worker-embed.js:** Column references match schema.sql, model name correct, error handling sound.
+
 ## [6.0.46] — 2026-03-05 — schema.sql stale comments + LAW 9 regex + dead enum (R66)
 
 > **Trigger:** Round 66 paranoid deep debug — 6 parallel agents audited session-start.js, prompt-submit.js, pre-tool-use.js, stop.js+subagent-stop.js, post-tool-use.js (full), all 21 protocols. Found 4 bugs.

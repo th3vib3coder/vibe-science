@@ -59,7 +59,7 @@ TEAM mode with 6 roles: `researcher`, `reviewer2`, `judge`, `serendipity`, `lead
 
 #### Research Spine
 Automatic structured logging of every significant action.
-- 20+ action types classified
+- 16 action types classified
 - Timestamps, inputs, outputs, gate status
 - Links every numerical claim to its source
 
