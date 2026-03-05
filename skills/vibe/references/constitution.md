@@ -82,7 +82,7 @@ Learned patterns from past sessions inform current behavior. Instincts are not r
 - *(v5.5)* Document every dataset column before using it (Gate DD0). Column names lie.
 - *(v5.5)* Run DQ gates after feature extraction (DQ1), model training (DQ2), calibration (DQ3), and finding formulation (DQ4).
 - *(v5.5)* Every finding passes R2 INLINE via 7-point checklist BEFORE recording in CLAIM-LEDGER.
-- *(v5.5)* Write a structured LOGBOOK.md entry at CRYSTALLIZE for every cycle. Not optional, not retroactive.
+- *(v5.5)* Write a structured SPINE.md entry at CRYSTALLIZE for every cycle. Not optional, not retroactive.
 - *(v6.0)* Web searches (WebSearch, WebFetch) MUST be performed INLINE in the main conversation thread, NOT via background sub-agents. Sub-agents launched via Task tool do NOT inherit web permissions and will fail silently.
 - *(v6.0)* Hook system auto-logs research spine entries for every tool invocation (PostToolUse hook).
 - *(v6.0)* When using scientific skills (PubMed, GEO, OpenAlex), invoke them directly with the Skill tool, not through Task tool delegates.

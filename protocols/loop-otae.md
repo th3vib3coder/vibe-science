@@ -326,7 +326,7 @@ This is not optional. Every result of every cycle MUST be saved to disk. Context
 7. **STATE.md** — rewrite with current state (max 100 lines)
 8. **Save intermediate data** — CSVs, metrics JSON, figures, scripts → appropriate directories
 9. **Log decisions** — any decisions made this cycle → decision-log.md with DEC-YYYYMMDD-NNN format
-10. **LOGBOOK.md** (v5.5 — structured logbook entry) — append a structured entry for this cycle:
+10. **SPINE.md** (v5.5 — structured logbook entry) — append a structured entry for this cycle:
 
 ```
 ### Entry NNN | YYYY-MM-DD HH:MM | ACTION_TYPE
@@ -339,7 +339,7 @@ This is not optional. Every result of every cycle MUST be saved to disk. Context
 
 ACTION_TYPE is one of: `INIT`, `DATA_LOAD`, `EXTRACT`, `MODEL_TRAIN`, `CALIBRATE`, `CALIBRATION`, `CONFORMAL_PREDICT`, `FINDING`, `REVIEW`, `BUG_FIX`, `DESIGN_CHANGE`, `GATE_CHECK`, `LITERATURE_SEARCH`, `DATASET_DOWNLOAD`, `TOOL_USE`, `COMPACT_SNAPSHOT`.
 
-**The logbook is NOT optional and NOT retroactive.** It is written AT THE END OF EVERY CYCLE as part of CRYSTALLIZE. A session without LOGBOOK.md entries is a session without audit trail. LAW 10 applies: if it's not in the logbook, it didn't happen.
+**The logbook is NOT optional and NOT retroactive.** It is written AT THE END OF EVERY CYCLE as part of CRYSTALLIZE. A session without SPINE.md entries is a session without audit trail. LAW 10 applies: if it's not in the logbook, it didn't happen.
 
 ### Verification
 After writing all files, verify:

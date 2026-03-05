@@ -22,45 +22,45 @@ The Knowledge Base accumulates reusable information across research questions. I
 {
   "papers": [
     {
-      "doi": "10.1016/j.cell.2019.01.006",
-      "title": "Optimal-Transport Analysis of Single-Cell Gene Expression...",
-      "authors": ["Schiebinger G", "..."],
-      "year": 2019,
-      "domain": ["single-cell", "optimal-transport", "trajectory"],
+      "doi": "10.xxxx/xxxxx",
+      "title": "Example Paper Title",
+      "authors": ["Author A", "..."],
+      "year": 2023,
+      "domain": ["domain-tag-1", "domain-tag-2"],
       "rq_references": ["RQ-001", "RQ-003"],
-      "key_insight": "OT can model cell fate trajectories",
+      "key_insight": "Summary of key insight from this paper",
       "confidence": 0.85,
       "added": "2025-01-30"
     }
   ],
   "datasets": [
     {
-      "accession": "GSE123456",
-      "source": "GEO",
-      "organism": "Homo sapiens",
-      "assay": "RNA-seq",
-      "samples": 50000,
+      "accession": "DATASET-ID-123",
+      "source": "Repository Name",
+      "description": "Dataset description",
+      "format": "structured data format",
+      "size": "N records/samples",
       "rq_references": ["RQ-002"],
-      "notes": "Treatment vs control, paired design",
+      "notes": "Additional context about data quality and content",
       "quality": "verified",
       "added": "2025-02-01"
     }
   ],
   "methods": [
     {
-      "name": "MAD-based QC filtering",
-      "domain": "data-quality",
-      "reference_doi": "10.xxx/best-practices",
-      "parameters": {"n_mads": 5, "quality_threshold": 0.8},
-      "notes": "Permissive default, adjust per data type",
+      "name": "Method Name",
+      "domain": "applicable domain",
+      "reference_doi": "10.xxxx/xxxxx",
+      "parameters": {"param1": "value1", "param2": "value2"},
+      "notes": "Usage notes and caveats",
       "rq_references": ["RQ-002"]
     }
   ],
   "authors": [
     {
-      "name": "Smith AB",
-      "scopus_id": "37064674600",
-      "domain": ["optimal-transport", "data-integration", "methodology"],
+      "name": "Author Name",
+      "scopus_id": "12345678900",
+      "domain": ["domain-1", "domain-2"],
       "key_papers": ["10.xxx", "10.yyy"],
       "rq_references": ["RQ-001"]
     }

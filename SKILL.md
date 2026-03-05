@@ -315,7 +315,7 @@ Post-mortem from the CRISPR CP run (12 errors, 7 root causes, ZERO caught by aut
 ### R2 INLINE Mode (7th activation)
 Every finding passes a 7-point checklist at formulation time, not after 3 findings accumulate. Does NOT replace FORCED (which retains full SFI+BFP+R3). See `protocols/reviewer2-ensemble.md`.
 
-### Structured Logbook (LOGBOOK.md)
+### Structured Logbook (SPINE.md)
 Mandatory structured entry in CRYSTALLIZE for every cycle. Not optional, not retroactive. Each entry: timestamp, action type, inputs, outputs, gate status. LAW 10 applies.
 
 ### Single Source of Truth (SSOT)

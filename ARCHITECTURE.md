@@ -203,7 +203,7 @@ Verdict: 7/7 = PASS | 5-6 = WARN | <5 = BLOCKED | Item 1 FAIL = HALT
 | Change | What it does |
 |--------|-------------|
 | **SSOT Rule** | All numbers originate from structured data files. Documents reference, never define. |
-| **Structured Logbook** | Mandatory LOGBOOK.md entry in CRYSTALLIZE for every OTAE cycle. Not optional, not retroactive. |
+| **Structured Logbook** | Mandatory SPINE.md entry in CRYSTALLIZE for every OTAE cycle. Not optional, not retroactive. |
 | **Operational Integrity** | OBSERVE phase checks for orphaned datasets, document sync, design drift. |
 | **Literature Pre-Check** | Phase 0 gains Step 2b: search for prior art BEFORE committing to research direction. |
 | **Data Dictionary** | Document every column meaning before using it. Column names lie. |

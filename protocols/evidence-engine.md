@@ -367,7 +367,7 @@ Numbers copied manually between files desynchronize. A JSON file gets updated wi
 
 ### The Rule
 
-**All numbers in human-readable documents (FINDINGS.md, LOGBOOK.md, reports) MUST originate from a structured data file (JSON, CSV, or script output).** No number is invented in prose.
+**All numbers in human-readable documents (FINDINGS.md, SPINE.md, reports) MUST originate from a structured data file (JSON, CSV, or script output).** No number is invented in prose.
 
 ### Protocol
 

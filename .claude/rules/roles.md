@@ -15,7 +15,7 @@ These constraints apply based on which agent role is active in the session.
 - (v5.5) You MUST document every dataset column before using it (Gate DD0). Column names lie.
 - (v5.5) You MUST run DQ gates after feature extraction (DQ1), model training (DQ2), calibration (DQ3), and finding formulation (DQ4).
 - (v5.5) Every finding passes R2 INLINE (7-point checklist) BEFORE recording in CLAIM-LEDGER.
-- (v5.5) You MUST write a structured LOGBOOK.md entry in CRYSTALLIZE for every cycle. Not optional, not retroactive.
+- (v5.5) You MUST write a structured SPINE.md entry in CRYSTALLIZE for every cycle. Not optional, not retroactive.
 - (v6.0) You MUST perform web searches (WebSearch, WebFetch) INLINE in the main conversation thread, NOT via background sub-agents. Sub-agents launched via Task tool do NOT inherit web permissions and will fail silently, producing results only from training data.
 - (v6.0) When using scientific skills (PubMed, GEO, OpenAlex), invoke them directly with the Skill tool, not through Task tool delegates.
 

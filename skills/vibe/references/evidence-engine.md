@@ -60,7 +60,7 @@ Every assertion made during research gets a ledger entry. The ledger is the sing
 
 ### Rules for Claim Extraction
 
-1. **Atomize**: Break compound statements into single testable claims. "Method X corrects batch effects and preserves signal" → two claims.
+1. **Atomize**: Break compound statements into single testable claims. "Method X corrects for confounders and preserves signal" → two claims.
 2. **Type honestly**: If no direct data supports it, it's INFERENCE. If it's your interpretation beyond what data shows, it's OPINION. Never upgrade type.
 3. **Chain dependencies**: If C-005 depends on C-003, and C-003 gets REJECTED, cascade: C-005 becomes CHALLENGED automatically.
 4. **No orphan claims**: Every claim in a finding document must have a ledger entry. Every ledger entry must have evidence.
