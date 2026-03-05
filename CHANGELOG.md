@@ -2,6 +2,34 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.26] — 2026-03-05 — Documentation accuracy audit R41: schema count, URL, algorithm, category count, scoring scale, line counts
+
+> **Trigger:** Round 41 paranoid deep debug — full audit of all remaining documentation files (CITATION.cff, NOTICE, ARCHITECTURE.md table, skills/vibe/SKILL.md). Cross-verified every factual claim against source code and data files. 7 bugs found: 4 factual errors propagated from earlier versions, 1 wrong URL, 1 stale line count table with 10+ wrong entries, 1 scoring scale error.
+
+### Fixed — CITATION.cff Schema Count Wrong (LOW)
+- **CITATION.cff line 17:** `9 read-only schema files` → `12 read-only schema files`
+- **WHY:** Same root cause as SKILL.md fix in [6.0.25] — the canonical schema count is 12 (9 v5.0 + 3 v5.5). The CITATION.cff abstract was written during v5.0 when there were 9 schemas, and was never updated when v5.5 added 3 more.
+
+### Fixed — NOTICE GitHub URL Wrong (LOW)
+- **NOTICE line 13:** `https://github.com/vibe-science-contributors/vibe-science` → `https://github.com/th3vib3coder/vibe-science`
+- **WHY:** NOTICE used a placeholder organization URL that doesn't exist. CITATION.cff line 62 has the correct repository URL. Anyone following the NOTICE citation link would get a 404.
+
+### Fixed — ARCHITECTURE.md Embedding Fallback Algorithm Misdescribed (LOW)
+- **ARCHITECTURE.md line 125:** `a deterministic SHA-256 hash vector` → `a deterministic character-code hash vector`
+- **WHY:** The actual `simpleEmbedding()` function in worker-embed.js uses `text.charCodeAt(i) / 255` accumulation into a Float32Array, NOT SHA-256 hashing. SHA-256 produces a 256-bit digest (not a 384-dim float vector). The description would mislead anyone trying to understand or reproduce the fallback behavior.
+
+### Fixed — ARCHITECTURE.md Literature Registry Category Count Wrong (LOW)
+- **ARCHITECTURE.md lines 132, 159:** `12 categories` → `13 categories`
+- **WHY:** Actual unique categories in literature-registry.json: biology_life_sciences, biomedical, chemistry_pharmacology, computer_science_ai, earth_sciences_environment, grey_literature_special, materials_photonics_engineering, medicine_clinical, multidisciplinary, physics_math_astronomy, preprints_domain_specific, regional, social_sciences_humanities = 13. The count was likely 12 before a category was added.
+
+### Fixed — ARCHITECTURE.md Line Count Table Stale (LOW)
+- **ARCHITECTURE.md lines 141-160:** Updated all 19 component line counts to match actual `wc -l` values
+- **WHY:** Files were edited during 40 rounds of debug, but the table was never updated. Major discrepancies: post-tool-use.js (1,482→1,765), gate-engine.js (630→471), db.js (~500→668), stop.js (171→258), literature-registry.json (~800→952). Total: ~7,100+ → ~7,800+. Stale line counts would mislead anyone estimating plugin complexity.
+
+### Fixed — SKILL.md Triage Scoring Scale Wrong (LOW)
+- **skills/vibe/SKILL.md line 159:** `/25` → `/15`
+- **WHY:** The TRIAGE scoring system uses 5 dimensions scored 0-3 each, maximum 15. Canonical definition at protocols/brainstorm-engine.md:221 says "5 dimensions (0-3 each, max 15)". The /25 implies a 0-5 scale per dimension, which doesn't match the protocol. Same class of bug as the brainstorm-engine.md fix in [6.0.25].
+
 ## [6.0.25] — 2026-03-05 — Cross-directory consistency audit R40: SKILL.md schema count, brainstorm scoring scale
 
 > **Trigger:** Round 40 paranoid deep debug — full cross-directory consistency audit comparing `protocols/` vs `skills/vibe/references/` (20 common files) and `assets/` vs `skills/vibe/assets/` (6 common files). Verified that content divergence between directories is BY DESIGN (protocols/ = full implementation docs with TEAM mode + v5.5 sections; references/ = condensed domain-agnostic reference cards). Confirmed 13 same-size files are content-identical (only LF vs CRLF line endings). Two real bugs found.

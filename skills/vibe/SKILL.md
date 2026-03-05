@@ -156,7 +156,7 @@ Not optional. Not skippable.
 3. **GAPS** — Blue ocean hunting: cross-domain analogies, assumption reversal, scale shifting, contradiction hunting
 4. **DATA** — Reality check: does data exist? Score DATA_AVAILABLE (0-1). LAW 1: `NO DATA = NO GO`
 5. **HYPOTHESES** — Generate 3-5 testable, falsifiable hypotheses with null hypotheses and predictions
-6. **TRIAGE** — Score: impact x feasibility x novelty x data readiness x serendipity potential (/25)
+6. **TRIAGE** — Score: impact x feasibility x novelty x data readiness x serendipity potential (/15)
 7. **R2 REVIEW** — Reviewer 2 challenges direction (BLOCKING: must WEAK_ACCEPT)
 8. **COMMIT** — Lock RQ.md with: question, hypothesis, predictions, success/kill conditions
 

@@ -14,7 +14,7 @@ abstract: >-
   researcher's justifications, breaking anchoring bias; a Judge Agent (R3) that
   meta-reviews the quality of adversarial reviews on a 6-dimension rubric; and
   Schema-Validated Gates (SVG), where 8 of the system's 32 quality gates enforce
-  JSON Schema validation against 9 read-only schema files, making prose claims of
+  JSON Schema validation against 12 read-only schema files, making prose claims of
   completion structurally impossible to accept. The core architecture is an
   OTAE-Tree (Observe-Think-Act-Evaluate) loop embedded in a branching tree search
   over hypotheses, with 7 node types, 3 tree modes, best-first selection, and

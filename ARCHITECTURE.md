@@ -122,14 +122,14 @@ Foreign keys: `calibration_log.session_id` and `prompt_log.session_id` reference
 v6.0 uses real ML embeddings for semantic search via the `all-MiniLM-L6-v2` model (~23 MB quantized ONNX). The worker daemon (`worker-embed.js`) processes the `embed_queue` table asynchronously:
 
 - **Lazy model loading** — the transformer model is downloaded and cached on first use via `@huggingface/transformers`
-- **Hash fallback** — if ML embedding fails (e.g., missing ONNX runtime), a deterministic SHA-256 hash vector provides graceful degradation
+- **Hash fallback** — if ML embedding fails (e.g., missing ONNX runtime), a deterministic character-code hash vector provides graceful degradation
 - **Async batch processing** — embeddings are computed in background ticks, keeping hook latency at zero
 
 ### Literature Engine (102 Databases)
 
 L-1+ is domain-aware with a 4-layer architecture:
 
-1. **Domain Registry** — 102 databases across 12 categories (genomics, chemistry, physics, materials, clinical, ...)
+1. **Domain Registry** — 102 databases across 13 categories (biology, biomedical, chemistry, physics, clinical, ...)
 2. **MCP Server Stack** — PubMed, arXiv, Semantic Scholar, OpenAlex, ChEMBL, UniProt
 3. **Scientific Skills** — 28+ K-Dense-AI database skills
 4. **Local RAG** — Zotero, PaperQA2, NotebookLM integration
@@ -138,26 +138,26 @@ L-1+ is domain-aware with a 4-layer architecture:
 
 | Component | Lines | Purpose |
 |-----------|------:|---------|
-| `post-tool-use.js` | 1,482 | Gate enforcement, permissions, auto-logging, observer |
-| `session-start.js` | 387 | Context injection, R2 calibration, domain config |
-| `worker-embed.js` | 519 | Background embedding daemon |
-| `gate-engine.js` | 630 | DQ/DC/DD/L-1+ gate logic |
-| `db.js` | ~500 | SQLite wrapper with prepared statement cache |
-| `prompt-submit.js` | 239 | Agent identification, semantic recall |
-| `context-builder.js` | 231 | Progressive disclosure |
-| `permission-engine.js` | 288 | Role-based access control |
-| `narrative-engine.js` | 333 | Template-based session summaries |
-| `vec-search.js` | 355 | sqlite-vec with keyword fallback |
-| `r2-calibration.js` | 196 | Cross-session R2 learning |
-| `schema.sql` | ~250 | 12 tables + indices |
-| `stop.js` | 171 | Session end enforcement |
+| `post-tool-use.js` | 1,765 | Gate enforcement, permissions, auto-logging, observer |
+| `session-start.js` | 446 | Context injection, R2 calibration, domain config |
+| `worker-embed.js` | 475 | Background embedding daemon |
+| `gate-engine.js` | 471 | DQ/DC/DD/L-1+ gate logic |
+| `db.js` | 668 | SQLite wrapper with prepared statement cache |
+| `prompt-submit.js` | 262 | Agent identification, semantic recall |
+| `context-builder.js` | 225 | Progressive disclosure |
+| `permission-engine.js` | 290 | Role-based access control |
+| `narrative-engine.js` | 339 | Template-based session summaries |
+| `vec-search.js` | 354 | sqlite-vec with keyword fallback |
+| `r2-calibration.js` | 221 | Cross-session R2 learning |
+| `schema.sql` | 254 | 12 tables + indices |
+| `stop.js` | 258 | Session end enforcement |
 | `pre-compact.js` | 175 | Context resilience snapshots |
 | `pre-tool-use.js` | 88 | CLAIM-LEDGER write guard (v6.0.1) |
-| `subagent-stop.js` | 98 | Salvagente Rule enforcement (v6.0.1) |
+| `subagent-stop.js` | 103 | Salvagente Rule enforcement (v6.0.1) |
 | `pattern-extractor.js` | 111 | Cross-session pattern detection |
 | `setup.js` | 363 | DB init, dependency install, worker daemon launch |
-| `literature-registry.json` | ~800 | 102 databases, 12 categories |
-| **Total new code** | **~7,100+** | |
+| `literature-registry.json` | 952 | 102 databases, 13 categories |
+| **Total new code** | **~7,800+** | |
 
 ---
 
