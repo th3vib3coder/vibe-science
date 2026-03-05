@@ -2,6 +2,22 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.27] — 2026-03-05 — Cross-reference consistency R42: triage scale, LOC total, database count
+
+> **Trigger:** Round 42 paranoid deep debug — cross-referenced canonical numbers across ALL active files. Found 3 more inconsistencies from R41's fixes not propagated to all locations.
+
+### Fixed — Root SKILL.md Triage Scoring Scale Wrong (LOW)
+- **SKILL.md lines 453-459:** `(0-5)` per dimension and `/25` total → `(0-3)` per dimension and `/15` total
+- **WHY:** The canonical protocol (protocols/brainstorm-engine.md:221) defines 5 dimensions scored 0-3 each, max 15. The root SKILL.md (biology-instance) still had the pre-canonical (0-5) scale from early drafts, totaling /25. Same class of bug as the skills/vibe/SKILL.md fix in [6.0.26], but in the biology-instance copy.
+
+### Fixed — README.md Plugin LOC Count Stale (LOW)
+- **README.md lines 115, 305:** `~7,100 LOC` → `~7,800 LOC`
+- **WHY:** ARCHITECTURE.md's line count table was updated to ~7,800+ in [6.0.26] after verifying all 19 component files with `wc -l`. README.md referenced the same total but was not updated in the same round. Both should match.
+
+### Fixed — CHANGELOG [6.0.24] Database Count Wrong in Verification (LOW)
+- **CHANGELOG.md line 66:** `108-database registry` → `102-database registry`
+- **WHY:** The [6.0.24] entry marked literature-registry.json as "verified CLEAN" with "108-database registry", but the actual database count (verified by JSON parsing in R41) is 102. The 108 count was from a pre-[6.0.7] version; [6.0.7] fixed the count from 108→102 in README.md, but the [6.0.24] verification claim still used the old number.
+
 ## [6.0.26] — 2026-03-05 — Documentation accuracy audit R41: schema count, URL, algorithm, category count, scoring scale, line counts
 
 > **Trigger:** Round 41 paranoid deep debug — full audit of all remaining documentation files (CITATION.cff, NOTICE, ARCHITECTURE.md table, skills/vibe/SKILL.md). Cross-verified every factual claim against source code and data files. 7 bugs found: 4 factual errors propagated from earlier versions, 1 wrong URL, 1 stale line count table with 10+ wrong entries, 1 scoring scale error.
@@ -63,7 +79,7 @@ All notable changes to Vibe Science are documented here.
 - **package.json:** Dependencies correct (better-sqlite3, @huggingface/transformers, onnxruntime-node), engines >=18.0.0 ✓
 - **marketplace.json:** "32 quality gates" matches canonical number ✓
 - **domain-config-template.json:** Multi-domain template with CRISPR/photonics/particle-physics examples (known exception) ✓
-- **literature-registry.json:** 108-database registry, reference data only ✓
+- **literature-registry.json:** 102-database registry, reference data only ✓
 - **claude-code.yaml:** 7 agent types match AGENTS.md, model tiers logical, web search rule present ✓
 - **gate_check.py:** Lightweight JSON Schema validator, correct type/required/properties/items/min/max/enum handling ✓
 - **sync_check.py:** Number extraction with tolerance, percentage conversion fallback, correct skip patterns ✓

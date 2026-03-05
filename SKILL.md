@@ -450,13 +450,13 @@ Score each hypothesis on a 2x2 matrix:
 ```
 
 Criteria:
-- **Impact** (0-5): How much would this change the field?
-- **Feasibility** (0-5): Can we do this with available data + tools?
-- **Novelty** (0-5): How different is this from existing work?
-- **Data readiness** (0-5): How close is the data to being usable?
-- **Serendipity potential** (0-5): How likely is this to generate unexpected discoveries?
+- **Impact** (0-3): How much would this change the field?
+- **Feasibility** (0-3): Can we do this with available data + tools?
+- **Novelty** (0-3): How different is this from existing work?
+- **Data readiness** (0-3): How close is the data to being usable?
+- **Serendipity potential** (0-3): How likely is this to generate unexpected discoveries?
 
-Total score /25. Rank hypotheses. Present top 3 to user with trade-offs.
+Total score /15. Rank hypotheses. Present top 3 to user with trade-offs.
 
 Output: `00-brainstorm/triage.md`
 

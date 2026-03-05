@@ -112,7 +112,7 @@ Every cycle scans for unexpected findings. Score >= 10 → QUEUE for triage. Sco
 
 ---
 
-## Plugin Subsystems (~7,100 LOC)
+## Plugin Subsystems (~7,800 LOC)
 
 ### 7 Lifecycle Hooks
 
@@ -302,7 +302,7 @@ vibe-science/
 │   └── agents/
 │       └── claude-code.yaml     ← Model tier config
 │
-├── plugin/                      ← Enforcement engine (~7,100 LOC)
+├── plugin/                      ← Enforcement engine (~7,800 LOC)
 │   ├── scripts/                 ← 7 hook scripts + 2 utilities
 │   │   ├── session-start.js     ← Context injection + auto-setup
 │   │   ├── prompt-submit.js     ← Role detection + semantic recall
