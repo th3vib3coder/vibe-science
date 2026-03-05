@@ -455,7 +455,7 @@ FAIL actions:
 
 ## Data Quality Gates (DQ1-DQ4) — NEW in v5.5
 
-These gates address a blind spot in v5.0: all 25 existing gates verify *claim quality* (is the conclusion supported?) but NONE verify *data quality* (are the features correct? is the alignment right? do the numbers in documents match the source?). Data quality gates operate between pipeline phases, not at the claim level.
+These gates address a blind spot in v5.0: the 25 pre-v5.5 gates verify *claim quality* (is the conclusion supported?) but NONE verify *data quality* (are the features correct? is the alignment right? do the numbers in documents match the source?). Data quality gates operate between pipeline phases, not at the claim level.
 
 ### Gate DQ1 — Post-Extraction Data Quality
 **When:** After extracting features, variables, or computed values from any dataset. Before using them for modeling or analysis.
@@ -668,7 +668,7 @@ In every run report, sprint report, and decision log:
 
 ---
 
-## Schema Enforcement Summary (v5.0)
+## Schema Enforcement Summary (v6.0)
 
 | Gate | Schema File | Key Enforcement |
 |------|-------------|-----------------|

@@ -2,6 +2,17 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.40] — 2026-03-05 — gates.md stale gate count + version label (R59)
+
+> **Trigger:** Round 59 paranoid deep debug — 6 parallel agents audited R3 dimension completeness (clean), plugin lib modules (clean), file counts (clean), rarely-audited protocols (clean), gates.md stale values, SKILL.md versioning.
+
+### Fixed
+- **gates/gates.md:458:** "all 25 existing gates" → "the 25 pre-v5.5 gates" (was stale v5.0 count in v5.5 DQ section intro)
+- **gates/gates.md:671:** Schema Enforcement Summary header "(v5.0)" → "(v6.0)" (section covers v5.0+v5.5 gates)
+
+### Triaged — False Positives
+- **skills/vibe/SKILL.md:6 `v6.0.1`:** Intentional patch version from v6.0.1 best-practices upgrade (has CHANGELOG entry [6.0.1], archive blueprint, consistent across plugin+archive copies)
+
 ## [6.0.39] — 2026-03-05 — Stale R3 dimension + root templates.md sync to v6.0 (R58)
 
 > **Trigger:** Round 58 paranoid deep debug — 6 parallel agents audited R3 dimension completeness, CITATION/README, examples, YAML configs, assets templates, and internal links (84 verified). Found 1 remaining stale R3 dimension name and root templates.md significantly behind plugin version.
