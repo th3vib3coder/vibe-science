@@ -2,6 +2,20 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.41] — 2026-03-05 — Hook comment, README line counts (R60)
+
+> **Trigger:** Round 60 paranoid deep debug — 6 parallel agents audited hook scripts, 12 JSON schemas, commands, .claude/ config, README.md, ARCHITECTURE.md. Found 3 real bugs, 3 false positives.
+
+### Fixed
+- **plugin/scripts/post-tool-use.js:873:** Salvagente comment "Blueprint v5.0" → "Blueprint v6.0"
+- **README.md:296:** SKILL.md line count "528" → "527"
+- **README.md:341,371:** Root SKILL.md line count "1,363" → "1,369"
+
+### Triaged — False Positives
+- **claim-promotion.schema.json:42 "v5.0 lock":** Provenance tag (lock introduced in v5.0, like "v5.0-geometric" for formula)
+- **ARCHITECTURE.md:339 v4.0 gate count "26":** Historical snapshot of v3.5→v4.0 transition, not a current-state claim
+- **R2 verdict vocabulary (PASS/FAIL vs ACCEPT/REJECT across schemas):** Intentional — different gate stages use different verdict vocabularies
+
 ## [6.0.40] — 2026-03-05 — gates.md stale gate count + version label (R59)
 
 > **Trigger:** Round 59 paranoid deep debug — 6 parallel agents audited R3 dimension completeness (clean), plugin lib modules (clean), file counts (clean), rarely-audited protocols (clean), gates.md stale values, SKILL.md versioning.

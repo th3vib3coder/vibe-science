@@ -870,7 +870,7 @@ function logGateResult(db, sessionId, gateId, status, claimId, details) {
 // ── Gate SALVAGENTE: Killed claims require serendipity seed ──────────
 
 /**
- * SALVAGENTE RULE (CLAUDE.md / Blueprint v5.0):
+ * SALVAGENTE RULE (CLAUDE.md / Blueprint v6.0):
  * When R2 kills a claim with reason INSUFFICIENT_EVIDENCE, CONFOUNDED,
  * or PREMATURE, a serendipity seed MUST be produced.  Failure to salvage
  * is a J0-scorable offense.

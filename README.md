@@ -293,7 +293,7 @@ vibe-science/
 │   └── marketplace.json         ← Marketplace config
 │
 ├── skills/vibe/                 ← v6.0 NEXUS Skill (served by plugin)
-│   ├── SKILL.md                 ← Full methodology (528 lines)
+│   ├── SKILL.md                 ← Full methodology (527 lines)
 │   ├── AGENTS.md                ← 7 agent roles with YAML frontmatter
 │   ├── references/              ← 36 reference documents
 │   ├── scripts/                 ← 6 Python enforcement scripts
@@ -338,7 +338,7 @@ vibe-science/
 ├── .claude/settings.json        ← Hook definitions (dev mode)
 │
 ├── CLAUDE.md                    ← Project constitution (12 laws)
-├── SKILL.md                     ← Legacy v5.5 methodology (1,363 lines)
+├── SKILL.md                     ← Legacy v5.5 methodology (1,369 lines)
 ├── ARCHITECTURE.md              ← Deep technical architecture
 ├── CHANGELOG.md                 ← Full version history
 │
@@ -368,7 +368,7 @@ vibe-science/
 
 ## Using Without Claude Code
 
-You can use the methodology with any LLM: upload `skills/vibe/SKILL.md` as a system prompt, plus the `references/` directory. Note: without the plugin, gates are prompt-enforced only (voluntary compliance). The v5.5 `SKILL.md` at root (1,363 lines) is the legacy standalone version.
+You can use the methodology with any LLM: upload `skills/vibe/SKILL.md` as a system prompt, plus the `references/` directory. Note: without the plugin, gates are prompt-enforced only (voluntary compliance). The v5.5 `SKILL.md` at root (1,369 lines) is the legacy standalone version.
 
 ---
 
