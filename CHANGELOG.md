@@ -2,6 +2,21 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.28] — 2026-03-05 — CLAUDE.md enforcement version label mismatch (R44)
+
+> **Trigger:** Round 44 paranoid deep debug — audited `.claude/rules/` files against CLAUDE.md. Found version label mismatch between CLAUDE.md file reference and enforcement.md's own header.
+
+### Fixed — CLAUDE.md enforcement.md Version Label Mismatch (LOW)
+- **CLAUDE.md line 42:** `v5.0 structural enforcement` → `v6.0 structural enforcement`
+- **WHY:** The file `.claude/rules/enforcement.md` identifies itself as `# v6.0 Structural Enforcement` in its header (correctly — it describes v6.0 mechanisms). But CLAUDE.md's file reference still labeled it as `v5.0`, a leftover from when the enforcement section was inline under the `## v5.0 STRUCTURAL ENFORCEMENT` header (which marked when the mechanisms were introduced). When roles and enforcement were extracted to `.claude/rules/`, the version label in the reference wasn't updated to match the file's own header.
+
+### Verified CLEAN (R44)
+- **12 JSON Schema files:** All valid JSON Schema (draft 2020-12), all 8 gate mappings correct, no stale references
+- **Plugin metadata:** marketplace.json, plugin.json, package.json — versions (6.0.0), URLs, counts all consistent
+- **Round 41-42 fixes re-audited:** No regressions introduced — all 10 fixes verified in-place
+- **"CRYSTALLIZE" references:** Confirmed as phase name (LAW 10, MCTS cycle), not folder — NOT a bug
+- **"(v5.0 scale: 0-20)" label:** Confirmed as versioning provenance tag (v5.0 introduced the 0-20 scale) — NOT a bug
+
 ## [6.0.27] — 2026-03-05 — Cross-reference consistency R42: triage scale, LOC total, database count
 
 > **Trigger:** Round 42 paranoid deep debug — cross-referenced canonical numbers across ALL active files. Found 3 more inconsistencies from R41's fixes not propagated to all locations.
