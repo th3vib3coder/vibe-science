@@ -2,6 +2,29 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.31] — 2026-03-05 — Fix literature-registry stale total_databases and revert wrong category count (R50)
+
+> **Trigger:** Round 50 paranoid deep debug — deep-audited README.md, ARCHITECTURE.md, CITATION.cff, NOTICE, marketplace.json, plugin.json, and BEHAVIOR-LOGBOOK references. Found 2 bugs: stale `total_databases` metadata field and a wrong category count introduced by a previous erroneous "fix" in [6.0.24].
+
+### Fixed — literature-registry.json `total_databases` Field Stale (MEDIUM)
+- **plugin/db/literature-registry.json line 6:** `"total_databases": 108` → `"total_databases": 102`
+- **WHY:** The `total_databases` metadata field was never updated when databases were removed or reorganized. `Object.keys(d.databases).length` returns 102, matching the count stated everywhere else in the documentation. The stale 108 value would confuse any code or documentation that reads this field for validation or display purposes.
+
+### Fixed — ARCHITECTURE.md Category Count Wrong — Reverts Erroneous [6.0.24] Fix (MEDIUM)
+- **ARCHITECTURE.md lines 132, 159:** `13 categories` → `12 categories`
+- **WHY:** The [6.0.24] "fix" changed "12 categories" to "13 categories", but this was WRONG. The actual `d.categories.length` is 12. The [6.0.24] WHY text listed "biomedical" as a category, but no such category exists in literature-registry.json — the actual categories are: multidisciplinary, biology_life_sciences, chemistry_pharmacology, physics_math_astronomy, materials_photonics_engineering, computer_science_ai, medicine_clinical, social_sciences_humanities, earth_sciences_environment, preprints_domain_specific, regional, grey_literature_special = 12. This is a cautionary example of a "fix" that introduced a bug by miscounting.
+
+### Fixed — CHANGELOG [6.0.24] Entry Annotated as Wrong (LOW)
+- **CHANGELOG.md [6.0.24] section:** Added revert annotation and correction note to the erroneous "12→13 categories" entry
+- **WHY:** The CHANGELOG is append-only and historical, so the wrong entry was not deleted but annotated with "REVERTED in [6.0.31]" and the correct count documented. This preserves the audit trail showing how the error was introduced and corrected.
+
+### Verified CLEAN (R50)
+- **README.md:** 99.7% accurate. Minor line count variance (±1-6 lines from recent edits) and 3 minor omissions (legacy archive dir, root assets/ extra files, v6.0.1 blueprint) — cosmetic, not bugs
+- **CITATION.cff:** All values correct (12 schemas, 32 gates, 7 hooks, v6.0.0)
+- **NOTICE:** Correct (copyright 2026, Apache-2.0, correct repo URL)
+- **marketplace.json + plugin.json:** Both correct (v6.0.0, valid paths, correct metadata)
+- **BEHAVIOR-LOGBOOK references:** Runtime files (.vibe-science/ contents) correctly not present in repo — they are created by `/init` command at runtime
+
 ## [6.0.30] — 2026-03-05 — Fix misleading template path references in init command (R49)
 
 > **Trigger:** Round 49 paranoid deep debug — audited commands/ and agents/ directories, cross-referenced protocol ↔ reference card mappings, verified archive directory integrity, and checked F: ↔ D: drive consistency.
@@ -80,9 +103,9 @@ All notable changes to Vibe Science are documented here.
 - **ARCHITECTURE.md line 125:** `a deterministic SHA-256 hash vector` → `a deterministic character-code hash vector`
 - **WHY:** The actual `simpleEmbedding()` function in worker-embed.js uses `text.charCodeAt(i) / 255` accumulation into a Float32Array, NOT SHA-256 hashing. SHA-256 produces a 256-bit digest (not a 384-dim float vector). The description would mislead anyone trying to understand or reproduce the fallback behavior.
 
-### Fixed — ARCHITECTURE.md Literature Registry Category Count Wrong (LOW)
-- **ARCHITECTURE.md lines 132, 159:** `12 categories` → `13 categories`
-- **WHY:** Actual unique categories in literature-registry.json: biology_life_sciences, biomedical, chemistry_pharmacology, computer_science_ai, earth_sciences_environment, grey_literature_special, materials_photonics_engineering, medicine_clinical, multidisciplinary, physics_math_astronomy, preprints_domain_specific, regional, social_sciences_humanities = 13. The count was likely 12 before a category was added.
+### Fixed — ARCHITECTURE.md Literature Registry Category Count Wrong (LOW) — REVERTED in [6.0.31]
+- **ARCHITECTURE.md lines 132, 159:** `12 categories` → `13 categories` — **THIS FIX WAS WRONG.** Actual category count is 12, not 13. The WHY below miscounted by including a phantom "biomedical" category that does not exist in literature-registry.json (the actual categories are: multidisciplinary, biology_life_sciences, chemistry_pharmacology, physics_math_astronomy, materials_photonics_engineering, computer_science_ai, medicine_clinical, social_sciences_humanities, earth_sciences_environment, preprints_domain_specific, regional, grey_literature_special = 12). Corrected back to 12 in [6.0.31].
+- **Original (wrong) WHY:** Actual unique categories in literature-registry.json: biology_life_sciences, biomedical, chemistry_pharmacology, computer_science_ai, earth_sciences_environment, grey_literature_special, materials_photonics_engineering, medicine_clinical, multidisciplinary, physics_math_astronomy, preprints_domain_specific, regional, social_sciences_humanities = 13. The count was likely 12 before a category was added.
 
 ### Fixed — ARCHITECTURE.md Line Count Table Stale (LOW)
 - **ARCHITECTURE.md lines 141-160:** Updated all 19 component line counts to match actual `wc -l` values

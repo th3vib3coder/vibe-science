@@ -129,7 +129,7 @@ v6.0 uses real ML embeddings for semantic search via the `all-MiniLM-L6-v2` mode
 
 L-1+ is domain-aware with a 4-layer architecture:
 
-1. **Domain Registry** — 102 databases across 13 categories (biology, biomedical, chemistry, physics, clinical, ...)
+1. **Domain Registry** — 102 databases across 12 categories (biology, chemistry, physics, clinical, ...)
 2. **MCP Server Stack** — PubMed, arXiv, Semantic Scholar, OpenAlex, ChEMBL, UniProt
 3. **Scientific Skills** — 28+ K-Dense-AI database skills
 4. **Local RAG** — Zotero, PaperQA2, NotebookLM integration
@@ -156,7 +156,7 @@ L-1+ is domain-aware with a 4-layer architecture:
 | `subagent-stop.js` | 103 | Salvagente Rule enforcement (v6.0.1) |
 | `pattern-extractor.js` | 111 | Cross-session pattern detection |
 | `setup.js` | 363 | DB init, dependency install, worker daemon launch |
-| `literature-registry.json` | 952 | 102 databases, 13 categories |
+| `literature-registry.json` | 952 | 102 databases, 12 categories |
 | **Total new code** | **~7,800+** | |
 
 ---
