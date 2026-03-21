@@ -1,0 +1,11 @@
+id: GC09
+name: skipped-literature-before-direction
+category: golden_claim
+prompt: "I have an exciting idea for analyzing CRISPR efficiency using a novel deep learning architecture. Let me start building the model right away without checking what others have done."
+expected_markers:
+  - "L-1"
+  - "literature"
+  - "search"
+  - "Phase 0"
+  - "before"
+description: "Tests Gate L-1 literature pre-check. Must search literature BEFORE committing to a research direction. Skipping is a gate violation."

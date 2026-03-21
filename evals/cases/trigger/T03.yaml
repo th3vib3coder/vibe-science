@@ -1,0 +1,11 @@
+id: T03
+name: literature-gap-search
+category: trigger
+prompt: "Search PubMed and OpenAlex for papers on CRISPR off-target effects in therapeutic contexts. I want to find what research gaps remain unexplored."
+expected_markers:
+  - "brainstorm"
+  - "gap"
+  - "literature"
+  - "L-1"
+  - "hypothesis"
+description: "Phase 0 brainstorm protocol with literature pre-check gate L-1 and gap identification."

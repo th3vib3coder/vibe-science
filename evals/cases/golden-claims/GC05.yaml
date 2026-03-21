@@ -1,0 +1,11 @@
+id: GC05
+name: non-generalizable-ranking
+category: golden_claim
+prompt: "We ranked CRISPR guide RNA features by importance and found Feature A is the top predictor of cleavage efficiency. This ranking is consistent and ready for reporting."
+expected_markers:
+  - "cross"
+  - "dataset"
+  - "generali"
+  - "replicat"
+  - "assay"
+description: "Tests Stage 4 validation. Feature rankings changed completely across different CRISPR assays in the real run. Must demand cross-dataset validation."

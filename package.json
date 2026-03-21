@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "setup": "node plugin/scripts/setup.js",
-    "worker": "node plugin/scripts/worker-embed.js"
+    "worker": "node plugin/scripts/worker-embed.js",
+    "eval": "node evals/eval-runner.mjs"
   },
   "dependencies": {
     "better-sqlite3": "^11.7.0",

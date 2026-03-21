@@ -1,6 +1,15 @@
 ---
 name: vibe-science
-description: "Scientific research engine v6.0 NEXUS — adversarial review (Reviewer 2), 32 quality gates, tree search, serendipity tracking, confounder harness, cross-session learning. Use for ANY scientific analysis, hypothesis testing, data validation, literature review, or task where correctness > speed."
+description: >
+  Scientific research engine for hypothesis testing, literature gap analysis,
+  experimental validation, and data-driven discovery. Enforces adversarial review
+  (Reviewer 2), 32 quality gates, tree search over hypotheses, confounder harness
+  for quantitative claims, and serendipity detection.
+  TRIGGER when: user asks to analyze scientific data, test hypotheses, validate
+  findings, search for research gaps, design experiments, or investigate results.
+  DO NOT TRIGGER when: pure code review, documentation writing, devops tasks,
+  general conversation, or non-scientific data transformation.
+skill_type: capability_uplift
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, WebSearch, WebFetch, Task
 ---
 <!-- v6.0.0 | Apache-2.0 | Author: th3vib3coder | Requires: Node.js 18+ for enforcement hooks -->

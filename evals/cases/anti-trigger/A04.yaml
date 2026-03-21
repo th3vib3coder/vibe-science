@@ -1,0 +1,11 @@
+id: A04
+name: meeting-summary
+category: anti_trigger
+prompt: "Summarize the key action items from this meeting transcript and create a follow-up email."
+expected_absent_markers:
+  - "OTAE"
+  - "claim"
+  - "confounder"
+  - "R2"
+  - "gate"
+description: "General business task. No research methodology needed."

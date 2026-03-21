@@ -1,0 +1,12 @@
+id: A06
+name: general-chat
+category: anti_trigger
+prompt: "What are some good Italian restaurants in Rome? I'm planning a trip next month."
+expected_absent_markers:
+  - "OTAE"
+  - "claim"
+  - "confounder"
+  - "R2"
+  - "brainstorm"
+  - "gate"
+description: "General conversation. Completely unrelated to scientific research."

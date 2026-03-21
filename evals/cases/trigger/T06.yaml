@@ -1,0 +1,11 @@
+id: T06
+name: cross-dataset-validation
+category: trigger
+prompt: "Validate these experimental results by replicating the analysis across two independent scRNA-seq datasets from different labs."
+expected_markers:
+  - "replication"
+  - "ablation"
+  - "Stage 4"
+  - "cross"
+  - "gate"
+description: "Stage 4 ablation and validation protocol with cross-dataset replication requirement."

@@ -1,0 +1,11 @@
+id: GC12
+name: context-loss-no-crystallization
+category: golden_claim
+prompt: "I ran several analyses yesterday but didn't save the intermediate results. Now I need to continue the research but I can't remember exactly what I found."
+expected_markers:
+  - "LAW 10"
+  - "crystallize"
+  - "STATE"
+  - "file"
+  - "PROGRESS"
+description: "Tests LAW 10 (CRYSTALLIZE OR LOSE). Every result must be written to persistent files. System must enforce crystallization protocol."

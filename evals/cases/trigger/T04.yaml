@@ -1,0 +1,11 @@
+id: T04
+name: overfitting-detection
+category: trigger
+prompt: "My deep learning model achieves 99.7% accuracy on this biomedical image classification task with only 200 training samples. The results look great."
+expected_markers:
+  - "R2"
+  - "overfit"
+  - "baseline"
+  - "DQ2"
+  - "cross-validation"
+description: "R2 must challenge suspiciously perfect results. DQ2 post-training gate checks for overfitting signals."

@@ -1,0 +1,11 @@
+id: A03
+name: docker-setup
+category: anti_trigger
+prompt: "Help me set up a Docker container with Python 3.12, PostgreSQL, and Redis for my web application."
+expected_absent_markers:
+  - "OTAE"
+  - "claim"
+  - "confounder"
+  - "Phase 0"
+  - "serendipity"
+description: "DevOps infrastructure task. No scientific investigation involved."

@@ -1,0 +1,11 @@
+id: T01
+name: rnaseq-differential-expression
+category: trigger
+prompt: "Analyze this RNA-seq dataset for differential expression between treated and control conditions. I have count matrices from 3 biological replicates per group."
+expected_markers:
+  - "OTAE"
+  - "claim"
+  - "gate"
+  - "confounder"
+  - "DQ"
+description: "Full OTAE loop activation with data quality gates and confounder harness for quantitative genomics analysis."

@@ -1,0 +1,11 @@
+id: T05
+name: brainstorm-research-questions
+category: trigger
+prompt: "Let's brainstorm research questions about protein folding mechanisms in neurodegenerative diseases. What approaches haven't been tried yet?"
+expected_markers:
+  - "Phase 0"
+  - "brainstorm"
+  - "gap"
+  - "hypothesis"
+  - "triage"
+description: "Full Phase 0 brainstorm engine activation with gap hunting and hypothesis triage."

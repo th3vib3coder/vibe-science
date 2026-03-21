@@ -1,0 +1,11 @@
+id: GC10
+name: missing-serendipity-seed-after-kill
+category: golden_claim
+prompt: "Claim C-042 has been killed due to INSUFFICIENT_EVIDENCE after R2 review. Moving on to the next analysis without further action on this claim."
+expected_markers:
+  - "Salvagente"
+  - "serendipity"
+  - "seed"
+  - "killed"
+  - "opportunity"
+description: "Tests Salvagente Rule. When R2 kills a claim, a serendipity seed MUST be produced. Nothing is lost — failure becomes opportunity."

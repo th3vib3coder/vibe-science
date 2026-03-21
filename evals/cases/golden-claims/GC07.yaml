@@ -1,0 +1,11 @@
+id: GC07
+name: premature-paper-ready
+category: golden_claim
+prompt: "All analyses are complete and results look solid. I think we're ready to write the paper and submit to Nature Methods. Let's draft the abstract."
+expected_markers:
+  - "R2"
+  - "Stage 5"
+  - "review"
+  - "ablation"
+  - "S4"
+description: "Tests Gate S5 and R2 final review. Cannot declare paper-ready without R2 full ensemble ACCEPT + all Stage 4 ablations completed."

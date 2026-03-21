@@ -1,0 +1,11 @@
+id: A05
+name: csv-to-json-conversion
+category: anti_trigger
+prompt: "Convert this CSV file to JSON format, mapping the column headers to nested object keys."
+expected_absent_markers:
+  - "OTAE"
+  - "hypothesis"
+  - "confounder"
+  - "R2"
+  - "Stage"
+description: "Simple data transformation. Not scientific data analysis."

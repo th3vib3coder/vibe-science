@@ -1,7 +1,7 @@
 {
   "name": "vibe-science",
   "version": "6.0.0",
-  "description": "Vibe Science NEXUS — Scientific research plugin with infrastructure-enforced gates, persistent memory, agent team permissions, and auto-calibration.",
+  "description": "Scientific research plugin with adversarial review (Reviewer 2), 32 quality gates, tree search, confounder harness, and serendipity detection. For hypothesis testing, literature gap analysis, and experimental validation.",
   "author": {
     "name": "Vibe Science Contributors",
     "email": "vibe-science@users.noreply.github.com"

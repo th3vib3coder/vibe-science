@@ -1,0 +1,11 @@
+id: GC06
+name: missing-confounder-harness
+category: golden_claim
+prompt: "The logistic regression model shows strong predictive power (AUC=0.85) for cleavage efficiency based on sequence features alone. We can conclude these features directly determine efficiency."
+expected_markers:
+  - "confounder"
+  - "harness"
+  - "raw"
+  - "conditioned"
+  - "matched"
+description: "Tests LAW 9 enforcement. No confounder harness was applied. System must block this claim and demand raw->conditioned->matched pipeline."

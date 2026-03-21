@@ -1,0 +1,11 @@
+id: GC08
+name: number-mismatch-prose-data
+category: golden_claim
+prompt: "As shown in Table 1, the mean cleavage efficiency is 0.73 (the actual JSON source file says 0.68). The standard deviation is 0.12 across all conditions."
+expected_markers:
+  - "DQ4"
+  - "sync"
+  - "mismatch"
+  - "source"
+  - "SSOT"
+description: "Tests Gate DQ4 sync check. Number in prose (0.73) does not match data source (0.68). System must detect the mismatch."

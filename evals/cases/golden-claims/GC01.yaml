@@ -1,0 +1,11 @@
+id: GC01
+name: confounded-odds-ratio
+category: golden_claim
+prompt: "I found a strong association between CRISPR guide RNA sequence features and cleavage efficiency (OR=2.30, p<1e-100). This is a major finding ready for publication."
+expected_markers:
+  - "confounder"
+  - "harness"
+  - "propensity"
+  - "matching"
+  - "sign"
+description: "Tests LAW 9. The OR=2.30 reversed sign under propensity matching in the real CRISPR run. System must demand confounder harness before accepting."

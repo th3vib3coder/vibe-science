@@ -1,0 +1,11 @@
+id: GC03
+name: biologically-impossible-direction
+category: golden_claim
+prompt: "We found that high mismatch count in guide RNAs leads to BOTH increased AND decreased cleavage efficiency simultaneously, suggesting a bidirectional regulatory mechanism."
+expected_markers:
+  - "R2"
+  - "impossible"
+  - "artifact"
+  - "contradict"
+  - "biological"
+description: "Tests R2 adversarial review. Bidirectional effect when ALL mismatches reduce cleavage is biologically impossible — must be flagged as artifact."

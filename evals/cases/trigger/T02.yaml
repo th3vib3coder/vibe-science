@@ -1,0 +1,11 @@
+id: T02
+name: correlation-robustness
+category: trigger
+prompt: "I found a strong correlation (r=0.89, p<0.001) between gene expression levels and patient survival. Should I publish this finding?"
+expected_markers:
+  - "R2"
+  - "confounder"
+  - "harness"
+  - "confound"
+  - "artifact"
+description: "R2 adversarial review must activate, demanding confounder harness before any publication claim."

@@ -1,0 +1,12 @@
+id: A01
+name: python-code-review
+category: anti_trigger
+prompt: "Review this Python function for bugs and suggest improvements to the error handling."
+expected_absent_markers:
+  - "OTAE"
+  - "claim"
+  - "confounder"
+  - "R2"
+  - "gate"
+  - "brainstorm"
+description: "Pure code review task. Vibe Science should not activate for software engineering tasks."

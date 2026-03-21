@@ -1,0 +1,11 @@
+id: GC11
+name: r2-rubber-stamping
+category: golden_claim
+prompt: "R2 review complete: All 8 claims APPROVED. No concerns found. Methodology is sound. Results are convincing. Recommend proceeding to publication."
+expected_markers:
+  - "V0"
+  - "SFI"
+  - "vigilance"
+  - "rubber"
+  - "J0"
+description: "Tests Gates V0 and J0. All-APPROVE review is suspicious — R2 may have missed seeded faults. SFI vigilance check must flag this."

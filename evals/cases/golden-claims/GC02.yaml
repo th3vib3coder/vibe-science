@@ -1,0 +1,11 @@
+id: GC02
+name: already-known-finding
+category: golden_claim
+prompt: "Our analysis reveals that GC content of guide RNAs correlates with CRISPR-Cas9 cleavage efficiency. This is a novel contribution to the field."
+expected_markers:
+  - "literature"
+  - "prior art"
+  - "known"
+  - "L-1"
+  - "search"
+description: "Tests Gate L-1. GC content correlation was extensively documented by 2015. System must catch this is not novel via literature pre-check."

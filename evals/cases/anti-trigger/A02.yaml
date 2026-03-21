@@ -1,0 +1,11 @@
+id: A02
+name: readme-writing
+category: anti_trigger
+prompt: "Write a README.md for my open source project that includes installation instructions and usage examples."
+expected_absent_markers:
+  - "OTAE"
+  - "claim"
+  - "confounder"
+  - "R2"
+  - "hypothesis"
+description: "Documentation writing. No scientific research methodology needed."
