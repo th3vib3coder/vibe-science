@@ -3,8 +3,8 @@
  *
  * Comprehensive test coverage for the plugin infrastructure:
  *   B1. Syntax & Import Tests (13 JS files)
- *   B2. Schema SQL Tests (12 tables, FK constraints, indices)
- *   B3. Library Unit Tests (7 libs, export verification)
+ *   B2. Schema SQL Tests (13 tables, FK constraints, indices)
+ *   B3. Library Unit Tests (8 libs, export verification)
  *   B4. Script Integration Tests (setup, session-start, prompt-submit)
  *   B5. Package & Config Tests (package.json, hooks.json, plugin.json, schemas)
  *   B6. Content Integrity Tests (forbidden names, file references, CLAUDE.md)
@@ -76,6 +76,7 @@ describe('B1. Syntax & Import Tests', () => {
         'plugin/lib/narrative-engine.js',
         'plugin/lib/pattern-extractor.js',
         'plugin/lib/r2-calibration.js',
+        'plugin/lib/benchmark-reporter.js',
     ];
 
     const allJsFiles = [...scripts, ...libs];
@@ -99,12 +100,12 @@ describe('B1. Syntax & Import Tests', () => {
         });
     }
 
-    it('all 17 JS files are present', () => {
-        assert.equal(allJsFiles.length, 17, 'Expected exactly 17 JS files (9 scripts + 8 libs)');
+    it('all 18 JS files are present', () => {
+        assert.equal(allJsFiles.length, 18, 'Expected exactly 18 JS files (9 scripts + 9 libs)');
         for (const file of allJsFiles) {
             assert.ok(fs.existsSync(rel(file)), `Missing: ${file}`);
         }
-        pass('all-17-present');
+        pass('all-18-present');
     });
 });
 
@@ -128,6 +129,7 @@ describe('B2. Schema SQL Tests', () => {
         'prompt_log',
         'embed_queue',
         'research_patterns',
+        'benchmark_runs',
     ];
 
     let Database;
@@ -149,7 +151,7 @@ describe('B2. Schema SQL Tests', () => {
         pass('schema-exec');
     });
 
-    it('all 12 tables exist', () => {
+    it('all 13 tables exist', () => {
         assert.ok(db, 'DB not initialized');
         const rows = db.prepare(
             `SELECT name FROM sqlite_master WHERE type='table' ORDER BY name`
@@ -166,7 +168,7 @@ describe('B2. Schema SQL Tests', () => {
             tableNames.length >= EXPECTED_TABLES.length,
             `Expected at least ${EXPECTED_TABLES.length} tables, found ${tableNames.length}`
         );
-        pass('12-tables');
+        pass('13-tables');
     });
 
     it('FK constraint on calibration_log.session_id', () => {
@@ -243,6 +245,9 @@ describe('B2. Schema SQL Tests', () => {
             'idx_calibration_claim',
             'idx_prompt_session',
             'idx_embed_pending',
+            'idx_bench_version',
+            'idx_bench_case',
+            'idx_bench_run',
         ];
 
         for (const idx of expectedIndices) {
@@ -426,6 +431,14 @@ describe('B3. Library Unit Tests', () => {
         assert.equal(typeof mod.updateSeedStatuses, 'function', 'updateSeedStatuses should be a function');
         pass('r2-calibration-exports');
     });
+
+    it('benchmark-reporter.js exports', async () => {
+        const mod = await import(relUrl('plugin', 'lib', 'benchmark-reporter.js'));
+        assert.ok(typeof mod.recordBenchmark === 'function', 'exports recordBenchmark');
+        assert.ok(typeof mod.generateReport === 'function', 'exports generateReport');
+        assert.ok(typeof mod.compareVersions === 'function', 'exports compareVersions');
+        pass('benchmark-reporter-exports');
+    });
 });
 
 // =====================================================
@@ -583,7 +596,7 @@ describe('B5. Package & Config Tests', () => {
         const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
         assert.ok(pkg.dependencies, 'package.json should have dependencies');
 
-        const requiredDeps = ['better-sqlite3', '@huggingface/transformers', 'onnxruntime-node'];
+        const requiredDeps = ['better-sqlite3', '@huggingface/transformers'];
         for (const dep of requiredDeps) {
             assert.ok(
                 dep in pkg.dependencies,
@@ -633,9 +646,9 @@ describe('B5. Package & Config Tests', () => {
         pass('plugin-json');
     });
 
-    it('all 12 schema JSON files in schemas/ are valid JSON', () => {
-        const schemasDir = rel('schemas');
-        assert.ok(fs.existsSync(schemasDir), 'schemas/ directory should exist');
+    it('all 12 schema JSON files in skills/vibe/assets/schemas/ are valid JSON', () => {
+        const schemasDir = rel('skills/vibe/assets/schemas');
+        assert.ok(fs.existsSync(schemasDir), 'skills/vibe/assets/schemas/ directory should exist');
 
         const schemaFiles = fs.readdirSync(schemasDir).filter(f => f.endsWith('.schema.json'));
         assert.equal(
@@ -728,7 +741,7 @@ describe('B6. Content Integrity Tests', () => {
 
         // Files that legitimately contain author attribution (citation, readme, plugin manifest, skill metadata)
         const AUTHOR_FILES = new Set([
-            'README.md', 'CITATION.cff', 'LICENSE', 'NOTICE',
+            'README.md', 'CITATION.cff', 'LICENSE', 'NOTICE', 'CHANGELOG.md',
         ]);
         const AUTHOR_PATH_SEGMENTS = [
             '.claude-plugin', // plugin.json contains repository URLs

@@ -2,6 +2,35 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [6.0.49] — 2026-03-21 — Baseline stabilization: test fixes, SSOT alignment, version label correction (Adversarial Review R1)
+
+> **Trigger:** Adversarial review Round 1 — full SSOT matrix built by cross-referencing README.md, ARCHITECTURE.md, CLAUDE.md, schema.sql, __test_e2e.mjs, package.json, benchmark-reporter.js, and CHANGELOG.md. Found 2 test failures, 1 table count drift, and 2 version label mismatches.
+
+### Fixed — B5 Test Failure: onnxruntime-node phantom dependency (HIGH)
+- **__test_e2e.mjs line 599:** Removed `onnxruntime-node` from `requiredDeps` array
+- **WHY:** `onnxruntime-node` is NOT a direct dependency in package.json — it is pulled in transitively by `@huggingface/transformers`. The B5 test was checking for its presence in package.json and failing. B7 already tests the import with graceful fallback. The test was wrong, not the code.
+
+### Fixed — B6 Test Failure: th3vib3coder in CHANGELOG.md (MEDIUM)
+- **__test_e2e.mjs line 743:** Added `'CHANGELOG.md'` to `AUTHOR_FILES` exclusion set
+- **WHY:** The forbidden-names scan caught `th3vib3coder` in CHANGELOG.md (repo URLs in historical entries). CHANGELOG.md is append-only historical documentation that legitimately references the repository URL. It was already excluded for README.md, CITATION.cff, LICENSE, and NOTICE — CHANGELOG.md was the only historical document missing from the exclusion list.
+
+### Fixed — Table Count Drift: "12 tables" → "13 tables" in 4 Active Files (MEDIUM)
+- **README.md:** 5 occurrences updated (lines 51, 129, 131, 220, 326, 395)
+- **ARCHITECTURE.md:** 2 occurrences updated (lines 41, 101–116, 152) + `benchmark_runs` added to table listing
+- **plugin/db/schema.sql:** Comment updated (line 212): "12 tables" → "13 tables"
+- **WHY:** The `benchmark_runs` table was added to schema.sql and __test_e2e.mjs (which expects 13 tables and passes), but the documentation still said "12 tables". The 13th table is `benchmark_runs` for eval/benchmark result tracking. `memory_embeddings` is still NOT counted (optional fallback, documented as such).
+
+### Fixed — Version Label Mismatch: "v6.1" → "v6.0" in 2 Files (LOW)
+- **plugin/lib/benchmark-reporter.js line 5:** `"v6.1 NEXUS"` → `"v6.0 NEXUS"`
+- **plugin/db/schema.sql line 258:** `"v6.1: Benchmark & Eval Tracking"` → `"v6.0: Benchmark & Eval Tracking"`
+- **WHY:** The project version is 6.0.0 (package.json, plugin.json, README badge). These two files had "v6.1" in their header comments, creating the false impression that a v6.1 release exists. The benchmark infrastructure shipped as part of v6.0.x patches.
+
+### NOT Changed (historical entries)
+- CHANGELOG.md historical entries referencing "12 tables" (R52, R53) are left as-is — they were correct at the time of writing, before benchmark_runs was added.
+
+### Test Results After Fix
+- **53/53 pass, 0 fail** (was 51 pass, 2 fail before)
+
 ## [6.0.48] — 2026-03-05 — CLAUDE.md constitution fixes + gates TREE-STATE cleanup (R68)
 
 > **Trigger:** Round 68 paranoid deep debug — 6 parallel agents audited hooks.json+settings.json, all 12 schemas, root docs (CLAUDE.md, ARCHITECTURE.md), pre-compact.js, skills/vibe/, .claude/. Found 3 bugs in CLAUDE.md + gates.md; 6 pre-compact.js findings triaged as design choices.

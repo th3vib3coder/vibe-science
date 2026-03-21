@@ -209,7 +209,7 @@ CREATE INDEX IF NOT EXISTS idx_prompt_session ON prompt_log(session_id);
 
 -- Fallback table when sqlite-vec is not available.
 -- Created by worker-embed.js at runtime, defined here for documentation.
--- NOT counted in the "12 tables" total — this is an optional fallback.
+-- NOT counted in the "13 tables" total — this is an optional fallback.
 CREATE TABLE IF NOT EXISTS memory_embeddings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     text TEXT NOT NULL,
@@ -252,3 +252,24 @@ CREATE TABLE IF NOT EXISTS research_patterns (
 );
 CREATE INDEX IF NOT EXISTS idx_patterns_project ON research_patterns(project_path, active);
 CREATE INDEX IF NOT EXISTS idx_patterns_type ON research_patterns(pattern_type);
+
+-- ═══════════════════════════════════════════════
+-- v6.0: Benchmark & Eval Tracking
+-- ═══════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS benchmark_runs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  run_id TEXT NOT NULL,
+  skill_version TEXT NOT NULL,
+  eval_case TEXT NOT NULL,
+  category TEXT NOT NULL,
+  passed INTEGER NOT NULL DEFAULT 0,
+  execution_time_ms INTEGER,
+  token_count INTEGER,
+  notes TEXT,
+  timestamp TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_bench_version ON benchmark_runs(skill_version);
+CREATE INDEX IF NOT EXISTS idx_bench_case ON benchmark_runs(eval_case);
+CREATE INDEX IF NOT EXISTS idx_bench_run ON benchmark_runs(run_id);

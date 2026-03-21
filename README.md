@@ -48,7 +48,7 @@ Vibe Science is not a single file — it's three layers that reinforce each othe
 ├─────────────────────────────────────────────────────────────────────────┤
 │  LAYER 3: PLUGIN (Enforcement Body)                                    │
 │  7 lifecycle hooks · Gate engine · Permission engine                    │
-│  SQLite persistence (12 tables) · Research spine (auto-log)            │
+│  SQLite persistence (13 tables) · Research spine (auto-log)            │
 │  R2 auto-calibration · Pattern extraction · Silent observer            │
 │  Context builder (~700 tokens) · Narrative engine                      │
 │  → Controls WHAT the agent can do                                      │
@@ -126,9 +126,9 @@ Every cycle scans for unexpected findings. Score >= 10 → QUEUE for triage. Sco
 | **PreCompact** | Before context compaction | Snapshots current state to DB for post-compaction recovery (LAW 7) |
 | **SubagentStop** | Subagent finishes | Salvagente Rule: killed claims must produce serendipity seed |
 
-### SQLite Persistence (12 tables)
+### SQLite Persistence (13 tables)
 
-`sessions`, `spine_entries`, `claim_events`, `r2_reviews`, `serendipity_seeds`, `gate_checks`, `literature_searches`, `observer_alerts`, `calibration_log`, `prompt_log`, `embed_queue`, `research_patterns` — plus a `vec_memories` virtual table for semantic search.
+`sessions`, `spine_entries`, `claim_events`, `r2_reviews`, `serendipity_seeds`, `gate_checks`, `literature_searches`, `observer_alerts`, `calibration_log`, `prompt_log`, `embed_queue`, `research_patterns`, `benchmark_runs` — plus a `vec_memories` virtual table for semantic search.
 
 ### Other Engines
 
@@ -217,7 +217,7 @@ claude --plugin-dir .
 /vibe
 ```
 
-On first startup, the SessionStart hook auto-creates `~/.vibe-science/`, initializes the SQLite database (12 tables), and injects research context (~700 tokens).
+On first startup, the SessionStart hook auto-creates `~/.vibe-science/`, initializes the SQLite database (13 tables), and injects research context (~700 tokens).
 
 ---
 
@@ -323,7 +323,7 @@ vibe-science/
 │   │   ├── pattern-extractor.js ← Cross-session pattern detection
 │   │   └── vec-search.js        ← Vector similarity search
 │   └── db/
-│       ├── schema.sql           ← 12 table definitions
+│       ├── schema.sql           ← 13 table definitions
 │       └── domain-config-template.json
 │
 ├── commands/                    ← Slash commands (auto-discovered)
@@ -393,7 +393,7 @@ The jump from v5.5 to v6.0 is architectural, not incremental. The methodology (s
 
 **New in v6.0:**
 - Plugin architecture with 7 lifecycle hooks (SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, Stop, PreCompact, SubagentStop)
-- SQLite persistence: 12 tables tracking sessions, claims, reviews, gates, seeds, patterns
+- SQLite persistence: 13 tables tracking sessions, claims, reviews, gates, seeds, patterns, benchmarks
 - Cross-session learning: pattern extraction, instinct model, R2 temporal decay calibration
 - 7 agent roles with formal separation of powers (researcher, r2-deep, r2-inline, observer, explorer, r3-judge, instinct-scanner)
 - Agent handoff protocol (Context, Findings, Files Modified, Open Questions, Recommendations)

@@ -38,7 +38,7 @@ v5.5 proved that prompt-level methodology works — but it also proved that prom
 │  Serendipity Engine              │  Narrative Engine             │
 │  12 Constitutional Laws          │  R2 Auto-Calibration          │
 │  21 protocols                    │  Silent Observer              │
-│                                  │  SQLite (12 tables)           │
+│                                  │  SQLite (13 tables)           │
 │  Guides REASONING               │  Enforces BEHAVIOR            │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -98,7 +98,7 @@ Cross-session learning for R2:
 | **PreCompact** | Before compaction | Snapshots active claims, pending seeds, STATE.md to DB (LAW 7) |
 | **SubagentStop** | Subagent finishes | Salvagente Rule: killed claims must produce serendipity seed |
 
-### SQLite Persistence (12 Tables)
+### SQLite Persistence (13 Tables)
 
 ```
 sessions              ← session lifecycle
@@ -113,6 +113,7 @@ calibration_log       ← R2 calibration data
 prompt_log            ← SHA-256 hashes only (privacy)
 embed_queue           ← async vector embedding queue
 research_patterns     ← cross-session learned patterns
+benchmark_runs        ← eval/benchmark result tracking
 ```
 
 Foreign keys: `calibration_log.session_id` and `prompt_log.session_id` reference `sessions(id)`. Index `idx_prompt_session` accelerates per-session prompt lookups.
@@ -149,7 +150,7 @@ L-1+ is domain-aware with a 4-layer architecture:
 | `narrative-engine.js` | 339 | Template-based session summaries |
 | `vec-search.js` | 354 | sqlite-vec with keyword fallback |
 | `r2-calibration.js` | 221 | Cross-session R2 learning |
-| `schema.sql` | 254 | 12 tables + indices |
+| `schema.sql` | 276 | 13 tables + indices |
 | `stop.js` | 258 | Session end enforcement |
 | `pre-compact.js` | 175 | Context resilience snapshots |
 | `pre-tool-use.js` | 88 | CLAIM-LEDGER write guard (v6.0.1) |
