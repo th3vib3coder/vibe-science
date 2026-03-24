@@ -123,18 +123,21 @@ export function getRequiredGatesForClaim(claimId) {
  * @param {string} claimId   — the claim to check
  * @returns {{ pass: boolean, missing?: string[] }}
  */
-export function checkClaimGates(db, claimId) {
+export function checkClaimGates(db, claimId, sessionId) {
     if (!claimId) return { pass: true };
 
     const required = getRequiredGatesForClaim(claimId);
 
-    // Query all PASS entries for this claim
+    // Query PASS entries for this claim OR session-level (claim_id IS NULL).
+    // Session-level gates like DQ4 are logged without a specific claim_id
+    // but still satisfy the prerequisite for any claim in that session.
     let passedGates = [];
     try {
         const rows = db.prepare(
             `SELECT DISTINCT gate_id FROM gate_checks
-             WHERE claim_id = ? AND status = 'PASS'`
-        ).all(claimId);
+             WHERE (claim_id = ? OR (claim_id IS NULL AND session_id = ?))
+               AND status = 'PASS'`
+        ).all(claimId, sessionId || '');
         passedGates = rows.map(r => r.gate_id);
     } catch {
         // If DB is unavailable, fail open with a warning

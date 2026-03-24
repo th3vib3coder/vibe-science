@@ -33,7 +33,7 @@ let openDB, initDB, closeDB, checkPermission, queueForEmbedding, updateSessionIn
 let ingestClaimEvents, ingestSerendipitySeeds, ingestR2Reviews;
 let upsertCitationCheck, updateCitationVerification;
 let extractCitationsFromEvent, verifyCitationsQuick;
-let checkSourceValidityGateRuntime, checkClaimPromotionSourcesRuntime;
+let checkSourceValidityGateRuntime, checkClaimPromotionSourcesRuntime, checkClaimGatesCanonical;
 const CRITICAL_MODULE_WARNINGS = [];
 try {
     const dbMod = await import('../lib/db.js');
@@ -97,10 +97,12 @@ try {
     const gateMod = await import('../lib/gate-engine.js');
     checkSourceValidityGateRuntime = gateMod.checkSourceValidityGate;
     checkClaimPromotionSourcesRuntime = gateMod.checkClaimPromotionSources;
+    checkClaimGatesCanonical = gateMod.checkClaimGates;
 } catch {
     CRITICAL_MODULE_WARNINGS.push('gate-engine.js unavailable.');
     checkSourceValidityGateRuntime = () => ({ pass: true, count: 0, blockers: [], citations: [] });
     checkClaimPromotionSourcesRuntime = () => ({ pass: true, count: 0, blockers: [], citations: [] });
+    checkClaimGatesCanonical = () => ({ pass: true });
 }
 
 // =====================================================================
@@ -517,10 +519,15 @@ function enforceGates(db, event, citationContext = {}) {
         // ---------------------------------------------------------
         if (filePath.includes('CLAIM-LEDGER') || filePath.includes('claim-ledger')) {
             const content = collectWriteContent(tool_input);
-            const claimId = citationContext.claimId || extractClaimId(content);
+            // Extract ALL claim IDs from the content — multi-claim writes must gate each one
+            const allClaimIds = extractAllClaimIds(content);
+            if (allClaimIds.length === 0) {
+                const singleId = citationContext.claimId || extractClaimId(content);
+                if (singleId) allClaimIds.push(singleId);
+            }
 
-            if (claimId) {
-                const claimGateResult = checkClaimGates(db, claimId, session_id);
+            for (const claimId of allClaimIds) {
+                const claimGateResult = checkClaimGatesCanonical(db, claimId, session_id);
                 if (claimGateResult && !claimGateResult.pass) {
                     logGateResult(db, session_id, 'CLAIM_GATE', 'FAIL', claimId, claimGateResult);
 
@@ -886,97 +893,24 @@ function extractClaimId(content) {
 }
 
 /**
- * Check whether all required gates have been passed for a claim.
- *
- * @param {import('better-sqlite3').Database} db
- * @param {string} claimId
- * @param {string} sessionId
- * @returns {{pass: boolean, missing: string[], passed: string[]}}
- */
-function checkClaimGates(db, claimId, sessionId) {
-    let passedGates;
-    try {
-        passedGates = db.prepare(
-            `SELECT DISTINCT gate_id FROM gate_checks
-             WHERE claim_id = ? AND status = 'PASS'`
-        ).all(claimId).map(row => row.gate_id);
-    } catch {
-        // If table doesn't exist or query fails, don't block
-        return { pass: true, missing: [], passed: [] };
-    }
-
-    // Determine which gates are actually required based on the claim's journey.
-    // Not all claims go through all gates (e.g., a claim that doesn't involve
-    // model training doesn't need DQ2). We check which gates are applicable.
-    const requiredGates = getRequiredGatesForClaim(db, claimId);
-    const missing = requiredGates.filter(g => !passedGates.includes(g));
-
-    return {
-        pass: missing.length === 0,
-        missing,
-        passed: passedGates
-    };
-}
-
-/**
- * Determine which gates are required for a specific claim.
- *
- * Heuristic: look at the spine_entries for actions associated with this claim
- * to determine which stages the claim has traversed.
- *
- * @param {import('better-sqlite3').Database} db
- * @param {string} claimId
+ * Extract ALL unique claim IDs from content (for multi-claim writes).
+ * @param {string} content
  * @returns {string[]}
  */
-function getRequiredGatesForClaim(db, claimId) {
-    // DQ4 is always required (findings must be synced with data)
-    const required = ['DQ4'];
-
-    try {
-        // Check if this claim involved data operations (requires DQ1)
-        const hasData = db.prepare(
-            `SELECT 1 FROM claim_events
-             WHERE claim_id = ? AND event_type IN ('CREATED', 'PROMOTED')
-             LIMIT 1`
-        ).get(claimId);
-
-        if (hasData) {
-            required.push('DQ1'); // Post-extraction validation
-        }
-
-        // Check if claim involved model training (requires DQ2)
-        const hasModel = db.prepare(
-            `SELECT 1 FROM spine_entries
-             WHERE action_type = 'MODEL_TRAIN'
-             AND session_id IN (
-                 SELECT DISTINCT session_id FROM claim_events WHERE claim_id = ?
-             )
-             LIMIT 1`
-        ).get(claimId);
-
-        if (hasModel) {
-            required.push('DQ2'); // Post-training validation
-        }
-
-        // Check if claim involved calibration (requires DQ3)
-        const hasCalibration = db.prepare(
-            `SELECT 1 FROM spine_entries
-             WHERE action_type IN ('CALIBRATION', 'CONFORMAL_PREDICT')
-             AND session_id IN (
-                 SELECT DISTINCT session_id FROM claim_events WHERE claim_id = ?
-             )
-             LIMIT 1`
-        ).get(claimId);
-
-        if (hasCalibration) {
-            required.push('DQ3'); // Post-calibration validation
-        }
-    } catch {
-        // On error, require only DQ4 (minimum viable check)
+function extractAllClaimIds(content) {
+    if (!content || typeof content !== 'string') return [];
+    const ids = new Set();
+    for (const match of content.matchAll(/\bC-?(\d+)\b/gi)) {
+        ids.add(`C-${match[1].padStart(3, '0')}`);
     }
-
-    return required;
+    for (const match of content.matchAll(/\bCLAIM-(\d+)\b/gi)) {
+        ids.add(`CLAIM-${match[1]}`);
+    }
+    return [...ids];
 }
+
+// checkClaimGates and getRequiredGatesForClaim removed — use canonical versions
+// from gate-engine.js via checkClaimGatesCanonical (imported at top)
 
 // ── Gate L-1+: Literature search before direction nodes ─────────────
 

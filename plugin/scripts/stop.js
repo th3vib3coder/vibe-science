@@ -344,7 +344,10 @@ process.stdin.on('end', () => {
             process.stderr.write(reason);
             process.exit(2);
         }
-        // Allow stop
+        // Allow stop — emit message if present (e.g. stop_hook_active degradation note)
+        if (result.message) {
+            process.stderr.write(result.message + '\n');
+        }
         process.exit(0);
     }).catch(err => {
         // Never block due to our own bugs
