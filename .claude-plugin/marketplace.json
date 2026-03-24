@@ -5,14 +5,14 @@
     "email": "vibe-science@users.noreply.github.com"
   },
   "metadata": {
-    "description": "Vibe Science v6.0 NEXUS — AI-native research engine with plugin-enforced integrity",
-    "version": "6.0.0"
+    "description": "Vibe Science v7.0 TRACE — AI-native research runtime with tracked lifecycle, citation gates, strict integrity, and retrieval closure",
+    "version": "7.0.0"
   },
   "plugins": [
     {
       "name": "vibe-science",
       "description": "Scientific research engine with adversarial review, 32 quality gates, infrastructure-enforced integrity, persistent memory, and serendipity tracking.",
-      "version": "6.0.0",
+      "version": "7.0.0",
       "source": "./"
     }
   ]

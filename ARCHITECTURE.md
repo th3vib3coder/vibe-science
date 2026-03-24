@@ -6,6 +6,7 @@
 
 ## Table of Contents
 
+- [v7.0 TRACE — Runtime Closure](#v70--trace)
 - [v6.0 NEXUS — Dual Architecture](#v60--nexus)
 - [v5.5 ORO — Post-Mortem Release](#v55--oro)
 - [v5.0 IUDEX — Verification Release](#v50--iudex)
@@ -15,6 +16,34 @@
 - [Photonics Fork](#photonics-fork--oro-photonics)
 - [Feature Evolution Tables](#feature-evolution-tables)
 - [Academic Foundations](#academic-foundations)
+
+---
+
+## v7.0 — TRACE
+
+> *Traceability becomes runtime reality. The system no longer just defines the loop; it persists it, gates it, and measures it.*
+
+v6.0 `NEXUS` introduced the dual architecture. v7.0 `TRACE` closes the operational gaps that were still leaving key tables empty or key checks soft. The defining move of TRACE is simple: the plugin now tracks the research lifecycle end-to-end instead of merely surrounding it.
+
+### What TRACE Closes
+
+| Area | v6.0 Status | v7.0 TRACE |
+|------|-------------|------------|
+| Claim lifecycle | schema existed, runtime mostly unpopulated | `claim_events` populated from structured and legacy markdown |
+| Serendipity + R2 artifacts | tables existed, hooks did not feed them | `serendipity_seeds` and `r2_reviews` ingested automatically |
+| Citation validity | mostly skill-level discipline | extraction + verification + `L0` / `D1` plugin gates |
+| Benchmarking | reporter existed, runtime orphaned | artifact -> `benchmark_runs` -> A/B comparison -> readiness |
+| Integrity | fail-open paths visible but uneven | `INTEGRITY_OK` / `INTEGRITY_DEGRADED` persisted, strict mode fail-loud |
+| Retrieval | vector path fragile, lexical recall weak | FTS5/BM25 `memory_fts` as live Tier 0 retrieval |
+
+### TRACE Runtime Snapshot
+
+- 7 lifecycle hooks remain the enforcement backbone
+- schema version advances to `4`
+- SQLite core now includes 16 regular tables, plus `memory_fts` and optional `vec_memories`
+- release verification includes `104/104` end-to-end tests, smoke, and readiness
+
+TRACE is not a new philosophy. It is the moment the existing philosophy starts leaving enough structured evidence in the runtime to enforce itself.
 
 ---
 

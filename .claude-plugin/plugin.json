@@ -1,7 +1,7 @@
 {
   "name": "vibe-science",
-  "version": "6.0.0",
-  "description": "Scientific research plugin with adversarial review (Reviewer 2), 32 quality gates, tree search, confounder harness, and serendipity detection. For hypothesis testing, literature gap analysis, and experimental validation.",
+  "version": "7.0.0",
+  "description": "Scientific research plugin with tracked claim/review/seed lifecycle, citation verification gates, strict integrity, benchmark recording, and retrieval closure.",
   "author": {
     "name": "Vibe Science Contributors",
     "email": "vibe-science@users.noreply.github.com"

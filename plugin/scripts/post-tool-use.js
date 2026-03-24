@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Vibe Science v6.0 NEXUS -- PostToolUse Enforcement Hook
+ * Vibe Science v7.0 TRACE -- PostToolUse Enforcement Hook
  *
  * Executed AFTER every tool invocation by the agent.
  * This is the central enforcement point for the entire system.
@@ -29,25 +29,78 @@ import path from 'node:path';
 // Imports from lib modules (dynamic — graceful if better-sqlite3 missing)
 // =====================================================================
 
-let openDB, initDB, closeDB, checkPermission, queueForEmbedding;
+let openDB, initDB, closeDB, checkPermission, queueForEmbedding, updateSessionIntegrity, applyMigrations;
+let ingestClaimEvents, ingestSerendipitySeeds, ingestR2Reviews;
+let upsertCitationCheck, updateCitationVerification;
+let extractCitationsFromEvent, verifyCitationsQuick;
+let checkSourceValidityGateRuntime, checkClaimPromotionSourcesRuntime;
+const CRITICAL_MODULE_WARNINGS = [];
 try {
     const dbMod = await import('../lib/db.js');
     openDB = dbMod.openDB;
     initDB = dbMod.initDB;
     closeDB = dbMod.closeDB;
+    updateSessionIntegrity = dbMod.updateSessionIntegrity;
+    upsertCitationCheck = dbMod.upsertCitationCheck;
+    updateCitationVerification = dbMod.updateCitationVerification;
+    const migrationMod = await import('../lib/migrations.js');
+    applyMigrations = migrationMod.applyMigrations;
 
     const permMod = await import('../lib/permission-engine.js');
     checkPermission = permMod.checkPermission;
 
     const vecMod = await import('../lib/vec-search.js');
     queueForEmbedding = vecMod.queueForEmbedding;
+
+    const claimIngestionMod = await import('../lib/claim-ingestion.js');
+    ingestClaimEvents = claimIngestionMod.ingestClaimEvents;
+
+    const seedIngestionMod = await import('../lib/seed-ingestion.js');
+    ingestSerendipitySeeds = seedIngestionMod.ingestSerendipitySeeds;
+
+    const reviewIngestionMod = await import('../lib/r2-ingestion.js');
+    ingestR2Reviews = reviewIngestionMod.ingestR2Reviews;
 } catch {
     // lib modules unavailable — enforcement runs in degraded mode
+    CRITICAL_MODULE_WARNINGS.push('Core DB / ingestion module bundle unavailable.');
     openDB = () => null;
     initDB = () => {};
     closeDB = () => {};
+    updateSessionIntegrity = () => {};
+    applyMigrations = () => {};
     checkPermission = () => null;
     queueForEmbedding = () => {};
+    ingestClaimEvents = () => ({ inserted: 0, skipped: 0, warnings: [] });
+    ingestSerendipitySeeds = () => ({ inserted: 0, skipped: 0, warnings: [] });
+    ingestR2Reviews = () => ({ inserted: 0, skipped: 0, warnings: [] });
+    upsertCitationCheck = () => {};
+    updateCitationVerification = () => {};
+}
+
+try {
+    const citationExtractorMod = await import('../lib/citation-extractor.js');
+    extractCitationsFromEvent = citationExtractorMod.extractCitationsFromEvent;
+} catch {
+    CRITICAL_MODULE_WARNINGS.push('citation-extractor.js unavailable.');
+    extractCitationsFromEvent = () => ({ citations: [], claimId: null, warnings: [] });
+}
+
+try {
+    const citationEngineMod = await import('../lib/citation-engine.js');
+    verifyCitationsQuick = citationEngineMod.verifyCitationsQuick;
+} catch {
+    CRITICAL_MODULE_WARNINGS.push('citation-engine.js unavailable.');
+    verifyCitationsQuick = async () => ({ attempted: 0, elapsedMs: 0, budgetExhausted: false, results: [], warnings: [] });
+}
+
+try {
+    const gateMod = await import('../lib/gate-engine.js');
+    checkSourceValidityGateRuntime = gateMod.checkSourceValidityGate;
+    checkClaimPromotionSourcesRuntime = gateMod.checkClaimPromotionSources;
+} catch {
+    CRITICAL_MODULE_WARNINGS.push('gate-engine.js unavailable.');
+    checkSourceValidityGateRuntime = () => ({ pass: true, count: 0, blockers: [], citations: [] });
+    checkClaimPromotionSourcesRuntime = () => ({ pass: true, count: 0, blockers: [], citations: [] });
 }
 
 // =====================================================================
@@ -85,6 +138,11 @@ const DOI_PMID_PATTERNS = [
     /pubmed\.ncbi.*\/\d+/i,            // PubMed URL
     /doi\.org\/10\.\d{4,9}/i,          // DOI URL
 ];
+
+/** TRACE bounded sync citation verification contract */
+const CITATION_SYNC_REQUEST_TIMEOUT_MS = 3000;
+const CITATION_SYNC_EVENT_BUDGET_MS = 5000;
+const CITATION_SYNC_MAX_ATTEMPTS = 3;
 
 // =====================================================================
 // stdin reader + main entrypoint
@@ -136,6 +194,7 @@ process.stdin.on('end', () => {
  */
 async function main(event) {
     const { tool_name, tool_input = {}, tool_response, session_id, agent_role } = event;
+    const strictMode = process.env.VIBE_SCIENCE_STRICT === '1';
     // Claude Code spec field is `tool_response` (object). Convert to string for pattern matching.
     const tool_output = typeof tool_response === 'string' ? tool_response : JSON.stringify(tool_response ?? '');
 
@@ -146,7 +205,16 @@ async function main(event) {
     try {
         db = openDB();
         initDB(db);
+        applyMigrations(db);
     } catch (err) {
+        if (strictMode) {
+            return {
+                exitCode: 2,
+                stderr:
+                    `[INTEGRITY DEGRADED] Cannot open database: ${err.message}. ` +
+                    `PostToolUse enforcement unavailable in strict mode.\n`
+            };
+        }
         process.stderr.write(
             `[PostToolUse] WARNING: Cannot open database: ${err.message}. ` +
             `Enforcement degraded -- gates and logging disabled for this tool use.\n`
@@ -160,6 +228,12 @@ async function main(event) {
 
     if (!db) {
         // better-sqlite3 not installed — degrade gracefully, no blocking
+        if (strictMode) {
+            return {
+                exitCode: 2,
+                stderr: '[INTEGRITY DEGRADED] better-sqlite3 not available. PostToolUse enforcement disabled in strict mode.\n'
+            };
+        }
         return {
             exitCode: 0,
             stderr: '[PostToolUse] WARNING: better-sqlite3 not available. Gate enforcement DISABLED for this session.\n'
@@ -167,6 +241,20 @@ async function main(event) {
     }
 
     try {
+        if (session_id && CRITICAL_MODULE_WARNINGS.length > 0) {
+            updateSessionIntegrity(db, session_id, {
+                status: 'INTEGRITY_DEGRADED',
+                note: CRITICAL_MODULE_WARNINGS.join(' '),
+            });
+        }
+
+        if (strictMode && CRITICAL_MODULE_WARNINGS.length > 0) {
+            return {
+                exitCode: 2,
+                stderr: `[INTEGRITY DEGRADED] Critical TRACE modules missing: ${CRITICAL_MODULE_WARNINGS.join(' ')}\n`
+            };
+        }
+
         // ==============================================================
         // 0. LITERATURE SEARCH DETECTION (auto-register before gates)
         //    Intercept WebSearch/WebFetch/Read with scientific patterns
@@ -175,9 +263,16 @@ async function main(event) {
         detectAndLogLiteratureSearch(db, event);
 
         // ==============================================================
+        // 0b. CITATION EXTRACTION + QUICK VERIFICATION (TRACE WP-04/05)
+        //     Persist citations before gate enforcement so L0/D1 can see
+        //     the state produced by the same tool event.
+        // ==============================================================
+        const citationContext = await processCitations(db, event);
+
+        // ==============================================================
         // 1. GATE ENFORCEMENT (DQ4, CLAIM-LEDGER gates, L-1+)
         // ==============================================================
-        const gateResult = enforceGates(db, event);
+        const gateResult = enforceGates(db, event, citationContext);
         if (gateResult) {
             return gateResult; // exitCode 2
         }
@@ -312,6 +407,67 @@ function extractDomainFromUrl(url) {
     }
 }
 
+/**
+ * TRACE citation runtime:
+ *   1. extract DOI / PMID / arXiv mentions from the current event
+ *   2. persist them as PENDING
+ *   3. attempt bounded sync verification on up to N citations
+ *
+ * @param {import('better-sqlite3').Database} db
+ * @param {object} event
+ * @returns {Promise<{claimId: string|null, citations: object[], verification: object}>}
+ */
+async function processCitations(db, event) {
+    if (!db || !event?.session_id) {
+        return {
+            claimId: null,
+            citations: [],
+            verification: { attempted: 0, elapsedMs: 0, budgetExhausted: false, results: [], warnings: [] },
+        };
+    }
+
+    const extracted = extractCitationsFromEvent(event);
+    emitTraceWarnings('citation', extracted.warnings);
+
+    if (!extracted.citations.length) {
+        return {
+            claimId: extracted.claimId ?? null,
+            citations: [],
+            verification: { attempted: 0, elapsedMs: 0, budgetExhausted: false, results: [], warnings: [] },
+        };
+    }
+
+    for (const citation of extracted.citations) {
+        try {
+            upsertCitationCheck(db, citation);
+        } catch (err) {
+            process.stderr.write(`[PostToolUse] WARNING: Failed to persist citation ${citation.citation_id}: ${err.message}\n`);
+        }
+    }
+
+    const verification = await verifyCitationsQuick(extracted.citations, {
+        fetchImpl: globalThis.fetch,
+        requestTimeoutMs: CITATION_SYNC_REQUEST_TIMEOUT_MS,
+        eventBudgetMs: CITATION_SYNC_EVENT_BUDGET_MS,
+        maxSyncAttempts: CITATION_SYNC_MAX_ATTEMPTS,
+    });
+
+    emitTraceWarnings('citation', verification.warnings);
+    for (const result of verification.results || []) {
+        try {
+            updateCitationVerification(db, result.citation_id, result);
+        } catch (err) {
+            process.stderr.write(`[PostToolUse] WARNING: Failed to update citation ${result.citation_id}: ${err.message}\n`);
+        }
+    }
+
+    return {
+        claimId: extracted.claimId ?? null,
+        citations: extracted.citations,
+        verification,
+    };
+}
+
 // =====================================================================
 // Section 1: Gate Enforcement
 // =====================================================================
@@ -321,14 +477,15 @@ function extractDomainFromUrl(url) {
  *
  * @param {import('better-sqlite3').Database} db
  * @param {object} event
+ * @param {{ claimId?: string|null, citations?: object[], verification?: object }} [citationContext]
  * @returns {null|{exitCode: number, stderr: string}}
  *   null = all gates pass; object = BLOCK with reason
  */
-function enforceGates(db, event) {
+function enforceGates(db, event, citationContext = {}) {
     const { tool_name, tool_input = {}, session_id } = event;
 
     // Only Write/Edit trigger file-based gate checks
-    if (tool_name === 'Write' || tool_name === 'Edit') {
+    if (isWriteLikeTool(tool_name)) {
         const filePath = tool_input.file_path || '';
 
         // ---------------------------------------------------------
@@ -359,8 +516,8 @@ function enforceGates(db, event) {
         // Gate: CLAIM-LEDGER.md requires all prerequisite gates
         // ---------------------------------------------------------
         if (filePath.includes('CLAIM-LEDGER') || filePath.includes('claim-ledger')) {
-            const content = tool_input.content || tool_input.new_string || '';
-            const claimId = extractClaimId(content);
+            const content = collectWriteContent(tool_input);
+            const claimId = citationContext.claimId || extractClaimId(content);
 
             if (claimId) {
                 const claimGateResult = checkClaimGates(db, claimId, session_id);
@@ -374,6 +531,46 @@ function enforceGates(db, event) {
                             `Missing prerequisite gates: ${claimGateResult.missing.join(', ')}\n` +
                             `Fix: Run the missing gate checks first, then update the ledger.`
                     };
+                }
+
+                const sourceValidityResult = checkSourceValidityGateRuntime(db, { sessionId: session_id, claimId });
+                if (sourceValidityResult.count > 0 && !sourceValidityResult.pass) {
+                    logGateResult(db, session_id, 'L0', 'FAIL', claimId, sourceValidityResult);
+                    return {
+                        exitCode: 2,
+                        stderr:
+                            `GATE L0 FAIL: Source validity failed for claim ${claimId}.\n` +
+                            formatCitationBlockers(sourceValidityResult.blockers) +
+                            `\nFix: resolve or remove unresolved/retracted citations before keeping this claim in CLAIM-LEDGER.`
+                    };
+                }
+                if (sourceValidityResult.count > 0) {
+                    logGateResult(db, session_id, 'L0', 'PASS', claimId, sourceValidityResult);
+                }
+
+                if (isPromotionWrite(content)) {
+                    const promotionSources = checkClaimPromotionSourcesRuntime(db, { sessionId: session_id, claimId });
+                    if (!promotionSources.pass) {
+                        logGateResult(db, session_id, 'D1', 'FAIL', claimId, promotionSources);
+                        if (promotionSources.reason === 'NO_CITATIONS') {
+                            return {
+                                exitCode: 2,
+                                stderr:
+                                    `GATE D1 FAIL: Claim ${claimId} cannot be promoted without tracked citations.\n` +
+                                    `Fix: add at least one verifiable citation to the claim context before promotion.`
+                            };
+                        }
+                        return {
+                            exitCode: 2,
+                            stderr:
+                                `GATE D1 FAIL: Claim ${claimId} cannot be promoted while citations are not fully VERIFIED.\n` +
+                                formatCitationBlockers(promotionSources.blockers) +
+                                `\nFix: wait for verification or replace unresolved citations before promotion.`
+                        };
+                    }
+                    if (promotionSources.count > 0) {
+                        logGateResult(db, session_id, 'D1', 'PASS', claimId, promotionSources);
+                    }
                 }
             }
         }
@@ -416,6 +613,42 @@ function enforceGates(db, event) {
     return null; // all gates pass
 }
 
+function isWriteLikeTool(toolName) {
+    return toolName === 'Write' || toolName === 'Edit' || toolName === 'MultiEdit';
+}
+
+function collectWriteContent(toolInput = {}) {
+    if (toolInput.content || toolInput.new_string) {
+        return toolInput.content || toolInput.new_string || '';
+    }
+    if (Array.isArray(toolInput.edits)) {
+        return toolInput.edits
+            .map(edit => edit?.new_string || '')
+            .filter(Boolean)
+            .join('\n');
+    }
+    return '';
+}
+
+function isPromotionWrite(content) {
+    const text = String(content || '');
+    return /event_type\s*:\s*PROMOTED|new_status\s*:\s*PROMOTED|\bPROMOTED\b|\bGate\s*D1\b/i.test(text);
+}
+
+function formatCitationBlockers(blockers = []) {
+    if (!Array.isArray(blockers) || blockers.length === 0) {
+        return 'No blocking citations listed.';
+    }
+
+    return blockers
+        .map(citation => {
+            const ref = citation.raw_ref || citation.normalized_id || citation.citation_id || 'unknown citation';
+            const status = String(citation.verification_status || 'PENDING').toUpperCase();
+            return `  - ${ref} [${status}]`;
+        })
+        .join('\n');
+}
+
 // ── Gate DQ4: FINDINGS.md <-> JSON sync check ──────────────────────
 
 /**
@@ -450,7 +683,7 @@ function checkGateDQ4(findingsPath, toolInput) {
     }
 
     // Extract the markdown content being written
-    const mdContent = toolInput.content || toolInput.new_string || '';
+    const mdContent = collectWriteContent(toolInput);
     if (!mdContent) return null;
 
     // Extract all numbers from the markdown (decimal and integer)
@@ -641,13 +874,13 @@ function isApproximateMatch(a, b) {
 function extractClaimId(content) {
     if (!content || typeof content !== 'string') return null;
 
-    // Try compact format first (C or C- followed by 3 digits) — same as gate-engine.js
-    const compactMatch = content.match(/\bC-?(\d{3})\b/);
-    if (compactMatch) return compactMatch[0];
+    // Try compact format first (C or C- followed by 1+ digits) — same as gate-engine.js
+    const compactMatch = content.match(/\bC-?(\d+)\b/);
+    if (compactMatch) return `C-${compactMatch[1].padStart(3, '0')}`;
 
     // Try legacy format (CLAIM- followed by digits)
     const legacyMatch = content.match(/\bCLAIM-(\d+)\b/);
-    if (legacyMatch) return legacyMatch[0];
+    if (legacyMatch) return `CLAIM-${legacyMatch[1]}`;
 
     return null;
 }
@@ -887,7 +1120,7 @@ function logGateResult(db, sessionId, gateId, status, claimId, details) {
  * @returns {null|{exitCode: number, stderr: string}}
  */
 function checkSalvagenteRule(db, sessionId, toolInput) {
-    const content = (toolInput.content || toolInput.new_string || '');
+    const content = collectWriteContent(toolInput);
     if (!content) return null;
 
     // Detect a KILL event with salvageable reason
@@ -918,7 +1151,8 @@ function checkSalvagenteRule(db, sessionId, toolInput) {
         const seed = db.prepare(`
             SELECT seed_id FROM serendipity_seeds
             WHERE (
-                narrative LIKE ? OR narrative LIKE ?
+                source_claim_id = ?
+                OR narrative LIKE ? OR narrative LIKE ?
                 OR causal_question LIKE ? OR causal_question LIKE ?
             )
             AND created_session IN (
@@ -927,7 +1161,14 @@ function checkSalvagenteRule(db, sessionId, toolInput) {
                 )
             )
             LIMIT 1
-        `).get(`%${claimId}%`, `%${claimId.replace('-', '')}%`, `%${claimId}%`, `%${claimId.replace('-', '')}%`, sessionId);
+        `).get(
+            claimId,
+            `%${claimId}%`,
+            `%${claimId.replace('-', '')}%`,
+            `%${claimId}%`,
+            `%${claimId.replace('-', '')}%`,
+            sessionId
+        );
 
         if (seed) {
             // Seed exists — Salvagente satisfied
@@ -1062,6 +1303,34 @@ function autoLog(db, event) {
         });
     } catch (err) {
         process.stderr.write(`[PostToolUse] WARNING: Failed to queue embedding: ${err.message}\n`);
+    }
+
+    // -- TRACE lifecycle ingestion (claim / seed / review artifacts) --
+    try {
+        ingestTraceArtifacts(db, event);
+    } catch (err) {
+        process.stderr.write(`[PostToolUse] WARNING: TRACE ingestion failed: ${err.message}\n`);
+    }
+}
+
+function ingestTraceArtifacts(db, event) {
+    const { tool_name, tool_input = {}, session_id } = event;
+    if (!db || !session_id) return;
+    if (!isWriteLikeTool(tool_name)) return;
+
+    const filePath = tool_input.file_path || '';
+    const content = collectWriteContent(tool_input);
+    if (!filePath || !content) return;
+
+    const payload = { sessionId: session_id, filePath, content };
+    emitTraceWarnings('claim', ingestClaimEvents(db, payload).warnings);
+    emitTraceWarnings('seed', ingestSerendipitySeeds(db, payload).warnings);
+    emitTraceWarnings('review', ingestR2Reviews(db, payload).warnings);
+}
+
+function emitTraceWarnings(kind, warnings = []) {
+    for (const warning of warnings || []) {
+        process.stderr.write(`[PostToolUse] TRACE ${kind}: ${warning}\n`);
     }
 }
 

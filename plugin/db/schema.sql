@@ -1,15 +1,23 @@
 -- plugin/db/schema.sql
--- Vibe Science v6.0 NEXUS — Complete Database Schema
+-- Vibe Science v7.0 TRACE — Complete Database Schema
 
 -- =====================================================
 -- CORE: Sessions and Actions
 -- =====================================================
+
+CREATE TABLE IF NOT EXISTS meta (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL,
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
 
 CREATE TABLE IF NOT EXISTS sessions (
     id TEXT PRIMARY KEY,
     project_path TEXT NOT NULL,
     started_at TEXT NOT NULL,
     ended_at TEXT,
+    integrity_status TEXT NOT NULL DEFAULT 'INTEGRITY_OK',
+    integrity_notes TEXT,
     narrative_summary TEXT,
     total_actions INTEGER DEFAULT 0,
     claims_created INTEGER DEFAULT 0,
@@ -95,6 +103,7 @@ CREATE TABLE IF NOT EXISTS serendipity_seeds (
     discriminating_test TEXT,
     fallback_test TEXT,
     narrative TEXT,
+    source_claim_id TEXT,
     last_reviewed_session TEXT,
     resolution TEXT,
     created_at TEXT NOT NULL,
@@ -142,6 +151,44 @@ CREATE TABLE IF NOT EXISTS literature_searches (
 );
 CREATE INDEX IF NOT EXISTS idx_lit_session ON literature_searches(session_id);
 CREATE INDEX IF NOT EXISTS idx_lit_layer ON literature_searches(search_layer);
+
+-- =====================================================
+-- CITATIONS: Extraction + verification persistence
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS citation_checks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    citation_id TEXT NOT NULL,
+    session_id TEXT,
+    claim_id TEXT,
+    raw_ref TEXT NOT NULL,
+    citation_text TEXT,
+    citation_type TEXT NOT NULL,    -- DOI / PMID / ARXIV / URL / OTHER
+    normalized_id TEXT,
+    doi TEXT,
+    pmid TEXT,
+    arxiv_id TEXT,
+    verification_status TEXT NOT NULL DEFAULT 'PENDING',
+    -- PENDING / VERIFIED / UNRESOLVED / RETRACTED / ERROR
+    verification_method TEXT,       -- web_fetch / database_lookup / manual
+    resolver TEXT,                  -- DOI_ORG / CROSSREF / PUBMED / ARXIV / MANUAL
+    source_url TEXT,
+    resolved_title TEXT,
+    title TEXT,                     -- legacy mirror for backward compatibility
+    resolved_source_type TEXT,      -- peer_reviewed / preprint / conference / technical_report / other
+    retraction_status TEXT,         -- RETRACTED / CLEAR / UNKNOWN / NULL
+    resolved_payload TEXT,
+    http_status INTEGER,
+    http_status_code INTEGER,
+    checked_at TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (session_id) REFERENCES sessions(id)
+);
+CREATE INDEX IF NOT EXISTS idx_citations_session ON citation_checks(session_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_citations_status ON citation_checks(verification_status);
+CREATE INDEX IF NOT EXISTS idx_citations_claim ON citation_checks(claim_id, verification_status);
+CREATE INDEX IF NOT EXISTS idx_citations_lookup ON citation_checks(citation_type, normalized_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_citations_dedupe ON citation_checks(citation_id);
 
 -- =====================================================
 -- OBSERVER: Alert tracking
@@ -194,10 +241,9 @@ CREATE INDEX IF NOT EXISTS idx_prompt_session ON prompt_log(session_id);
 -- =====================================================
 
 -- NOTE: vec_memories requires the sqlite-vec extension to be loaded.
--- This table is created by setup.js after loading the extension.
--- Included here for documentation; will be skipped if sqlite-vec
--- is not available (CREATE VIRTUAL TABLE does not support IF NOT EXISTS
--- in all sqlite-vec versions).
+-- This table is created by setup.js / worker-embed.js after loading the
+-- extension. Included here for documentation because vec0 support is
+-- optional in the runtime.
 
 -- CREATE VIRTUAL TABLE vec_memories USING vec0(
 --     embedding float[384],  -- all-MiniLM-L6-v2 dimension
@@ -206,6 +252,21 @@ CREATE INDEX IF NOT EXISTS idx_prompt_session ON prompt_log(session_id);
 --     +project_path TEXT,
 --     +created_at TEXT
 -- );
+
+-- Tier 0 retrieval foundation: curated keyword-ranked memory index.
+-- FTS5 is built into SQLite in the supported runtime and does not add
+-- native dependencies. Metadata columns remain UNINDEXED to keep the
+-- v7 baseline simple while preserving provenance.
+CREATE VIRTUAL TABLE IF NOT EXISTS memory_fts USING fts5(
+    text,
+    source_key UNINDEXED,
+    source_type UNINDEXED,
+    source_id UNINDEXED,
+    session_id UNINDEXED,
+    project_path UNINDEXED,
+    created_at UNINDEXED,
+    tokenize = "porter unicode61 tokenchars '-_'"
+);
 
 -- Fallback table when sqlite-vec is not available.
 -- Created by worker-embed.js at runtime, defined here for documentation.

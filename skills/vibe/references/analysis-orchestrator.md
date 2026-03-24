@@ -1,6 +1,6 @@
 # Analysis Orchestrator
 
-Part of Vibe Science v6.0 NEXUS (originated as Pillar 3 in v3.5). Generates executable artifacts: scripts, commands, run plans, success/failure criteria. Every analysis produces standard outputs.
+Part of Vibe Science v7.0 TRACE (originated as Pillar 3 in v3.5). Generates executable artifacts: scripts, commands, run plans, success/failure criteria. Every analysis produces standard outputs.
 
 ## Core Rule: Executable Over Descriptive
 

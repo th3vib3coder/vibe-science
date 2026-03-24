@@ -3,16 +3,16 @@ name: vibe
 description: Scientific research engine with agentic tree search. Infinite loops until discovery, rigorous tracking, adversarial review, serendipity preserved.
 license: Apache-2.0
 metadata:
-    version: "6.0.0"
-    codename: "NEXUS"
+    version: "7.0.0"
+    codename: "TRACE"
     skill-author: carminoski
     architecture: OTAE-Tree (Observe-Think-Act-Evaluate inside Tree Search)
     lineage: "v3.5 TERTIUM DATUR + AI-Scientist-v2 reverse engineering"
     sources: Ralph, GSD, BMAD, Codex unrolled loop, Anthropic bio-research, ChatGPT Spec Kit, Sakana AI-Scientist-v2 (arXiv:2504.08066v1)
-    changelog: "v4.0.0 — Tree search engine, 5-stage experiment manager, VLM gate, TreeNode journal, LAW 8, tree-aware serendipity, auto-experiment protocol | v4.5.0 — Inversion+Collision brainstorm techniques, R2 red flag checklist, counter-evidence search, DOI verification, progressive disclosure refactor | v5.0.0 — Seeded Fault Injection, Judge Agent (R3), Blind-First Pass, Schema-Validated Gates. 25 gates (2 new: V0, J0). 8 gates schema-enforced. Circuit Breaker. Agent Permission Model. Confidence formula revised. R2 structurally unbypassable. | v5.5.0 — ORO (Observe-Recall-Operate). 7 new gates (DQ1-DQ4, DC0, DD0, L-1) for data quality and operational integrity. Total: 32 gates. R2 INLINE mode (7th activation). Structured logbook (LOGBOOK.md mandatory in CRYSTALLIZE). Literature Pre-Check (L-1) in Phase 0. Data Dictionary Protocol (DD0). Design Compliance Gate (DC0). Single Source of Truth rule. Post-mortem driven: 12 errors from CRISPR run mapped to architectural fixes. | v6.0.0 NEXUS — Plugin architecture (Claude Code hooks + SQLite DB). Domain-agnostic refactor: condensed SKILL.md + reference cards + literature-registry.json (102 databases, 12 categories). 7 lifecycle hooks (SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, PreCompact, Stop, SubagentStop). LAW 12 INSTINCT (cross-session pattern recognition with temporal decay). 7 agent types with model selection. Dual-config hooks (dev + installed mode). 12 Immutable Laws. 32 gates unchanged."
+    changelog: "v4.0.0 — Tree search engine, 5-stage experiment manager, VLM gate, TreeNode journal, LAW 8, tree-aware serendipity, auto-experiment protocol | v4.5.0 — Inversion+Collision brainstorm techniques, R2 red flag checklist, counter-evidence search, DOI verification, progressive disclosure refactor | v5.0.0 — Seeded Fault Injection, Judge Agent (R3), Blind-First Pass, Schema-Validated Gates. 25 gates (2 new: V0, J0). 8 gates schema-enforced. Circuit Breaker. Agent Permission Model. Confidence formula revised. R2 structurally unbypassable. | v5.5.0 — ORO (Observe-Recall-Operate). 7 new gates (DQ1-DQ4, DC0, DD0, L-1) for data quality and operational integrity. Total: 32 gates. R2 INLINE mode (7th activation). Structured logbook (LOGBOOK.md mandatory in CRYSTALLIZE). Literature Pre-Check (L-1) in Phase 0. Data Dictionary Protocol (DD0). Design Compliance Gate (DC0). Single Source of Truth rule. Post-mortem driven: 12 errors from CRISPR run mapped to architectural fixes. | v6.0.0 NEXUS — Plugin architecture (Claude Code hooks + SQLite DB). Domain-agnostic refactor: condensed SKILL.md + reference cards + literature-registry.json (102 databases, 12 categories). 7 lifecycle hooks (SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, PreCompact, Stop, SubagentStop). LAW 12 INSTINCT (cross-session pattern recognition with temporal decay). 7 agent types with model selection. Dual-config hooks (dev + installed mode). 12 Immutable Laws. 32 gates unchanged. | v7.0.0 TRACE — runtime closure release: claim/review/seed lifecycle ingestion, citation extraction and verification gates (L0/D1), strict integrity tracking, benchmark recording with A/B compare, FTS5 retrieval closure, and schema version 4 migrations."
 ---
 
-# Vibe Science v6.0 — NEXUS
+# Vibe Science v7.0 — TRACE
 
 > Research engine: agentic tree search over hypotheses, OTAE discipline at every node, infinite loops until discovery.
 
@@ -222,11 +222,11 @@ Display this banner, then the session info:
         Seeds survive        Circuit Breaker
 
       Detect  ·  Persist  ·  Demolish  ·  Discover
-                   v6.0 NEXUS
+                   v7.0 TRACE
 ```
 
 ```
-Vibe Science v6.0 NEXUS activated for: [RESEARCH QUESTION]
+Vibe Science v7.0 TRACE activated for: [RESEARCH QUESTION]
 Mode: [DISCOVERY | ANALYSIS | EXPERIMENT | BRAINSTORM | SERENDIPITY]
 Tree: [LINEAR (literature) | BRANCHING (experiments) | HYBRID]
 Runtime: [SOLO | TEAM]

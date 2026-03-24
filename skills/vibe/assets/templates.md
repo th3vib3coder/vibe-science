@@ -1,4 +1,4 @@
-# Vibe Science v6.0 Templates
+# Vibe Science v7.0 TRACE Templates
 
 All templates for creating files in the `.vibe-science/` folder structure.
 
@@ -8,7 +8,7 @@ Max 100 lines. Rewritten each cycle (not append-only).
 
 ```yaml
 ---
-vibe_science_version: 6.0.0
+vibe_science_version: 7.0.0
 rq: RQ-001
 runtime: solo|team
 phase: brainstorm|discovery|analysis|data|validation|pipeline|synthesis
@@ -169,7 +169,7 @@ Append-only. Never edit previous entries. Newest at top.
 
 ```json
 {
-  "version": "6.0.0",
+  "version": "7.0.0",
   "tree_mode": "branching",
   "current_stage": 1,
   "cycle": 1,

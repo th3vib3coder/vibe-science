@@ -3,7 +3,7 @@ message: "If you use this software in your research, please cite it as below."
 type: software
 title: "Vibe Science"
 abstract: >-
-  Vibe Science v6.0 NEXUS is an AI-native research engine for Claude Code that
+  Vibe Science v7.0 TRACE is an AI-native research runtime for Claude Code that
   transforms LLM agents into rigorous scientific investigators through structural
   enforcement, not just prompting. Grounded in Huang et al. (ICLR 2024), who
   proved that LLMs cannot self-correct reasoning without external feedback, v5.0
@@ -40,9 +40,12 @@ abstract: >-
   writes to the claim ledger; the Judge Agent scores reviews but never modifies
   them; schemas are read-only for all agents. The system supports both SOLO mode
   (all roles in one context window) and TEAM mode (Agent Teams with dedicated
-  context windows per role). v6.0 NEXUS introduces a dual architecture — skill for
+  context windows per role). v6.0 NEXUS introduced a dual architecture — skill for
   methodology, plugin for enforcement — that separates what the system knows from
-  what the system enforces. The plugin subsystem provides 7 lifecycle hooks
+  what the system enforces. v7.0 TRACE closes the runtime loop with tracked claim,
+  review, and serendipity lifecycle ingestion, citation extraction and verification
+  gates, benchmark persistence with A/B comparison, strict integrity tracking, and
+  FTS5 retrieval closure. The plugin subsystem provides 7 lifecycle hooks
   (SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, PreCompact, Stop, SubagentStop) that intercept agent
   actions at runtime, a Gate Engine backed by SQLite that tracks gate status with
   deterministic pass/fail evaluation, and a Permission Engine that enforces
@@ -55,8 +58,8 @@ abstract: >-
   propensity matching.
 authors:
   - name: Vibe Science Contributors
-version: "6.0.0"
-date-released: "2026-02-20"
+version: "7.0.0"
+date-released: "2026-03-24"
 doi: "10.5281/zenodo.18665031"
 license: Apache-2.0
 repository-code: "https://github.com/th3vib3coder/vibe-science"

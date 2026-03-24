@@ -1,5 +1,5 @@
 /**
- * Vibe Science v6.0 NEXUS — Narrative Summary Engine
+ * Vibe Science v7.0 TRACE — Narrative Summary Engine
  *
  * Template-based narrative summary generator (no LLM required).
  * Runs at session Stop to produce a structured summary from DB data.

@@ -1,5 +1,5 @@
 /**
- * Vibe Science v6.0 NEXUS — Permission Engine
+ * Vibe Science v7.0 TRACE — Permission Engine
  *
  * TEAM mode permission enforcement for Agent Teams.
  * Each agent role has a defined set of allowed tools and file-level

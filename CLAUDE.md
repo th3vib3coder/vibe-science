@@ -1,4 +1,4 @@
-# Vibe Science v6.0 NEXUS — Project Constitution
+# Vibe Science v7.0 TRACE — Project Constitution
 
 This file applies to ALL agents in this session: lead, researcher, reviewer2, serendipity, experimenter. No role is exempt.
 

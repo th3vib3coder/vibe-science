@@ -23,3 +23,4 @@ v4.5.0  ARBOR VITAE (Pruned) — Feb 2026
 v5.0.0  IUDEX                — Feb 2026
 v5.5.0  ORO                  — Feb 2026  (post-mortem driven data quality)
 v6.0.0  NEXUS                — Feb 2026  (plugin architecture, dual enforcement)
+v7.0.0  TRACE                — Mar 2026  (runtime closure, citation gates, strict integrity, retrieval)

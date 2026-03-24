@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Vibe Science v6.0 NEXUS -- Setup Hook
+ * Vibe Science v7.0 TRACE -- Setup Hook
  *
  * Runs once on first install and on every update.
  * Blueprint Section 4.0
@@ -8,8 +8,9 @@
  * Responsibilities:
  *   1. Create ~/.vibe-science/ directory tree (db/, logs/, embeddings/)
  *   2. Initialize SQLite database with schema.sql
- *   3. Check for Bun runtime (optional -- only needed for embedding worker)
- *   4. Report success via stdout JSON
+ *   3. Apply minimal schema migrations for existing DBs
+ *   4. Check for Bun runtime (optional -- only needed for embedding worker)
+ *   5. Report success via stdout JSON
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -17,6 +18,7 @@ import { join, dirname } from 'node:path';
 import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { execSync, spawn } from 'node:child_process';
+import { applyMigrations, CURRENT_SCHEMA_VERSION } from '../lib/migrations.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -195,6 +197,23 @@ function spawnWorker() {
     }
 }
 
+function ensureVecMemoriesTable(db) {
+    try {
+        db.exec(`
+            CREATE VIRTUAL TABLE IF NOT EXISTS vec_memories USING vec0(
+                embedding float[384],
+                +text TEXT,
+                +metadata TEXT,
+                +project_path TEXT,
+                +created_at TEXT
+            )
+        `);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
@@ -227,6 +246,8 @@ async function main(_event) {
     let dbReady = false;
     let dbPath = DB_PATH;
     let schemaApplied = false;
+    let schemaVersion = 0;
+    let migrationsApplied = [];
 
     try {
         // Dynamic import so we get a clear error if better-sqlite3 is missing
@@ -245,20 +266,38 @@ async function main(_event) {
             const schema = readFileSync(SCHEMA_PATH, 'utf-8');
             db.exec(schema);
             schemaApplied = true;
+
+            try {
+                const migrationResult = applyMigrations(db);
+                schemaVersion = migrationResult.currentVersion;
+                migrationsApplied = migrationResult.applied;
+            } catch (err) {
+                warnings.push(`Schema migrations failed: ${err.message}. DB may remain in baseline mode.`);
+            }
         }
 
         // Try to load sqlite-vec extension (optional -- needed for vector search)
+        let vecAvailable = false;
+        let vecExtensionLoaded = false;
         try {
             db.loadExtension('vec0');
+            vecExtensionLoaded = true;
+            vecAvailable = ensureVecMemoriesTable(db);
         } catch {
             try {
                 db.loadExtension('sqlite-vec');
+                vecExtensionLoaded = true;
+                vecAvailable = ensureVecMemoriesTable(db);
             } catch {
                 warnings.push(
-                    'sqlite-vec extension not available. Vector search will use fallback (keyword match). ' +
+                    'sqlite-vec extension not available. TRACE retrieval will use FTS5 Tier 0 and memory_embeddings fallback. ' +
                     'Install sqlite-vec for full semantic recall.'
                 );
             }
+        }
+
+        if (vecExtensionLoaded && !vecAvailable) {
+            warnings.push('vec_memories was not created on this runtime. TRACE retrieval will use FTS5 Tier 0 and memory_embeddings fallback.');
         }
 
         db.close();
@@ -318,10 +357,13 @@ async function main(_event) {
         status: dbReady ? 'ready' : 'degraded',
         db_path: dbPath,
         schema_applied: schemaApplied,
+        schema_version: schemaVersion,
+        target_schema_version: CURRENT_SCHEMA_VERSION,
+        migrations_applied: migrationsApplied,
         bun_available: !!bunPath,
         directories_created: created,
         warnings,
-        version: '6.0.0',
+        version: '7.0.0',
         worker_pid: workerPid,
         worker_status: workerStatus,
         deps_installed: depsInstalled,
@@ -355,7 +397,7 @@ process.stdin.on('end', () => {
                 status: 'error',
                 error: err.message,
                 warnings: [`Setup encountered an unexpected error: ${err.message}`],
-                version: '6.0.0',
+                version: '7.0.0',
             };
             process.stdout.write(JSON.stringify(fallback));
             process.exit(0);  // exit 0 even on error -- setup failure should not block the plugin

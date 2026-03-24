@@ -1,11 +1,11 @@
-# Vibe Science v6.0 NEXUS — Claude Code Agent Configuration
+# Vibe Science v7.0 TRACE — Claude Code Agent Configuration
 #
 # Model tiers and reasoning settings for each agent role.
 # See AGENTS.md for full role definitions with YAML frontmatter.
 # See references/multi-agent-config.md for delegation patterns.
 
 interface:
-  display_name: "Vibe Science v6.0 NEXUS"
+  display_name: "Vibe Science v7.0 TRACE"
   short_description: "Scientific research engine with adversarial review, quality gates, serendipity detection, and cross-session learning."
   brand_color: "#1B5E20"
 

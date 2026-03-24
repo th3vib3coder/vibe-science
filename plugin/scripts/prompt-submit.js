@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Vibe Science v6.0 NEXUS -- UserPromptSubmit Hook
+ * Vibe Science v7.0 TRACE -- UserPromptSubmit Hook
  *
  * Runs BEFORE each user prompt is processed by the model.
  * Blueprint Section 4.2

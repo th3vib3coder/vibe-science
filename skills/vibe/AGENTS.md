@@ -1,6 +1,6 @@
-# Vibe Science v6.0 NEXUS — Agent Role Definitions
+# Vibe Science v7.0 TRACE — Agent Role Definitions
 
-Machine-readable role definitions for the Vibe Science v6.0 multi-agent architecture. Each role is defined with YAML frontmatter specifying model, reasoning level, disposition, permissions, and activation conditions. These definitions are consumed by the orchestrator and hook system to enforce the Agent Permission Model (separation of powers).
+Machine-readable role definitions for the Vibe Science v7.0 TRACE multi-agent architecture. Each role is defined with YAML frontmatter specifying model, reasoning level, disposition, permissions, and activation conditions. These definitions are consumed by the orchestrator and hook system to enforce the Agent Permission Model (separation of powers).
 
 See `agents/claude-code.yaml` for model tier mapping and delegation patterns.
 

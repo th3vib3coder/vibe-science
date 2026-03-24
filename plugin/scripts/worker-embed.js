@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Vibe Science v6.0 NEXUS -- Embedding Worker Daemon
+ * Vibe Science v7.0 TRACE -- Embedding Worker Daemon
  *
  * Lightweight background process that polls the embed_queue table for
  * pending entries, generates embedding vectors, and inserts them into
@@ -220,6 +220,8 @@ function tryOpenDB() {
             db.exec(schema);
         }
 
+        tryEnableVec(db);
+
         // Ensure the fallback memory_embeddings table exists
         // (used when sqlite-vec extension is not loaded)
         ensureFallbackTable(db);
@@ -254,6 +256,37 @@ function ensureFallbackTable(db) {
     `);
 }
 
+function tryEnableVec(db) {
+    try {
+        db.loadExtension('vec0');
+        return ensureVecTable(db);
+    } catch {
+        try {
+            db.loadExtension('sqlite-vec');
+            return ensureVecTable(db);
+        } catch {
+            return false;
+        }
+    }
+}
+
+function ensureVecTable(db) {
+    try {
+        db.exec(`
+            CREATE VIRTUAL TABLE IF NOT EXISTS vec_memories USING vec0(
+                embedding float[384],
+                +text TEXT,
+                +metadata TEXT,
+                +project_path TEXT,
+                +created_at TEXT
+            )
+        `);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
 /**
  * Check whether the vec_memories virtual table (sqlite-vec) exists.
  *
@@ -266,7 +299,9 @@ function isVecAvailable(db) {
             `SELECT name FROM sqlite_master
              WHERE type = 'table' AND name = 'vec_memories'`
         ).get();
-        return !!row;
+        if (!row) return false;
+        db.prepare(`SELECT COUNT(*) AS cnt FROM vec_memories`).get();
+        return true;
     } catch {
         return false;
     }
@@ -463,7 +498,7 @@ process.on('unhandledRejection', (reason) => {
     log('ERROR', `Unhandled rejection: ${reason}`);
 });
 
-log('INFO', '=== Vibe Science v6.0 NEXUS Embedding Worker started ===');
+log('INFO', '=== Vibe Science v7.0 TRACE Embedding Worker started ===');
 log('INFO', `DB path:   ${DB_PATH}`);
 log('INFO', `Log dir:   ${LOG_DIR}`);
 log('INFO', `Poll interval: ${POLL_INTERVAL_MS}ms | Batch size: ${BATCH_SIZE} | Dims: ${EMBEDDING_DIMS}`);

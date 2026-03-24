@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Vibe Science v6.0 NEXUS -- SessionStart Hook
+ * Vibe Science v7.0 TRACE -- SessionStart Hook
  *
  * Runs at the beginning of every Claude Code session.
  * Blueprint Section 4.1
@@ -31,7 +31,7 @@ const __dirname = dirname(__filename);
 // inline fallbacks so the hook never crashes.
 // ---------------------------------------------------------------------------
 
-let openDB, closeDB, createSession, getLastSession, getUnresolvedAlerts, getActivePatterns;
+let openDB, closeDB, createSession, updateSessionIntegrity, getLastSession, getUnresolvedAlerts, getActivePatterns, applyMigrations;
 let loadR2CalibrationData, loadPendingSeeds;
 
 try {
@@ -39,17 +39,22 @@ try {
     openDB = dbMod.openDB;
     closeDB = dbMod.closeDB;
     createSession = dbMod.createSession;
+    updateSessionIntegrity = dbMod.updateSessionIntegrity;
     getLastSession = dbMod.getLastSession;
     getUnresolvedAlerts = dbMod.getUnresolvedAlerts;
     getActivePatterns = dbMod.getActivePatterns;
+    const migrationMod = await import('../lib/migrations.js');
+    applyMigrations = migrationMod.applyMigrations;
 } catch {
     // db.js not available -- will use null db path below
     openDB = null;
     closeDB = null;
     createSession = null;
+    updateSessionIntegrity = null;
     getLastSession = null;
     getUnresolvedAlerts = null;
     getActivePatterns = null;
+    applyMigrations = null;
 }
 
 try {
@@ -230,7 +235,18 @@ function loadDomainConfig(projectPath) {
 async function main(event) {
     const sessionId = randomUUID();
     const projectPath = event.project_path || event.cwd || process.cwd();
+    const strictMode = process.env.VIBE_SCIENCE_STRICT === '1';
     const warnings = [];
+    const integrityNotes = [];
+    let integrityStatus = 'INTEGRITY_OK';
+    let sessionPersisted = false;
+
+    function markIntegrity(note) {
+        const text = String(note || '').trim();
+        if (!text) return;
+        integrityStatus = 'INTEGRITY_DEGRADED';
+        if (!integrityNotes.includes(text)) integrityNotes.push(text);
+    }
 
     // ---- 0. Auto-setup: run setup.js if DB doesn't exist (replaces "Setup" hook) --
     const globalDbPath = join(homedir(), '.vibe-science', 'db', 'vibe-science.db');
@@ -244,6 +260,7 @@ async function main(event) {
             }
         } catch (err) {
             warnings.push(`Auto-setup failed: ${err.message}. Run 'node plugin/scripts/setup.js' manually.`);
+            markIntegrity(`Auto-setup failed: ${err.message}`);
         }
     }
 
@@ -255,11 +272,14 @@ async function main(event) {
         try {
             db = openDB();
             dbAvailable = true;
+            if (applyMigrations) applyMigrations(db);
         } catch (err) {
             warnings.push(`DB open failed: ${err.message}`);
+            markIntegrity(`DB open failed: ${err.message}`);
         }
     } else {
         warnings.push('db.js not available -- running without persistence.');
+        markIntegrity('db.js not available -- running without persistence.');
     }
 
     if (db && dbAvailable) {
@@ -267,9 +287,13 @@ async function main(event) {
             createSession(db, {
                 id: sessionId,
                 project_path: projectPath,
+                integrity_status: integrityStatus,
+                integrity_notes: integrityNotes.length > 0 ? integrityNotes.join('\n') : null,
             });
+            sessionPersisted = true;
         } catch (err) {
             warnings.push(`Session creation failed: ${err.message}`);
+            markIntegrity(`Session creation failed: ${err.message}`);
         }
     }
 
@@ -289,6 +313,7 @@ async function main(event) {
             }
         } catch (err) {
             warnings.push(`Context build failed: ${err.message}`);
+            markIntegrity(`Context build failed: ${err.message}`);
             context = {
                 state: 'Context build error -- starting fresh.',
                 memories: [],
@@ -304,6 +329,7 @@ async function main(event) {
             }
         } catch (err) {
             warnings.push(`Alert load failed: ${err.message}`);
+            markIntegrity(`Alert load failed: ${err.message}`);
         }
 
         // ---- 4. Load R2 calibration data ------------------------------------
@@ -313,6 +339,7 @@ async function main(event) {
             }
         } catch (err) {
             warnings.push(`R2 calibration load failed: ${err.message}`);
+            markIntegrity(`R2 calibration load failed: ${err.message}`);
         }
 
         // ---- 4b. Load cross-session research patterns ----------------------
@@ -322,6 +349,7 @@ async function main(event) {
             }
         } catch (err) {
             warnings.push(`Pattern load failed: ${err.message}`);
+            markIntegrity(`Pattern load failed: ${err.message}`);
         }
     } else {
         // No DB -- minimal context
@@ -331,6 +359,13 @@ async function main(event) {
             pendingSeeds: [],
             alerts: [],
         };
+        if (strictMode) {
+            // TRACE strict mode is intentionally asymmetric here:
+            // degraded infrastructure is surfaced at SessionStart, but entry
+            // is still allowed so the user can inspect or recover the workspace.
+            // Promotion and Stop remain fail-loud when persistence is missing.
+            markIntegrity('Strict mode active without database persistence.');
+        }
     }
 
     // ---- 5. Load domain config ----------------------------------------------
@@ -372,6 +407,12 @@ async function main(event) {
     // ---- 7. Close DB --------------------------------------------------------
     if (db && dbAvailable) {
         try {
+            if (sessionPersisted && integrityStatus === 'INTEGRITY_DEGRADED' && updateSessionIntegrity) {
+                updateSessionIntegrity(db, sessionId, {
+                    status: integrityStatus,
+                    note: integrityNotes.join('\n'),
+                });
+            }
             if (closeDB) closeDB(db);
             else if (db.open) db.close();
         } catch {
@@ -382,6 +423,7 @@ async function main(event) {
     // ---- 8. Return result ---------------------------------------------------
     const result = {
         sessionId,
+        integrityStatus,
         context: contextString,
     };
 
@@ -419,13 +461,18 @@ process.stdin.on('end', () => {
             // stdout with exit 0 → injected as context
             // Use hookSpecificOutput.additionalContext for structured output
             const output = {
+                sessionId: result.sessionId,
+                integrityStatus: result.integrityStatus,
                 hookSpecificOutput: {
                     hookEventName: 'SessionStart',
                     additionalContext: result.context,
                 },
             };
             if (result.warnings && result.warnings.length > 0) {
-                output.systemMessage = result.warnings.join('; ');
+                const warningText = result.warnings.join('; ');
+                output.systemMessage = result.integrityStatus === 'INTEGRITY_DEGRADED'
+                    ? `[INTEGRITY DEGRADED] ${warningText}`
+                    : warningText;
             }
             process.stdout.write(JSON.stringify(output));
             process.exit(0);

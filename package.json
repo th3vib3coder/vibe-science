@@ -1,12 +1,14 @@
 {
   "name": "vibe-science-plugin",
-  "version": "6.0.0",
-  "description": "Vibe Science v6.0 NEXUS — Claude Code plugin for scientific research with infrastructure-enforced gates, persistent memory, and agent team permissions.",
+  "version": "7.0.0",
+  "description": "Vibe Science v7.0 TRACE — Claude Code research runtime with tracked claim lifecycle, citation gates, benchmark persistence, strict integrity, and retrieval closure.",
   "type": "module",
   "scripts": {
     "setup": "node plugin/scripts/setup.js",
     "worker": "node plugin/scripts/worker-embed.js",
-    "eval": "node evals/eval-runner.mjs"
+    "eval": "node evals/eval-runner.mjs",
+    "smoke": "node evals/smoke-trace.mjs",
+    "v7-readiness": "node scripts/v7-readiness.mjs"
   },
   "dependencies": {
     "better-sqlite3": "^11.7.0",

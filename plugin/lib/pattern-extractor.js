@@ -1,5 +1,5 @@
 /**
- * Vibe Science v6.0 NEXUS — Pattern Extractor
+ * Vibe Science v7.0 TRACE — Pattern Extractor
  *
  * Analyzes cross-session data to identify recurring patterns:
  * - Gate failure clusters (same gate failing across 2+ sessions)

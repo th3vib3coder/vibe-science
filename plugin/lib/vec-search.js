@@ -1,132 +1,213 @@
 /**
- * Vibe Science v6.0 NEXUS — sqlite-vec Wrapper for Semantic Search
+ * Vibe Science v7.0 TRACE — Retrieval Runtime
  *
- * Provides vector similarity search over memory embeddings using sqlite-vec,
- * with graceful fallback to full-text LIKE queries when the extension is
- * unavailable or no embeddings exist yet.
+ * Tier order:
+ *   0. FTS5 keyword-ranked retrieval over curated memory text
+ *   1. Optional vector retrieval when queryEmbedding is supplied and a vector store exists
+ *   2. Legacy lexical fallback over memory_embeddings and source tables
  *
- * The actual embedding computation is performed by the worker process.
- * This module only QUERIES the vec_memories virtual table (or falls back
- * to a text search on embed_queue / narrative summaries).
- *
- * Export: vecSearch, queueForEmbedding
+ * TRACE intentionally treats Tier 0 as keyword-ranked retrieval, not
+ * semantic equivalence.
  */
 
-// =====================================================
-// Helpers
-// =====================================================
+import { queueForEmbedding as queueForEmbeddingDb } from './db.js';
+
+const FTS_TABLE = 'memory_fts';
+const INDEX_TEXT_CHAR_LIMIT = 2000;
+const INDEX_TRUNCATION_MARKER = ' [...]';
+const HIGH_SIGNAL_ACTION_TYPES = new Set(['BUG_FIX', 'DESIGN_CHANGE', 'REVIEW', 'FINDING']);
+const FALLBACK_SCAN_LIMIT = 200;
+const SAFE_IDENTIFIER_RE = /^[A-Za-z_][A-Za-z0-9_]*$/;
 
 /**
- * Check whether the sqlite-vec extension has been loaded and
- * the vec_memories virtual table exists in the given database.
+ * Search project memory using the best available retrieval tier.
+ *
+ * @param {import('better-sqlite3').Database} db
+ * @param {string} queryText
+ * @param {object} [options]
+ * @param {string} [options.project_path]
+ * @param {number} [options.limit=3]
+ * @param {number} [options.maxTokens=500]
+ * @param {Float32Array} [options.queryEmbedding]
+ * @returns {Array<{text: string, distance: number|null, metadata: object|null}>}
+ */
+export function vecSearch(db, queryText, options = {}) {
+    if (!db) return [];
+
+    const limit = options.limit ?? 3;
+    const maxTokens = options.maxTokens ?? 500;
+    const projectPath = options.project_path ?? null;
+    const queryEmbedding = options.queryEmbedding ?? null;
+
+    if (queryEmbedding) {
+        try {
+            const vectorResults = vectorQuery(db, queryEmbedding, projectPath, limit, maxTokens);
+            if (vectorResults.length > 0) {
+                return vectorResults;
+            }
+        } catch {
+            // Fall through to lexical tiers.
+        }
+    }
+
+    try {
+        const ftsResults = ftsSearch(db, queryText, projectPath, limit, maxTokens);
+        if (ftsResults.length > 0) {
+            return ftsResults;
+        }
+    } catch {
+        // Fall through to legacy text fallback.
+    }
+
+    return legacyTextFallback(db, queryText, projectPath, limit, maxTokens);
+}
+
+/**
+ * Ensure the project-scoped FTS index exists and reflects canonical sources.
+ *
+ * @param {import('better-sqlite3').Database} db
+ * @param {string} projectPath
+ * @returns {{ available: boolean, indexed: number }}
+ */
+export function refreshProjectRetrievalIndex(db, projectPath) {
+    if (!db || !projectPath) return { available: false, indexed: 0 };
+    if (!ensureMemoryFtsTable(db)) return { available: false, indexed: 0 };
+
+    const docs = [
+        ...collectNarrativeDocs(db, projectPath),
+        ...collectHighSignalSpineDocs(db, projectPath),
+    ];
+
+    const tx = db.transaction(() => {
+        db.prepare(`DELETE FROM ${FTS_TABLE} WHERE project_path = ?`).run(projectPath);
+        const insert = db.prepare(`
+            INSERT INTO ${FTS_TABLE}
+                (text, source_key, source_type, source_id, session_id, project_path, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        `);
+
+        for (const doc of docs) {
+            insert.run(
+                doc.text,
+                doc.source_key,
+                doc.source_type,
+                doc.source_id,
+                doc.session_id,
+                doc.project_path,
+                doc.created_at,
+            );
+        }
+    });
+
+    tx();
+    return { available: true, indexed: docs.length };
+}
+
+/**
+ * Refresh the retrieval index only for one completed session.
+ *
+ * @param {import('better-sqlite3').Database} db
+ * @param {string} sessionId
+ * @returns {{ available: boolean, indexed: number }}
+ */
+export function syncSessionRetrievalIndex(db, sessionId) {
+    if (!db || !sessionId) return { available: false, indexed: 0 };
+    if (!ensureMemoryFtsTable(db)) return { available: false, indexed: 0 };
+
+    const docs = [
+        ...collectNarrativeDocsForSession(db, sessionId),
+        ...collectHighSignalSpineDocsForSession(db, sessionId),
+    ];
+
+    const tx = db.transaction(() => {
+        db.prepare(`DELETE FROM ${FTS_TABLE} WHERE session_id = ?`).run(sessionId);
+        const insert = db.prepare(`
+            INSERT INTO ${FTS_TABLE}
+                (text, source_key, source_type, source_id, session_id, project_path, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        `);
+
+        for (const doc of docs) {
+            insert.run(
+                doc.text,
+                doc.source_key,
+                doc.source_type,
+                doc.source_id,
+                doc.session_id,
+                doc.project_path,
+                doc.created_at,
+            );
+        }
+    });
+
+    tx();
+    return { available: true, indexed: docs.length };
+}
+
+/**
+ * Create the TRACE FTS5 table if the runtime supports it.
  *
  * @param {import('better-sqlite3').Database} db
  * @returns {boolean}
  */
-function isVecAvailable(db) {
+export function ensureMemoryFtsTable(db) {
+    if (!db) return false;
     try {
-        // sqlite_master will contain the virtual table entry if it was created
-        const row = db.prepare(
-            `SELECT name FROM sqlite_master
-             WHERE type = 'table' AND name = 'vec_memories'`
-        ).get();
-        return !!row;
+        db.exec(`
+            CREATE VIRTUAL TABLE IF NOT EXISTS ${FTS_TABLE} USING fts5(
+                text,
+                source_key UNINDEXED,
+                source_type UNINDEXED,
+                source_id UNINDEXED,
+                session_id UNINDEXED,
+                project_path UNINDEXED,
+                created_at UNINDEXED,
+                tokenize = "porter unicode61 tokenchars '-_'"
+            )
+        `);
+        return true;
     } catch {
         return false;
     }
 }
 
 /**
- * Count the rows currently stored in vec_memories.
+ * Best-effort creation of the sqlite-vec virtual table when the extension
+ * is loaded on the current connection.
  *
  * @param {import('better-sqlite3').Database} db
- * @returns {number}
+ * @returns {boolean}
  */
-function vecRowCount(db) {
+export function ensureVecMemoriesTable(db) {
+    if (!db) return false;
     try {
-        const row = db.prepare(`SELECT COUNT(*) AS cnt FROM vec_memories`).get();
-        return row?.cnt ?? 0;
+        db.exec(`
+            CREATE VIRTUAL TABLE IF NOT EXISTS vec_memories USING vec0(
+                embedding float[384],
+                +text TEXT,
+                +metadata TEXT,
+                +project_path TEXT,
+                +created_at TEXT
+            )
+        `);
+        return true;
     } catch {
-        return 0;
+        return false;
     }
 }
 
-// =====================================================
-// Core search
-// =====================================================
-
-/**
- * Search memory embeddings for texts semantically similar to `queryText`.
- *
- * Strategy:
- *   1. If vec_memories exists AND contains rows, attempt a vector query.
- *      (Requires the caller to have already loaded the sqlite-vec extension
- *       and to supply a pre-computed query embedding — see options.queryEmbedding.)
- *      NOTE: In practice the embedding is generated by the worker.  When no
- *      queryEmbedding is provided we skip the vector path and go to step 2.
- *   2. Fall back to a keyword-based LIKE search over narrative summaries
- *      stored in the sessions table and any already-embedded text in
- *      vec_memories (via its +text auxiliary column).
- *
- * @param {import('better-sqlite3').Database} db
- * @param {string} queryText - Natural language query
- * @param {object} [options]
- * @param {string}  [options.project_path]  - Limit results to a project
- * @param {number}  [options.limit=3]       - Max results to return
- * @param {number}  [options.maxTokens=500] - Soft cap on combined text length (chars / 4)
- * @param {Float32Array} [options.queryEmbedding] - Pre-computed 384-dim vector
- * @returns {Array<{text: string, distance: number|null, metadata: object|null}>}
- */
-export function vecSearch(db, queryText, options = {}) {
-    const limit = options.limit ?? 3;
-    const maxTokens = options.maxTokens ?? 500;
-    const projectPath = options.project_path ?? null;
-
-    // -----------------------------------------------------------------
-    // Path A: true vector search (if vec extension loaded + embeddings exist
-    //         + caller provided the query embedding)
-    // -----------------------------------------------------------------
-    if (options.queryEmbedding && isVecAvailable(db) && vecRowCount(db) > 0) {
-        try {
-            return vectorQuery(db, options.queryEmbedding, projectPath, limit, maxTokens);
-        } catch {
-            // If vector query fails for any reason, fall through to text fallback
-        }
+function vectorQuery(db, queryEmbedding, projectPath, limit, maxTokens) {
+    const vecResults = vectorQueryVecTable(db, queryEmbedding, projectPath, limit, maxTokens);
+    if (vecResults.length > 0) {
+        return vecResults;
     }
-
-    // -----------------------------------------------------------------
-    // Path B: text-based fallback
-    // -----------------------------------------------------------------
-    return textFallback(db, queryText, projectPath, limit, maxTokens);
+    return vectorQueryFallbackTable(db, queryEmbedding, projectPath, limit, maxTokens);
 }
 
-// =====================================================
-// Vector query (requires sqlite-vec + query embedding)
-// =====================================================
+function vectorQueryVecTable(db, embedding, projectPath, limit, maxTokens) {
+    if (!isVecAvailable(db)) return [];
 
-/**
- * Execute the actual sqlite-vec nearest-neighbor query.
- *
- * sqlite-vec syntax:
- *   SELECT rowid, distance FROM vec_memories
- *   WHERE embedding MATCH ? ORDER BY distance LIMIT ?
- *
- * The auxiliary columns (+text, +metadata, +project_path) are fetched
- * via a second lookup by rowid since vec0 tables do not return them
- * directly from the MATCH query in all versions.
- *
- * @param {import('better-sqlite3').Database} db
- * @param {Float32Array} embedding - 384-dimensional float32 array
- * @param {string|null} projectPath
- * @param {number} limit
- * @param {number} maxTokens
- * @returns {Array<{text: string, distance: number, metadata: object|null}>}
- */
-function vectorQuery(db, embedding, projectPath, limit, maxTokens) {
-    // sqlite-vec expects the embedding as a raw Buffer of float32 values
     const buf = Buffer.from(embedding.buffer, embedding.byteOffset, embedding.byteLength);
-
-    // Fetch more than needed so we can filter by project_path afterwards
     const fetchLimit = projectPath ? limit * 3 : limit;
 
     const matchRows = db.prepare(
@@ -140,175 +221,435 @@ function vectorQuery(db, embedding, projectPath, limit, maxTokens) {
         return [];
     }
 
-    // Fetch the auxiliary columns for the matched rowids
     const placeholders = matchRows.map(() => '?').join(',');
     const auxRows = db.prepare(
         `SELECT rowid, text, metadata, project_path
          FROM vec_memories
          WHERE rowid IN (${placeholders})`
-    ).all(...matchRows.map(r => r.rowid));
+    ).all(...matchRows.map(row => row.rowid));
 
-    // Index by rowid for fast lookup
-    const auxMap = new Map();
-    for (const row of auxRows) {
-        auxMap.set(row.rowid, row);
-    }
-
-    // Merge, filter, truncate
+    const auxMap = new Map(auxRows.map(row => [row.rowid, row]));
     const results = [];
     let tokenBudget = maxTokens;
 
     for (const match of matchRows) {
-        if (tokenBudget <= 0) break;
-
+        if (tokenBudget <= 0 || results.length >= limit) break;
         const aux = auxMap.get(match.rowid);
         if (!aux) continue;
-
-        // Filter by project_path when specified
         if (projectPath && aux.project_path !== projectPath) continue;
 
-        const textLen = aux.text?.length ?? 0;
-        const estimatedTokens = Math.ceil(textLen / 4);
-
-        let parsedMeta = null;
-        if (aux.metadata) {
-            try { parsedMeta = JSON.parse(aux.metadata); } catch { /* ignore */ }
-        }
-
+        const text = aux.text ?? '';
+        const estimatedTokens = Math.ceil(text.length / 4);
+        const metadata = safeJsonParse(aux.metadata);
         results.push({
-            text: aux.text ?? '',
+            text,
             distance: match.distance,
-            metadata: parsedMeta
+            metadata: {
+                ...(metadata || {}),
+                retrieval_tier: 'vector',
+                source: 'vec_memories',
+            },
         });
-
         tokenBudget -= estimatedTokens;
-
-        if (results.length >= limit) break;
     }
 
     return results;
 }
 
-// =====================================================
-// Text fallback (LIKE-based)
-// =====================================================
+function vectorQueryFallbackTable(db, queryEmbedding, projectPath, limit, maxTokens) {
+    if (!tableHasRows(db, 'memory_embeddings')) return [];
 
-/**
- * When sqlite-vec is not available (or no embeddings exist yet), fall back
- * to a simple keyword search.  We search:
- *   1. vec_memories.text (if the table exists but we lack a query vector)
- *   2. sessions.narrative_summary for the project
- *
- * Keywords are extracted from queryText by splitting on whitespace and
- * filtering out very short words.
- *
- * @param {import('better-sqlite3').Database} db
- * @param {string} queryText
- * @param {string|null} projectPath
- * @param {number} limit
- * @param {number} maxTokens
- * @returns {Array<{text: string, distance: number|null, metadata: object|null}>}
- */
-function textFallback(db, queryText, projectPath, limit, maxTokens) {
-    const keywords = extractKeywords(queryText);
-    if (keywords.length === 0) {
-        return [];
+    const rows = projectPath
+        ? db.prepare(`
+            SELECT id, text, embedding, metadata, project_path, created_at
+            FROM memory_embeddings
+            WHERE project_path = ?
+            ORDER BY created_at DESC
+            LIMIT ?
+        `).all(projectPath, FALLBACK_SCAN_LIMIT)
+        : db.prepare(`
+            SELECT id, text, embedding, metadata, project_path, created_at
+            FROM memory_embeddings
+            ORDER BY created_at DESC
+            LIMIT ?
+        `).all(FALLBACK_SCAN_LIMIT);
+
+    if (rows.length === 0) return [];
+
+    const scored = [];
+    for (const row of rows) {
+        const candidate = blobToFloat32Array(row.embedding);
+        if (!candidate) continue;
+        const similarity = cosineSimilarity(queryEmbedding, candidate);
+        scored.push({ row, similarity });
     }
+
+    scored.sort((a, b) => b.similarity - a.similarity);
 
     const results = [];
     let tokenBudget = maxTokens;
 
-    // --- Source 1: vec_memories text column (if table exists) ---
-    if (isVecAvailable(db)) {
+    for (const item of scored) {
+        if (tokenBudget <= 0 || results.length >= limit) break;
+        const text = item.row.text ?? '';
+        const estimatedTokens = Math.ceil(text.length / 4);
+        const metadata = safeJsonParse(item.row.metadata);
+        results.push({
+            text,
+            distance: 1 - item.similarity,
+            metadata: {
+                ...(metadata || {}),
+                retrieval_tier: 'vector-fallback',
+                source: 'memory_embeddings',
+                created_at: item.row.created_at,
+            },
+        });
+        tokenBudget -= estimatedTokens;
+    }
+
+    return results;
+}
+
+function ftsSearch(db, queryText, projectPath, limit, maxTokens) {
+    if (!ensureMemoryFtsTable(db)) return [];
+
+    const query = buildFtsQuery(queryText);
+    if (!query) return [];
+
+    const fetchLimit = Math.max(limit * 3, limit);
+    const rows = projectPath
+        ? db.prepare(`
+            SELECT
+                text,
+                source_key,
+                source_type,
+                source_id,
+                session_id,
+                project_path,
+                created_at,
+                bm25(${FTS_TABLE}, 10.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0) AS score
+            FROM ${FTS_TABLE}
+            WHERE ${FTS_TABLE} MATCH ? AND project_path = ?
+            ORDER BY score ASC, created_at DESC
+            LIMIT ?
+        `).all(query, projectPath, fetchLimit)
+        : db.prepare(`
+            SELECT
+                text,
+                source_key,
+                source_type,
+                source_id,
+                session_id,
+                project_path,
+                created_at,
+                bm25(${FTS_TABLE}, 10.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0) AS score
+            FROM ${FTS_TABLE}
+            WHERE ${FTS_TABLE} MATCH ?
+            ORDER BY score ASC, created_at DESC
+            LIMIT ?
+        `).all(query, fetchLimit);
+
+    const results = [];
+    let tokenBudget = maxTokens;
+    for (const row of rows) {
+        if (tokenBudget <= 0 || results.length >= limit) break;
+        const text = row.text ?? '';
+        const estimatedTokens = Math.ceil(text.length / 4);
+        results.push({
+            text,
+            distance: null,
+            metadata: {
+                retrieval_tier: 'fts5',
+                source_key: row.source_key,
+                source_type: row.source_type,
+                source_id: row.source_id,
+                session_id: row.session_id,
+                project_path: row.project_path,
+                created_at: row.created_at,
+                score: row.score,
+            },
+        });
+        tokenBudget -= estimatedTokens;
+    }
+
+    return results;
+}
+
+function legacyTextFallback(db, queryText, projectPath, limit, maxTokens) {
+    const keywords = extractKeywords(queryText);
+    if (keywords.length === 0) return [];
+
+    const seen = new Set();
+    const results = [];
+    let tokenBudget = maxTokens;
+
+    function pushResult(text, metadata) {
+        const normalized = normalizeWhitespace(text);
+        if (!normalized || seen.has(normalized) || tokenBudget <= 0 || results.length >= limit) {
+            return;
+        }
+        seen.add(normalized);
+        results.push({
+            text: normalized,
+            distance: null,
+            metadata,
+        });
+        tokenBudget -= Math.ceil(normalized.length / 4);
+    }
+
+    if (tableHasRows(db, 'memory_embeddings')) {
         try {
             const likeClause = keywords.map(() => 'text LIKE ?').join(' OR ');
-            const params = keywords.map(k => `%${k}%`);
-
-            if (projectPath) {
-                params.push(projectPath);
-            }
+            const params = keywords.map(keyword => `%${keyword}%`);
+            if (projectPath) params.push(projectPath);
+            params.push(limit);
 
             const sql = projectPath
-                ? `SELECT text, metadata FROM vec_memories
+                ? `SELECT text, metadata, created_at
+                   FROM memory_embeddings
                    WHERE (${likeClause}) AND project_path = ?
-                   ORDER BY created_at DESC LIMIT ?`
-                : `SELECT text, metadata FROM vec_memories
+                   ORDER BY created_at DESC
+                   LIMIT ?`
+                : `SELECT text, metadata, created_at
+                   FROM memory_embeddings
                    WHERE (${likeClause})
-                   ORDER BY created_at DESC LIMIT ?`;
-
-            params.push(limit);
+                   ORDER BY created_at DESC
+                   LIMIT ?`;
 
             const rows = db.prepare(sql).all(...params);
             for (const row of rows) {
-                if (tokenBudget <= 0 || results.length >= limit) break;
-
-                let parsedMeta = null;
-                if (row.metadata) {
-                    try { parsedMeta = JSON.parse(row.metadata); } catch { /* ignore */ }
-                }
-
-                results.push({
-                    text: row.text ?? '',
-                    distance: null,     // no distance score in text mode
-                    metadata: parsedMeta
+                pushResult(row.text, {
+                    ...(safeJsonParse(row.metadata) || {}),
+                    retrieval_tier: 'memory_embeddings-like',
+                    source: 'memory_embeddings',
+                    created_at: row.created_at,
                 });
-                tokenBudget -= Math.ceil((row.text?.length ?? 0) / 4);
             }
         } catch {
-            // vec_memories may not support LIKE on auxiliary columns in
-            // all sqlite-vec versions — silently fall through
+            // Keep falling through.
         }
     }
 
-    // --- Source 2: narrative summaries from sessions ---
-    if (results.length < limit && tokenBudget > 0) {
+    if (results.length < limit) {
         try {
             const likeClause = keywords.map(() => 'narrative_summary LIKE ?').join(' OR ');
-            const params = keywords.map(k => `%${k}%`);
-
-            if (projectPath) {
-                params.push(projectPath);
-            }
-
-            const remaining = limit - results.length;
-            params.push(remaining);
+            const params = keywords.map(keyword => `%${keyword}%`);
+            if (projectPath) params.push(projectPath);
+            params.push(limit);
 
             const sql = projectPath
-                ? `SELECT narrative_summary, id FROM sessions
-                   WHERE (${likeClause}) AND project_path = ?
-                   AND narrative_summary IS NOT NULL
-                   ORDER BY ended_at DESC LIMIT ?`
-                : `SELECT narrative_summary, id FROM sessions
+                ? `SELECT id, narrative_summary, ended_at
+                   FROM sessions
                    WHERE (${likeClause})
-                   AND narrative_summary IS NOT NULL
-                   ORDER BY ended_at DESC LIMIT ?`;
+                     AND project_path = ?
+                     AND narrative_summary IS NOT NULL
+                   ORDER BY ended_at DESC
+                   LIMIT ?`
+                : `SELECT id, narrative_summary, ended_at
+                   FROM sessions
+                   WHERE (${likeClause})
+                     AND narrative_summary IS NOT NULL
+                   ORDER BY ended_at DESC
+                   LIMIT ?`;
 
             const rows = db.prepare(sql).all(...params);
             for (const row of rows) {
-                if (tokenBudget <= 0 || results.length >= limit) break;
-
-                results.push({
-                    text: row.narrative_summary,
-                    distance: null,
-                    metadata: { session_id: row.id, source: 'narrative_summary' }
+                pushResult(row.narrative_summary, {
+                    retrieval_tier: 'legacy-like',
+                    source: 'sessions.narrative_summary',
+                    source_id: row.id,
+                    created_at: row.ended_at,
                 });
-                tokenBudget -= Math.ceil((row.narrative_summary?.length ?? 0) / 4);
             }
         } catch {
-            // Table may not exist in a freshly created DB — ignore
+            // Keep falling through.
+        }
+    }
+
+    if (results.length < limit) {
+        try {
+            const likeClause = keywords.map(() => `(se.input_summary LIKE ? OR se.output_summary LIKE ?)`).join(' OR ');
+            const params = [];
+            for (const keyword of keywords) {
+                params.push(`%${keyword}%`, `%${keyword}%`);
+            }
+            if (projectPath) params.push(projectPath);
+            params.push(limit);
+
+            const sql = projectPath
+                ? `SELECT se.id, se.session_id, se.timestamp, se.action_type, se.gate_result,
+                          se.input_summary, se.output_summary
+                   FROM spine_entries se
+                   JOIN sessions s ON s.id = se.session_id
+                   WHERE (${likeClause})
+                     AND s.project_path = ?
+                     AND (
+                         se.action_type IN ('BUG_FIX', 'DESIGN_CHANGE', 'REVIEW', 'FINDING')
+                         OR (se.action_type = 'GATE_CHECK' AND se.gate_result IN ('WARN', 'FAIL'))
+                     )
+                   ORDER BY se.timestamp DESC
+                   LIMIT ?`
+                : `SELECT se.id, se.session_id, se.timestamp, se.action_type, se.gate_result,
+                          se.input_summary, se.output_summary
+                   FROM spine_entries se
+                   WHERE (${likeClause})
+                     AND (
+                         se.action_type IN ('BUG_FIX', 'DESIGN_CHANGE', 'REVIEW', 'FINDING')
+                         OR (se.action_type = 'GATE_CHECK' AND se.gate_result IN ('WARN', 'FAIL'))
+                     )
+                   ORDER BY se.timestamp DESC
+                   LIMIT ?`;
+
+            const rows = db.prepare(sql).all(...params);
+            for (const row of rows) {
+                pushResult(buildSpineIndexText(row), {
+                    retrieval_tier: 'legacy-like',
+                    source: 'spine_entries',
+                    source_id: String(row.id),
+                    session_id: row.session_id,
+                    created_at: row.timestamp,
+                });
+            }
+        } catch {
+            // Nothing left to try.
         }
     }
 
     return results;
 }
 
-/**
- * Extract meaningful keywords from a query string.
- * Filters out words shorter than 3 characters and common stop words.
- *
- * @param {string} text
- * @returns {string[]}
- */
+function collectNarrativeDocs(db, projectPath) {
+    const rows = db.prepare(`
+        SELECT id, project_path, ended_at, narrative_summary
+        FROM sessions
+        WHERE project_path = ?
+          AND ended_at IS NOT NULL
+          AND narrative_summary IS NOT NULL
+          AND trim(narrative_summary) != ''
+        ORDER BY ended_at DESC
+    `).all(projectPath);
+
+    return rows
+        .map(row => ({
+            text: truncateIndexText(row.narrative_summary),
+            source_key: `session:${row.id}:narrative`,
+            source_type: 'narrative_summary',
+            source_id: row.id,
+            session_id: row.id,
+            project_path: row.project_path,
+            created_at: row.ended_at,
+        }))
+        .filter(doc => doc.text);
+}
+
+function collectNarrativeDocsForSession(db, sessionId) {
+    const row = db.prepare(`
+        SELECT id, project_path, ended_at, narrative_summary
+        FROM sessions
+        WHERE id = ?
+          AND ended_at IS NOT NULL
+          AND narrative_summary IS NOT NULL
+          AND trim(narrative_summary) != ''
+    `).get(sessionId);
+
+    if (!row) return [];
+
+    return [{
+        text: truncateIndexText(row.narrative_summary),
+        source_key: `session:${row.id}:narrative`,
+        source_type: 'narrative_summary',
+        source_id: row.id,
+        session_id: row.id,
+        project_path: row.project_path,
+        created_at: row.ended_at,
+    }].filter(doc => doc.text);
+}
+
+function collectHighSignalSpineDocs(db, projectPath) {
+    const rows = db.prepare(`
+        SELECT
+            se.id,
+            se.session_id,
+            se.timestamp,
+            se.action_type,
+            se.tool_name,
+            se.input_summary,
+            se.output_summary,
+            se.gate_result,
+            s.project_path
+        FROM spine_entries se
+        JOIN sessions s ON s.id = se.session_id
+        WHERE s.project_path = ?
+          AND (
+              se.action_type IN ('BUG_FIX', 'DESIGN_CHANGE', 'REVIEW', 'FINDING')
+              OR (se.action_type = 'GATE_CHECK' AND se.gate_result IN ('WARN', 'FAIL'))
+          )
+        ORDER BY se.timestamp DESC
+    `).all(projectPath);
+
+    return rows
+        .map(row => ({
+            text: truncateIndexText(buildSpineIndexText(row)),
+            source_key: `spine:${row.id}`,
+            source_type: 'spine_entry',
+            source_id: String(row.id),
+            session_id: row.session_id,
+            project_path: row.project_path,
+            created_at: row.timestamp,
+        }))
+        .filter(doc => doc.text);
+}
+
+function collectHighSignalSpineDocsForSession(db, sessionId) {
+    const rows = db.prepare(`
+        SELECT
+            se.id,
+            se.session_id,
+            se.timestamp,
+            se.action_type,
+            se.tool_name,
+            se.input_summary,
+            se.output_summary,
+            se.gate_result,
+            s.project_path
+        FROM spine_entries se
+        JOIN sessions s ON s.id = se.session_id
+        WHERE se.session_id = ?
+          AND (
+              se.action_type IN ('BUG_FIX', 'DESIGN_CHANGE', 'REVIEW', 'FINDING')
+              OR (se.action_type = 'GATE_CHECK' AND se.gate_result IN ('WARN', 'FAIL'))
+          )
+        ORDER BY se.timestamp DESC
+    `).all(sessionId);
+
+    return rows
+        .map(row => ({
+            text: truncateIndexText(buildSpineIndexText(row)),
+            source_key: `spine:${row.id}`,
+            source_type: 'spine_entry',
+            source_id: String(row.id),
+            session_id: row.session_id,
+            project_path: row.project_path,
+            created_at: row.timestamp,
+        }))
+        .filter(doc => doc.text);
+}
+
+function buildSpineIndexText(row) {
+    const parts = [`[${row.action_type}]`];
+    if (row.tool_name) parts.push(`tool=${row.tool_name}`);
+    if (row.gate_result) parts.push(`gate=${row.gate_result}`);
+    if (row.input_summary) parts.push(`input=${row.input_summary}`);
+    if (row.output_summary) parts.push(`output=${row.output_summary}`);
+    return normalizeWhitespace(parts.join(' | '));
+}
+
+function buildFtsQuery(queryText) {
+    const keywords = extractKeywords(queryText);
+    if (keywords.length === 0) return '';
+    return keywords.map(keyword => `"${escapeFtsToken(keyword)}"`).join(' OR ');
+}
+
 function extractKeywords(text) {
     const STOP_WORDS = new Set([
         'the', 'and', 'for', 'are', 'but', 'not', 'you', 'all',
@@ -319,36 +660,94 @@ function extractKeywords(text) {
         'research', 'context', 'project'
     ]);
 
-    return text
+    return normalizeWhitespace(String(text || ''))
         .toLowerCase()
-        .replace(/[^a-z0-9\s-]/g, ' ')
+        .replace(/[^a-z0-9\s\-_]/g, ' ')
         .split(/\s+/)
-        .filter(w => w.length >= 3 && !STOP_WORDS.has(w));
+        .filter(token => token.length >= 2 && !STOP_WORDS.has(token));
 }
 
-// =====================================================
-// Embedding queue
-// =====================================================
-
-/**
- * Insert text into the embed_queue table for async processing by the worker.
- *
- * The worker process periodically polls embed_queue for rows where
- * processed = 0, computes embeddings (all-MiniLM-L6-v2), and inserts
- * the result into vec_memories.
- *
- * @param {import('better-sqlite3').Database} db
- * @param {string} text - Text to embed
- * @param {string|object} [metadata] - Arbitrary metadata (stored as JSON string)
- * @returns {import('better-sqlite3').RunResult}
- */
-export function queueForEmbedding(db, text, metadata = null) {
-    const meta = typeof metadata === 'object' && metadata !== null
-        ? JSON.stringify(metadata)
-        : metadata;
-
-    return db.prepare(
-        `INSERT INTO embed_queue (text, metadata, created_at)
-         VALUES (?, ?, ?)`
-    ).run(text, meta, new Date().toISOString());
+function truncateIndexText(text) {
+    const normalized = normalizeWhitespace(text);
+    if (!normalized) return '';
+    if (normalized.length <= INDEX_TEXT_CHAR_LIMIT) {
+        return normalized;
+    }
+    return `${normalized.slice(0, INDEX_TEXT_CHAR_LIMIT - INDEX_TRUNCATION_MARKER.length)}${INDEX_TRUNCATION_MARKER}`;
 }
+
+function normalizeWhitespace(text) {
+    return String(text || '').replace(/\s+/g, ' ').trim();
+}
+
+function escapeFtsToken(token) {
+    return String(token || '').replace(/"/g, '""');
+}
+
+function isVecAvailable(db) {
+    try {
+        const row = db.prepare(
+            `SELECT name FROM sqlite_master
+             WHERE type = 'table' AND name = 'vec_memories'`
+        ).get();
+        if (!row) return false;
+        db.prepare(`SELECT COUNT(*) AS cnt FROM vec_memories`).get();
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+function tableHasRows(db, tableName) {
+    if (!isSafeIdentifier(tableName)) return false;
+    try {
+        const row = db.prepare(`SELECT COUNT(*) AS cnt FROM ${tableName}`).get();
+        return (row?.cnt ?? 0) > 0;
+    } catch {
+        return false;
+    }
+}
+
+function blobToFloat32Array(blob) {
+    if (!blob) return null;
+    const buf = Buffer.isBuffer(blob) ? blob : Buffer.from(blob);
+    if (buf.byteLength % 4 !== 0) return null;
+    return new Float32Array(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength));
+}
+
+function cosineSimilarity(a, b) {
+    if (!a || !b || a.length !== b.length) return -1;
+    let dot = 0;
+    let normA = 0;
+    let normB = 0;
+    for (let i = 0; i < a.length; i++) {
+        dot += a[i] * b[i];
+        normA += a[i] * a[i];
+        normB += b[i] * b[i];
+    }
+    if (normA === 0 || normB === 0) return -1;
+    return dot / (Math.sqrt(normA) * Math.sqrt(normB));
+}
+
+function safeJsonParse(value) {
+    if (!value) return null;
+    try {
+        return JSON.parse(value);
+    } catch {
+        return null;
+    }
+}
+
+function isSafeIdentifier(value) {
+    return SAFE_IDENTIFIER_RE.test(String(value || ''));
+}
+
+export {
+    FTS_TABLE,
+    INDEX_TEXT_CHAR_LIMIT,
+    HIGH_SIGNAL_ACTION_TYPES,
+    truncateIndexText,
+    buildFtsQuery,
+    extractKeywords,
+    queueForEmbeddingDb as queueForEmbedding,
+};

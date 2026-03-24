@@ -1,183 +1,226 @@
+#!/usr/bin/env node
 /**
- * Vibe Science v6.0 NEXUS — Eval Case Runner
+ * Vibe Science TRACE — Eval Runner
  *
- * Scans evals/cases/ subdirectories for .yaml eval case files,
- * validates their structure, and reports pass/fail.
+ * Current v7 scope:
+ *   1. validate eval case YAML definitions
+ *   2. always emit a JSON artifact
+ *   3. optionally record per-case results into benchmark_runs
  *
- * Usage:  node evals/eval-runner.mjs
- *
- * YAML eval case format:
- *   id: T01
- *   name: hypothesis-testing
- *   category: trigger
- *   prompt: "Analyze this RNA-seq dataset for differential expression"
- *   expected_markers:
- *     - "OTAE"
- *     - "claim"
- *   expected_absent_markers:
- *     - "skip"
- *   description: "Skill should activate OTAE loop"
+ * This runner is intentionally honest: until the behavioral hook harness
+ * lands, results are recorded as schema_validation_only.
  */
 
-import { describe, it } from 'node:test';
-import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-// =====================================================
-// Path resolution
-// =====================================================
+import crypto from 'node:crypto';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const ROOT = path.resolve(__dirname, '..');
 const CASES_DIR = path.join(__dirname, 'cases');
+const ARTIFACTS_DIR = path.join(__dirname, 'artifacts');
+const PKG_PATH = path.join(ROOT, 'package.json');
 
-// =====================================================
-// Simple YAML parser (zero dependencies)
-// =====================================================
+async function main() {
+    const args = parseArgs(process.argv.slice(2));
+    const pkg = JSON.parse(fs.readFileSync(PKG_PATH, 'utf-8'));
+    const runId = args.runId || buildRunId();
+    const skillVersion = args.version || pkg.version || '0.0.0';
 
-/**
- * Parse a simple YAML string into a plain object.
- *
- * Supports:
- *   - Key-value pairs  (key: value)
- *   - Quoted values     (key: "value with : colons")
- *   - List items under a key (indented lines starting with "- ")
- *   - Comments          (# ...)
- *   - Blank lines
- *
- * Does NOT support:
- *   - Nested objects, multi-document, anchors/aliases, flow syntax
- */
+    const yamlFiles = findYamlFiles(CASES_DIR);
+    const cases = [];
+    let passCount = 0;
+    let failCount = 0;
+
+    for (const filePath of yamlFiles) {
+        const raw = fs.readFileSync(filePath, 'utf-8');
+        const startedAt = Date.now();
+        const parsed = parseSimpleYaml(raw);
+        const errors = validateCase(parsed);
+        const passed = errors.length === 0;
+        const executionTimeMs = Date.now() - startedAt;
+
+        if (passed) passCount++;
+        else failCount++;
+
+        cases.push({
+            file: path.relative(CASES_DIR, filePath),
+            id: parsed.id || null,
+            name: parsed.name || null,
+            category: parsed.category || 'unknown',
+            passed,
+            mode: 'schema_validation_only',
+            execution_time_ms: executionTimeMs,
+            errors,
+            expected_markers: Array.isArray(parsed.expected_markers) ? parsed.expected_markers : [],
+            expected_absent_markers: Array.isArray(parsed.expected_absent_markers) ? parsed.expected_absent_markers : [],
+        });
+    }
+
+    const artifact = {
+        run_id: runId,
+        generated_at: new Date().toISOString(),
+        skill_version: skillVersion,
+        mode: 'schema_validation_only',
+        total: cases.length,
+        passed: passCount,
+        failed: failCount,
+        db_recorded: false,
+        db_path: args.dbPath || null,
+        cases,
+    };
+
+    fs.mkdirSync(path.dirname(args.artifactPath), { recursive: true });
+    fs.writeFileSync(args.artifactPath, JSON.stringify(artifact, null, 2), 'utf-8');
+
+    if (args.record) {
+        const recording = await recordCasesToDb(cases, {
+            runId,
+            skillVersion,
+            dbPath: args.dbPath,
+            artifactPath: args.artifactPath,
+        });
+        artifact.db_recorded = recording.recorded;
+        artifact.db_path = recording.dbPath;
+        artifact.record_error = recording.error || null;
+        fs.writeFileSync(args.artifactPath, JSON.stringify(artifact, null, 2), 'utf-8');
+    }
+
+    printSummary({
+        runId,
+        artifactPath: args.artifactPath,
+        total: cases.length,
+        passed: passCount,
+        failed: failCount,
+        recorded: artifact.db_recorded,
+        dbPath: artifact.db_path,
+    });
+
+    process.exit(failCount > 0 ? 1 : 0);
+}
+
+function parseArgs(argv) {
+    const args = {
+        record: false,
+        dbPath: null,
+        version: null,
+        runId: null,
+        artifactPath: defaultArtifactPath(),
+    };
+
+    for (let i = 0; i < argv.length; i++) {
+        const arg = argv[i];
+        if (arg === '--record') {
+            args.record = true;
+            continue;
+        }
+        if (arg === '--db' && argv[i + 1]) {
+            args.dbPath = argv[++i];
+            continue;
+        }
+        if (arg === '--version' && argv[i + 1]) {
+            args.version = argv[++i];
+            continue;
+        }
+        if (arg === '--run-id' && argv[i + 1]) {
+            args.runId = argv[++i];
+            continue;
+        }
+        if (arg === '--artifact' && argv[i + 1]) {
+            args.artifactPath = path.resolve(argv[++i]);
+            continue;
+        }
+    }
+
+    return args;
+}
+
+function defaultArtifactPath() {
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    return path.join(ARTIFACTS_DIR, `eval-run-${stamp}.json`);
+}
+
+function buildRunId() {
+    return `eval-${Date.now()}-${crypto.randomBytes(4).toString('hex')}`;
+}
+
 function parseSimpleYaml(text) {
     const result = {};
     const lines = text.split(/\r?\n/);
     let currentListKey = null;
 
-    for (let i = 0; i < lines.length; i++) {
-        const raw = lines[i];
-
-        // Strip inline comments (but not inside quotes)
+    for (const raw of lines) {
         const line = raw.replace(/\s+#.*$/, '');
+        if (line.trim() === '' || line.trim().startsWith('#')) continue;
 
-        // Skip blank lines and full-line comments
-        if (line.trim() === '' || line.trim().startsWith('#')) {
-            // A blank line or comment resets list context only if
-            // the next non-blank line is NOT a continuation "- " item.
-            continue;
-        }
-
-        // Detect list item: starts with whitespace then "- "
         const listMatch = line.match(/^\s+-\s+(.*)/);
         if (listMatch && currentListKey) {
-            let val = listMatch[1].trim();
-            // Strip surrounding quotes
-            val = stripQuotes(val);
-            result[currentListKey].push(val);
+            result[currentListKey].push(stripQuotes(listMatch[1].trim()));
             continue;
         }
 
-        // Detect key: value
         const kvMatch = line.match(/^(\w[\w_-]*)\s*:\s*(.*)/);
         if (kvMatch) {
             const key = kvMatch[1].trim();
-            let val = kvMatch[2].trim();
+            let value = kvMatch[2].trim();
 
-            if (val === '' || val === '|' || val === '>') {
-                // Next lines may be list items belonging to this key
-                // or a multi-line scalar (we only handle lists here)
+            if (value === '' || value === '|' || value === '>') {
                 currentListKey = key;
                 result[key] = [];
                 continue;
             }
 
-            // Strip surrounding quotes
-            val = stripQuotes(val);
             currentListKey = null;
-            result[key] = val;
-            continue;
-        }
-
-        // If we reach here, line is unrecognized — skip silently
-        currentListKey = null;
-    }
-
-    // Post-process: convert single-element arrays that should be scalars
-    // and empty arrays that were never populated back to empty string
-    for (const [key, val] of Object.entries(result)) {
-        if (Array.isArray(val) && val.length === 0) {
-            // Keep as empty array — the schema check will decide
+            result[key] = stripQuotes(value);
         }
     }
 
     return result;
 }
 
-/**
- * Remove surrounding single or double quotes from a string.
- */
-function stripQuotes(s) {
+function stripQuotes(value) {
     if (
-        (s.startsWith('"') && s.endsWith('"')) ||
-        (s.startsWith("'") && s.endsWith("'"))
+        (value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'"))
     ) {
-        return s.slice(1, -1);
+        return value.slice(1, -1);
     }
-    return s;
+    return value;
 }
 
-// =====================================================
-// Case discovery
-// =====================================================
-
-/**
- * Recursively find all .yaml files under a directory.
- */
 function findYamlFiles(dir) {
     const results = [];
-    let entries;
+    let entries = [];
     try {
         entries = fs.readdirSync(dir, { withFileTypes: true });
     } catch {
         return results;
     }
+
     for (const entry of entries) {
-        const full = path.join(dir, entry.name);
+        const fullPath = path.join(dir, entry.name);
         if (entry.isDirectory()) {
-            results.push(...findYamlFiles(full));
+            results.push(...findYamlFiles(fullPath));
         } else if (entry.isFile() && /\.ya?ml$/i.test(entry.name)) {
-            results.push(full);
+            results.push(fullPath);
         }
     }
-    return results;
+
+    return results.sort();
 }
 
-// =====================================================
-// Validation
-// =====================================================
-
-const REQUIRED_FIELDS = ['id', 'name', 'category', 'prompt'];
-
-/**
- * Validate a parsed eval case object.
- * Returns an array of error strings (empty = valid).
- */
-function validateCase(parsed, filePath) {
+function validateCase(parsed) {
     const errors = [];
-
-    for (const field of REQUIRED_FIELDS) {
+    for (const field of ['id', 'name', 'category', 'prompt']) {
         if (!(field in parsed) || parsed[field] === '' || parsed[field] === undefined) {
             errors.push(`missing required field: "${field}"`);
         }
     }
 
-    const hasMarkers = (
-        ('expected_markers' in parsed && Array.isArray(parsed.expected_markers) && parsed.expected_markers.length > 0)
-    );
-    const hasAbsentMarkers = (
-        ('expected_absent_markers' in parsed && Array.isArray(parsed.expected_absent_markers) && parsed.expected_absent_markers.length > 0)
-    );
+    const hasMarkers = Array.isArray(parsed.expected_markers) && parsed.expected_markers.length > 0;
+    const hasAbsentMarkers = Array.isArray(parsed.expected_absent_markers) && parsed.expected_absent_markers.length > 0;
 
     if (!hasMarkers && !hasAbsentMarkers) {
         errors.push('must have at least one of "expected_markers" or "expected_absent_markers" (non-empty list)');
@@ -186,56 +229,61 @@ function validateCase(parsed, filePath) {
     return errors;
 }
 
-// =====================================================
-// Main runner
-// =====================================================
+async function recordCasesToDb(cases, options) {
+    try {
+        const dbMod = await import(pathToModule('plugin/lib/db.js'));
+        const benchMod = await import(pathToModule('plugin/lib/benchmark-reporter.js'));
+        const migMod = await import(pathToModule('plugin/lib/migrations.js'));
 
-const yamlFiles = findYamlFiles(CASES_DIR);
+        const db = dbMod.openDB(options.dbPath || undefined);
+        dbMod.initDB(db);
+        migMod.applyMigrations(db);
 
-let passCount = 0;
-let failCount = 0;
-
-if (yamlFiles.length === 0) {
-    // No cases found — report and exit cleanly
-    describe('Eval Runner', () => {
-        it('initialization check', () => {
-            console.log(`\nEval runner ready. 0 eval cases found.`);
-            console.log(`Add .yaml files to evals/cases/ subdirectories to define eval cases.\n`);
-            assert.ok(true);
-        });
-    });
-} else {
-    describe('Eval Cases', () => {
-        for (const filePath of yamlFiles) {
-            const relPath = path.relative(CASES_DIR, filePath);
-
-            it(`validate: ${relPath}`, () => {
-                const raw = fs.readFileSync(filePath, 'utf-8');
-                const parsed = parseSimpleYaml(raw);
-                const errors = validateCase(parsed, filePath);
-
-                if (errors.length > 0) {
-                    failCount++;
-                    assert.fail(
-                        `Eval case ${relPath} has ${errors.length} validation error(s):\n` +
-                        errors.map(e => `  - ${e}`).join('\n')
-                    );
-                } else {
-                    passCount++;
-                }
+        for (const evalCase of cases) {
+            benchMod.recordBenchmark(db, {
+                run_id: options.runId,
+                skill_version: options.skillVersion,
+                eval_case: evalCase.id || evalCase.file,
+                category: evalCase.category,
+                passed: evalCase.passed,
+                execution_time_ms: evalCase.execution_time_ms,
+                notes: `mode=schema_validation_only; artifact=${options.artifactPath}; file=${evalCase.file}${evalCase.errors.length ? `; errors=${evalCase.errors.join(' | ')}` : ''}`,
             });
         }
-    });
 
-    describe('Eval Summary', () => {
-        it('print results', () => {
-            console.log('\n========================================');
-            console.log(`  Eval Runner Summary`);
-            console.log(`  Cases found : ${yamlFiles.length}`);
-            console.log(`  Passed      : ${passCount}`);
-            console.log(`  Failed      : ${failCount}`);
-            console.log('========================================\n');
-            assert.ok(true);
-        });
-    });
+        dbMod.closeDB(db);
+        return { recorded: true, dbPath: options.dbPath || dbMod.DEFAULT_DB_PATH };
+    } catch (error) {
+        const baseMessage = error.message || 'DB recording failed';
+        return {
+            recorded: false,
+            dbPath: options.dbPath || null,
+            error: `${baseMessage}. Ensure better-sqlite3 is installed and its native bindings are available (for example: npm install, then rebuild native deps if needed).`,
+        };
+    }
 }
+
+function printSummary(summary) {
+    console.log('\n========================================');
+    console.log('  TRACE Eval Runner');
+    console.log(`  Run ID      : ${summary.runId}`);
+    console.log(`  Cases found : ${summary.total}`);
+    console.log(`  Passed      : ${summary.passed}`);
+    console.log(`  Failed      : ${summary.failed}`);
+    console.log(`  Artifact    : ${summary.artifactPath}`);
+    console.log(`  DB recorded : ${summary.recorded ? 'yes' : 'no'}`);
+    if (summary.dbPath) {
+        console.log(`  DB path     : ${summary.dbPath}`);
+    }
+    console.log('========================================\n');
+}
+
+function pathToModule(relativePath) {
+    const fullPath = path.join(ROOT, relativePath);
+    return pathToFileURL(fullPath).href;
+}
+
+main().catch(error => {
+    process.stderr.write(`Eval runner failed: ${error.message}\n`);
+    process.exit(1);
+});

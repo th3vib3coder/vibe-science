@@ -13,7 +13,7 @@ model: opus
 ## Last Progress
 !`tail -5 .vibe-science/PROGRESS.md 2>/dev/null || echo "No progress yet."`
 
-# /start — Vibe Science v6.0 Session Initialization
+# /start — Vibe Science v7.0 TRACE Session Initialization
 
 > **REMEMBER: Think first, analyse second.** Before any analysis, know what exists in the literature and what gaps remain. Every analysis must answer something that has NOT been done yet. If you cannot explain in one sentence what new thing it will reveal, you are not ready to run it.
 
@@ -101,7 +101,7 @@ Look for `.vibe-science/STATE.md` in the current workspace.
 ## Step 2: Announcement
 
 ```
-Vibe Science v6.0 NEXUS activated for: [RESEARCH QUESTION]
+Vibe Science v7.0 TRACE activated for: [RESEARCH QUESTION]
 Mode: [DISCOVERY | ANALYSIS | EXPERIMENT | BRAINSTORM | SERENDIPITY]
 Tree: [LINEAR (literature) | BRANCHING (experiments) | HYBRID]
 Runtime: [SOLO | TEAM]

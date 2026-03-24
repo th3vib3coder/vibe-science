@@ -1,5 +1,5 @@
 /**
- * Vibe Science v6.0 NEXUS — Progressive Disclosure Context Builder
+ * Vibe Science v7.0 TRACE — Progressive Disclosure Context Builder
  *
  * Assembles the context injected into the agent's system prompt at
  * SessionStart and UserPromptSubmit.  Implements the 2-layer progressive
@@ -22,7 +22,7 @@
  */
 
 import path from 'node:path';
-import { vecSearch } from './vec-search.js';
+import { vecSearch, refreshProjectRetrievalIndex } from './vec-search.js';
 import { loadR2CalibrationData, loadPendingSeeds as _loadPendingSeeds } from './r2-calibration.js';
 
 // =====================================================
@@ -76,7 +76,8 @@ export function buildContext(db, projectPath, sessionId) {
     // Layer 2: Semantic recall (top 3 relevant memories)
     // ---------------------------------------------------------------
     try {
-        const queryText = `${path.basename(projectPath)} research context`;
+        refreshProjectRetrievalIndex(db, projectPath);
+        const queryText = `${path.basename(projectPath)} ${context.state ?? ''}`;
         context.memories = vecSearch(db, queryText, {
             project_path: projectPath,
             limit: 3,

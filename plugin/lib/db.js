@@ -1,5 +1,5 @@
 /**
- * Vibe Science v6.0 NEXUS — SQLite Database Wrapper
+ * Vibe Science v7.0 TRACE — SQLite Database Wrapper
  *
  * Provides persistent storage for sessions, claims, gates, reviews,
  * serendipity seeds, literature searches, observer alerts, and calibration data.
@@ -26,9 +26,9 @@ try {
 // Default paths
 // =====================================================
 
-const DEFAULT_DB_DIR = path.join(os.homedir(), '.vibe-science', 'db');
-const DEFAULT_DB_PATH = path.join(DEFAULT_DB_DIR, 'vibe-science.db');
-const DEFAULT_SCHEMA_PATH = path.join(
+export const DEFAULT_DB_DIR = path.join(os.homedir(), '.vibe-science', 'db');
+export const DEFAULT_DB_PATH = path.join(DEFAULT_DB_DIR, 'vibe-science.db');
+export const DEFAULT_SCHEMA_PATH = path.join(
     import.meta.dirname ?? path.dirname(new URL(import.meta.url).pathname),
     '..', 'db', 'schema.sql'
 );
@@ -147,8 +147,15 @@ export function getSession(db, sessionId) {
 export function createSession(db, sessionData) {
     const startedAt = sessionData.started_at || new Date().toISOString();
     return stmt(db,
-        `INSERT INTO sessions (id, project_path, started_at) VALUES (?, ?, ?)`
-    ).run(sessionData.id, sessionData.project_path, startedAt);
+        `INSERT INTO sessions (id, project_path, started_at, integrity_status, integrity_notes)
+         VALUES (?, ?, ?, ?, ?)`
+    ).run(
+        sessionData.id,
+        sessionData.project_path,
+        startedAt,
+        sessionData.integrity_status ?? 'INTEGRITY_OK',
+        sessionData.integrity_notes ?? null,
+    );
 }
 
 /**
@@ -164,6 +171,8 @@ export function createSession(db, sessionData) {
  * @param {number} [data.claims_killed]
  * @param {number} [data.gates_passed]
  * @param {number} [data.gates_failed]
+ * @param {string} [data.integrity_status]
+ * @param {string} [data.integrity_notes]
  * @returns {import('better-sqlite3').RunResult}
  */
 export function endSession(db, sessionId, data = {}) {
@@ -171,6 +180,8 @@ export function endSession(db, sessionId, data = {}) {
     return stmt(db,
         `UPDATE sessions SET
             ended_at = ?,
+            integrity_status = COALESCE(?, integrity_status),
+            integrity_notes = COALESCE(?, integrity_notes),
             narrative_summary = COALESCE(?, narrative_summary),
             total_actions = COALESCE(?, total_actions),
             claims_created = COALESCE(?, claims_created),
@@ -180,6 +191,8 @@ export function endSession(db, sessionId, data = {}) {
         WHERE id = ?`
     ).run(
         endedAt,
+        data.integrity_status ?? null,
+        data.integrity_notes ?? null,
         data.narrative_summary ?? null,
         data.total_actions ?? null,
         data.claims_created ?? null,
@@ -451,6 +464,313 @@ export function logClaimEvent(db, event) {
 }
 
 /**
+ * Mark a session as degraded or append integrity notes.
+ *
+ * @param {import('better-sqlite3').Database} db
+ * @param {string} sessionId
+ * @param {{ status?: string, note?: string }} data
+ * @returns {import('better-sqlite3').RunResult}
+ */
+export function updateSessionIntegrity(db, sessionId, data = {}) {
+    const status = data.status ?? 'INTEGRITY_DEGRADED';
+    const note = String(data.note || '').trim();
+    return stmt(db,
+        `UPDATE sessions SET
+            integrity_status = CASE
+                WHEN ? = 'INTEGRITY_DEGRADED' THEN 'INTEGRITY_DEGRADED'
+                ELSE COALESCE(integrity_status, 'INTEGRITY_OK')
+            END,
+            integrity_notes = CASE
+                WHEN ? = '' THEN integrity_notes
+                WHEN integrity_notes IS NULL OR integrity_notes = '' THEN ?
+                WHEN instr(integrity_notes, ?) > 0 THEN integrity_notes
+                ELSE integrity_notes || char(10) || ?
+            END
+         WHERE id = ?`
+    ).run(
+        status,
+        note,
+        note || null,
+        note || null,
+        note || null,
+        sessionId
+    );
+}
+
+/**
+ * Insert or update a serendipity seed.
+ *
+ * @param {import('better-sqlite3').Database} db
+ * @param {object} seed
+ * @param {string} seed.seed_id
+ * @param {string} seed.created_session
+ * @param {string} [seed.status]
+ * @param {string} seed.source
+ * @param {number} [seed.score]
+ * @param {string} [seed.causal_question]
+ * @param {string} [seed.discriminating_test]
+ * @param {string} [seed.fallback_test]
+ * @param {string} [seed.narrative]
+ * @param {string} [seed.source_claim_id]
+ * @param {string} [seed.last_reviewed_session]
+ * @param {string} [seed.resolution]
+ * @param {string} [seed.created_at]
+ * @param {string} [seed.updated_at]
+ * @returns {import('better-sqlite3').RunResult}
+ */
+export function logSerendipitySeed(db, seed) {
+    const createdAt = seed.created_at || new Date().toISOString();
+    const updatedAt = seed.updated_at || createdAt;
+    return stmt(db,
+        `INSERT INTO serendipity_seeds
+            (seed_id, created_session, status, source, score, causal_question,
+             discriminating_test, fallback_test, narrative, source_claim_id,
+             last_reviewed_session, resolution, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         ON CONFLICT(seed_id) DO UPDATE SET
+             status = excluded.status,
+             source = excluded.source,
+             score = excluded.score,
+             causal_question = excluded.causal_question,
+             discriminating_test = excluded.discriminating_test,
+             fallback_test = excluded.fallback_test,
+             narrative = excluded.narrative,
+             source_claim_id = excluded.source_claim_id,
+             last_reviewed_session = excluded.last_reviewed_session,
+             resolution = excluded.resolution,
+             updated_at = excluded.updated_at`
+    ).run(
+        seed.seed_id,
+        seed.created_session,
+        seed.status ?? 'PENDING_TRIAGE',
+        seed.source,
+        seed.score ?? null,
+        seed.causal_question ?? null,
+        seed.discriminating_test ?? null,
+        seed.fallback_test ?? null,
+        seed.narrative ?? null,
+        seed.source_claim_id ?? null,
+        seed.last_reviewed_session ?? null,
+        seed.resolution ?? null,
+        createdAt,
+        updatedAt
+    );
+}
+
+/**
+ * Insert or update an R2 review artifact.
+ *
+ * @param {import('better-sqlite3').Database} db
+ * @param {object} review
+ * @param {string} review.review_id
+ * @param {string} review.session_id
+ * @param {string} [review.review_mode]
+ * @param {string[]|string} [review.claims_reviewed]
+ * @param {number} [review.j0_score]
+ * @param {object|string} [review.j0_dimensions]
+ * @param {number} [review.sfi_injected]
+ * @param {number} [review.sfi_caught]
+ * @param {string[]|string} [review.sfi_missed]
+ * @param {string[]|string} [review.r2_weaknesses]
+ * @param {string} [review.timestamp]
+ * @returns {import('better-sqlite3').RunResult}
+ */
+export function logR2Review(db, review) {
+    const ts = review.timestamp || new Date().toISOString();
+    const claimsReviewed = Array.isArray(review.claims_reviewed)
+        ? JSON.stringify(review.claims_reviewed)
+        : (review.claims_reviewed ?? '[]');
+    const j0Dimensions = typeof review.j0_dimensions === 'object' && review.j0_dimensions !== null
+        ? JSON.stringify(review.j0_dimensions)
+        : (review.j0_dimensions ?? null);
+    const sfiMissed = Array.isArray(review.sfi_missed)
+        ? JSON.stringify(review.sfi_missed)
+        : (review.sfi_missed ?? '[]');
+    const weaknesses = Array.isArray(review.r2_weaknesses)
+        ? JSON.stringify(review.r2_weaknesses)
+        : (review.r2_weaknesses ?? '[]');
+
+    return stmt(db,
+        `INSERT INTO r2_reviews
+            (review_id, session_id, review_mode, claims_reviewed, j0_score,
+             j0_dimensions, sfi_injected, sfi_caught, sfi_missed,
+             r2_weaknesses, timestamp)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         ON CONFLICT(review_id) DO UPDATE SET
+             review_mode = excluded.review_mode,
+             claims_reviewed = excluded.claims_reviewed,
+             j0_score = excluded.j0_score,
+             j0_dimensions = excluded.j0_dimensions,
+             sfi_injected = excluded.sfi_injected,
+             sfi_caught = excluded.sfi_caught,
+             sfi_missed = excluded.sfi_missed,
+             r2_weaknesses = excluded.r2_weaknesses,
+             timestamp = excluded.timestamp`
+    ).run(
+        review.review_id,
+        review.session_id,
+        review.review_mode ?? null,
+        claimsReviewed,
+        review.j0_score ?? null,
+        j0Dimensions,
+        review.sfi_injected ?? null,
+        review.sfi_caught ?? null,
+        sfiMissed,
+        weaknesses,
+        ts
+    );
+}
+
+/**
+ * Insert or update a citation check record.
+ * Extraction paths should call this with verification_status='PENDING';
+ * verification paths should follow up with updateCitationVerification().
+ *
+ * @param {import('better-sqlite3').Database} db
+ * @param {object} citation
+ * @returns {import('better-sqlite3').RunResult}
+ */
+export function upsertCitationCheck(db, citation) {
+    const createdAt = citation.created_at || new Date().toISOString();
+    return stmt(db,
+        `INSERT INTO citation_checks
+            (citation_id, session_id, claim_id, raw_ref, citation_text, citation_type,
+             normalized_id, doi, pmid, arxiv_id, verification_status, verification_method,
+             resolver, source_url, resolved_title, title, resolved_source_type,
+             retraction_status, resolved_payload, http_status, http_status_code,
+             checked_at, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         ON CONFLICT(citation_id) DO UPDATE SET
+             claim_id = COALESCE(excluded.claim_id, citation_checks.claim_id),
+             raw_ref = excluded.raw_ref,
+             citation_text = COALESCE(excluded.citation_text, citation_checks.citation_text),
+             citation_type = excluded.citation_type,
+             normalized_id = excluded.normalized_id,
+             doi = COALESCE(excluded.doi, citation_checks.doi),
+             pmid = COALESCE(excluded.pmid, citation_checks.pmid),
+             arxiv_id = COALESCE(excluded.arxiv_id, citation_checks.arxiv_id),
+             verification_status = CASE
+                 WHEN excluded.verification_status = 'PENDING'
+                      AND citation_checks.verification_status IN ('VERIFIED', 'UNRESOLVED', 'RETRACTED')
+                 THEN citation_checks.verification_status
+                 ELSE excluded.verification_status
+             END,
+             verification_method = COALESCE(excluded.verification_method, citation_checks.verification_method),
+             resolver = COALESCE(excluded.resolver, citation_checks.resolver),
+             source_url = COALESCE(excluded.source_url, citation_checks.source_url),
+             resolved_title = COALESCE(excluded.resolved_title, citation_checks.resolved_title),
+             title = COALESCE(excluded.title, citation_checks.title),
+             resolved_source_type = COALESCE(excluded.resolved_source_type, citation_checks.resolved_source_type),
+             retraction_status = COALESCE(excluded.retraction_status, citation_checks.retraction_status),
+             resolved_payload = COALESCE(excluded.resolved_payload, citation_checks.resolved_payload),
+             http_status = COALESCE(excluded.http_status, citation_checks.http_status),
+             http_status_code = COALESCE(excluded.http_status_code, citation_checks.http_status_code),
+             checked_at = COALESCE(excluded.checked_at, citation_checks.checked_at)`
+    ).run(
+        citation.citation_id,
+        citation.session_id ?? null,
+        citation.claim_id ?? null,
+        citation.raw_ref,
+        citation.citation_text ?? citation.raw_ref,
+        citation.citation_type,
+        citation.normalized_id ?? null,
+        citation.doi ?? null,
+        citation.pmid ?? null,
+        citation.arxiv_id ?? null,
+        citation.verification_status ?? 'PENDING',
+        citation.verification_method ?? null,
+        citation.resolver ?? null,
+        citation.source_url ?? null,
+        citation.resolved_title ?? null,
+        citation.title ?? citation.resolved_title ?? null,
+        citation.resolved_source_type ?? null,
+        citation.retraction_status ?? null,
+        typeof citation.resolved_payload === 'object'
+            ? JSON.stringify(citation.resolved_payload)
+            : (citation.resolved_payload ?? null),
+        citation.http_status ?? null,
+        citation.http_status_code ?? citation.http_status ?? null,
+        citation.checked_at ?? null,
+        createdAt
+    );
+}
+
+/**
+ * Update a citation record after verification.
+ *
+ * @param {import('better-sqlite3').Database} db
+ * @param {string} citationId
+ * @param {object} verification
+ * @returns {import('better-sqlite3').RunResult}
+ */
+export function updateCitationVerification(db, citationId, verification) {
+    const checkedAt = verification.checked_at || new Date().toISOString();
+    return stmt(db,
+        `UPDATE citation_checks SET
+            verification_status = COALESCE(?, verification_status),
+            verification_method = COALESCE(?, verification_method),
+            resolver = COALESCE(?, resolver),
+            source_url = COALESCE(?, source_url),
+            resolved_title = COALESCE(?, resolved_title),
+            title = COALESCE(?, title),
+            resolved_source_type = COALESCE(?, resolved_source_type),
+            retraction_status = COALESCE(?, retraction_status),
+            resolved_payload = COALESCE(?, resolved_payload),
+            http_status = COALESCE(?, http_status),
+            http_status_code = COALESCE(?, http_status_code),
+            checked_at = ?
+         WHERE citation_id = ?`
+    ).run(
+        verification.verification_status ?? null,
+        verification.verification_method ?? null,
+        verification.resolver ?? null,
+        verification.source_url ?? null,
+        verification.resolved_title ?? null,
+        verification.title ?? verification.resolved_title ?? null,
+        verification.resolved_source_type ?? null,
+        verification.retraction_status ?? null,
+        typeof verification.resolved_payload === 'object'
+            ? JSON.stringify(verification.resolved_payload)
+            : (verification.resolved_payload ?? null),
+        verification.http_status ?? null,
+        verification.http_status_code ?? verification.http_status ?? null,
+        checkedAt,
+        citationId
+    );
+}
+
+/**
+ * Fetch citation rows for a session or claim.
+ *
+ * @param {import('better-sqlite3').Database} db
+ * @param {{sessionId?: string, claimId?: string}} filters
+ * @returns {object[]}
+ */
+export function getCitationChecks(db, filters = {}) {
+    if (!db) return [];
+    const { sessionId = null, claimId = null } = filters;
+    try {
+        if (claimId) {
+            return stmt(db,
+                `SELECT * FROM citation_checks
+                 WHERE claim_id = ?
+                 ORDER BY created_at DESC, id DESC`
+            ).all(claimId);
+        }
+        if (sessionId) {
+            return stmt(db,
+                `SELECT * FROM citation_checks
+                 WHERE session_id = ?
+                 ORDER BY created_at DESC, id DESC`
+            ).all(sessionId);
+        }
+    } catch {
+        return [];
+    }
+    return [];
+}
+
+/**
  * Get all events for a specific claim.
  *
  * @param {import('better-sqlite3').Database} db
@@ -653,12 +973,18 @@ export default {
     getSession,
     createSession,
     endSession,
+    updateSessionIntegrity,
     getLastSession,
     logSpineEntry,
     logGateCheck,
     logLiteratureSearch,
     getCalibrationData,
     logClaimEvent,
+    logSerendipitySeed,
+    logR2Review,
+    upsertCitationCheck,
+    updateCitationVerification,
+    getCitationChecks,
     getClaimHistory,
     getUnresolvedAlerts,
     createAlert,

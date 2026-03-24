@@ -1,22 +1,68 @@
 <p align="center">
-  <img src="logos/logo-v6.0.svg" alt="Vibe Science" width="700">
+  <img src="logos/logo-v7.0.svg" alt="Vibe Science" width="700">
 </p>
 
 <p align="center">
   <a href="https://doi.org/10.5281/zenodo.18665031"><img src="https://zenodo.org/badge/1148022920.svg" alt="DOI"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="License"></a>
-  <img src="https://img.shields.io/badge/version-6.0.0-purple.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-7.0.0-purple.svg" alt="Version">
   <img src="https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg" alt="Node">
   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg" alt="Platform">
 </p>
 
 # Vibe Science
 
-> An AI-native research engine that loops until discovery — with adversarial review, quality gates, serendipity tracking, cross-session learning, and plugin-enforced integrity.
+> Integrity-first research runtime for Claude Code. Plugin-enforced checks, adversarial review, confounder discipline, cross-session state, and audit trails for AI-assisted scientific work.
 
-Vibe Science turns Claude Code into a disciplined research agent. Instead of letting the AI rush to conclusions, it forces every claim through adversarial review ("Reviewer 2"), 32 quality gates, confounder testing, and cross-session calibration. Only what survives gets published.
+## Current Release — v7.0 TRACE
 
-**Field-tested over 21 CRISPR research sprints** — caught a claim with p < 10^-100 whose sign reversed under propensity matching. Without Vibe Science, it would have been published.
+`TRACE` is the runtime-closure release. v6.0 `NEXUS` built the dual architecture; v7.0 makes the critical loops actually flow through the plugin: claim/review/seed lifecycle persistence, citation extraction and verification gates, benchmark recording with A/B comparison, strict integrity tracking, and FTS5/BM25 retrieval closure.
+
+Vibe Science exists for a specific failure mode: an AI agent can analyze data, read papers, and produce a convincing conclusion faster than it can verify whether that conclusion is actually robust.
+
+This repository combines three things:
+
+- a **Claude Code plugin** with lifecycle hooks, SQLite persistence, gate checks, observer logic, and context recovery
+- a **scientific skill** with the methodology: OTAE loop, Reviewer 2, 32 gates, confounder harness, serendipity protocols, and research discipline
+- a **blueprint/archive history** showing how the system evolved from prompt-only skill to plugin-wrapped runtime
+
+The goal is not "automatically write papers." The goal is to make the agent harder to fool, harder to rush, and easier to audit during scientific work.
+
+## What It Already Caught In Practice
+
+Vibe Science was shaped by repeated real research failures, not by prompt aesthetics.
+
+Across **21 CRISPR research sprints**, the system caught a result that looked extremely publishable:
+
+- odds ratio `2.30`
+- `p < 10^-100`
+- clean narrative
+- wrong conclusion
+
+After propensity matching, the sign reversed. Without an adversarial structure, that claim would have been written up as a finding.
+
+That is the core reason this project exists.
+
+## Why This Matters
+
+This is not just a local annoyance. Recent benchmark work is showing the same structural problem at field level: in **[MLR-Bench](https://arxiv.org/abs/2505.19955)**, current coding agents frequently produced **fabricated or invalidated experimental results in about 80% of cases**. Vibe Science is an attempt to build against that failure mode, not around it.
+
+---
+
+## What This Repo Actually Is
+
+If you are landing on this repository for the first time, the most important thing to know is this:
+
+Vibe Science is **not** just a prompt, and it is **not** just a plugin.
+
+It is a layered system for running research-oriented AI work under stronger discipline:
+
+- **Constitution layer**: project-level laws and behavioral constraints in `CLAUDE.md`
+- **Methodology layer**: the skill in `skills/vibe/`, which defines how the research process should work
+- **Enforcement layer**: the plugin in `plugin/`, which persists state and structurally enforces selected checks inside Claude Code
+- **Design lineage**: blueprints and archived versions that explain why the system looks the way it does
+
+That distinction matters because many capabilities live first as methodology, then later become plugin enforcement.
 
 ---
 
@@ -27,6 +73,34 @@ AI agents are dangerous in science. Not because they hallucinate — that's the 
 Over 21 CRISPR sprints, we watched the agent celebrate a result with OR=2.30 and p < 10^-100. After propensity matching, the sign reversed. Without a structural adversary, this would have been published as a finding.
 
 **The solution:** embed a "Reviewer 2" whose ONLY job is to destroy claims. Only what survives both builder and destroyer advances.
+
+---
+
+## What You Get Today (March 2026)
+
+Vibe Science already has a serious working core.
+
+### Operational in code today
+
+- 7 Claude Code lifecycle hooks with setup/migration foundation
+- automatic claim, seed, and Reviewer 2 lifecycle ingestion into SQLite
+- citation extraction for DOI/PMID/arXiv plus bounded verification with real `L0` and `D1` gates
+- research spine auto-logging, stop-time enforcement, and strict integrity tracking (`INTEGRITY_OK` / `INTEGRITY_DEGRADED`)
+- benchmark artifacts, DB recording, smoke testing, and readiness A/B comparison
+- FTS5/BM25 retrieval closure with curated indexing and legacy/vector fallback tiers
+- session summaries, STATE export, PreCompact snapshots, observer alerts, and cross-session pattern extraction
+
+### Defined strongly in the skill and architecture
+
+- full 32-gate methodology
+- Reviewer 2 ensemble and adversarial review posture
+- LAW 9 confounder harness
+- serendipity workflow and seed preservation
+- tree-search methodology and domain-aware literature protocols
+
+### Important scope note
+
+Not every methodological rule is already hard-enforced in the plugin. The biggest remaining soft areas are richer behavioral evals beyond schema validation and the optional Tier 1 vector path, which still depends on environment availability. That is a scope boundary, not the core value proposition.
 
 ---
 
@@ -48,18 +122,18 @@ Vibe Science is not a single file — it's three layers that reinforce each othe
 ├─────────────────────────────────────────────────────────────────────────┤
 │  LAYER 3: PLUGIN (Enforcement Body)                                    │
 │  7 lifecycle hooks · Gate engine · Permission engine                    │
-│  SQLite persistence (13 tables) · Research spine (auto-log)            │
+│  SQLite persistence (16 tables + FTS5) · Research spine (auto-log)     │
 │  R2 auto-calibration · Pattern extraction · Silent observer            │
 │  Context builder (~700 tokens) · Narrative engine                      │
-│  → Controls WHAT the agent can do                                      │
+│  → Enforces selected checks and persistence                            │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
-| Layer | Purpose | Bypass-proof? |
-|-------|---------|---------------|
-| **CLAUDE.md** | Sets dispositional rules — what agents MUST and MUST NOT do | Prompt-level (voluntary) |
-| **Skill** | Teaches methodology — OTAE loop, R2 protocol, gates, evidence standards | Prompt-level (voluntary) |
-| **Plugin** | Enforces behavior — hooks block session end if claims unreviewed, gates block tool use | **Code-level (structural)** |
+| Layer | Purpose | Enforcement level |
+|-------|---------|-------------------|
+| **CLAUDE.md** | Sets dispositional rules — what agents MUST and MUST NOT do | Prompt-level |
+| **Skill** | Defines methodology — OTAE loop, R2 protocol, gates, evidence standards | Prompt/spec/schema-level |
+| **Plugin** | Persists state and enforces selected behaviors inside Claude Code | Structural for implemented checks, not for every methodological rule |
 
 ---
 
@@ -69,12 +143,12 @@ Versions v3.5 through v5.5 were prompt-only: the agent was *told* to run quality
 
 | Subsystem | As Skill (v5.5) | As Plugin (v6.0) |
 |-----------|-----------------|------------------|
-| **Reviewer 2** | "Please review this claim" | Hook blocks session end if claims are unreviewed |
+| **Reviewer 2** | "Please review this claim" | Hook blocks clean session end if claims are still unreviewed |
 | **Quality Gates** | "Check gate DQ4 before proceeding" | Exit code 2 = tool action blocked until gate passes |
 | **Research Logging** | "Write to PROGRESS.md" | Auto-logged to SQLite after every tool use |
 | **Memory Recall** | "Read STATE.md at session start" | Hook injects ~700 tokens of context automatically |
 
-The plugin wraps the skill in **code-level enforcement**: 7 lifecycle hooks, a gate engine, a permission engine, and SQLite persistence across sessions.
+The plugin wraps part of the skill in **code-level enforcement and persistence**: 7 lifecycle hooks, a gate engine, a permission engine, and SQLite state across sessions.
 
 ---
 
@@ -82,15 +156,15 @@ The plugin wraps the skill in **code-level enforcement**: 7 lifecycle hooks, a g
 
 ### Adversarial Review (Reviewer 2)
 
-Every claim passes through R2, which operates in 7 activation modes: INLINE (lightweight 7-point checklist), FORCED (mandatory at stage gates), BATCH (bulk review), BRAINSTORM (idea validation), SHADOW (background monitoring), VETO (can kill claims), and REDIRECT (can change investigation direction). R2's default disposition is **destruction** — it assumes every claim is wrong.
+The methodology is built around Reviewer 2, an adversarial reviewer whose job is to destroy claims before they harden into conclusions. The skill defines 7 activation modes: INLINE, FORCED, BATCH, BRAINSTORM, SHADOW, VETO, and REDIRECT. The plugin then enforces some of the operational consequences of that posture, including stop-time checks on unreviewed claims.
 
 ### Quality Gates (32 gates, 8 schema-enforced)
 
-Gates block progress at critical checkpoints: data quality (DQ1-DQ4), data dictionary (DD0), design compliance (DC0), literature pre-check (L-1+), and 24 more across 5 stages. 8 gates validate artifacts against JSON Schema — prose claims of completion are ignored.
+The methodology defines 32 gates across literature, decision, tree, brainstorm, and data-quality stages. 8 of them are schema-backed. The plugin currently hard-enforces a valuable subset of these checks and logs gate outcomes to SQLite; the rest remain skill-level methodology and review discipline.
 
 ### Confounder Harness (LAW 9)
 
-Every quantitative claim MUST pass: raw → conditioned → matched. Sign change = ARTIFACT (killed). Collapse >50% = CONFOUNDED (downgraded). Survives = ROBUST (promotable). No harness = no claim.
+LAW 9 requires every quantitative claim to pass: raw -> conditioned -> matched. Sign change = ARTIFACT. Collapse >50% = CONFOUNDED. Survives all three = ROBUST. Today this discipline is central in the skill and partially enforced in the plugin through CLAIM-LEDGER constraints and gate logic.
 
 ### Seeded Fault Injection (SFI)
 
@@ -103,8 +177,9 @@ OTAE-Tree architecture explores multiple hypotheses in parallel with 7 node type
 ### Cross-Session Learning (v6.0)
 
 - **Pattern extraction**: Gate failure clusters, repeated actions, and claim lifecycle patterns are extracted at session end
-- **Instinct model**: Recurring patterns become "instincts" — weighted suggestions (confidence 0.3-0.9) that decay over time and can be overridden by evidence
-- **R2 calibration**: Historical weakness tracking with temporal decay (weight = e^(-0.02 × age_weeks)) informs future review priorities
+- **Instinct model**: Recurring patterns can become confidence-scored suggestions with temporal decay
+- **R2 calibration**: Historical weakness tracking exists in the architecture and data model, but depends on how fully review events are populated
+- **Semantic recall**: Present in the architecture, but still environment-dependent and not yet the whole story of memory retrieval
 
 ### Serendipity Radar
 
@@ -126,9 +201,9 @@ Every cycle scans for unexpected findings. Score >= 10 → QUEUE for triage. Sco
 | **PreCompact** | Before context compaction | Snapshots current state to DB for post-compaction recovery (LAW 7) |
 | **SubagentStop** | Subagent finishes | Salvagente Rule: killed claims must produce serendipity seed |
 
-### SQLite Persistence (13 tables)
+### SQLite Persistence (16 tables + retrieval virtual tables)
 
-`sessions`, `spine_entries`, `claim_events`, `r2_reviews`, `serendipity_seeds`, `gate_checks`, `literature_searches`, `observer_alerts`, `calibration_log`, `prompt_log`, `embed_queue`, `research_patterns`, `benchmark_runs` — plus a `vec_memories` virtual table for semantic search.
+`meta`, `sessions`, `spine_entries`, `claim_events`, `r2_reviews`, `serendipity_seeds`, `gate_checks`, `literature_searches`, `citation_checks`, `observer_alerts`, `calibration_log`, `prompt_log`, `memory_embeddings`, `embed_queue`, `research_patterns`, `benchmark_runs` — plus `memory_fts` for TRACE retrieval and optional `vec_memories` when `sqlite-vec` is available.
 
 ### Other Engines
 
@@ -274,13 +349,13 @@ Research question → Brainstorm (Phase 0, 10-step ideation)
 ```
 
 **What you'll notice:**
-- Every claim gets a confidence score (0-1) with a mathematical formula
+- Claims are expected to carry explicit IDs, evidence, status, and confidence
 - Reviewer 2 assumes every claim is wrong and demands evidence
-- 32 quality gates block progress — you can't skip steps
-- State files are created automatically (STATE.md, PROGRESS.md, CLAIM-LEDGER.md)
-- Serendipity is tracked — unexpected findings get scored (0-20 scale) and preserved
-- Everything persists to SQLite — cross-session memory, R2 calibration, audit trail
-- Patterns are extracted at session end and inform future sessions
+- Selected gates block or warn at runtime; the full 32-gate system lives in the methodology
+- Session state is persisted and can be exported back into durable artifacts such as `STATE.md`
+- Serendipity is tracked — unexpected findings are scored and preserved
+- SQLite keeps the audit trail across sessions
+- Pattern extraction and resumability are part of the real working core
 
 ---
 
@@ -289,10 +364,10 @@ Research question → Brainstorm (Phase 0, 10-step ideation)
 ```
 vibe-science/
 ├── .claude-plugin/              ← Plugin manifests
-│   ├── plugin.json              ← Plugin metadata (v6.0.0)
+│   ├── plugin.json              ← Plugin metadata (v7.0.0)
 │   └── marketplace.json         ← Marketplace config
 │
-├── skills/vibe/                 ← v6.0 NEXUS Skill (served by plugin)
+├── skills/vibe/                 ← v7.0 TRACE skill/runtime methodology
 │   ├── SKILL.md                 ← Full methodology (528 lines)
 │   ├── AGENTS.md                ← 7 agent roles with YAML frontmatter
 │   ├── references/              ← 36 reference documents
@@ -386,21 +461,20 @@ You can use the methodology with any LLM: upload `skills/vibe/SKILL.md` as a sys
 | **v5.0** | IUDEX | 2026-02-16 | SFI, blind-first pass, R3 judge, schema-validated gates, circuit breaker | [IUDEX](archive/v5.0-IUDEX-BLUEPRINT.md) |
 | **v5.5** | ORO | 2026-02-19 | DQ1-DQ4 gates, DD0, DC0, R2 INLINE, SSOT rule (post-mortem driven) | [ORO](archive/v5.5-ORO-BLUEPRINT.md) |
 | **v6.0** | NEXUS | 2026-02-20 | **Plugin architecture**, 7 hooks, SQLite, cross-session learning, 7 agent roles | [NEXUS](archive/v6.0-NEXUS-BLUEPRINT.md) |
+| **v7.0** | TRACE | 2026-03-24 | Lifecycle closure, citation gates, strict integrity, benchmark A/B compare, FTS5 retrieval | [TRACE](blueprints/v7.0-IMPLEMENTATION-SPEC.md) |
 
-### v6.0 NEXUS — What Changed
+### v7.0 TRACE — What Changed
 
-The jump from v5.5 to v6.0 is architectural, not incremental. The methodology (skill) was preserved and expanded with 6 new reference documents; a code-level enforcement layer (plugin) was added on top.
+The jump from v6.0 to v7.0 is operational, not cosmetic. NEXUS built the body; TRACE makes the critical subsystems circulate through the runtime and the database.
 
-**New in v6.0:**
-- Plugin architecture with 7 lifecycle hooks (SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, Stop, PreCompact, SubagentStop)
-- SQLite persistence: 13 tables tracking sessions, claims, reviews, gates, seeds, patterns, benchmarks
-- Cross-session learning: pattern extraction, instinct model, R2 temporal decay calibration
-- 7 agent roles with formal separation of powers (researcher, r2-deep, r2-inline, observer, explorer, r3-judge, instinct-scanner)
-- Agent handoff protocol (Context, Findings, Files Modified, Open Questions, Recommendations)
-- Context resilience: PreCompact snapshots, progressive context building, crash recovery
-- Silent observer with periodic health checks
-- LAW 12 — INSTINCT: learned patterns inform current behavior, decay with time
-- 36 reference documents (28 from v5.5 + 6 new in v6.0 + 2 added in v6.0.x), 12 JSON schemas (9 v5.0 + 3 v5.5), 6 Python enforcement scripts
+**New in v7.0:**
+- claim lifecycle is populated for real in `claim_events`
+- serendipity seeds and R2 review artifacts are ingested automatically
+- DOI / PMID / arXiv citations are extracted, persisted, verified, and gated (`L0` / `D1`)
+- benchmark runner writes artifacts and records to `benchmark_runs`, with readiness A/B comparison
+- strict mode persists integrity degradation instead of failing open silently
+- retrieval no longer depends on dead semantic memory alone: `memory_fts` provides live BM25-ranked recall
+- schema migrations now carry the runtime from v6.x to TRACE (`schema_version = 4`)
 
 **Codex → Claude Code migration:** v5.0 had a Codex-specific variant (`archive/vibe-science-v5.0-codex/`). v6.0 is Claude Code native — no Codex variant needed.
 
@@ -449,7 +523,7 @@ Each historical version is preserved intact in `archive/vibe-science-v{X.Y}/` wi
   title     = {Vibe Science: AI-native research with adversarial review and serendipity tracking},
   author    = {{Vibe Science Contributors}},
   year      = {2026},
-  version   = {6.0.0},
+  version   = {7.0.0},
   url       = {https://github.com/th3vib3coder/vibe-science},
   doi       = {10.5281/zenodo.18665031},
   license   = {Apache-2.0}

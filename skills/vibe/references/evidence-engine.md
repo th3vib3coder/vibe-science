@@ -1,6 +1,6 @@
 # Evidence Engine
 
-Part of Vibe Science v6.0 NEXUS (originated as Pillar 1 in v4.0). Transforms claims from free text into tracked, scored, verifiable assertions.
+Part of Vibe Science v7.0 TRACE (originated as Pillar 1 in v4.0). Transforms claims from free text into tracked, scored, verifiable assertions.
 
 **v4.0 upgrades**: Confounder Harness (LAW 9) mandatory for every quantitative claim. New claim statuses: ARTIFACT, CONFOUNDED, ROBUST. Tree node tracking per claim.
 

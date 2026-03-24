@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Vibe Science v6.0 NEXUS — Benchmark Reporter
+ * Vibe Science v7.0 TRACE — Benchmark Reporter
  *
  * Records, aggregates, and compares eval/benchmark results stored in
  * the benchmark_runs table.  Consumed by eval harnesses and CI scripts
@@ -27,7 +27,7 @@
  *                      Must support `.prepare(sql).run(...)`.
  * @param {object} result
  * @param {string} result.run_id            - Unique identifier for this eval run
- * @param {string} result.skill_version     - Skill version string (e.g. "6.0.0")
+ * @param {string} result.skill_version     - Skill version string (e.g. "7.0.0")
  * @param {string} result.eval_case         - Name of the eval case
  * @param {string} result.category          - Category grouping (e.g. "gate", "narrative")
  * @param {boolean|number} result.passed    - Whether the case passed (truthy → 1)
@@ -69,7 +69,7 @@ function recordBenchmark(db, result) {
  * Generates a summary report for a given skill version.
  *
  * @param {object} db      - SQLite database handle
- * @param {string} version - Skill version string (e.g. "6.0.0")
+ * @param {string} version - Skill version string (e.g. "7.0.0")
  * @returns {object} {
  *   version, total, passed, failed, pass_rate,
  *   avg_time_ms, avg_tokens,

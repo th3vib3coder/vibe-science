@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Vibe Science v6.0 NEXUS -- PreCompact Hook
+ * Vibe Science v7.0 TRACE -- PreCompact Hook
  *
  * Runs before Claude Code compacts the context window.
  * Saves a snapshot of critical research state to the DB

@@ -2,6 +2,34 @@
 
 All notable changes to Vibe Science are documented here.
 
+## [7.0.0] — 2026-03-24 — TRACE (Runtime Closure Release)
+
+> **Trigger:** v7 implementation from the TRACE spec, followed by repeated adversarial review and paranoid debugging until convergence.
+
+### Added — Runtime Closure
+- automatic ingestion of claim lifecycle events into `claim_events`
+- automatic ingestion of serendipity seeds with `source_claim_id`
+- automatic ingestion of Reviewer 2 artifacts into `r2_reviews`
+- citation extraction for DOI / PMID / arXiv with bounded sync verification
+- plugin-level source validity gates: `L0` blocks `UNRESOLVED/RETRACTED`, `D1` blocks anything not `VERIFIED`
+- FTS5/BM25 retrieval closure through `memory_fts`, curated indexing, and tiered fallback
+
+### Added — Release Hardening
+- schema migration chain expanded to `schema_version = 4`
+- benchmark runner now writes artifacts and records `benchmark_runs`
+- smoke test and TRACE readiness gate with A/B comparison
+- strict integrity persistence via `INTEGRITY_OK` / `INTEGRITY_DEGRADED`
+
+### Changed
+- project version bumped to `7.0.0`
+- plugin manifests, setup output, skill metadata, templates, and active docs aligned to `TRACE`
+- README and ARCHITECTURE now describe TRACE as the current release instead of NEXUS
+
+### Verification
+- `104/104` tests green in `__test_e2e.mjs`
+- `node evals/smoke-trace.mjs` green
+- `node scripts/v7-readiness.mjs` green
+
 ## [6.0.49] — 2026-03-21 — Baseline stabilization: test fixes, SSOT alignment, version label correction (Adversarial Review R1)
 
 > **Trigger:** Adversarial review Round 1 — full SSOT matrix built by cross-referencing README.md, ARCHITECTURE.md, CLAUDE.md, schema.sql, __test_e2e.mjs, package.json, benchmark-reporter.js, and CHANGELOG.md. Found 2 test failures, 1 table count drift, and 2 version label mismatches.

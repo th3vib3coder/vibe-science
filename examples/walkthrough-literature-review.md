@@ -9,7 +9,7 @@ This annotated example shows a complete Vibe Science session investigating a lit
 **Vibe Science responds:**
 
 ```
-Vibe Science v6.0 activated for: OT applications in scRNA trajectory inference
+Vibe Science v7.0 TRACE activated for: OT applications in scRNA trajectory inference
 Mode: DISCOVERY
 Constitution loaded. R2 Ensemble armed. Gates active.
 ```
@@ -24,7 +24,7 @@ Constitution loaded. R2 Ensemble armed. Gates active.
 ### Initialization
 
 Creates `.vibe-science/` with:
-- `STATE.md` (version: 6.0.0, phase: discovery, cycle: 1)
+- `STATE.md` (version: 7.0.0, phase: discovery, cycle: 1)
 - `PROGRESS.md`, `CLAIM-LEDGER.md`, `ASSUMPTION-REGISTER.md`, `SERENDIPITY.md`
 - `RQ-001-ot-trajectory/RQ.md`
 

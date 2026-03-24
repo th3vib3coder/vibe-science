@@ -12,9 +12,9 @@ description: >
 skill_type: capability_uplift
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, WebSearch, WebFetch, Task
 ---
-<!-- v6.0.0 | Apache-2.0 | Author: th3vib3coder | Requires: Node.js 18+ for enforcement hooks -->
+<!-- v7.0.0 | Apache-2.0 | Author: th3vib3coder | Requires: Node.js 18+ for enforcement hooks -->
 
-# Vibe Science v6.0 NEXUS — Observe · Recall · Operate
+# Vibe Science v7.0 TRACE — Observe · Recall · Operate
 
 > Research engine: agentic tree search over hypotheses, adversarial review by separate sub-agent, 32 quality gates (8 schema-enforced), serendipity detection, hook-based enforcement, cross-session learning, temporal decay calibration. Infinite loops until discovery.
 
@@ -116,7 +116,7 @@ R2-DEEP as sub-agent (via Task tool) means it has NO access to the researcher's 
 
 ### Banner
 ```
-VIBE SCIENCE v6.0 NEXUS — Observe · Recall · Operate
+VIBE SCIENCE v7.0 TRACE — Observe · Recall · Operate
 HOOKS → SFI → BFP → R2 ENSEMBLE → V0/J0 → GATES (32 total, 8 schema-enforced)
 SERENDIPITY RADAR · RESEARCH SPINE · OBSERVER · DQ1-DQ4
 PATTERNS · INSTINCTS · TEMPORAL DECAY · HANDOFF PROTOCOL

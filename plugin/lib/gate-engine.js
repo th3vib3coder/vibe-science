@@ -1,5 +1,5 @@
 /**
- * Vibe Science v6.0 NEXUS — Gate Engine
+ * Vibe Science v7.0 TRACE — Gate Engine
  *
  * Gate enforcement logic consumed by post-tool-use.js.
  * Implements DQ1-DQ4 data quality gates, DC0 design compliance,
@@ -25,6 +25,7 @@
 
 import { readFileSync, existsSync, readdirSync } from 'fs';
 import { dirname, basename, join, resolve } from 'path';
+import { getCitationChecks as getCitationChecksFromDb } from './db.js';
 
 // ─────────────────────────────────────────────────────────────────────
 // Constants
@@ -70,13 +71,13 @@ const TIER_GATES = {
 export function extractClaimId(content) {
     if (!content || typeof content !== 'string') return null;
 
-    // Try compact format first (C or C- followed by 3 digits)
-    const compactMatch = content.match(/\bC-?(\d{3})\b/);
-    if (compactMatch) return compactMatch[0];
+    // Try compact format first (C or C- followed by 1+ digits)
+    const compactMatch = content.match(/\bC-?(\d+)\b/);
+    if (compactMatch) return `C-${compactMatch[1].padStart(3, '0')}`;
 
     // Try legacy format (CLAIM- followed by digits)
     const legacyMatch = content.match(/\bCLAIM-(\d+)\b/);
-    if (legacyMatch) return legacyMatch[0];
+    if (legacyMatch) return `CLAIM-${legacyMatch[1]}`;
 
     return null;
 }
@@ -94,8 +95,8 @@ export function extractClaimId(content) {
 export function getRequiredGatesForClaim(claimId) {
     if (!claimId) return [...BASE_CLAIM_GATES];
 
-    // Compact format: Cxxx or C-xxx — first digit is the tier
-    const compactMatch = claimId.match(/^C-?(\d)\d{2}$/);
+    // Compact format: Cxxx / C-xxx / C-xxxx ... — first digit is still the tier marker
+    const compactMatch = claimId.match(/^C-?(\d)\d{2,}$/);
     if (compactMatch) {
         const tier = parseInt(compactMatch[1], 10);
         return TIER_GATES[tier] || TIER_GATES[1]; // fallback to tier 1
@@ -147,6 +148,99 @@ export function checkClaimGates(db, claimId) {
     }
 
     return { pass: false, missing };
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Citation validity helpers (TRACE WP-04/WP-05)
+// ─────────────────────────────────────────────────────────────────────
+
+/**
+ * Load citation rows for a claim or session.
+ *
+ * @param {object} db
+ * @param {{ sessionId?: string, claimId?: string }} filters
+ * @returns {object[]}
+ */
+export function getCitationChecks(db, filters = {}) {
+    return getCitationChecksFromDb(db, filters);
+}
+
+/**
+ * Summarize citation validity for a claim or session.
+ *
+ * @param {object} db
+ * @param {{ sessionId?: string, claimId?: string }} filters
+ * @returns {{ count: number, statuses: Record<string, number>, citations: object[] }}
+ */
+export function summarizeCitationValidity(db, filters = {}) {
+    const citations = getCitationChecks(db, filters);
+    const statuses = {};
+    for (const citation of citations) {
+        const status = String(citation.verification_status || 'PENDING').toUpperCase();
+        statuses[status] = (statuses[status] || 0) + 1;
+    }
+    return { count: citations.length, statuses, citations };
+}
+
+/**
+ * Gate L0: source validity blocks unresolved or retracted citations.
+ *
+ * @param {object} db
+ * @param {{ sessionId?: string, claimId?: string }} filters
+ * @returns {{ pass: boolean, count: number, blockers: object[], citations: object[] }}
+ */
+export function checkSourceValidityGate(db, filters = {}) {
+    const summary = summarizeCitationValidity(db, filters);
+    if (summary.count === 0) {
+        return { pass: true, count: 0, blockers: [], citations: [] };
+    }
+
+    const blockers = summary.citations.filter(citation => {
+        const status = String(citation.verification_status || 'PENDING').toUpperCase();
+        return status === 'UNRESOLVED' || status === 'RETRACTED';
+    });
+
+    return {
+        pass: blockers.length === 0,
+        count: summary.count,
+        blockers,
+        citations: summary.citations,
+        statuses: summary.statuses,
+    };
+}
+
+/**
+ * Gate D1 source policy: promotion blocks unless all tracked citations are VERIFIED.
+ *
+ * @param {object} db
+ * @param {{ sessionId?: string, claimId?: string }} filters
+ * @returns {{ pass: boolean, reason?: string, count: number, blockers: object[], citations: object[], statuses?: Record<string, number> }}
+ */
+export function checkClaimPromotionSources(db, filters = {}) {
+    const summary = summarizeCitationValidity(db, filters);
+    if (summary.count === 0) {
+        return {
+            pass: false,
+            reason: 'NO_CITATIONS',
+            count: 0,
+            blockers: [],
+            citations: [],
+            statuses: {},
+        };
+    }
+
+    const blockers = summary.citations.filter(citation => {
+        const status = String(citation.verification_status || 'PENDING').toUpperCase();
+        return status !== 'VERIFIED';
+    });
+
+    return {
+        pass: blockers.length === 0,
+        count: summary.count,
+        blockers,
+        citations: summary.citations,
+        statuses: summary.statuses,
+    };
 }
 
 // ─────────────────────────────────────────────────────────────────────
