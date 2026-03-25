@@ -184,9 +184,9 @@ async function main(event) {
         //    Must run BEFORE endSession to avoid setting ended_at prematurely
         // =========================================================
 
-        // Find claims whose MOST RECENT lifecycle event is CREATED (not yet reviewed/killed/disputed).
-        // This handles re-created claims correctly: if C-001 was reviewed in session 1 then
-        // re-created in session 2, the latest event is CREATED → requires new review.
+        // Find claims whose MOST RECENT lifecycle event has NOT been resolved by R2.
+        // "Resolved" means R2_REVIEWED, KILLED, or DISPUTED. Any other final state
+        // (CREATED, PROMOTED, VERIFIED, CONFIDENCE_UPDATED) means the claim needs R2.
         const unreviewedClaims = db.prepare(`
             SELECT claim_id FROM (
                 SELECT ce.claim_id, ce.event_type,
@@ -196,7 +196,7 @@ async function main(event) {
                     SELECT id FROM sessions WHERE project_path = ?
                 )
             )
-            WHERE rn = 1 AND event_type = 'CREATED'
+            WHERE rn = 1 AND event_type NOT IN ('R2_REVIEWED', 'KILLED', 'DISPUTED')
         `).all(projectPath);
 
         if (unreviewedClaims.length > 0) {
