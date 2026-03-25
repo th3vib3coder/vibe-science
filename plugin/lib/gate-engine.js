@@ -2,9 +2,10 @@
  * Vibe Science v7.0 TRACE — Gate Engine
  *
  * Gate enforcement logic consumed by post-tool-use.js.
- * Implements DQ1-DQ4 data quality gates, DC0 design compliance,
- * DD0 data dictionary, L-1+ literature gate, and claim-level
- * gate aggregation.
+ * Implements DQ1-DQ4 data quality gates, DD0 data dictionary,
+ * L-1+ literature gate, L0/D1 citation gates, and claim-level
+ * gate aggregation. (DC0 design compliance is skill-level only —
+ * no runtime producer yet.)
  *
  * All functions are pure or DB-dependent — no side-effects beyond
  * the return values.  The calling hook decides whether to BLOCK
