@@ -75,7 +75,7 @@ v5.5 proved that prompt-level methodology works — but it also proved that prom
 ### Plugin Subsystems
 
 #### Gate Engine
-Enforces DQ1-DQ4, DC0, DD0, L-1+ at PostToolUse. Exit code 2 = BLOCK.
+Enforces DQ1-DQ4, DD0, L-1+, L0, D1 at PostToolUse. Exit code 2 = BLOCK. DC0 (Design Compliance) remains skill-level — no runtime producer yet.
 - DQ4: auto-verifies FINDINGS.md numbers match JSON source
 - L-1+: blocks research direction without prior literature search
 - Domain-aware hints from `domain-config.json`

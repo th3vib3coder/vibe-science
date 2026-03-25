@@ -50,7 +50,8 @@ function main() {
     // Smoke uses pre-approved gate fixtures so it can focus on the
     // end-to-end TRACE lifecycle path. Gate logic itself is exercised
     // more thoroughly in __test_e2e.mjs.
-    for (const gateId of ['DQ4', 'DC0']) {
+    // NOTE: DC0 removed from runtime base gates (no producer exists) — only DQ4 needed.
+    for (const gateId of ['DQ4']) {
         db.prepare(`
             INSERT INTO gate_checks
                 (session_id, gate_id, claim_id, status, checks_passed, checks_warned, checks_failed, details, timestamp)

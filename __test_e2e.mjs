@@ -2121,6 +2121,52 @@ describe('B8. TRACE Foundation Tests', () => {
         db.close();
         pass('trace-citation-zero-citation-policy');
     });
+
+    // --- Regression: DQ4-only is sufficient for claim gate (DC0 removed from runtime base) ---
+    it('claim gate passes with only session-scoped DQ4 (DC0 not required at runtime)', async () => {
+        const { checkClaimGates } = await import(relUrl('plugin', 'lib', 'gate-engine.js'));
+        const Database = (await import('better-sqlite3')).default;
+        const db = new Database(':memory:');
+        db.exec(fs.readFileSync(rel('plugin', 'db', 'schema.sql'), 'utf-8'));
+
+        const sessionId = 'sess-dq4-only';
+        db.prepare('INSERT INTO sessions (id, project_path, started_at) VALUES (?, ?, ?)')
+            .run(sessionId, '/tmp/test', new Date().toISOString());
+        db.prepare("INSERT INTO gate_checks (session_id, gate_id, claim_id, status, checks_passed, timestamp) VALUES (?, 'DQ4', NULL, 'PASS', 1, ?)")
+            .run(sessionId, new Date().toISOString());
+
+        const result = checkClaimGates(db, 'C-001', sessionId);
+        assert.equal(result.pass, true, 'DQ4-only should be sufficient for base claim gate (DC0 removed from runtime)');
+        db.close();
+        pass('trace-claim-gate-dq4-only');
+    });
+
+    // --- Regression: multi-claim citation attribution ---
+    it('extractCitationsFromEvent attributes DOIs to correct claims in MultiEdit', async () => {
+        const { extractCitationsFromEvent } = await import(relUrl('plugin', 'lib', 'citation-extractor.js'));
+        const event = {
+            session_id: 'sess-multi-attr',
+            tool_name: 'MultiEdit',
+            tool_input: {
+                file_path: 'CLAIM-LEDGER.md',
+                edits: [
+                    { new_string: '```vibe-claim\nid: C-001\nevent_type: CREATED\nnarrative: alpha\n```\n10.1000/alpha' },
+                    { new_string: '```vibe-claim\nid: C-002\nevent_type: CREATED\nnarrative: beta\n```\n10.1000/beta' }
+                ]
+            },
+            tool_response: ''
+        };
+
+        const out = extractCitationsFromEvent(event);
+        const alpha = out.citations.find(c => c.normalized_id === '10.1000/alpha');
+        const beta = out.citations.find(c => c.normalized_id === '10.1000/beta');
+
+        assert.ok(alpha, 'alpha DOI should be extracted');
+        assert.ok(beta, 'beta DOI should be extracted');
+        assert.equal(alpha.claim_id, 'C-001', 'alpha DOI should be attributed to C-001');
+        assert.equal(beta.claim_id, 'C-002', 'beta DOI should be attributed to C-002');
+        pass('trace-multi-claim-citation-attribution');
+    });
 });
 
 // =====================================================
