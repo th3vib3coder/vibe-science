@@ -1,8 +1,9 @@
 import crypto from 'node:crypto';
 import { normalizeClaimId } from './claim-ingestion.js';
 
-const DOI_RE = /\b(10\.\d{4,9}\/[-._;()/:A-Z0-9]+[A-Z0-9])\b/gi;
-const DOI_URL_RE = /\bhttps?:\/\/(?:dx\.)?doi\.org\/(10\.\d{4,9}\/[-._;()/:A-Z0-9]+[A-Z0-9])\b/gi;
+// Character class includes <> for SICI-era DOIs like 10.1002/(SICI)...<...>3.0.CO;2-S
+const DOI_RE = /\b(10\.\d{4,9}\/[-._;()<>/:A-Z0-9]+[A-Z0-9])\b/gi;
+const DOI_URL_RE = /\bhttps?:\/\/(?:dx\.)?doi\.org\/(10\.\d{4,9}\/[-._;()<>/:A-Z0-9]+[A-Z0-9])\b/gi;
 const PMID_RE = /\bPMID\s*:\s*(\d+)\b/gi;
 const PUBMED_URL_RE = /\bhttps?:\/\/(?:www\.)?ncbi\.nlm\.nih\.gov\/pubmed\/(\d+)\/?\b/gi;
 const PUBMED_PATH_RE = /\bpubmed(?:\.ncbi(?:\.nlm)?\.nih\.gov)?\/(\d+)\/?\b/gi;
