@@ -43,9 +43,44 @@ After propensity matching, the sign reversed. Without an adversarial structure, 
 
 That is the core reason this project exists.
 
+## What You'll See In Your First Session
+
+When Vibe Science is active, your Claude Code session behaves differently. Here's what to expect:
+
+| What happens | When | What you'll see |
+|-------------|------|----------------|
+| **Context injection** | Session starts | ~700 tokens of prior state, alerts, R2 calibration hints, pending seeds appear automatically |
+| **Literature gate** | You try to set a research direction | Blocked if no prior literature search logged in this session |
+| **Confounder barrier** | You write a claim to CLAIM-LEDGER.md | Blocked unless the claim has `confounder_status` or `NOT_APPLICABLE` |
+| **Citation verification** | You reference a DOI/PMID/arXiv | Auto-extracted, verified via HTTP, persisted. Unresolved citations block L0 gate |
+| **Stop blocking** | You try to end the session | Blocked if any claim hasn't been reviewed by R2, killed, or disputed |
+| **Spine logging** | Every tool use | Auto-classified and logged to SQLite — no manual journaling needed |
+| **Integrity tracking** | Infrastructure fails | Session marked INTEGRITY_DEGRADED; `VIBE_SCIENCE_STRICT=1` makes failures loud |
+
+**The plugin doesn't replace your judgment.** It prevents the most dangerous shortcuts: publishing without confounder control, promoting without verified sources, closing without adversarial review, and losing context between sessions.
+
 ## Why This Matters
 
 This is not just a local annoyance. Recent benchmark work is showing the same structural problem at field level: in **[MLR-Bench](https://arxiv.org/abs/2505.19955)**, current coding agents frequently produced **fabricated or invalidated experimental results in about 80% of cases**. Vibe Science is an attempt to build against that failure mode, not around it.
+
+---
+
+## Quick Glossary
+
+| Term | Meaning |
+|------|---------|
+| **OTAE** | Observe-Think-Act-Evaluate — the research loop that runs each cycle |
+| **R2** | Reviewer 2 — the adversarial reviewer agent whose job is to destroy weak claims |
+| **R3 / J0** | Judge Agent — meta-reviews R2's reviews (scores quality of the review itself) |
+| **SFI** | Seeded Fault Injection — known faults injected before R2 reviews to test vigilance |
+| **BFP** | Blind-First Pass — R2 reviews claims without seeing the researcher's justification first |
+| **DQ1-DQ4** | Data Quality gates at extraction, training, calibration, and finding stages |
+| **L0 / L-1+** | Literature gates: L-1+ requires search before direction, L0 verifies citation sources |
+| **D1** | Claim promotion gate — requires all citations VERIFIED before a claim advances |
+| **SSOT** | Single Source of Truth — numbers in prose must trace back to structured data files |
+| **Salvagente** | Italian for "life preserver" — when R2 kills a claim, it must produce a serendipity seed |
+| **SPINE** | Research Spine — structured audit trail of every action logged to SQLite |
+| **FTS5** | Full-Text Search 5 — SQLite's built-in search engine used for memory retrieval |
 
 ---
 
