@@ -1250,6 +1250,8 @@ function autoLog(db, event) {
 
     if (!session_id) return;
 
+    const projectPath = getProjectPath();
+
     // Classify the action type
     const actionType = classifyAction(tool_name, tool_input, tool_output);
     if (!actionType) return;
@@ -1282,7 +1284,8 @@ function autoLog(db, event) {
         queueForEmbedding(db, embedText, {
             session_id,
             action_type: actionType,
-            agent_role: agent_role || null
+            agent_role: agent_role || null,
+            project_path: projectPath || null,
         });
     } catch (err) {
         process.stderr.write(`[PostToolUse] WARNING: Failed to queue embedding: ${err.message}\n`);

@@ -60,6 +60,10 @@ async function main(event) {
     // -----------------------------------------------------------------------
     const db = openHookDb();
     try {
+      if (strictMode && !db && isMutationSensitiveTool(toolName)) {
+        denyStrict('cannot verify pre-mutation governance because database persistence is unavailable');
+        return;
+      }
       const agentRole = resolveAgentRole(db, event);
       if (strictMode && !agentRole) {
         denyStrict('cannot verify role / permission barrier because no agent role could be resolved');
@@ -332,7 +336,20 @@ function detectGovernanceShellWrite(toolInput = {}) {
     }
   }
 
+  if (detectDirectionShellTarget(normalized) && (hasWriteIntent || hasInterpreterScriptInvocation)) {
+    return 'direction artifact';
+  }
+
   return null;
+}
+
+function detectDirectionShellTarget(normalizedCommand) {
+  const source = String(normalizedCommand || '');
+  return /(?:^|[\/\s])\d{0,2}-?directions?(?:[\/\s]|$)|\bdirection[^\/\s]*\.(?:md|json)\b|\brq\.md\b/.test(source);
+}
+
+function isMutationSensitiveTool(toolName) {
+  return toolName === 'Write' || toolName === 'Edit' || toolName === 'MultiEdit' || toolName === 'Bash';
 }
 
 function extractClaimSegments(text) {
