@@ -41,7 +41,7 @@ v6.0 `NEXUS` introduced the dual architecture. v7.0 `TRACE` closes the operation
 - 7 lifecycle hooks remain the enforcement backbone
 - schema version advances to `4`
 - SQLite core now includes 16 regular tables, plus `memory_fts` and optional `vec_memories`
-- release verification includes `142/142` end-to-end tests, smoke, and readiness
+- release verification includes `143/143` end-to-end tests, smoke, and readiness
 
 TRACE is not a new philosophy. It is the moment the existing philosophy starts leaving enough structured evidence in the runtime to enforce itself.
 

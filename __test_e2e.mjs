@@ -3946,6 +3946,42 @@ describe('B8. TRACE Foundation Tests', () => {
         assert.match(out.warnings.join('\n'), /Ambiguous citation attribution/i);
         pass('trace-multi-claim-shared-output-session-scope');
     });
+
+    // --- Regression: PROMOTED-without-review must be caught by stop ---
+    it('stop.js ROW_NUMBER query catches PROMOTED-without-review claims', async () => {
+        const Database = (await import('better-sqlite3')).default;
+        const db = new Database(':memory:');
+        db.exec(fs.readFileSync(rel('plugin', 'db', 'schema.sql'), 'utf-8'));
+
+        const sessionId = 'sess-promoted-no-r2';
+        const now = new Date().toISOString();
+        db.prepare('INSERT INTO sessions (id, project_path, started_at) VALUES (?, ?, ?)')
+            .run(sessionId, '/tmp/test-promoted', now);
+
+        // Claim created then promoted WITHOUT R2_REVIEWED
+        db.prepare("INSERT INTO claim_events (claim_id, session_id, event_type, timestamp) VALUES ('C-001', ?, 'CREATED', ?)")
+            .run(sessionId, now);
+        db.prepare("INSERT INTO claim_events (claim_id, session_id, event_type, timestamp) VALUES ('C-001', ?, 'PROMOTED', ?)")
+            .run(sessionId, new Date(Date.now() + 1000).toISOString());
+
+        // The ROW_NUMBER query should catch this: last event is PROMOTED, which is NOT in (R2_REVIEWED, KILLED, DISPUTED)
+        const unreviewedClaims = db.prepare(`
+            SELECT claim_id FROM (
+                SELECT ce.claim_id, ce.event_type,
+                       ROW_NUMBER() OVER (PARTITION BY ce.claim_id ORDER BY ce.timestamp DESC, ce.id DESC) AS rn
+                FROM claim_events ce
+                WHERE ce.session_id IN (
+                    SELECT id FROM sessions WHERE project_path = '/tmp/test-promoted'
+                )
+            )
+            WHERE rn = 1 AND event_type NOT IN ('R2_REVIEWED', 'KILLED', 'DISPUTED')
+        `).all();
+
+        assert.equal(unreviewedClaims.length, 1, 'PROMOTED-without-review should be caught');
+        assert.equal(unreviewedClaims[0].claim_id, 'C-001');
+        db.close();
+        pass('trace-stop-promoted-without-review');
+    });
 });
 
 // =====================================================
