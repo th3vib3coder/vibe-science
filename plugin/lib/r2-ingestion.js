@@ -19,8 +19,10 @@ export function ingestR2Reviews(db, payload) {
         .map(block => toReviewFromBlock(block, sessionId, filePath));
 
     if (candidates.length === 0) {
-        const fallback = toReviewFromFreeform(content, sessionId, filePath);
-        if (fallback) candidates.push(fallback);
+        for (const segment of splitFreeformReviewSegments(content)) {
+            const fallback = toReviewFromFreeform(segment, sessionId, filePath);
+            if (fallback) candidates.push(fallback);
+        }
     }
 
     let inserted = 0;
@@ -99,6 +101,32 @@ function toReviewFromFreeform(content, sessionId, filePath) {
     };
 }
 
+function splitFreeformReviewSegments(content) {
+    const text = String(content || '');
+    const lines = text.split(/\r?\n/);
+    const headingIndexes = [];
+
+    for (let index = 0; index < lines.length; index++) {
+        if (isReviewHeadingLine(lines[index])) {
+            headingIndexes.push(index);
+        }
+    }
+
+    if (headingIndexes.length <= 1) {
+        return [text];
+    }
+
+    const segments = [];
+    for (let idx = 0; idx < headingIndexes.length; idx++) {
+        const start = headingIndexes[idx];
+        const end = idx + 1 < headingIndexes.length ? headingIndexes[idx + 1] : lines.length;
+        const segment = lines.slice(start, end).join('\n').trim();
+        if (segment) segments.push(segment);
+    }
+
+    return segments.length > 0 ? segments : [text];
+}
+
 function inferReviewMode(filePath, content) {
     const combined = `${filePath} ${content}`.toUpperCase();
     for (const mode of REVIEW_MODES) {
@@ -166,10 +194,27 @@ function extractAllClaimIds(content) {
             .filter(Boolean);
         if (ids.length > 0) return [...new Set(ids)];
     }
-    // Fallback: all mentions in text (used when no explicit field)
-    return [...text.matchAll(/\bC-?\d+\b|\bCLAIM-\d+\b/gi)]
+
+    // Prefer a claim ID anchored in a review heading / lead sentence.
+    for (const line of text.split(/\r?\n/)) {
+        const headingMatch = line.match(/^\s*(?:#+\s*)?(?:r2\s+)?review(?:\s+for|\s*:)?\s*(C-?\d+|CLAIM-\d+)\b/i);
+        if (headingMatch) {
+            const normalized = normalizeClaimId(headingMatch[1]);
+            if (normalized) return [normalized];
+        }
+    }
+
+    // Conservative fallback: only auto-attribute when exactly one unique claim
+    // is mentioned. Multiple mentions are ambiguous and should not mirror review
+    // events into unrelated claims.
+    const mentions = [...text.matchAll(/\bC-?\d+\b|\bCLAIM-\d+\b/gi)]
         .map(match => normalizeClaimId(match[0]))
         .filter((value, index, arr) => value && arr.indexOf(value) === index);
+    return mentions.length === 1 ? mentions : [];
+}
+
+function isReviewHeadingLine(line) {
+    return /^\s*(?:#+\s*)?(?:r2\s+)?review(?:\s+for|\s*:)?\s*(?:C-?\d+|CLAIM-\d+)\b/i.test(String(line || ''));
 }
 
 function extractWeaknesses(content) {

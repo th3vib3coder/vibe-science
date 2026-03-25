@@ -88,6 +88,28 @@ function truncate(text, maxLen) {
     return text.length <= maxLen ? text : text.substring(0, maxLen) + '...';
 }
 
+function loadStateMdSnapshot(projectPath) {
+    if (!projectPath) return null;
+    try {
+        const statePath = join(projectPath, '.vibe-science', 'STATE.md');
+        if (!existsSync(statePath)) return null;
+
+        const raw = readFileSync(statePath, 'utf-8').trim();
+        if (!raw) return null;
+
+        const compact = raw
+            .replace(/^#\s+Vibe Science\s+—\s+State\s*$/im, '')
+            .replace(/^_Auto-generated.*$/im, '')
+            .replace(/\r?\n+/g, ' | ')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+        return compact ? `Recovered from STATE.md: ${truncate(compact, 280)}` : null;
+    } catch {
+        return null;
+    }
+}
+
 function fallbackBuildContext(db, projectPath, _sessionId) {
     const context = {
         state: 'First session on this project.',
@@ -361,13 +383,17 @@ async function main(event) {
         }
     } else {
         // No DB -- minimal context
+        const stateFallback = loadStateMdSnapshot(projectPath);
         context = {
-            state: 'No database available -- first run or setup pending.',
+            state: stateFallback || 'No database available -- first run or setup pending.',
             memories: [],
             pendingSeeds: [],
             alerts: [],
             integrityWarnings: [],
         };
+        if (stateFallback) {
+            warnings.push('Database unavailable; using STATE.md resumability fallback.');
+        }
         if (strictMode) {
             // TRACE strict mode is intentionally asymmetric here:
             // degraded infrastructure is surfaced at SessionStart, but entry

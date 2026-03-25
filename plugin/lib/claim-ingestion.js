@@ -19,8 +19,10 @@ export function ingestClaimEvents(db, payload) {
         .map(block => toClaimEventFromBlock(block, sessionId));
 
     if (candidates.length === 0) {
-        const fallback = toClaimEventFromFreeform(content, sessionId);
-        if (fallback) candidates.push(fallback);
+        for (const segment of extractFreeformClaimSegments(content)) {
+            const fallback = toClaimEventFromFreeform(segment, sessionId);
+            if (fallback) candidates.push(fallback);
+        }
     }
 
     let inserted = 0;
@@ -114,6 +116,28 @@ function toClaimEventFromBlock(block, sessionId) {
         gate_id: block.data.gate_id ?? null,
         narrative: block.data.narrative ?? null,
     };
+}
+
+function extractFreeformClaimSegments(content) {
+    const text = String(content || '');
+    const lines = text.split(/\r?\n/);
+    const segments = [];
+    let current = null;
+
+    for (const line of lines) {
+        if (/^\s*(?:[-*+]\s*)?(?:id\s*:\s*)?(?:C-?\d+|CLAIM-\d+)\b(?:\s*[:|-]|\s+|$)/i.test(line)) {
+            if (current) segments.push(current);
+            current = line;
+            continue;
+        }
+
+        if (current) {
+            current += `\n${line}`;
+        }
+    }
+
+    if (current) segments.push(current);
+    return segments.length > 0 ? segments : [text];
 }
 
 function toClaimEventFromFreeform(content, sessionId) {

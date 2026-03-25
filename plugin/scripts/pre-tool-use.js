@@ -107,6 +107,13 @@ async function main(event) {
       const oldText = String(segment.oldText || '');
       const oldClaims = extractClaimSegments(oldText);
       const newClaims = extractClaimSegments(newText);
+      const touchesHarness = touchesHarnessMarker(oldText) || touchesHarnessMarker(newText);
+
+      if (touchesHarness && oldClaims.length === 0 && newClaims.length === 0) {
+        deny(toolName, 'touches confounder_status/NOT_APPLICABLE without enough claim context; rewrite the full claim block instead of editing the marker line in isolation');
+        return;
+      }
+
       const touchesClaim = oldClaims.length > 0 || newClaims.length > 0;
       if (!touchesClaim) continue;
 
@@ -276,6 +283,10 @@ function hasConfounderHarness(text) {
   return /confounder_status\s*:/i.test(text) || /confounder\S*\s*[:=]?\s*not.?applicable/i.test(text);
 }
 
+function touchesHarnessMarker(text) {
+  return /confounder_status/i.test(String(text || '')) || /\bNOT_APPLICABLE\b/i.test(String(text || ''));
+}
+
 function looksClaimLike(text) {
   const source = String(text || '');
   if (!source.trim()) return false;
@@ -295,17 +306,18 @@ function detectGovernanceShellWrite(toolInput = {}) {
   if (!command.trim()) return null;
 
   const normalized = command.replace(/\\/g, '/').toLowerCase();
+  const hasInterpreterScriptInvocation =
+    /\b(?:python(?:3)?|py|node|perl|ruby|pwsh|powershell|bash|sh)\b(?:\s+-\w+(?:\s+\S+)*)*\s+\S+/i.test(command);
   const hasWriteIntent =
     />{1,2}/.test(normalized) ||
-    /\b(?:out-file|set-content|add-content|copy-item|move-item|remove-item|new-item|tee|touch|cp|mv|rm|del)\b/i.test(command) ||
+    // Cover both full PowerShell cmdlets and their common aliases on Windows.
+    /\b(?:out-file|set-content|sc|add-content|ac|copy-item|copy|ci|move-item|move|mi|rename-item|rename|ren|remove-item|ri|new-item|ni|tee|touch|cp|mv|rm|del)\b/i.test(command) ||
     /\bsed\s+-i\b/i.test(command) ||
     /\bperl\s+-pi\b/i.test(command) ||
     /\bwritefile|appendfile\b/i.test(normalized) ||
     /\b(?:write|append|copy|move|rename|replace|remove|unlink|delete)\w*\s*\(/i.test(command) ||
     /\bwrite_(?:text|bytes)\s*\(/i.test(command) ||
     /\bopen\s*\([^)]*,\s*['"](?:w|a|x)/i.test(command);
-
-  if (!hasWriteIntent) return null;
 
   const targets = [
     { rule: 'claim-ledger', label: 'CLAIM-LEDGER.md' },
@@ -315,7 +327,7 @@ function detectGovernanceShellWrite(toolInput = {}) {
   ];
 
   for (const target of targets) {
-    if (normalized.includes(target.rule)) {
+    if (normalized.includes(target.rule) && (hasWriteIntent || hasInterpreterScriptInvocation)) {
       return target.label;
     }
   }

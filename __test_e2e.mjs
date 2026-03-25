@@ -841,6 +841,52 @@ describe('B4. Script Integration Tests', () => {
         pass('session-start-strict-integrity');
     });
 
+    it('session-start.js falls back to STATE.md when DB persistence is unavailable', () => {
+        const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'vibe-trace-state-fallback-'));
+        const fakeHome = path.join(tempRoot, 'home-file');
+        const projectDir = path.join(tempRoot, 'project');
+        fs.writeFileSync(fakeHome, 'not-a-directory', 'utf-8');
+        fs.mkdirSync(path.join(projectDir, '.vibe-science'), { recursive: true });
+        fs.writeFileSync(
+            path.join(projectDir, '.vibe-science', 'STATE.md'),
+            [
+                '# Vibe Science — State',
+                '_Auto-generated at 2026-03-25T12:00:00.000Z_',
+                '',
+                '## Last Session',
+                '- **Actions:** 12',
+                '### Summary',
+                'Recovered hypothesis about IL-6 confounding.',
+            ].join('\n'),
+            'utf-8'
+        );
+
+        const result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/session-start.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({ cwd: projectDir, project_path: projectDir }),
+                env: {
+                    ...process.env,
+                    VIBE_SCIENCE_STRICT: '1',
+                    HOME: fakeHome,
+                    USERPROFILE: fakeHome,
+                },
+            }
+        );
+
+        assert.equal(result.status, 0, 'session-start should still return degraded context');
+        const output = JSON.parse(String(result.stdout || '').trim());
+        assert.equal(output.integrityStatus, 'INTEGRITY_DEGRADED');
+        const injected = String(output?.hookSpecificOutput?.additionalContext || '');
+        assert.match(injected, /Recovered from STATE\.md/i);
+        assert.match(injected, /Recovered hypothesis about IL-6 confounding/i);
+        pass('session-start-state-md-fallback');
+    });
+
     it('worker-embed.js: syntax check only (no daemon start)', () => {
         const workerPath = rel('plugin', 'scripts', 'worker-embed.js');
         assert.ok(fs.existsSync(workerPath), 'worker-embed.js should exist');
@@ -1473,6 +1519,31 @@ describe('B4. Script Integration Tests', () => {
         pass('pre-tool-use-blocks-confounder-deletion');
     });
 
+    it('pre-tool-use blocks isolated edits that touch only the confounder marker line', () => {
+        const result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/pre-tool-use.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 15000,
+                input: JSON.stringify({
+                    tool_name: 'Edit',
+                    agent_role: 'researcher',
+                    tool_input: {
+                        file_path: 'CLAIM-LEDGER.md',
+                        old_string: 'confounder_status: RAW',
+                        new_string: '',
+                    },
+                }),
+            }
+        );
+
+        assert.equal(result.status, 2, 'isolated edits of the harness marker must not bypass LAW 9');
+        assert.match(String(result.stderr || ''), /LAW 9 VIOLATION/i);
+        pass('pre-tool-use-isolated-harness-edit');
+    });
+
     it('pre-tool-use blocks legacy freeform claim writes without confounder_status', () => {
         const result = spawnSync(
             process.execPath,
@@ -1790,6 +1861,64 @@ describe('B4. Script Integration Tests', () => {
         assert.equal(stdout?.hookSpecificOutput?.permissionDecision, 'deny');
         assert.match(String(result.stderr || ''), /GOVERNANCE WRITE DENIED/i);
         pass('pre-tool-use-governance-node-copyfile');
+    });
+
+    it('pre-tool-use denies governance Bash writes hidden behind PowerShell aliases', () => {
+        const commands = [
+            'sc CLAIM-LEDGER.md x',
+            'ni CLAIM-LEDGER.md -ItemType File',
+            'ri CLAIM-LEDGER.md',
+            'ren CLAIM-LEDGER.md CLAIM-LEDGER.bak',
+        ];
+
+        for (const command of commands) {
+            const result = spawnSync(
+                process.execPath,
+                ['plugin/scripts/pre-tool-use.js'],
+                {
+                    cwd: ROOT,
+                    encoding: 'utf-8',
+                    timeout: 15000,
+                    input: JSON.stringify({
+                        tool_name: 'Bash',
+                        agent_role: 'researcher',
+                        tool_input: { command },
+                    }),
+                }
+            );
+
+            assert.equal(result.status, 2, `PowerShell alias must not bypass governance barrier: ${command}`);
+            const stdout = JSON.parse(String(result.stdout || '{}'));
+            assert.equal(stdout?.hookSpecificOutput?.permissionDecision, 'deny');
+            assert.match(String(result.stderr || ''), /GOVERNANCE WRITE DENIED/i);
+        }
+
+        pass('pre-tool-use-governance-powershell-aliases');
+    });
+
+    it('pre-tool-use denies governance Bash writes hidden behind opaque interpreter scripts', () => {
+        const result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/pre-tool-use.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 15000,
+                input: JSON.stringify({
+                    tool_name: 'Bash',
+                    agent_role: 'researcher',
+                    tool_input: {
+                        command: 'python script.py CLAIM-LEDGER.md',
+                    },
+                }),
+            }
+        );
+
+        assert.equal(result.status, 2, 'external interpreter scripts must not operate on governance artifacts through Bash');
+        const stdout = JSON.parse(String(result.stdout || '{}'));
+        assert.equal(stdout?.hookSpecificOutput?.permissionDecision, 'deny');
+        assert.match(String(result.stderr || ''), /GOVERNANCE WRITE DENIED/i);
+        pass('pre-tool-use-governance-opaque-script');
     });
 
     it('pre-tool-use catches protected Bash targets hidden behind variable indirection', () => {
@@ -3241,6 +3370,39 @@ describe('B8. TRACE Foundation Tests', () => {
         pass('trace-ingest-claim-large-id');
     });
 
+    it('ingestClaimEvents keeps freeform multi-claim lines separated instead of fabricating a hybrid event', async () => {
+        const Database = (await import('better-sqlite3')).default;
+        const { ingestClaimEvents } = await import(relUrl('plugin', 'lib', 'claim-ingestion.js'));
+
+        const db = new Database(':memory:');
+        db.pragma('foreign_keys = ON');
+        db.exec(fs.readFileSync(rel('plugin', 'db', 'schema.sql'), 'utf-8'));
+
+        const sessionId = 'claim-freeform-multi';
+        db.prepare(`INSERT INTO sessions (id, project_path, started_at) VALUES (?, ?, ?)`)
+            .run(sessionId, '/tmp/test', new Date().toISOString());
+
+        const result = ingestClaimEvents(db, {
+            sessionId,
+            filePath: 'CLAIM-LEDGER.md',
+            content: 'C-001: KILLED kill_reason=ARTIFACT\nC-002: CREATED confidence=0.7'
+        });
+
+        const rows = db.prepare(`
+            SELECT claim_id, event_type, kill_reason, confidence
+            FROM claim_events
+            ORDER BY claim_id
+        `).all();
+
+        assert.equal(result.inserted, 2, 'freeform multi-claim write should produce two lifecycle events');
+        assert.deepEqual(rows, [
+            { claim_id: 'C-001', event_type: 'KILLED', kill_reason: 'ARTIFACT', confidence: null },
+            { claim_id: 'C-002', event_type: 'CREATED', kill_reason: null, confidence: 0.7 },
+        ]);
+        db.close();
+        pass('trace-ingest-claim-freeform-multi');
+    });
+
     it('ingestSerendipitySeeds persists source_claim_id-aware seeds', async () => {
         const Database = (await import('better-sqlite3')).default;
         const { ingestSerendipitySeeds } = await import(relUrl('plugin', 'lib', 'seed-ingestion.js'));
@@ -3406,6 +3568,70 @@ describe('B8. TRACE Foundation Tests', () => {
         assert.equal(row.n, 1, 'same review should upsert rather than duplicate');
         db.close();
         pass('trace-ingest-review-dedupe');
+    });
+
+    it('ingestR2Reviews does not mirror incidental comparator claim mentions as reviewed', async () => {
+        const Database = (await import('better-sqlite3')).default;
+        const { ingestR2Reviews } = await import(relUrl('plugin', 'lib', 'r2-ingestion.js'));
+
+        const db = new Database(':memory:');
+        db.pragma('foreign_keys = ON');
+        db.exec(fs.readFileSync(rel('plugin', 'db', 'schema.sql'), 'utf-8'));
+
+        const sessionId = 'sess-r2-freeform-primary';
+        db.prepare('INSERT INTO sessions (id, project_path, started_at) VALUES (?, ?, ?)')
+            .run(sessionId, '/tmp/r2-freeform', new Date().toISOString());
+
+        const result = ingestR2Reviews(db, {
+            sessionId,
+            filePath: '05-reviewer2/review.md',
+            content: 'R2 review for C-001. Compared against prior rejected claim C-002; weakness is confounding.'
+        });
+
+        assert.equal(result.inserted, 1);
+        const mirrored = db.prepare(`
+            SELECT claim_id, event_type
+            FROM claim_events
+            ORDER BY id ASC
+        `).all();
+        assert.deepEqual(
+            mirrored.map(entry => `${entry.claim_id}:${entry.event_type}`),
+            ['C-001:R2_REVIEWED'],
+            'freeform review should mirror only the primary reviewed claim, not incidental comparator mentions'
+        );
+        db.close();
+        pass('trace-r2-freeform-primary-claim');
+    });
+
+    it('ingestR2Reviews splits repeated freeform review headings into separate review artifacts', async () => {
+        const Database = (await import('better-sqlite3')).default;
+        const { ingestR2Reviews } = await import(relUrl('plugin', 'lib', 'r2-ingestion.js'));
+
+        const db = new Database(':memory:');
+        db.pragma('foreign_keys = ON');
+        db.exec(fs.readFileSync(rel('plugin', 'db', 'schema.sql'), 'utf-8'));
+
+        const sessionId = 'sess-r2-freeform-multi';
+        db.prepare('INSERT INTO sessions (id, project_path, started_at) VALUES (?, ?, ?)')
+            .run(sessionId, '/tmp/r2-freeform-multi', new Date().toISOString());
+
+        const result = ingestR2Reviews(db, {
+            sessionId,
+            filePath: '05-reviewer2/review.md',
+            content: '# Review for C-001\nweakness one\n# Review for C-002\nweakness two'
+        });
+
+        const reviews = db.prepare(`SELECT claims_reviewed FROM r2_reviews ORDER BY id ASC`).all();
+        const mirrored = db.prepare(`SELECT claim_id, event_type FROM claim_events ORDER BY id ASC`).all();
+
+        assert.equal(result.inserted, 2, 'repeated headings should become two review artifacts');
+        assert.deepEqual(reviews.map(row => row.claims_reviewed), ['["C-001"]', '["C-002"]']);
+        assert.deepEqual(
+            mirrored.map(entry => `${entry.claim_id}:${entry.event_type}`),
+            ['C-001:R2_REVIEWED', 'C-002:R2_REVIEWED']
+        );
+        db.close();
+        pass('trace-r2-freeform-split-headings');
     });
 
     it('ingestR2Reviews ignores generic review/report filenames outside the R2 scope', async () => {
@@ -3918,6 +4144,27 @@ describe('B8. TRACE Foundation Tests', () => {
         assert.equal(alpha.claim_id, 'C-001', 'alpha DOI should be attributed to C-001');
         assert.equal(beta.claim_id, 'C-002', 'beta DOI should be attributed to C-002');
         pass('trace-multi-claim-citation-attribution');
+    });
+
+    it('extractCitationsFromEvent keeps claim-level provenance for a single structured claim that mentions another claim incidentally', async () => {
+        const { extractCitationsFromEvent } = await import(relUrl('plugin', 'lib', 'citation-extractor.js'));
+        const event = {
+            session_id: 'sess-incidental-mention',
+            tool_name: 'Write',
+            tool_input: {
+                file_path: 'CLAIM-LEDGER.md',
+                content: '```vibe-claim\nid: C-002\nevent_type: CREATED\nnarrative: extends C-001 under matched analysis\n```\n10.1000/alpha'
+            },
+            tool_response: ''
+        };
+
+        const out = extractCitationsFromEvent(event);
+        const alpha = out.citations.find(c => c.normalized_id === '10.1000/alpha');
+
+        assert.ok(alpha, 'alpha DOI should be extracted');
+        assert.equal(alpha.claim_id, 'C-002', 'structured claim ID should win over incidental narrative mentions');
+        assert.equal(out.warnings.length, 0, 'single structured claim should not be treated as ambiguous');
+        pass('trace-citation-incidental-claim-mention');
     });
 
     it('extractCitationsFromEvent keeps shared MultiEdit output citations at session scope when claim attribution is ambiguous', async () => {

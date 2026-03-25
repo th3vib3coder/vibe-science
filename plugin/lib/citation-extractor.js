@@ -1,5 +1,5 @@
 import crypto from 'node:crypto';
-import { normalizeClaimId } from './claim-ingestion.js';
+import { extractClaimIdsForWrite, normalizeClaimId } from './claim-ingestion.js';
 
 // Character class includes <> for SICI-era DOIs like 10.1002/(SICI)...<...>3.0.CO;2-S
 const DOI_RE = /\b(10\.\d{4,9}\/[-._;()<>/:A-Z0-9]+[A-Z0-9])\b/gi;
@@ -17,13 +17,13 @@ export function extractCitationsFromEvent(event = {}) {
     if (!sessionId) return { citations: [], claimId: null, warnings: [] };
 
     const sources = collectTextSources(event);
-    const eventClaimIds = extractClaimIdsFromTexts(sources.map(source => source.text));
+    const eventClaimIds = extractEventClaimIds(sources);
     const fallbackClaimId = eventClaimIds.length === 1 ? eventClaimIds[0] : null;
     const warnings = [];
     const dedupe = new Map();
 
     for (const source of sources) {
-        const sourceClaimIds = extractClaimIdsFromTexts([source.text]);
+        const sourceClaimIds = extractClaimIdsForSource(source.label, source.text);
         const sourceClaimId = sourceClaimIds.length === 1 ? sourceClaimIds[0] : fallbackClaimId;
         const extractedForSource = extractCitationsFromText(source.text, {
             sessionId,
@@ -158,12 +158,26 @@ function pushSource(target, label, value) {
     }
 }
 
-function extractClaimIdFromTexts(texts) {
-    for (const text of texts) {
-        const match = String(text || '').match(CLAIM_ID_RE);
-        if (match) return normalizeClaimId(match[0]);
+function extractEventClaimIds(sources) {
+    const writeIds = new Set();
+    for (const source of sources) {
+        if (!isWriteSourceLabel(source.label)) continue;
+        for (const claimId of extractClaimIdsForWrite(source.text)) {
+            writeIds.add(claimId);
+        }
     }
-    return null;
+    if (writeIds.size > 0) {
+        return [...writeIds];
+    }
+
+    return extractClaimIdsFromTexts(sources.map(source => source.text));
+}
+
+function extractClaimIdsForSource(label, text) {
+    if (isWriteSourceLabel(label)) {
+        return extractClaimIdsForWrite(text);
+    }
+    return extractClaimIdsFromTexts([text]);
 }
 
 function extractClaimIdsFromTexts(texts) {
@@ -174,6 +188,10 @@ function extractClaimIdsFromTexts(texts) {
         }
     }
     return [...ids];
+}
+
+function isWriteSourceLabel(label) {
+    return label === 'content' || label === 'new_string' || /^edit_\d+$/.test(String(label || ''));
 }
 
 function buildCitationRecord({ sessionId, claimId, rawRef, citationType, normalizedId, sourceLabel }) {
