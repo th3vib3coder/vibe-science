@@ -7,9 +7,9 @@
  * This is the central enforcement point for the entire system.
  *
  * Five sections, executed in order:
- *   0. LITERATURE DETECT   (auto-register WebSearch/WebFetch/Read with scientific patterns)
- *   1. GATE ENFORCEMENT   (DQ4 sync, CLAIM-LEDGER gates, SALVAGENTE rule, L-1+ literature)
- *   2. PERMISSION ENFORCE  (TEAM mode role-based access control)
+ *   0. PERMISSION ENFORCE  (TEAM mode role-based access control)
+ *   1. LITERATURE DETECT   (auto-register WebSearch/WebFetch/Read with scientific patterns)
+ *   2. GATE ENFORCEMENT    (DQ4 sync, CLAIM-LEDGER gates, SALVAGENTE rule, L-1+ literature)
  *   3. AUTO-LOGGING        (Research Spine + embedding queue)
  *   4. OBSERVER CHECKS     (periodic project health, seed escalation, score interrupt)
  *
@@ -29,11 +29,12 @@ import path from 'node:path';
 // Imports from lib modules (dynamic — graceful if better-sqlite3 missing)
 // =====================================================================
 
-let openDB, initDB, closeDB, checkPermission, queueForEmbedding, updateSessionIntegrity, applyMigrations;
+let openDB, initDB, closeDB, checkPermission, queueForEmbedding, updateSessionIntegrity, applyMigrations, getLatestPromptRole;
 let ingestClaimEvents, ingestSerendipitySeeds, ingestR2Reviews;
 let upsertCitationCheck, updateCitationVerification;
 let extractCitationsFromEvent, verifyCitationsQuick;
 let checkSourceValidityGateRuntime, checkClaimPromotionSourcesRuntime, checkClaimGatesCanonical;
+let extractClaimIdsForWriteRuntime;
 const CRITICAL_MODULE_WARNINGS = [];
 try {
     const dbMod = await import('../lib/db.js');
@@ -43,6 +44,7 @@ try {
     updateSessionIntegrity = dbMod.updateSessionIntegrity;
     upsertCitationCheck = dbMod.upsertCitationCheck;
     updateCitationVerification = dbMod.updateCitationVerification;
+    getLatestPromptRole = dbMod.getLatestPromptRole;
     const migrationMod = await import('../lib/migrations.js');
     applyMigrations = migrationMod.applyMigrations;
 
@@ -54,6 +56,7 @@ try {
 
     const claimIngestionMod = await import('../lib/claim-ingestion.js');
     ingestClaimEvents = claimIngestionMod.ingestClaimEvents;
+    extractClaimIdsForWriteRuntime = claimIngestionMod.extractClaimIdsForWrite;
 
     const seedIngestionMod = await import('../lib/seed-ingestion.js');
     ingestSerendipitySeeds = seedIngestionMod.ingestSerendipitySeeds;
@@ -68,9 +71,14 @@ try {
     closeDB = () => {};
     updateSessionIntegrity = () => {};
     applyMigrations = () => {};
+    getLatestPromptRole = () => null;
     checkPermission = () => null;
     queueForEmbedding = () => {};
     ingestClaimEvents = () => ({ inserted: 0, skipped: 0, warnings: [] });
+    extractClaimIdsForWriteRuntime = content => {
+        const claimId = extractClaimId(content);
+        return claimId ? [claimId] : [];
+    };
     ingestSerendipitySeeds = () => ({ inserted: 0, skipped: 0, warnings: [] });
     ingestR2Reviews = () => ({ inserted: 0, skipped: 0, warnings: [] });
     upsertCitationCheck = () => {};
@@ -195,7 +203,7 @@ process.stdin.on('end', () => {
  * @returns {Promise<{exitCode: number, stderr?: string}>}
  */
 async function main(event) {
-    const { tool_name, tool_input = {}, tool_response, session_id, agent_role } = event;
+    const { tool_name, tool_input = {}, tool_response, session_id } = event;
     const strictMode = process.env.VIBE_SCIENCE_STRICT === '1';
     // Claude Code spec field is `tool_response` (object). Convert to string for pattern matching.
     const tool_output = typeof tool_response === 'string' ? tool_response : JSON.stringify(tool_response ?? '');
@@ -243,6 +251,11 @@ async function main(event) {
     }
 
     try {
+        const resolvedAgentRole = resolveAgentRole(db, event);
+        if (resolvedAgentRole && !event.agent_role) {
+            event.agent_role = resolvedAgentRole;
+        }
+
         if (session_id && CRITICAL_MODULE_WARNINGS.length > 0) {
             updateSessionIntegrity(db, session_id, {
                 status: 'INTEGRITY_DEGRADED',
@@ -258,33 +271,34 @@ async function main(event) {
         }
 
         // ==============================================================
-        // 0. LITERATURE SEARCH DETECTION (auto-register before gates)
+        // 0. PERMISSION ENFORCEMENT (TEAM MODE)
+        //     Must happen before any provenance/logging mutation.
+        // ==============================================================
+        const permResult = enforcePermissions(event);
+        if (permResult) {
+            return permResult; // exitCode 2
+        }
+
+        // ==============================================================
+        // 1. LITERATURE SEARCH DETECTION (auto-register before gates)
         //    Intercept WebSearch/WebFetch/Read with scientific patterns
         //    and log them to literature_searches for L-1+ enforcement.
         // ==============================================================
         detectAndLogLiteratureSearch(db, event);
 
         // ==============================================================
-        // 0b. CITATION EXTRACTION + QUICK VERIFICATION (TRACE WP-04/05)
+        // 1b. CITATION EXTRACTION + QUICK VERIFICATION (TRACE WP-04/05)
         //     Persist citations before gate enforcement so L0/D1 can see
         //     the state produced by the same tool event.
         // ==============================================================
         const citationContext = await processCitations(db, event);
 
         // ==============================================================
-        // 1. GATE ENFORCEMENT (DQ4, CLAIM-LEDGER gates, L-1+)
+        // 2. GATE ENFORCEMENT (DQ4, CLAIM-LEDGER gates, L-1+)
         // ==============================================================
         const gateResult = enforceGates(db, event, citationContext);
         if (gateResult) {
             return gateResult; // exitCode 2
-        }
-
-        // ==============================================================
-        // 2. PERMISSION ENFORCEMENT (TEAM MODE)
-        // ==============================================================
-        const permResult = enforcePermissions(event);
-        if (permResult) {
-            return permResult; // exitCode 2
         }
 
         // ==============================================================
@@ -489,11 +503,12 @@ function enforceGates(db, event, citationContext = {}) {
     // Only Write/Edit trigger file-based gate checks
     if (isWriteLikeTool(tool_name)) {
         const filePath = tool_input.file_path || '';
+        const normalizedPath = String(filePath).replace(/\\/g, '/').toLowerCase();
 
         // ---------------------------------------------------------
         // Gate DQ4: FINDINGS.md must be in sync with JSON source
         // ---------------------------------------------------------
-        if (filePath.includes('FINDINGS') && filePath.endsWith('.md')) {
+        if (normalizedPath.includes('findings') && normalizedPath.endsWith('.md')) {
             const dq4Result = checkGateDQ4(filePath, tool_input);
             if (dq4Result && !dq4Result.pass) {
                 // Log the failed gate check
@@ -517,10 +532,20 @@ function enforceGates(db, event, citationContext = {}) {
         // ---------------------------------------------------------
         // Gate: CLAIM-LEDGER.md requires all prerequisite gates
         // ---------------------------------------------------------
-        if (filePath.includes('CLAIM-LEDGER') || filePath.includes('claim-ledger')) {
+        if (normalizedPath.includes('claim-ledger')) {
             const content = collectWriteContent(tool_input);
-            // Extract ALL claim IDs from the content — multi-claim writes must gate each one
-            const allClaimIds = extractAllClaimIds(content);
+            const allClaimIds = getTargetClaimIdsForWrite(content, citationContext);
+
+            if (allClaimIds.length > 1 && hasAmbiguousSessionScopedCitations(citationContext)) {
+                return {
+                    exitCode: 2,
+                    stderr:
+                        `GATE FAIL: Ambiguous citation attribution in multi-claim CLAIM-LEDGER write.\n` +
+                        `At least one citation from this event could not be tied to a single claim.\n` +
+                        `Fix: place citations inside each claim block or split the write so every citation has unambiguous claim provenance.`
+                };
+            }
+
             if (allClaimIds.length === 0) {
                 const singleId = citationContext.claimId || extractClaimId(content);
                 if (singleId) allClaimIds.push(singleId);
@@ -585,7 +610,7 @@ function enforceGates(db, event, citationContext = {}) {
         // ---------------------------------------------------------
         // Gate SALVAGENTE: Killed claims MUST produce serendipity seed
         // ---------------------------------------------------------
-        if (filePath.includes('CLAIM-LEDGER') || filePath.includes('claim-ledger')) {
+        if (normalizedPath.includes('claim-ledger')) {
             const salvResult = checkSalvagenteRule(db, session_id, tool_input);
             if (salvResult) {
                 return salvResult; // exitCode 2
@@ -639,7 +664,13 @@ function collectWriteContent(toolInput = {}) {
 
 function isPromotionWrite(content) {
     const text = String(content || '');
-    return /event_type\s*:\s*PROMOTED|new_status\s*:\s*PROMOTED|\bPROMOTED\b|\bGate\s*D1\b/i.test(text);
+    if (/event_type\s*:\s*PROMOTED|new_status\s*:\s*PROMOTED|status\s*[:=]\s*PROMOTED/i.test(text)) {
+        return true;
+    }
+
+    return text.split(/\r?\n/).some(line =>
+        /^(?:[-*+]\s*)?(?:C-?\d+|CLAIM-\d+)\b.*\bPROMOTED\b/i.test(line)
+    );
 }
 
 function formatCitationBlockers(blockers = []) {
@@ -892,21 +923,22 @@ function extractClaimId(content) {
     return null;
 }
 
-/**
- * Extract ALL unique claim IDs from content (for multi-claim writes).
- * @param {string} content
- * @returns {string[]}
- */
-function extractAllClaimIds(content) {
-    if (!content || typeof content !== 'string') return [];
-    const ids = new Set();
-    for (const match of content.matchAll(/\bC-?(\d+)\b/gi)) {
-        ids.add(`C-${match[1].padStart(3, '0')}`);
+function getTargetClaimIdsForWrite(content, citationContext = {}) {
+    let ids = [];
+    try {
+        ids = extractClaimIdsForWriteRuntime(content) || [];
+    } catch {
+        ids = [];
     }
-    for (const match of content.matchAll(/\bCLAIM-(\d+)\b/gi)) {
-        ids.add(`CLAIM-${match[1]}`);
-    }
-    return [...ids];
+    if (ids.length > 0) return ids;
+
+    const fallbackId = citationContext.claimId || extractClaimId(content);
+    return fallbackId ? [fallbackId] : [];
+}
+
+function hasAmbiguousSessionScopedCitations(citationContext = {}) {
+    return Array.isArray(citationContext.citations) &&
+        citationContext.citations.some(citation => !citation.claim_id);
 }
 
 // checkClaimGates and getRequiredGatesForClaim removed — use canonical versions
@@ -1184,6 +1216,23 @@ function enforcePermissions(event) {
     return null;
 }
 
+function resolveAgentRole(db, event = {}) {
+    const explicitRole = normalizeAgentRole(event.agent_role || event.agentRole || null);
+    if (explicitRole) return explicitRole;
+    return normalizeAgentRole(getLatestPromptRole?.(db, event.session_id || event.sessionId || null));
+}
+
+function normalizeAgentRole(value) {
+    if (!value) return null;
+    if (typeof value === 'object' && value.role) {
+        return String(value.role).trim().toLowerCase() || null;
+    }
+    if (typeof value === 'string') {
+        return value.trim().toLowerCase() || null;
+    }
+    return null;
+}
+
 // =====================================================================
 // Section 3: Auto-Logging (Research Spine + Embedding Queue)
 // =====================================================================
@@ -1324,7 +1373,7 @@ function classifyAction(toolName, toolInput = {}, toolOutput = '') {
     }
 
     // -- Write/Edit: classify by target file --
-    if (toolName === 'Write' || toolName === 'Edit') {
+    if (toolName === 'Write' || toolName === 'Edit' || toolName === 'MultiEdit') {
         if (/findings|claim|ledger/i.test(filePath)) return 'FINDING';
         if (/review|r2|report/i.test(filePath)) return 'REVIEW';
         if (/design|architecture|direction/i.test(filePath)) return 'DESIGN_CHANGE';

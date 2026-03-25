@@ -76,6 +76,7 @@ describe('B1. Syntax & Import Tests', () => {
         'plugin/lib/db.js',
         'plugin/lib/gate-engine.js',
         'plugin/lib/permission-engine.js',
+        'plugin/lib/path-utils.js',
         'plugin/lib/vec-search.js',
         'plugin/lib/context-builder.js',
         'plugin/lib/narrative-engine.js',
@@ -112,12 +113,12 @@ describe('B1. Syntax & Import Tests', () => {
         });
     }
 
-    it('all 28 JS files are present', () => {
-        assert.equal(allJsFiles.length, 28, 'Expected exactly 28 JS files (12 scripts + 16 libs)');
+    it('all 29 JS files are present', () => {
+        assert.equal(allJsFiles.length, 29, 'Expected exactly 29 JS files (12 scripts + 17 libs)');
         for (const file of allJsFiles) {
             assert.ok(fs.existsSync(rel(file)), `Missing: ${file}`);
         }
-        pass('all-28-present');
+        pass('all-29-present');
     });
 });
 
@@ -350,6 +351,7 @@ describe('B3. Library Unit Tests', () => {
         assert.equal(typeof mod.upsertCitationCheck, 'function', 'upsertCitationCheck should be a function');
         assert.equal(typeof mod.updateCitationVerification, 'function', 'updateCitationVerification should be a function');
         assert.equal(typeof mod.getCitationChecks, 'function', 'getCitationChecks should be a function');
+        assert.equal(typeof mod.getLatestPromptRole, 'function', 'getLatestPromptRole should be a function');
         pass('db-exports');
     });
 
@@ -412,7 +414,37 @@ describe('B3. Library Unit Tests', () => {
             'SOLO mode (null role) should allow everything'
         );
 
+        assert.equal(
+            mod.checkPermission('lead', 'MultiEdit', { file_path: 'notes.md' }),
+            null,
+            'lead should be allowed to use MultiEdit on ordinary notes'
+        );
+        assert.ok(
+            mod.checkPermission('experimenter', 'Write', { file_path: 'claim-ledger.md' }),
+            'experimenter should still be blocked from lower-case claim-ledger writes'
+        );
+        assert.ok(
+            mod.checkPermission('serendipity', 'Write', { file_path: 'SERENDIPITY.md.evil' }),
+            'serendipity should not be allowed to escape its single-file boundary via substring matches'
+        );
+        const unknownRoleViolation = mod.checkPermission('reviewer2x', 'Write', { file_path: 'RQ.md' });
+        assert.ok(unknownRoleViolation, 'unknown TEAM roles should not disable the permission barrier');
+        assert.match(unknownRoleViolation.reason, /Unknown agent role/i);
+        assert.ok(
+            mod.checkPermission('experimenter', 'Bash', { command: 'cd 05-reviewer2; echo hacked > local.txt' }),
+            'experimenter Bash should not be able to mutate a protected reviewer directory via shell indirection'
+        );
+
         pass('permission-engine-exports');
+    });
+
+    it('path-utils.js canonicalizes project paths for stable DB identity', async () => {
+        const mod = await import(relUrl('plugin', 'lib', 'path-utils.js'));
+        assert.equal(typeof mod.canonicalizeProjectPath, 'function', 'canonicalizeProjectPath should be exported');
+        const a = mod.canonicalizeProjectPath('C:\\Repo\\Study\\');
+        const b = mod.canonicalizeProjectPath('c:/repo/study');
+        assert.equal(a, b, 'project path canonicalization should absorb slash/case drift on Windows');
+        pass('path-utils-exports');
     });
 
     it('vec-search.js exports vecSearch and queueForEmbedding', async () => {
@@ -452,6 +484,30 @@ describe('B3. Library Unit Tests', () => {
         pass('context-builder-exports');
     });
 
+    it('formatContextForInjection preserves retrieval provenance and recency for scientific memory', async () => {
+        const mod = await import(relUrl('plugin', 'lib', 'context-builder.js'));
+        const text = mod.formatContextForInjection({
+            state: 'State snapshot',
+            memories: [{
+                text: 'Confounder harness previously failed on IL-6 matched cohort.',
+                distance: null,
+                metadata: {
+                    source_type: 'narrative_summary',
+                    session_id: 'sess-42',
+                    created_at: '2026-03-25T08:00:00.000Z',
+                },
+            }],
+            pendingSeeds: [],
+            alerts: [],
+            r2Calibration: null,
+            integrityWarnings: [],
+        });
+
+        assert.match(text, /\[MEMORY\]/);
+        assert.match(text, /\[narrative_summary \| 2026-03-25 \| session=sess-42\]/i);
+        pass('context-builder-memory-provenance');
+    });
+
     it('narrative-engine.js exports generateNarrativeSummary and updateStateMdFromDB', async () => {
         const mod = await import(relUrl('plugin', 'lib', 'narrative-engine.js'));
         assert.equal(typeof mod.generateNarrativeSummary, 'function', 'generateNarrativeSummary should be a function');
@@ -486,6 +542,46 @@ describe('B3. Library Unit Tests', () => {
         assert.ok(typeof mod.generateReport === 'function', 'exports generateReport');
         assert.ok(typeof mod.compareVersions === 'function', 'exports compareVersions');
         pass('benchmark-reporter-exports');
+    });
+
+    it('benchmark-reporter marks disappeared candidate cases as regressions', async () => {
+        const Database = (await import('better-sqlite3')).default;
+        const mod = await import(relUrl('plugin', 'lib', 'benchmark-reporter.js'));
+        const db = new Database(':memory:');
+        db.exec(fs.readFileSync(rel('plugin', 'db', 'schema.sql'), 'utf-8'));
+
+        mod.recordBenchmark(db, {
+            run_id: 'base-a',
+            skill_version: '6.0.0',
+            eval_case: 'A01',
+            category: 'trigger',
+            passed: true,
+            execution_time_ms: 1,
+        });
+        mod.recordBenchmark(db, {
+            run_id: 'base-b',
+            skill_version: '6.0.0',
+            eval_case: 'A02',
+            category: 'trigger',
+            passed: true,
+            execution_time_ms: 1,
+        });
+        mod.recordBenchmark(db, {
+            run_id: 'cand-a',
+            skill_version: '7.0.0',
+            eval_case: 'A01',
+            category: 'trigger',
+            passed: true,
+            execution_time_ms: 1,
+        });
+
+        const comparison = mod.compareVersions(db, '6.0.0', '7.0.0');
+        assert.ok(
+            comparison.regressed_cases.includes('A02'),
+            'cases present in the baseline but missing in the candidate should be treated as regressions'
+        );
+        db.close();
+        pass('benchmark-reporter-missing-case-regression');
     });
 
     it('migrations.js exports migration helpers', async () => {
@@ -603,6 +699,36 @@ describe('B4. Script Integration Tests', () => {
             fail('setup-integration');
             assert.fail(`setup.js failed: ${err.message}`);
         }
+    });
+
+    it('setup.js reports degraded when dependency bootstrap fails', () => {
+        const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'vibe-trace-setup-deps-'));
+        const homeDir = path.join(tempRoot, 'home');
+        fs.mkdirSync(homeDir, { recursive: true });
+
+        const result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/setup.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 120000,
+                input: JSON.stringify({}),
+                env: {
+                    ...process.env,
+                    HOME: homeDir,
+                    USERPROFILE: homeDir,
+                    PATH: '',
+                },
+            }
+        );
+
+        assert.equal(result.status, 0, 'setup hook should still return JSON on degraded bootstrap');
+        const payload = JSON.parse(String(result.stdout || '').trim());
+        assert.equal(payload.status, 'degraded', 'failed dependency bootstrap must degrade setup status');
+        assert.equal(payload.deps_installed, false, 'deps_installed should stay false when npm/bootstrap fails');
+        assert.match((payload.warnings || []).join('\n'), /Dependency install failed/i);
+        pass('setup-degraded-on-deps-failure');
     });
 
     it('session-start.js: outputs valid JSON with sessionId', () => {
@@ -763,6 +889,87 @@ describe('B4. Script Integration Tests', () => {
         pass('eval-runner-record');
     });
 
+    it('eval-runner fails honestly when benchmark rows cannot be persisted', async () => {
+        const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'vibe-trace-eval-trigger-'));
+        const artifactPath = path.join(tempRoot, 'eval-artifact.json');
+        const dbPath = path.join(tempRoot, 'eval.db');
+        const Database = (await import('better-sqlite3')).default;
+        const db = new Database(dbPath);
+        db.exec(fs.readFileSync(rel('plugin', 'db', 'schema.sql'), 'utf-8'));
+        db.exec(`
+            CREATE TRIGGER fail_benchmark_insert
+            BEFORE INSERT ON benchmark_runs
+            BEGIN
+                SELECT RAISE(FAIL, 'blocked insert');
+            END;
+        `);
+        db.close();
+
+        const result = spawnSync(
+            process.execPath,
+            ['evals/eval-runner.mjs', '--artifact', artifactPath, '--record', '--db', dbPath, '--version', '7.0.0'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 60000,
+            }
+        );
+
+        assert.equal(result.status, 1, 'eval-runner should fail when DB recording does not persist benchmark rows');
+        const artifact = JSON.parse(fs.readFileSync(artifactPath, 'utf-8'));
+        assert.equal(artifact.db_recorded, false, 'artifact must report DB recording failure honestly');
+        assert.match(String(artifact.record_error || ''), /inserted 0\/\d+ rows/i);
+
+        const verifyDb = new Database(dbPath, { readonly: true });
+        const row = verifyDb.prepare(`SELECT COUNT(*) AS n FROM benchmark_runs`).get();
+        assert.equal(row.n, 0, 'benchmark_runs should remain empty when trigger rejects inserts');
+        verifyDb.close();
+        pass('eval-runner-record-honesty');
+    });
+
+    it('eval-runner rejects multiline YAML prompts that parse as non-string schema fields', () => {
+        const tempCasePath = rel('evals', 'cases', `__temp_invalid_multiline_${process.pid}_${Date.now()}.yaml`);
+        const artifactPath = path.join(os.tmpdir(), `vibe-trace-eval-invalid-${Date.now()}.json`);
+        try {
+            fs.writeFileSync(
+                tempCasePath,
+                [
+                    'id: TEMP-INVALID',
+                    'name: Invalid multiline prompt',
+                    'category: trace',
+                    'prompt: |',
+                    '  line one',
+                    '  line two',
+                    'expected_markers:',
+                    '  - ok',
+                    '',
+                ].join('\n'),
+                'utf-8'
+            );
+
+            const result = spawnSync(
+                process.execPath,
+                ['evals/eval-runner.mjs', '--artifact', artifactPath],
+                {
+                    cwd: ROOT,
+                    encoding: 'utf-8',
+                    timeout: 60000,
+                }
+            );
+
+            assert.equal(result.status, 1, 'eval-runner should fail schema validation on malformed multiline prompt fields');
+            const artifact = JSON.parse(fs.readFileSync(artifactPath, 'utf-8'));
+            const tempCase = artifact.cases.find(c => c.id === 'TEMP-INVALID');
+            assert.ok(tempCase, 'artifact should include the temporary malformed case');
+            assert.equal(tempCase.passed, false, 'temporary malformed case must fail validation');
+            assert.match(tempCase.errors.join('\n'), /missing required field: "prompt"/i);
+            pass('eval-runner-multiline-yaml-validation');
+        } finally {
+            if (fs.existsSync(tempCasePath)) fs.unlinkSync(tempCasePath);
+            if (fs.existsSync(artifactPath)) fs.unlinkSync(artifactPath);
+        }
+    });
+
     it('stop.js blocks in strict mode when DB access is unavailable', () => {
         const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'vibe-trace-stop-strict-'));
         const fakeHome = path.join(tempRoot, 'home-file');
@@ -871,6 +1078,1378 @@ describe('B4. Script Integration Tests', () => {
             locker.close();
         }
     });
+
+    it('stop.js writes STATE.md from persisted endSession state rather than a stale in-progress snapshot', async () => {
+        const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'vibe-trace-state-export-'));
+        const homeDir = path.join(tempRoot, 'home');
+        const projectDir = path.join(tempRoot, 'project');
+        fs.mkdirSync(homeDir, { recursive: true });
+        fs.mkdirSync(path.join(projectDir, '.vibe-science'), { recursive: true });
+        fs.writeFileSync(path.join(projectDir, '.vibe-science', 'STATE.md'), '# STATE\n', 'utf-8');
+
+        const env = {
+            ...process.env,
+            HOME: homeDir,
+            USERPROFILE: homeDir,
+        };
+
+        let result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/setup.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({}),
+                env,
+            }
+        );
+        assert.equal(result.status, 0, `setup should succeed: ${result.stderr}`);
+
+        result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/session-start.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({ cwd: projectDir, project_path: projectDir }),
+                env,
+            }
+        );
+        assert.equal(result.status, 0, `session-start should succeed: ${result.stderr}`);
+        const sessionPayload = JSON.parse(String(result.stdout || '').trim());
+
+        result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/stop.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({
+                    session_id: sessionPayload.sessionId,
+                    cwd: projectDir,
+                    project_path: projectDir,
+                }),
+                env,
+            }
+        );
+        assert.equal(result.status, 0, `stop should succeed: ${result.stderr}`);
+
+        const dbPath = path.join(homeDir, '.vibe-science', 'db', 'vibe-science.db');
+        const Database = (await import('better-sqlite3')).default;
+        const db = new Database(dbPath, { readonly: true });
+        const row = db.prepare(`SELECT ended_at, narrative_summary FROM sessions WHERE id = ?`).get(sessionPayload.sessionId);
+        db.close();
+
+        const stateMd = fs.readFileSync(path.join(projectDir, '.vibe-science', 'STATE.md'), 'utf-8');
+        assert.ok(row.ended_at, 'DB session row should have ended_at after successful stop');
+        assert.match(stateMd, /\*\*Ended:\*\* (?!in progress)/i, 'STATE.md should reflect the persisted ended_at state');
+        assert.match(stateMd, /### Summary/, 'STATE.md should include the persisted narrative summary section');
+        pass('stop-state-export-after-endSession');
+    });
+
+    it('stop.js blocks project-wide unreviewed claims carried over from previous sessions', async () => {
+        const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'vibe-trace-stop-project-review-'));
+        const homeDir = path.join(tempRoot, 'home');
+        const projectDir = path.join(tempRoot, 'project');
+        fs.mkdirSync(homeDir, { recursive: true });
+        fs.mkdirSync(path.join(projectDir, '.vibe-science'), { recursive: true });
+        fs.writeFileSync(path.join(projectDir, '.vibe-science', 'STATE.md'), '# STATE\n', 'utf-8');
+
+        const env = {
+            ...process.env,
+            HOME: homeDir,
+            USERPROFILE: homeDir,
+        };
+
+        let result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/setup.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({}),
+                env,
+            }
+        );
+        assert.equal(result.status, 0, `setup should succeed: ${result.stderr}`);
+
+        result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/session-start.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({ cwd: projectDir, project_path: projectDir }),
+                env,
+            }
+        );
+        assert.equal(result.status, 0, `first session-start should succeed: ${result.stderr}`);
+        const firstSession = JSON.parse(String(result.stdout || '').trim());
+
+        const dbPath = path.join(homeDir, '.vibe-science', 'db', 'vibe-science.db');
+        const Database = (await import('better-sqlite3')).default;
+        const db = new Database(dbPath);
+        db.prepare(`
+            INSERT INTO claim_events
+                (session_id, claim_id, event_type, narrative, confidence, timestamp)
+            VALUES (?, ?, 'CREATED', ?, ?, ?)
+        `).run(firstSession.sessionId, 'C-001', 'previous session unresolved claim', 0.8, new Date().toISOString());
+        db.prepare(`
+            UPDATE sessions
+            SET ended_at = ?
+            WHERE id = ?
+        `).run(new Date().toISOString(), firstSession.sessionId);
+        db.close();
+
+        result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/session-start.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({ cwd: projectDir, project_path: projectDir }),
+                env,
+            }
+        );
+        assert.equal(result.status, 0, `second session-start should succeed: ${result.stderr}`);
+        const secondSession = JSON.parse(String(result.stdout || '').trim());
+
+        result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/stop.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({
+                    session_id: secondSession.sessionId,
+                    cwd: projectDir,
+                    project_path: projectDir,
+                }),
+                env,
+            }
+        );
+
+        assert.equal(result.status, 2, 'stop should block when the project still contains unreviewed claims from previous sessions');
+        assert.match(String(result.stderr || ''), /unreviewed claims/i);
+        assert.match(String(result.stderr || ''), /C-001/);
+        pass('stop-project-wide-unreviewed-claims');
+    });
+
+    it('R2 review ingestion unblocks stop by mirroring reviewed claims into claim_events', async () => {
+        const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'vibe-trace-stop-reviewed-'));
+        const homeDir = path.join(tempRoot, 'home');
+        const projectDir = path.join(tempRoot, 'project');
+        fs.mkdirSync(homeDir, { recursive: true });
+        fs.mkdirSync(path.join(projectDir, '.vibe-science'), { recursive: true });
+        fs.mkdirSync(path.join(projectDir, '05-reviewer2'), { recursive: true });
+        fs.writeFileSync(path.join(projectDir, '.vibe-science', 'STATE.md'), '# STATE\n', 'utf-8');
+
+        const env = {
+            ...process.env,
+            HOME: homeDir,
+            USERPROFILE: homeDir,
+        };
+
+        let result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/setup.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({}),
+                env,
+            }
+        );
+        assert.equal(result.status, 0, `setup should succeed: ${result.stderr}`);
+
+        result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/session-start.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({ cwd: projectDir, project_path: projectDir }),
+                env,
+            }
+        );
+        assert.equal(result.status, 0, `first session-start should succeed: ${result.stderr}`);
+        const firstSession = JSON.parse(String(result.stdout || '').trim());
+
+        const dbPath = path.join(homeDir, '.vibe-science', 'db', 'vibe-science.db');
+        const Database = (await import('better-sqlite3')).default;
+        let db = new Database(dbPath);
+        db.prepare(`
+            INSERT INTO claim_events
+                (session_id, claim_id, event_type, narrative, confidence, timestamp)
+            VALUES (?, ?, 'CREATED', ?, ?, ?)
+        `).run(firstSession.sessionId, 'C-001', 'claim awaiting review', 0.8, new Date().toISOString());
+        db.prepare(`
+            UPDATE sessions
+            SET ended_at = ?
+            WHERE id = ?
+        `).run(new Date().toISOString(), firstSession.sessionId);
+        db.close();
+
+        result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/session-start.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({ cwd: projectDir, project_path: projectDir }),
+                env,
+            }
+        );
+        assert.equal(result.status, 0, `second session-start should succeed: ${result.stderr}`);
+        const secondSession = JSON.parse(String(result.stdout || '').trim());
+
+        result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/post-tool-use.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({
+                    session_id: secondSession.sessionId,
+                    cwd: projectDir,
+                    project_path: projectDir,
+                    tool_name: 'Write',
+                    tool_input: {
+                        file_path: path.join(projectDir, '05-reviewer2', 'r2-review.md'),
+                        content: [
+                            '```vibe-review',
+                            'review_id: REV-STOP-001',
+                            'review_mode: INLINE',
+                            'claims_reviewed: [C-001]',
+                            'j0_score: 4',
+                            '```',
+                        ].join('\n'),
+                    },
+                    tool_response: '',
+                }),
+                env,
+            }
+        );
+        assert.equal(result.status, 0, `review ingestion should succeed: ${result.stderr}`);
+
+        db = new Database(dbPath);
+        const mirrored = db.prepare(`
+            SELECT event_type
+            FROM claim_events
+            WHERE session_id = ?
+              AND claim_id = 'C-001'
+            ORDER BY timestamp DESC
+            LIMIT 1
+        `).get(secondSession.sessionId);
+        db.close();
+        assert.equal(mirrored?.event_type, 'R2_REVIEWED', 'review write should mirror lifecycle state into claim_events');
+
+        result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/stop.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({
+                    session_id: secondSession.sessionId,
+                    cwd: projectDir,
+                    project_path: projectDir,
+                }),
+                env,
+            }
+        );
+
+        assert.equal(result.status, 0, `stop should succeed once the claim has a mirrored R2_REVIEWED lifecycle event: ${result.stderr}`);
+        pass('stop-reviewed-claims-unblock');
+    });
+
+    it('pre-tool-use blocks MultiEdit to CLAIM-LEDGER when confounder_status is missing', () => {
+        const result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/pre-tool-use.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 15000,
+                input: JSON.stringify({
+                    tool_name: 'MultiEdit',
+                    tool_input: {
+                        file_path: 'CLAIM-LEDGER.md',
+                        edits: [
+                            {
+                                old_string: '',
+                                new_string: [
+                                    '```vibe-claim',
+                                    'id: C-001',
+                                    'event_type: CREATED',
+                                    'narrative: missing confounder',
+                                    '```',
+                                ].join('\n'),
+                            },
+                        ],
+                    },
+                }),
+            }
+        );
+
+        assert.equal(result.status, 2, 'MultiEdit without confounder_status should be denied');
+        const payload = JSON.parse(String(result.stdout || '{}'));
+        assert.equal(payload?.hookSpecificOutput?.permissionDecision, 'deny');
+        assert.match(String(result.stderr || ''), /LAW 9 VIOLATION/i);
+        pass('pre-tool-use-multiedit-law9');
+    });
+
+    it('pre-tool-use matches claim-ledger paths case-insensitively', () => {
+        const result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/pre-tool-use.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 15000,
+                input: JSON.stringify({
+                    tool_name: 'Write',
+                    tool_input: {
+                        file_path: 'claim-ledger.md',
+                        content: [
+                            '```vibe-claim',
+                            'id: C-001',
+                            'event_type: CREATED',
+                            'narrative: missing confounder',
+                            '```',
+                        ].join('\n'),
+                    },
+                }),
+            }
+        );
+
+        assert.equal(result.status, 2, 'lower-case claim-ledger path should still trigger LAW 9 enforcement');
+        assert.match(String(result.stderr || ''), /LAW 9 VIOLATION/i);
+        pass('pre-tool-use-case-insensitive-path');
+    });
+
+    it('pre-tool-use blocks edits that delete an existing confounder_status marker', () => {
+        const result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/pre-tool-use.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 15000,
+                input: JSON.stringify({
+                    tool_name: 'Edit',
+                    tool_input: {
+                        file_path: 'CLAIM-LEDGER.md',
+                        old_string: [
+                            '```vibe-claim',
+                            'id: C-001',
+                            'confounder_status: RAW',
+                            '```',
+                        ].join('\n'),
+                        new_string: [
+                            '```vibe-claim',
+                            'id: C-001',
+                            '```',
+                        ].join('\n'),
+                    },
+                }),
+            }
+        );
+
+        assert.equal(result.status, 2, 'removing an existing confounder harness must be blocked');
+        assert.match(String(result.stderr || ''), /removed an existing confounder_status/i);
+        pass('pre-tool-use-blocks-confounder-deletion');
+    });
+
+    it('pre-tool-use blocks legacy freeform claim writes without confounder_status', () => {
+        const result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/pre-tool-use.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 15000,
+                input: JSON.stringify({
+                    tool_name: 'Write',
+                    tool_input: {
+                        file_path: 'CLAIM-LEDGER.md',
+                        content: 'C-001: TNF increases 2.3x under condition A.',
+                    },
+                }),
+            }
+        );
+
+        assert.equal(result.status, 2, 'legacy/freeform claim content should still trigger LAW 9 enforcement');
+        assert.match(String(result.stderr || ''), /LAW 9 VIOLATION/i);
+        pass('pre-tool-use-blocks-legacy-freeform-claim');
+    });
+
+    it('pre-tool-use checks confounder_status per claim block, not once per whole write', () => {
+        const result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/pre-tool-use.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 15000,
+                input: JSON.stringify({
+                    tool_name: 'Write',
+                    tool_input: {
+                        file_path: 'CLAIM-LEDGER.md',
+                        content: [
+                            '```vibe-claim',
+                            'id: C-001',
+                            'event_type: CREATED',
+                            'confounder_status: RAW',
+                            'narrative: covered',
+                            '```',
+                            '',
+                            '```vibe-claim',
+                            'id: C-002',
+                            'event_type: CREATED',
+                            'narrative: missing harness',
+                            '```',
+                        ].join('\n'),
+                    },
+                }),
+            }
+        );
+
+        assert.equal(result.status, 2, 'every claim block in the write must carry its own confounder harness');
+        assert.match(String(result.stderr || ''), /claim C-002/i);
+        pass('pre-tool-use-per-claim-harness');
+    });
+
+    it('pre-tool-use enforces TEAM file permissions before claim-ledger writes when role is recoverable from prompt_log', async () => {
+        const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'vibe-trace-pretool-perm-'));
+        const homeDir = path.join(tempRoot, 'home');
+        const projectDir = path.join(tempRoot, 'project');
+        fs.mkdirSync(homeDir, { recursive: true });
+        fs.mkdirSync(projectDir, { recursive: true });
+
+        const env = {
+            ...process.env,
+            HOME: homeDir,
+            USERPROFILE: homeDir,
+        };
+
+        let result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/setup.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({}),
+                env,
+            }
+        );
+        assert.equal(result.status, 0, `setup should succeed: ${result.stderr}`);
+
+        result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/session-start.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({ cwd: projectDir, project_path: projectDir }),
+                env,
+            }
+        );
+        assert.equal(result.status, 0, `session-start should succeed: ${result.stderr}`);
+        const sessionPayload = JSON.parse(String(result.stdout || '').trim());
+        const sessionId = sessionPayload.sessionId;
+
+        const Database = (await import('better-sqlite3')).default;
+        const dbPath = path.join(homeDir, '.vibe-science', 'db', 'vibe-science.db');
+        const db = new Database(dbPath);
+        db.prepare(`
+            INSERT INTO prompt_log (session_id, agent_role, prompt_hash, timestamp)
+            VALUES (?, ?, ?, ?)
+        `).run(sessionId, 'reviewer2', 'hash-pretool-perm', new Date().toISOString());
+        db.close();
+
+        result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/pre-tool-use.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 15000,
+                input: JSON.stringify({
+                    session_id: sessionId,
+                    cwd: projectDir,
+                    tool_name: 'Write',
+                    tool_input: {
+                        file_path: path.join(projectDir, 'CLAIM-LEDGER.md'),
+                        content: [
+                            '```vibe-claim',
+                            'id: C-777',
+                            'event_type: CREATED',
+                            'confounder_status: RAW',
+                            'narrative: permission barrier test',
+                            '```',
+                        ].join('\n'),
+                    },
+                }),
+                env,
+            }
+        );
+
+        assert.equal(result.status, 2, 'pre-tool-use should deny reviewer2 claim-ledger writes before the file changes');
+        const stdout = JSON.parse(String(result.stdout || '{}'));
+        assert.equal(stdout?.hookSpecificOutput?.permissionDecision, 'deny');
+        assert.match(String(result.stderr || ''), /PERMISSION DENIED/i);
+        pass('pre-tool-use-permission-barrier');
+    });
+
+    it('pre-tool-use denies disallowed Bash before execution when role is recoverable from prompt_log', async () => {
+        const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'vibe-trace-pretool-bash-'));
+        const homeDir = path.join(tempRoot, 'home');
+        const projectDir = path.join(tempRoot, 'project');
+        fs.mkdirSync(homeDir, { recursive: true });
+        fs.mkdirSync(projectDir, { recursive: true });
+
+        const env = {
+            ...process.env,
+            HOME: homeDir,
+            USERPROFILE: homeDir,
+        };
+
+        let result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/setup.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({}),
+                env,
+            }
+        );
+        assert.equal(result.status, 0, `setup should succeed: ${result.stderr}`);
+
+        result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/session-start.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({ cwd: projectDir, project_path: projectDir }),
+                env,
+            }
+        );
+        assert.equal(result.status, 0, `session-start should succeed: ${result.stderr}`);
+        const sessionPayload = JSON.parse(String(result.stdout || '').trim());
+        const sessionId = sessionPayload.sessionId;
+
+        const Database = (await import('better-sqlite3')).default;
+        const dbPath = path.join(homeDir, '.vibe-science', 'db', 'vibe-science.db');
+        const db = new Database(dbPath);
+        db.prepare(`
+            INSERT INTO prompt_log (session_id, agent_role, prompt_hash, timestamp)
+            VALUES (?, ?, ?, ?)
+        `).run(sessionId, 'reviewer2', 'hash-pretool-bash', new Date().toISOString());
+        db.close();
+
+        result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/pre-tool-use.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 15000,
+                input: JSON.stringify({
+                    session_id: sessionId,
+                    cwd: projectDir,
+                    tool_name: 'Bash',
+                    tool_input: {
+                        command: 'echo hi > CLAIM-LEDGER.md',
+                    },
+                }),
+                env,
+            }
+        );
+
+        assert.equal(result.status, 2, 'pre-tool-use should deny disallowed Bash before execution');
+        const stdout = JSON.parse(String(result.stdout || '{}'));
+        assert.equal(stdout?.hookSpecificOutput?.permissionDecision, 'deny');
+        assert.match(String(result.stderr || ''), /PERMISSION DENIED/i);
+        pass('pre-tool-use-bash-permission-barrier');
+    });
+
+    it('pre-tool-use denies Bash that touches protected paths for roles with shell access', () => {
+        const result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/pre-tool-use.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 15000,
+                input: JSON.stringify({
+                    tool_name: 'Bash',
+                    agent_role: 'experimenter',
+                    tool_input: {
+                        command: 'echo hacked >> CLAIM-LEDGER.md',
+                    },
+                }),
+            }
+        );
+
+        assert.equal(result.status, 2, 'experimenter Bash must not bypass CLAIM-LEDGER restrictions');
+        const stdout = JSON.parse(String(result.stdout || '{}'));
+        assert.equal(stdout?.hookSpecificOutput?.permissionDecision, 'deny');
+        assert.match(String(result.stderr || ''), /PERMISSION DENIED/i);
+        pass('pre-tool-use-bash-protected-path');
+    });
+
+    it('pre-tool-use denies governance Bash writes even for researcher so shell cannot bypass TRACE gates', () => {
+        const result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/pre-tool-use.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 15000,
+                input: JSON.stringify({
+                    tool_name: 'Bash',
+                    agent_role: 'researcher',
+                    tool_input: {
+                        command: 'echo "C-001 observed strong effect" >> CLAIM-LEDGER.md',
+                    },
+                }),
+            }
+        );
+
+        assert.equal(result.status, 2, 'governance artifacts must not be mutated through Bash even by researcher');
+        const stdout = JSON.parse(String(result.stdout || '{}'));
+        assert.equal(stdout?.hookSpecificOutput?.permissionDecision, 'deny');
+        assert.match(String(result.stderr || ''), /GOVERNANCE WRITE DENIED/i);
+        pass('pre-tool-use-bash-governance-barrier');
+    });
+
+    it('pre-tool-use denies governance Bash writes hidden behind python pathlib write_text', () => {
+        const result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/pre-tool-use.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 15000,
+                input: JSON.stringify({
+                    tool_name: 'Bash',
+                    agent_role: 'researcher',
+                    tool_input: {
+                        command: 'python -c "from pathlib import Path; Path(\'CLAIM-LEDGER.md\').write_text(\'x\')"',
+                    },
+                }),
+            }
+        );
+
+        assert.equal(result.status, 2, 'python pathlib write_text must not bypass governance barriers');
+        const stdout = JSON.parse(String(result.stdout || '{}'));
+        assert.equal(stdout?.hookSpecificOutput?.permissionDecision, 'deny');
+        assert.match(String(result.stderr || ''), /GOVERNANCE WRITE DENIED/i);
+        pass('pre-tool-use-governance-python-write-text');
+    });
+
+    it('pre-tool-use denies governance Bash writes hidden behind node copyFileSync', () => {
+        const result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/pre-tool-use.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 15000,
+                input: JSON.stringify({
+                    tool_name: 'Bash',
+                    agent_role: 'researcher',
+                    tool_input: {
+                        command: 'node -e "require(\'fs\').copyFileSync(\'source.md\', \'CLAIM-LEDGER.md\')"',
+                    },
+                }),
+            }
+        );
+
+        assert.equal(result.status, 2, 'node copyFileSync must not bypass governance barriers');
+        const stdout = JSON.parse(String(result.stdout || '{}'));
+        assert.equal(stdout?.hookSpecificOutput?.permissionDecision, 'deny');
+        assert.match(String(result.stderr || ''), /GOVERNANCE WRITE DENIED/i);
+        pass('pre-tool-use-governance-node-copyfile');
+    });
+
+    it('pre-tool-use catches protected Bash targets hidden behind variable indirection', () => {
+        const result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/pre-tool-use.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 15000,
+                input: JSON.stringify({
+                    tool_name: 'Bash',
+                    agent_role: 'experimenter',
+                    tool_input: {
+                        command: 'TARGET=CLAIM-LEDGER.md; echo hacked >> $TARGET',
+                    },
+                }),
+            }
+        );
+
+        assert.equal(result.status, 2, 'protected shell targets should not be bypassable through variable indirection');
+        const stdout = JSON.parse(String(result.stdout || '{}'));
+        assert.equal(stdout?.hookSpecificOutput?.permissionDecision, 'deny');
+        pass('pre-tool-use-bash-indirection');
+    });
+
+    it('pre-tool-use blocks mutating tools in strict mode when role resolution is unavailable', () => {
+        const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'vibe-trace-pretool-strict-'));
+        const fakeHomeFile = path.join(tempRoot, 'not-a-home.txt');
+        fs.writeFileSync(fakeHomeFile, 'x', 'utf-8');
+
+        const env = {
+            ...process.env,
+            HOME: fakeHomeFile,
+            USERPROFILE: fakeHomeFile,
+            VIBE_SCIENCE_STRICT: '1',
+        };
+
+        const result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/pre-tool-use.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 15000,
+                input: JSON.stringify({
+                    tool_name: 'Write',
+                    tool_input: {
+                        file_path: 'RQ.md',
+                        content: '# rewrite',
+                    },
+                }),
+                env,
+            }
+        );
+
+        assert.equal(result.status, 2, 'strict mode must not allow a mutating tool when role resolution is unavailable');
+        const stdout = JSON.parse(String(result.stdout || '{}'));
+        assert.equal(stdout?.hookSpecificOutput?.permissionDecision, 'deny');
+        assert.match(String(result.stderr || ''), /INTEGRITY DEGRADED/i);
+        pass('pre-tool-use-strict-role-resolution');
+    });
+
+    it('post-tool-use blocks ambiguous MultiEdit output citations instead of silently bypassing claim source gates', async () => {
+        const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'vibe-trace-multicite-'));
+        const homeDir = path.join(tempRoot, 'home');
+        const projectDir = path.join(tempRoot, 'project');
+        fs.mkdirSync(homeDir, { recursive: true });
+        fs.mkdirSync(projectDir, { recursive: true });
+
+        const env = {
+            ...process.env,
+            HOME: homeDir,
+            USERPROFILE: homeDir,
+        };
+
+        const setup = spawnSync(
+            process.execPath,
+            ['plugin/scripts/setup.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({}),
+                env,
+            }
+        );
+        assert.equal(setup.status, 0, `setup should succeed: ${setup.stderr}`);
+
+        const sessionStart = spawnSync(
+            process.execPath,
+            ['plugin/scripts/session-start.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({ cwd: projectDir, project_path: projectDir }),
+                env,
+            }
+        );
+        assert.equal(sessionStart.status, 0, `session-start should succeed: ${sessionStart.stderr}`);
+        const sessionPayload = JSON.parse(String(sessionStart.stdout || '').trim());
+        const sessionId = sessionPayload.sessionId;
+
+        const hook = spawnSync(
+            process.execPath,
+            ['plugin/scripts/post-tool-use.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({
+                    session_id: sessionId,
+                    cwd: projectDir,
+                    project_path: projectDir,
+                    tool_name: 'MultiEdit',
+                    tool_input: {
+                        file_path: path.join(projectDir, 'CLAIM-LEDGER.md'),
+                        edits: [
+                            { new_string: '```vibe-claim\nid: C-001\nevent_type: CREATED\nnarrative: alpha\n```' },
+                            { new_string: '```vibe-claim\nid: C-002\nevent_type: CREATED\nnarrative: beta\n```' },
+                        ],
+                    },
+                    tool_response: 'Support refs: 10.1000/alpha 10.1000/beta',
+                }),
+                env,
+            }
+        );
+        assert.equal(hook.status, 2, 'ambiguous multi-claim citation provenance should block the write');
+        assert.match(String(hook.stderr || ''), /Ambiguous citation attribution/i);
+
+        const Database = (await import('better-sqlite3')).default;
+        const dbPath = path.join(homeDir, '.vibe-science', 'db', 'vibe-science.db');
+        const db = new Database(dbPath, { readonly: true });
+        const rows = db.prepare(
+            `SELECT normalized_id, claim_id
+             FROM citation_checks
+             WHERE session_id = ?
+             ORDER BY normalized_id`
+        ).all(sessionId);
+
+        assert.deepEqual(
+            rows,
+            [
+                { normalized_id: '10.1000/alpha', claim_id: null },
+                { normalized_id: '10.1000/beta', claim_id: null },
+            ],
+            'shared output citations must stay session-scoped when multiple claims are present'
+        );
+        db.close();
+        pass('post-tool-use-multiclaim-session-scope-citations');
+    });
+
+    it('post-tool-use gates only claims being written, not incidental references inside their narrative', async () => {
+        const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'vibe-trace-claim-targets-'));
+        const homeDir = path.join(tempRoot, 'home');
+        const projectDir = path.join(tempRoot, 'project');
+        fs.mkdirSync(homeDir, { recursive: true });
+        fs.mkdirSync(projectDir, { recursive: true });
+
+        const env = {
+            ...process.env,
+            HOME: homeDir,
+            USERPROFILE: homeDir,
+        };
+
+        let result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/setup.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({}),
+                env,
+            }
+        );
+        assert.equal(result.status, 0, `setup should succeed: ${result.stderr}`);
+
+        result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/session-start.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({ cwd: projectDir, project_path: projectDir }),
+                env,
+            }
+        );
+        assert.equal(result.status, 0, `session-start should succeed: ${result.stderr}`);
+        const sessionPayload = JSON.parse(String(result.stdout || '').trim());
+        const sessionId = sessionPayload.sessionId;
+
+        const Database = (await import('better-sqlite3')).default;
+        const dbPath = path.join(homeDir, '.vibe-science', 'db', 'vibe-science.db');
+        const db = new Database(dbPath);
+        const now = new Date().toISOString();
+        db.prepare(`
+            INSERT INTO gate_checks
+                (session_id, gate_id, claim_id, status, checks_passed, checks_warned, checks_failed, details, timestamp)
+            VALUES (?, 'DQ4', NULL, 'PASS', 1, 0, 0, '{}', ?)
+        `).run(sessionId, now);
+        db.prepare(`
+            INSERT INTO citation_checks
+                (citation_id, session_id, claim_id, raw_ref, citation_type, normalized_id, verification_status, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `).run('CIT-OLD-CLAIM', sessionId, 'C-001', '10.1000/confounded', 'DOI', '10.1000/confounded', 'UNRESOLVED', now);
+        db.close();
+
+        result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/post-tool-use.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({
+                    session_id: sessionId,
+                    cwd: projectDir,
+                    project_path: projectDir,
+                    tool_name: 'Write',
+                    tool_input: {
+                        file_path: path.join(projectDir, 'CLAIM-LEDGER.md'),
+                        content: [
+                            '```vibe-claim',
+                            'id: C-002',
+                            'event_type: CREATED',
+                            'narrative: This extends the earlier baseline in C-001 but is a new claim.',
+                            '```',
+                        ].join('\n'),
+                    },
+                    tool_response: '',
+                }),
+                env,
+            }
+        );
+
+        assert.equal(
+            result.status,
+            0,
+            `write for C-002 should not be blocked by unresolved citations belonging only to referenced claim C-001: ${result.stderr}`
+        );
+        pass('post-tool-use-targets-written-claims-only');
+    });
+
+    it('post-tool-use does not treat narrative mentions of promoted as a real promotion event', async () => {
+        const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'vibe-trace-promotion-fp-'));
+        const homeDir = path.join(tempRoot, 'home');
+        const projectDir = path.join(tempRoot, 'project');
+        fs.mkdirSync(homeDir, { recursive: true });
+        fs.mkdirSync(projectDir, { recursive: true });
+
+        const env = {
+            ...process.env,
+            HOME: homeDir,
+            USERPROFILE: homeDir,
+        };
+
+        let result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/setup.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({}),
+                env,
+            }
+        );
+        assert.equal(result.status, 0, `setup should succeed: ${result.stderr}`);
+
+        result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/session-start.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({ cwd: projectDir, project_path: projectDir }),
+                env,
+            }
+        );
+        assert.equal(result.status, 0, `session-start should succeed: ${result.stderr}`);
+        const sessionPayload = JSON.parse(String(result.stdout || '').trim());
+        const sessionId = sessionPayload.sessionId;
+
+        const Database = (await import('better-sqlite3')).default;
+        const dbPath = path.join(homeDir, '.vibe-science', 'db', 'vibe-science.db');
+        const db = new Database(dbPath);
+        db.prepare(`
+            INSERT INTO gate_checks
+                (session_id, gate_id, claim_id, status, checks_passed, checks_warned, checks_failed, details, timestamp)
+            VALUES (?, 'DQ4', NULL, 'PASS', 1, 0, 0, '{}', ?)
+        `).run(sessionId, new Date().toISOString());
+        db.close();
+
+        result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/post-tool-use.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({
+                    session_id: sessionId,
+                    cwd: projectDir,
+                    project_path: projectDir,
+                    tool_name: 'Write',
+                    tool_input: {
+                        file_path: path.join(projectDir, 'CLAIM-LEDGER.md'),
+                        content: [
+                            '```vibe-claim',
+                            'id: C-002',
+                            'event_type: CREATED',
+                            'confounder_status: RAW',
+                            'narrative: Yesterday we promoted to claim C-777 an unrelated idea, but this claim is still new.',
+                            '```',
+                        ].join('\n'),
+                    },
+                    tool_response: '',
+                }),
+                env,
+            }
+        );
+
+        assert.equal(
+            result.status,
+            0,
+            `descriptive prose should not trigger D1 promotion gating: ${result.stderr}`
+        );
+        pass('post-tool-use-promotion-false-positive');
+    });
+
+    it('post-tool-use denies forbidden writes before persisting citation or gate side-effects', async () => {
+        const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'vibe-trace-perm-order-'));
+        const homeDir = path.join(tempRoot, 'home');
+        const projectDir = path.join(tempRoot, 'project');
+        fs.mkdirSync(homeDir, { recursive: true });
+        fs.mkdirSync(projectDir, { recursive: true });
+
+        const env = {
+            ...process.env,
+            HOME: homeDir,
+            USERPROFILE: homeDir,
+        };
+
+        let result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/setup.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({}),
+                env,
+            }
+        );
+        assert.equal(result.status, 0, `setup should succeed: ${result.stderr}`);
+
+        result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/session-start.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({ cwd: projectDir, project_path: projectDir }),
+                env,
+            }
+        );
+        assert.equal(result.status, 0, `session-start should succeed: ${result.stderr}`);
+        const sessionPayload = JSON.parse(String(result.stdout || '').trim());
+        const sessionId = sessionPayload.sessionId;
+
+        result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/post-tool-use.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({
+                    session_id: sessionId,
+                    cwd: projectDir,
+                    project_path: projectDir,
+                    agent_role: 'reviewer2',
+                    tool_name: 'Write',
+                    tool_input: {
+                        file_path: path.join(projectDir, 'CLAIM-LEDGER.md'),
+                        content: [
+                            '```vibe-claim',
+                            'id: C-010',
+                            'event_type: CREATED',
+                            'narrative: forbidden write with citation',
+                            '```',
+                            '10.1000/forbidden'
+                        ].join('\n'),
+                    },
+                    tool_response: '',
+                }),
+                env,
+            }
+        );
+
+        assert.equal(result.status, 2, 'forbidden reviewer2 write should be denied');
+        assert.match(String(result.stderr || ''), /PERMISSION DENIED/i);
+
+        const Database = (await import('better-sqlite3')).default;
+        const dbPath = path.join(homeDir, '.vibe-science', 'db', 'vibe-science.db');
+        const db = new Database(dbPath, { readonly: true });
+        const counts = {
+            citations: db.prepare('SELECT COUNT(*) AS cnt FROM citation_checks WHERE session_id = ?').get(sessionId).cnt,
+            gates: db.prepare('SELECT COUNT(*) AS cnt FROM gate_checks WHERE session_id = ?').get(sessionId).cnt,
+            spine: db.prepare('SELECT COUNT(*) AS cnt FROM spine_entries WHERE session_id = ?').get(sessionId).cnt,
+        };
+        db.close();
+
+        assert.deepEqual(
+            counts,
+            { citations: 0, gates: 0, spine: 0 },
+            'permission-denied actions must not mutate citation, gate, or spine state'
+        );
+        pass('post-tool-use-permission-before-side-effects');
+    });
+
+    it('post-tool-use resolves missing agent_role from prompt_log before TEAM permission enforcement', async () => {
+        const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'vibe-trace-posttool-role-'));
+        const homeDir = path.join(tempRoot, 'home');
+        const projectDir = path.join(tempRoot, 'project');
+        fs.mkdirSync(homeDir, { recursive: true });
+        fs.mkdirSync(projectDir, { recursive: true });
+
+        const env = {
+            ...process.env,
+            HOME: homeDir,
+            USERPROFILE: homeDir,
+        };
+
+        let result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/setup.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({}),
+                env,
+            }
+        );
+        assert.equal(result.status, 0, `setup should succeed: ${result.stderr}`);
+
+        result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/session-start.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({ cwd: projectDir, project_path: projectDir }),
+                env,
+            }
+        );
+        assert.equal(result.status, 0, `session-start should succeed: ${result.stderr}`);
+        const sessionPayload = JSON.parse(String(result.stdout || '').trim());
+        const sessionId = sessionPayload.sessionId;
+
+        const Database = (await import('better-sqlite3')).default;
+        const dbPath = path.join(homeDir, '.vibe-science', 'db', 'vibe-science.db');
+        let db = new Database(dbPath);
+        db.prepare(`
+            INSERT INTO prompt_log (session_id, agent_role, prompt_hash, timestamp)
+            VALUES (?, ?, ?, ?)
+        `).run(sessionId, 'reviewer2', 'hash-posttool-role', new Date().toISOString());
+        db.close();
+
+        result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/post-tool-use.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({
+                    session_id: sessionId,
+                    cwd: projectDir,
+                    project_path: projectDir,
+                    tool_name: 'Write',
+                    tool_input: {
+                        file_path: path.join(projectDir, 'CLAIM-LEDGER.md'),
+                        content: [
+                            '```vibe-claim',
+                            'id: C-778',
+                            'event_type: CREATED',
+                            'narrative: role recovery test',
+                            '```',
+                        ].join('\n'),
+                    },
+                    tool_response: '',
+                }),
+                env,
+            }
+        );
+
+        assert.equal(result.status, 2, 'post-tool-use should still deny when role is only recoverable from prompt_log');
+        assert.match(String(result.stderr || ''), /PERMISSION DENIED/i);
+
+        db = new Database(dbPath, { readonly: true });
+        const counts = {
+            citations: db.prepare('SELECT COUNT(*) AS cnt FROM citation_checks WHERE session_id = ?').get(sessionId).cnt,
+            gates: db.prepare('SELECT COUNT(*) AS cnt FROM gate_checks WHERE session_id = ?').get(sessionId).cnt,
+            spine: db.prepare('SELECT COUNT(*) AS cnt FROM spine_entries WHERE session_id = ?').get(sessionId).cnt,
+        };
+        db.close();
+        assert.deepEqual(counts, { citations: 0, gates: 0, spine: 0 });
+        pass('post-tool-use-role-recovery-permissions');
+    });
+
+    it('post-tool-use enforces claim gates on mixed-case Claim-Ledger paths', async () => {
+        const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'vibe-trace-claim-path-'));
+        const homeDir = path.join(tempRoot, 'home');
+        const projectDir = path.join(tempRoot, 'project');
+        fs.mkdirSync(homeDir, { recursive: true });
+        fs.mkdirSync(projectDir, { recursive: true });
+
+        const env = {
+            ...process.env,
+            HOME: homeDir,
+            USERPROFILE: homeDir,
+        };
+
+        let result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/setup.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({}),
+                env,
+            }
+        );
+        assert.equal(result.status, 0, `setup should succeed: ${result.stderr}`);
+
+        result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/session-start.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({ cwd: projectDir, project_path: projectDir }),
+                env,
+            }
+        );
+        assert.equal(result.status, 0, `session-start should succeed: ${result.stderr}`);
+        const sessionPayload = JSON.parse(String(result.stdout || '').trim());
+
+        result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/post-tool-use.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({
+                    session_id: sessionPayload.sessionId,
+                    cwd: projectDir,
+                    project_path: projectDir,
+                    tool_name: 'Write',
+                    tool_input: {
+                        file_path: path.join(projectDir, 'Claim-Ledger.md'),
+                        content: [
+                            '```vibe-claim',
+                            'id: C-001',
+                            'event_type: CREATED',
+                            'confounder_status: RAW',
+                            'narrative: path case test',
+                            '```',
+                        ].join('\n'),
+                    },
+                }),
+                env,
+            }
+        );
+
+        assert.equal(result.status, 2, 'mixed-case Claim-Ledger path should still trigger DQ4 claim gating');
+        assert.match(String(result.stderr || ''), /Missing prerequisite gates: DQ4/i);
+        pass('post-tool-use-case-insensitive-claim-ledger');
+    });
+
+    it('post-tool-use enforces DQ4 on mixed-case Findings paths', async () => {
+        const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'vibe-trace-findings-path-'));
+        const homeDir = path.join(tempRoot, 'home');
+        const projectDir = path.join(tempRoot, 'project');
+        fs.mkdirSync(homeDir, { recursive: true });
+        fs.mkdirSync(projectDir, { recursive: true });
+
+        const findingsPath = path.join(projectDir, 'Findings.md');
+        const jsonPath = path.join(projectDir, 'Findings.json');
+        fs.writeFileSync(jsonPath, JSON.stringify({ value: 10 }, null, 2), 'utf-8');
+
+        const env = {
+            ...process.env,
+            HOME: homeDir,
+            USERPROFILE: homeDir,
+        };
+
+        let result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/setup.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({}),
+                env,
+            }
+        );
+        assert.equal(result.status, 0, `setup should succeed: ${result.stderr}`);
+
+        result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/session-start.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({ cwd: projectDir, project_path: projectDir }),
+                env,
+            }
+        );
+        assert.equal(result.status, 0, `session-start should succeed: ${result.stderr}`);
+        const sessionPayload = JSON.parse(String(result.stdout || '').trim());
+
+        result = spawnSync(
+            process.execPath,
+            ['plugin/scripts/post-tool-use.js'],
+            {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                timeout: 30000,
+                input: JSON.stringify({
+                    session_id: sessionPayload.sessionId,
+                    cwd: projectDir,
+                    project_path: projectDir,
+                    tool_name: 'Write',
+                    tool_input: {
+                        file_path: findingsPath,
+                        content: '# Findings\nObserved values: 11, 12, 13\n',
+                    },
+                }),
+                env,
+            }
+        );
+
+        assert.equal(result.status, 2, 'mixed-case Findings path should still trigger DQ4 mismatch blocking');
+        assert.match(String(result.stderr || ''), /GATE DQ4 FAIL/i);
+        pass('post-tool-use-case-insensitive-findings');
+    });
 });
 
 // =====================================================
@@ -925,6 +2504,14 @@ describe('B5. Package & Config Tests', () => {
             );
         }
         pass('hooks-declared');
+    });
+
+    it('hooks.json: PreToolUse matcher covers MultiEdit and Bash as well as Write/Edit', () => {
+        const hooksConfig = JSON.parse(fs.readFileSync(rel('hooks', 'hooks.json'), 'utf-8'));
+        const preToolUse = hooksConfig?.hooks?.PreToolUse?.[0];
+        assert.ok(preToolUse, 'PreToolUse hook config should exist');
+        assert.equal(preToolUse.matcher, 'Write|Edit|MultiEdit|Bash');
+        pass('hooks-pretooluse-multiedit-bash');
     });
 
     it('plugin.json: has name and version fields', () => {
@@ -1423,6 +3010,89 @@ describe('B8. TRACE Foundation Tests', () => {
         pass('trace-vector-fallback');
     });
 
+    it('vecSearch prefers curated FTS5 matches over vector fallback when both tiers are available', async () => {
+        const Database = (await import('better-sqlite3')).default;
+        const vecMod = await import(relUrl('plugin', 'lib', 'vec-search.js'));
+
+        const db = new Database(':memory:');
+        db.exec(fs.readFileSync(rel('plugin', 'db', 'schema.sql'), 'utf-8'));
+        db.prepare(`
+            INSERT INTO memory_fts (text, source_key, source_type, source_id, session_id, project_path, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        `).run(
+            'CRISPR-Cas9 confounder harness failed on matched cohort',
+            'session:s1:narrative',
+            'narrative_summary',
+            's1',
+            's1',
+            '/tmp/fts-priority',
+            new Date().toISOString()
+        );
+
+        db.prepare(`
+            INSERT INTO memory_embeddings (text, embedding, metadata, project_path, created_at)
+            VALUES (?, ?, ?, ?, ?)
+        `).run(
+            'Irrelevant vector fallback memory',
+            Buffer.from(new Float32Array([1, 0, 0, 0]).buffer),
+            JSON.stringify({ source: 'memory_embeddings-test' }),
+            '/tmp/fts-priority',
+            new Date().toISOString()
+        );
+
+        const results = vecMod.vecSearch(db, 'CRISPR-Cas9 confounder', {
+            project_path: '/tmp/fts-priority',
+            limit: 1,
+            maxTokens: 300,
+            queryEmbedding: new Float32Array([1, 0, 0, 0]),
+        });
+
+        assert.equal(results.length, 1);
+        assert.equal(results[0].metadata?.retrieval_tier, 'fts5', 'Tier 0 FTS5 should win before vector fallback');
+        db.close();
+        pass('trace-fts-before-vector');
+    });
+
+    it('buildContext surfaces retrieval degradation warnings when FTS cannot be initialized', async () => {
+        const mod = await import(relUrl('plugin', 'lib', 'context-builder.js'));
+        const fakeDb = {
+            exec() {
+                throw new Error('fts unavailable');
+            },
+            transaction(fn) {
+                return fn;
+            },
+            prepare(sql) {
+                if (sql.includes('FROM sessions')) {
+                    return {
+                        get() {
+                            return null;
+                        },
+                        all() {
+                            return [];
+                        },
+                    };
+                }
+                return {
+                    get() {
+                        return { cnt: 0 };
+                    },
+                    all() {
+                        return [];
+                    },
+                };
+            },
+        };
+
+        const context = mod.buildContext(fakeDb, '/tmp/retrieval-warning', 'sess-warning');
+        assert.ok(Array.isArray(context.integrityWarnings), 'integrityWarnings should be present on the context object');
+        assert.ok(
+            context.integrityWarnings.some(w => /retrieval index unavailable/i.test(w)),
+            `expected retrieval degradation warning, got: ${context.integrityWarnings.join(' | ')}`
+        );
+        pass('trace-context-retrieval-warning');
+    });
+
     it('parseStructuredBlocks parses canonical vibe-claim blocks', async () => {
         const { parseStructuredBlocks } = await import(relUrl('plugin', 'lib', 'structured-block-parser.js'));
 
@@ -1676,9 +3346,20 @@ describe('B8. TRACE Foundation Tests', () => {
         });
 
         const row = db.prepare(`SELECT * FROM r2_reviews WHERE review_id = 'REV-001'`).get();
+        const mirrored = db.prepare(`
+            SELECT claim_id, event_type
+            FROM claim_events
+            WHERE session_id = ?
+            ORDER BY claim_id
+        `).all(sessionId);
         assert.equal(result.inserted, 1, 'one review should be inserted');
         assert.equal(row.review_mode, 'FORCED');
         assert.equal(row.claims_reviewed, '["C-021","C-022"]');
+        assert.deepEqual(
+            mirrored.map(entry => `${entry.claim_id}:${entry.event_type}`),
+            ['C-021:R2_REVIEWED', 'C-022:R2_REVIEWED'],
+            'review ingestion should mirror reviewed claims into claim_events'
+        );
         db.close();
         pass('trace-ingest-review');
     });
@@ -2123,7 +3804,7 @@ describe('B8. TRACE Foundation Tests', () => {
     });
 
     // --- Regression: DQ4-only is sufficient for claim gate (DC0 removed from runtime base) ---
-    it('claim gate passes with only session-scoped DQ4 (DC0 not required at runtime)', async () => {
+    it('claim gate passes with only session-scoped DQ4 across runtime-supported claim tiers', async () => {
         const { checkClaimGates } = await import(relUrl('plugin', 'lib', 'gate-engine.js'));
         const Database = (await import('better-sqlite3')).default;
         const db = new Database(':memory:');
@@ -2135,10 +3816,81 @@ describe('B8. TRACE Foundation Tests', () => {
         db.prepare("INSERT INTO gate_checks (session_id, gate_id, claim_id, status, checks_passed, timestamp) VALUES (?, 'DQ4', NULL, 'PASS', 1, ?)")
             .run(sessionId, new Date().toISOString());
 
-        const result = checkClaimGates(db, 'C-001', sessionId);
-        assert.equal(result.pass, true, 'DQ4-only should be sufficient for base claim gate (DC0 removed from runtime)');
+        for (const claimId of ['C-001', 'C-101', 'C-201', 'C-301', 'CLAIM-7']) {
+            const result = checkClaimGates(db, claimId, sessionId);
+            assert.equal(result.pass, true, `DQ4-only should be sufficient for runtime-supported claim gate on ${claimId}`);
+        }
         db.close();
         pass('trace-claim-gate-dq4-only');
+    });
+
+    it('claim gate accepts prior-session DQ4 from the same project but not from another project', async () => {
+        const { checkClaimGates } = await import(relUrl('plugin', 'lib', 'gate-engine.js'));
+        const Database = (await import('better-sqlite3')).default;
+        const db = new Database(':memory:');
+        db.exec(fs.readFileSync(rel('plugin', 'db', 'schema.sql'), 'utf-8'));
+
+        const now = new Date().toISOString();
+        db.prepare('INSERT INTO sessions (id, project_path, started_at) VALUES (?, ?, ?)').run('proj-a-old', '/tmp/proj-a', now);
+        db.prepare('INSERT INTO sessions (id, project_path, started_at) VALUES (?, ?, ?)').run('proj-a-new', '/tmp/proj-a', now);
+        db.prepare('INSERT INTO sessions (id, project_path, started_at) VALUES (?, ?, ?)').run('proj-b', '/tmp/proj-b', now);
+
+        db.prepare("INSERT INTO gate_checks (session_id, gate_id, claim_id, status, checks_passed, timestamp) VALUES (?, 'DQ4', NULL, 'PASS', 1, ?)")
+            .run('proj-a-old', now);
+
+        const sameProject = checkClaimGates(db, 'C-001', 'proj-a-new');
+        const otherProject = checkClaimGates(db, 'C-001', 'proj-b');
+
+        assert.equal(sameProject.pass, true, 'prior-session DQ4 should carry across sessions inside the same project');
+        assert.equal(otherProject.pass, false, 'DQ4 from another project must not leak across projects');
+        assert.deepEqual(otherProject.missing, ['DQ4']);
+        db.close();
+        pass('trace-claim-gate-project-scope');
+    });
+
+    it('citation validity gates do not leak same claim IDs across projects', async () => {
+        const dbMod = await import(relUrl('plugin', 'lib', 'db.js'));
+        const gateMod = await import(relUrl('plugin', 'lib', 'gate-engine.js'));
+        const Database = (await import('better-sqlite3')).default;
+        const db = new Database(':memory:');
+        db.exec(fs.readFileSync(rel('plugin', 'db', 'schema.sql'), 'utf-8'));
+
+        const now = new Date().toISOString();
+        db.prepare('INSERT INTO sessions (id, project_path, started_at) VALUES (?, ?, ?)').run('proj-a', '/tmp/proj-a', now);
+        db.prepare('INSERT INTO sessions (id, project_path, started_at) VALUES (?, ?, ?)').run('proj-b', '/tmp/proj-b', now);
+
+        dbMod.upsertCitationCheck(db, {
+            citation_id: 'CIT-CROSS-PROJ',
+            session_id: 'proj-a',
+            claim_id: 'C-001',
+            raw_ref: '10.1000/cross-project',
+            citation_text: '10.1000/cross-project',
+            citation_type: 'DOI',
+            normalized_id: '10.1000/cross-project',
+            verification_status: 'UNRESOLVED',
+            verification_method: null,
+            resolver: null,
+            source_url: 'https://doi.org/10.1000/cross-project',
+            resolved_title: null,
+            title: null,
+            resolved_source_type: null,
+            retraction_status: null,
+            resolved_payload: null,
+            http_status: null,
+            http_status_code: null,
+            checked_at: null,
+            doi: '10.1000/cross-project',
+        });
+
+        const otherProjectSummary = gateMod.checkSourceValidityGate(db, {
+            sessionId: 'proj-b',
+            claimId: 'C-001',
+        });
+
+        assert.equal(otherProjectSummary.count, 0, 'claim-level citation lookup must stay inside the current project');
+        assert.equal(otherProjectSummary.pass, true);
+        db.close();
+        pass('trace-citation-project-scope');
     });
 
     // --- Regression: multi-claim citation attribution ---
@@ -2166,6 +3918,33 @@ describe('B8. TRACE Foundation Tests', () => {
         assert.equal(alpha.claim_id, 'C-001', 'alpha DOI should be attributed to C-001');
         assert.equal(beta.claim_id, 'C-002', 'beta DOI should be attributed to C-002');
         pass('trace-multi-claim-citation-attribution');
+    });
+
+    it('extractCitationsFromEvent keeps shared MultiEdit output citations at session scope when claim attribution is ambiguous', async () => {
+        const { extractCitationsFromEvent } = await import(relUrl('plugin', 'lib', 'citation-extractor.js'));
+        const event = {
+            session_id: 'sess-multi-shared-output',
+            tool_name: 'MultiEdit',
+            tool_input: {
+                file_path: 'CLAIM-LEDGER.md',
+                edits: [
+                    { new_string: '```vibe-claim\nid: C-001\nevent_type: CREATED\nnarrative: alpha\n```' },
+                    { new_string: '```vibe-claim\nid: C-002\nevent_type: CREATED\nnarrative: beta\n```' },
+                ],
+            },
+            tool_response: 'Support refs: 10.1000/alpha 10.1000/beta',
+        };
+
+        const out = extractCitationsFromEvent(event);
+        const alpha = out.citations.find(c => c.normalized_id === '10.1000/alpha');
+        const beta = out.citations.find(c => c.normalized_id === '10.1000/beta');
+
+        assert.ok(alpha, 'alpha DOI should be extracted from shared output');
+        assert.ok(beta, 'beta DOI should be extracted from shared output');
+        assert.equal(alpha.claim_id, null, 'shared output alpha DOI should remain session-scoped');
+        assert.equal(beta.claim_id, null, 'shared output beta DOI should remain session-scoped');
+        assert.match(out.warnings.join('\n'), /Ambiguous citation attribution/i);
+        pass('trace-multi-claim-shared-output-session-scope');
     });
 });
 

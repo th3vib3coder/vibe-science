@@ -116,7 +116,7 @@ function main() {
     db.close();
 
     const checks = {
-        setup_ready: parseJson(setup.stdout)?.status === 'ready' || parseJson(setup.stdout)?.status === 'degraded',
+        setup_ready: parseJson(setup.stdout)?.status === 'ready',
         session_started: Boolean(session.id),
         schema_version: Number(schemaVersion?.value || 0),
         claim_events_populated: claimEvents > 0,

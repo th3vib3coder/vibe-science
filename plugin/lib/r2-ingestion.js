@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 import { parseStructuredBlocks } from './structured-block-parser.js';
-import { logR2Review } from './db.js';
+import { logClaimEvent, logR2Review } from './db.js';
 import { normalizeClaimId } from './claim-ingestion.js';
 
 const REVIEW_FILE_RE =
@@ -31,6 +31,7 @@ export function ingestR2Reviews(db, payload) {
             continue;
         }
         logR2Review(db, review);
+        mirrorClaimReviewEvents(db, review);
         inserted++;
     }
 
@@ -156,7 +157,17 @@ function extractField(content, fieldName) {
 }
 
 function extractAllClaimIds(content) {
-    return [...String(content || '').matchAll(/\bC-?\d+\b|\bCLAIM-\d+\b/gi)]
+    const text = String(content || '');
+    // Prefer explicit claims_reviewed field if present (avoids capturing incidental mentions)
+    const fieldMatch = text.match(/claims_reviewed\s*[:=]\s*\[?([^\]\n]+)\]?/i);
+    if (fieldMatch) {
+        const ids = [...fieldMatch[1].matchAll(/\bC-?\d+\b|\bCLAIM-\d+\b/gi)]
+            .map(m => normalizeClaimId(m[0]))
+            .filter(Boolean);
+        if (ids.length > 0) return [...new Set(ids)];
+    }
+    // Fallback: all mentions in text (used when no explicit field)
+    return [...text.matchAll(/\bC-?\d+\b|\bCLAIM-\d+\b/gi)]
         .map(match => normalizeClaimId(match[0]))
         .filter((value, index, arr) => value && arr.indexOf(value) === index);
 }
@@ -185,4 +196,41 @@ function makeStableId(prefix, ...parts) {
         .slice(0, 12)
         .toUpperCase();
     return `${prefix}-${digest}`;
+}
+
+function mirrorClaimReviewEvents(db, review) {
+    const claimsReviewed = Array.isArray(review?.claims_reviewed) ? review.claims_reviewed : [];
+    const narrative = review?.narrative
+        ? `[R2 REVIEW ${review.review_id}] ${review.narrative}`.slice(0, 500)
+        : `[R2 REVIEW ${review.review_id}] ${review.review_mode || 'INLINE'} review recorded`;
+
+    for (const claimId of claimsReviewed) {
+        if (!claimId) continue;
+        if (hasMirroredReviewEvent(db, review.session_id, claimId, review.review_id)) {
+            continue;
+        }
+        logClaimEvent(db, {
+            claim_id: claimId,
+            session_id: review.session_id,
+            event_type: 'R2_REVIEWED',
+            narrative,
+        });
+    }
+}
+
+function hasMirroredReviewEvent(db, sessionId, claimId, reviewId) {
+    try {
+        const row = db.prepare(`
+            SELECT 1
+            FROM claim_events
+            WHERE session_id = ?
+              AND claim_id = ?
+              AND event_type = 'R2_REVIEWED'
+              AND narrative LIKE ?
+            LIMIT 1
+        `).get(sessionId, claimId, `%${reviewId}%`);
+        return Boolean(row);
+    } catch {
+        return false;
+    }
 }

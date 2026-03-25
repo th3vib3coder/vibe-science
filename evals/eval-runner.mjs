@@ -98,7 +98,8 @@ async function main() {
         dbPath: artifact.db_path,
     });
 
-    process.exit(failCount > 0 ? 1 : 0);
+    const runFailed = failCount > 0 || (args.record && !artifact.db_recorded);
+    process.exit(runFailed ? 1 : 0);
 }
 
 function parseArgs(argv) {
@@ -214,7 +215,11 @@ function findYamlFiles(dir) {
 function validateCase(parsed) {
     const errors = [];
     for (const field of ['id', 'name', 'category', 'prompt']) {
-        if (!(field in parsed) || parsed[field] === '' || parsed[field] === undefined) {
+        if (
+            !(field in parsed) ||
+            typeof parsed[field] !== 'string' ||
+            parsed[field].trim() === ''
+        ) {
             errors.push(`missing required field: "${field}"`);
         }
     }
@@ -239,8 +244,10 @@ async function recordCasesToDb(cases, options) {
         dbMod.initDB(db);
         migMod.applyMigrations(db);
 
+        let inserted = 0;
+        const failedCases = [];
         for (const evalCase of cases) {
-            benchMod.recordBenchmark(db, {
+            const ok = benchMod.recordBenchmark(db, {
                 run_id: options.runId,
                 skill_version: options.skillVersion,
                 eval_case: evalCase.id || evalCase.file,
@@ -249,10 +256,20 @@ async function recordCasesToDb(cases, options) {
                 execution_time_ms: evalCase.execution_time_ms,
                 notes: `mode=schema_validation_only; artifact=${options.artifactPath}; file=${evalCase.file}${evalCase.errors.length ? `; errors=${evalCase.errors.join(' | ')}` : ''}`,
             });
+            if (ok) inserted++;
+            else failedCases.push(evalCase.id || evalCase.file);
         }
 
         dbMod.closeDB(db);
-        return { recorded: true, dbPath: options.dbPath || dbMod.DEFAULT_DB_PATH };
+        const allRecorded = inserted === cases.length && inserted > 0;
+        return {
+            recorded: allRecorded,
+            dbPath: options.dbPath || dbMod.DEFAULT_DB_PATH,
+            error: allRecorded
+                ? null
+                : `Benchmark persistence incomplete: inserted ${inserted}/${cases.length} rows` +
+                  `${failedCases.length ? `; failed cases: ${failedCases.join(', ')}` : ''}.`,
+        };
     } catch (error) {
         const baseMessage = error.message || 'DB recording failed';
         return {

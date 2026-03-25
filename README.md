@@ -207,7 +207,7 @@ Every cycle scans for unexpected findings. Score >= 10 → QUEUE for triage. Sco
 
 ### Other Engines
 
-- **Gate Engine**: Enforces DQ1-DQ4, DD0, L-1+, L0, D1 at PostToolUse. Exit code 2 = BLOCK. (DC0 remains a skill-level methodological check — no runtime producer yet.)
+- **Gate Engine**: Enforces DQ4, L-1+, L0, D1, and claim-gate aggregation at PostToolUse. Exit code 2 = BLOCK. (DQ1-DQ3, DD0, and DC0 remain skill-level methodological checks until runtime producers exist.)
 - **Permission Engine**: TEAM mode with role-based access control (researcher, reviewer2, judge, serendipity, lead, experimenter).
 - **Context Builder**: Progressive disclosure with semantic recall (~700 tokens per session start).
 - **Narrative Engine**: Template-based session summaries (deterministic, no LLM).

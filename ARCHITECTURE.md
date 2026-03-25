@@ -32,7 +32,7 @@ v6.0 `NEXUS` introduced the dual architecture. v7.0 `TRACE` closes the operation
 | Claim lifecycle | schema existed, runtime mostly unpopulated | `claim_events` populated from structured and legacy markdown |
 | Serendipity + R2 artifacts | tables existed, hooks did not feed them | `serendipity_seeds` and `r2_reviews` ingested automatically |
 | Citation validity | mostly skill-level discipline | extraction + verification + `L0` / `D1` plugin gates |
-| Benchmarking | reporter existed, runtime orphaned | artifact -> `benchmark_runs` -> A/B comparison -> readiness |
+| Benchmarking | reporter existed, runtime orphaned | artifact/schema evals -> `benchmark_runs` -> A/B comparison -> readiness, with richer behavioral closure still future hardening |
 | Integrity | fail-open paths visible but uneven | `INTEGRITY_OK` / `INTEGRITY_DEGRADED` persisted, strict mode fail-loud |
 | Retrieval | vector path fragile, lexical recall weak | FTS5/BM25 `memory_fts` as live Tier 0 retrieval |
 
@@ -41,7 +41,7 @@ v6.0 `NEXUS` introduced the dual architecture. v7.0 `TRACE` closes the operation
 - 7 lifecycle hooks remain the enforcement backbone
 - schema version advances to `4`
 - SQLite core now includes 16 regular tables, plus `memory_fts` and optional `vec_memories`
-- release verification includes `104/104` end-to-end tests, smoke, and readiness
+- release verification includes `140/140` end-to-end tests, smoke, and readiness
 
 TRACE is not a new philosophy. It is the moment the existing philosophy starts leaving enough structured evidence in the runtime to enforce itself.
 
@@ -75,7 +75,7 @@ v5.5 proved that prompt-level methodology works — but it also proved that prom
 ### Plugin Subsystems
 
 #### Gate Engine
-Enforces DQ1-DQ4, DD0, L-1+, L0, D1 at PostToolUse. Exit code 2 = BLOCK. DC0 (Design Compliance) remains skill-level — no runtime producer yet.
+Enforces DQ4, L-1+, L0, D1, and claim-gate aggregation at PostToolUse. Exit code 2 = BLOCK. DQ1-DQ3, DD0, and DC0 remain skill-level until runtime producers exist.
 - DQ4: auto-verifies FINDINGS.md numbers match JSON source
 - L-1+: blocks research direction without prior literature search
 - Domain-aware hints from `domain-config.json`

@@ -39,6 +39,15 @@ export function vecSearch(db, queryText, options = {}) {
     const projectPath = options.project_path ?? null;
     const queryEmbedding = options.queryEmbedding ?? null;
 
+    try {
+        const ftsResults = ftsSearch(db, queryText, projectPath, limit, maxTokens);
+        if (ftsResults.length > 0) {
+            return ftsResults;
+        }
+    } catch {
+        // Fall through to vector / legacy tiers.
+    }
+
     if (queryEmbedding) {
         try {
             const vectorResults = vectorQuery(db, queryEmbedding, projectPath, limit, maxTokens);
@@ -46,17 +55,8 @@ export function vecSearch(db, queryText, options = {}) {
                 return vectorResults;
             }
         } catch {
-            // Fall through to lexical tiers.
+            // Fall through to legacy lexical fallback.
         }
-    }
-
-    try {
-        const ftsResults = ftsSearch(db, queryText, projectPath, limit, maxTokens);
-        if (ftsResults.length > 0) {
-            return ftsResults;
-        }
-    } catch {
-        // Fall through to legacy text fallback.
     }
 
     return legacyTextFallback(db, queryText, projectPath, limit, maxTokens);
@@ -327,7 +327,7 @@ function ftsSearch(db, queryText, projectPath, limit, maxTokens) {
                 session_id,
                 project_path,
                 created_at,
-                bm25(${FTS_TABLE}, 10.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0) AS score
+                bm25(${FTS_TABLE}) AS score
             FROM ${FTS_TABLE}
             WHERE ${FTS_TABLE} MATCH ? AND project_path = ?
             ORDER BY score ASC, created_at DESC
@@ -342,7 +342,7 @@ function ftsSearch(db, queryText, projectPath, limit, maxTokens) {
                 session_id,
                 project_path,
                 created_at,
-                bm25(${FTS_TABLE}, 10.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0) AS score
+                bm25(${FTS_TABLE}) AS score
             FROM ${FTS_TABLE}
             WHERE ${FTS_TABLE} MATCH ?
             ORDER BY score ASC, created_at DESC

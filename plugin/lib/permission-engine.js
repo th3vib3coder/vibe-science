@@ -18,35 +18,35 @@
 
 export const PERMISSIONS = {
     researcher: {
-        allow: ['Read', 'Write', 'Edit', 'Bash', 'Glob', 'Grep', 'WebSearch', 'WebFetch'],
+        allow: ['Read', 'Write', 'Edit', 'MultiEdit', 'Bash', 'Glob', 'Grep', 'WebSearch', 'WebFetch'],
         deny_files: [],                               // can write anywhere except R2 reports
         deny_patterns: ['05-reviewer2/*-report.yaml'],
     },
     reviewer2: {
-        allow: ['Read', 'Glob', 'Grep', 'WebSearch', 'WebFetch', 'Write', 'Edit'],
+        allow: ['Read', 'Glob', 'Grep', 'WebSearch', 'WebFetch', 'Write', 'Edit', 'MultiEdit'],
         deny_files: ['CLAIM-LEDGER.md'],              // cannot touch the ledger
         deny_patterns: [],
         allow_write_only: ['05-reviewer2/'],           // can only write inside own directory
     },
     judge: {
-        allow: ['Read', 'Glob', 'Grep', 'Write'],
+        allow: ['Read', 'Glob', 'Grep', 'Write', 'MultiEdit'],
         deny_files: ['CLAIM-LEDGER.md', '05-reviewer2/*'],
         deny_patterns: [],
         allow_write_only: ['05-reviewer2/judge-reports/'],
     },
     serendipity: {
-        allow: ['Read', 'Glob', 'Grep', 'WebSearch', 'WebFetch', 'Write'],
+        allow: ['Read', 'Glob', 'Grep', 'WebSearch', 'WebFetch', 'Write', 'MultiEdit'],
         deny_files: ['CLAIM-LEDGER.md'],
         deny_patterns: [],
         allow_write_only: ['SERENDIPITY.md'],
     },
     lead: {
-        allow: ['Read', 'Glob', 'Grep', 'Write', 'Edit', 'Task'],
+        allow: ['Read', 'Glob', 'Grep', 'Write', 'Edit', 'MultiEdit', 'Task'],
         deny_files: [],                               // lead coordinates everything
         deny_patterns: [],
     },
     experimenter: {
-        allow: ['Read', 'Write', 'Edit', 'Bash', 'Glob', 'Grep'],
+        allow: ['Read', 'Write', 'Edit', 'MultiEdit', 'Bash', 'Glob', 'Grep'],
         deny_files: ['CLAIM-LEDGER.md', '05-reviewer2/'],
         deny_patterns: [],
     },
@@ -120,12 +120,45 @@ function globToRegex(pattern) {
  */
 function minimatch(filePath, pattern) {
     // Normalise separators to forward slashes
-    const normalised = filePath.replace(/\\/g, '/');
-    const re = globToRegex(pattern);
+    const normalised = filePath.replace(/\\/g, '/').toLowerCase();
+    const re = globToRegex(pattern.toLowerCase());
     // Match against full path or basename-only (trailing portion)
     if (re.test(normalised)) return true;
     const basename = normalised.split('/').pop();
     return re.test(basename);
+}
+
+function normalizePathRule(value) {
+    return String(value || '')
+        .replace(/\\/g, '/')
+        .toLowerCase()
+        .replace(/^\.?\//, '');
+}
+
+function pathMatchesRule(filePath, rule) {
+    const normalizedPath = normalizePathRule(filePath).replace(/\/+$/, '');
+    const normalizedRule = normalizePathRule(rule);
+    if (!normalizedPath || !normalizedRule) return false;
+
+    if (/[?*\[]/.test(normalizedRule)) {
+        return minimatch(normalizedPath, normalizedRule);
+    }
+
+    if (normalizedRule.endsWith('/')) {
+        const dirRule = normalizedRule.replace(/\/+$/, '');
+        return (
+            normalizedPath === dirRule ||
+            normalizedPath.startsWith(`${dirRule}/`) ||
+            normalizedPath.includes(`/${dirRule}/`)
+        );
+    }
+
+    const basename = normalizedPath.split('/').pop();
+    return (
+        normalizedPath === normalizedRule ||
+        normalizedPath.endsWith(`/${normalizedRule}`) ||
+        basename === normalizedRule
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -212,9 +245,14 @@ export function checkPermission(agentRole, toolName, toolInput = {}) {
     const role = agentRole.toLowerCase();
     const perms = PERMISSIONS[role];
 
-    // Unknown role — fail open (allow) so we don't break unexpected
-    // configurations.  The role will still be logged.
-    if (!perms) return null;
+    // Unknown role — deny in TEAM mode rather than disabling the barrier.
+    if (!perms) {
+        return {
+            action: `use tool ${toolName}`,
+            reason: `Unknown agent role "${agentRole}" cannot be mapped to the TEAM permission matrix`,
+            required_role: 'valid TEAM role (researcher, reviewer2, judge, serendipity, lead, experimenter)',
+        };
+    }
 
     // ── 1. Tool allow-list ───────────────────────────────────────
     if (!perms.allow.includes(toolName)) {
@@ -225,14 +263,60 @@ export function checkPermission(agentRole, toolName, toolInput = {}) {
         };
     }
 
+    // ── 1b. Shell access must not reference protected paths ──────────
+    if (toolName === 'Bash') {
+        const command = getBashCommand(toolInput);
+        const touchedPaths = extractCommandPathCandidates(command);
+
+        if (touchedPaths.length > 0) {
+            if (perms.deny_files && perms.deny_files.length > 0) {
+                for (const denied of perms.deny_files) {
+                    if (touchedPaths.some(candidate => pathMatchesRule(candidate, denied))) {
+                        return {
+                            action: `touch protected path ${denied} via Bash`,
+                            reason: `Agent ${role} cannot reference ${denied} via shell commands`,
+                            required_role: suggestRoleForFile(denied),
+                        };
+                    }
+                }
+            }
+
+            if (perms.deny_patterns && perms.deny_patterns.length > 0) {
+                for (const pattern of perms.deny_patterns) {
+                    if (touchedPaths.some(candidate => minimatch(candidate, pattern))) {
+                        return {
+                            action: `touch protected path via Bash`,
+                            reason: `Pattern ${pattern} denied for ${role}, including shell access`,
+                            required_role: 'owner of that directory',
+                        };
+                    }
+                }
+            }
+
+            if (perms.allow_write_only && perms.allow_write_only.length > 0) {
+                const outsideAllowed = touchedPaths.find(
+                    candidate => !perms.allow_write_only.some(rule => pathMatchesRule(candidate, rule))
+                );
+                if (outsideAllowed) {
+                    return {
+                        action: `touch ${outsideAllowed} via Bash`,
+                        reason: `Agent ${role} can only touch paths within: ${perms.allow_write_only.join(', ')}`,
+                        required_role: 'researcher or lead',
+                    };
+                }
+            }
+        }
+    }
+
     // ── 2. File-level write restrictions (Write / Edit only) ─────
-    if ((toolName === 'Write' || toolName === 'Edit') && toolInput.file_path) {
+    if ((toolName === 'Write' || toolName === 'Edit' || toolName === 'MultiEdit') && toolInput.file_path) {
         const filePath = toolInput.file_path;
+        const normalizedPath = filePath.replace(/\\/g, '/').toLowerCase();
 
         // 2a. Deny specific files / directories
         if (perms.deny_files && perms.deny_files.length > 0) {
             for (const denied of perms.deny_files) {
-                if (filePath.includes(denied)) {
+                if (pathMatchesRule(normalizedPath, denied)) {
                     return {
                         action: `write to ${denied}`,
                         reason: `Agent ${role} cannot write to ${denied}`,
@@ -258,7 +342,7 @@ export function checkPermission(agentRole, toolName, toolInput = {}) {
         // 2c. allow_write_only: if defined, the agent may ONLY write
         //     to the listed paths.  Anything else is blocked.
         if (perms.allow_write_only && perms.allow_write_only.length > 0) {
-            const allowed = perms.allow_write_only.some(dir => filePath.includes(dir));
+            const allowed = perms.allow_write_only.some(dir => pathMatchesRule(normalizedPath, dir));
             if (!allowed) {
                 return {
                     action: `write to ${filePath}`,
@@ -282,9 +366,47 @@ export function checkPermission(agentRole, toolName, toolInput = {}) {
  * Used to produce helpful error messages.
  */
 function suggestRoleForFile(fileName) {
-    if (fileName.includes('CLAIM-LEDGER'))
+    const normalized = String(fileName || '').replace(/\\/g, '/').toLowerCase();
+    if (normalized.includes('claim-ledger'))
         return 'researcher (for CLAIM-LEDGER), lead (for coordination)';
-    if (fileName.includes('05-reviewer2'))
+    if (normalized.includes('05-reviewer2'))
         return 'reviewer2 (for R2 reports), judge (for judge reports)';
     return 'researcher or lead';
+}
+
+function getBashCommand(toolInput = {}) {
+    const candidates = [
+        toolInput.command,
+        toolInput.cmd,
+        toolInput.script,
+        toolInput.bash_command,
+    ];
+    for (const candidate of candidates) {
+        if (typeof candidate === 'string' && candidate.trim()) {
+            return candidate;
+        }
+    }
+    return '';
+}
+
+function extractCommandPathCandidates(command) {
+    const source = String(command || '');
+    if (!source.trim()) return [];
+
+    const candidates = new Set();
+    const patterns = [
+        /(?:^|[;&\s])(?:[A-Za-z_][A-Za-z0-9_]*)=([A-Za-z0-9_./\\-]+(?:\.[A-Za-z0-9_]+)?)/g,
+        /\bcd\s+([A-Za-z0-9_./\\-]+)/gi,
+        /(?:^|[\s"'`])([A-Za-z0-9_./\\-]*[\\/][A-Za-z0-9_./\\-]+)(?=$|[\s"'`;,|&])/g,
+        /(?:^|[\s"'`])([A-Za-z0-9_.-]+\.(?:md|json|yaml|yml|txt|csv|tsv|js|mjs|cjs|ts|py|sqlite|db))(?=$|[\s"'`;,|&])/g,
+    ];
+
+    for (const pattern of patterns) {
+        for (const match of source.matchAll(pattern)) {
+            const value = normalizePathRule(match[1]).replace(/\/+$/, '');
+            if (value) candidates.add(value);
+        }
+    }
+
+    return [...candidates];
 }

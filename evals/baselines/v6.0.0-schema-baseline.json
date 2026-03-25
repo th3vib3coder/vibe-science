@@ -1,0 +1,447 @@
+{
+  "run_id": "eval-1774435901202-58ebec5d",
+  "generated_at": "2026-03-25T10:51:41.209Z",
+  "skill_version": "6.0.0",
+  "mode": "schema_validation_only",
+  "total": 24,
+  "passed": 24,
+  "failed": 0,
+  "db_recorded": false,
+  "db_path": null,
+  "cases": [
+    {
+      "file": "anti-trigger\\A01.yaml",
+      "id": "A01",
+      "name": "python-code-review",
+      "category": "anti_trigger",
+      "passed": true,
+      "mode": "schema_validation_only",
+      "execution_time_ms": 1,
+      "errors": [],
+      "expected_markers": [],
+      "expected_absent_markers": [
+        "OTAE",
+        "claim",
+        "confounder",
+        "R2",
+        "gate",
+        "brainstorm"
+      ]
+    },
+    {
+      "file": "anti-trigger\\A02.yaml",
+      "id": "A02",
+      "name": "readme-writing",
+      "category": "anti_trigger",
+      "passed": true,
+      "mode": "schema_validation_only",
+      "execution_time_ms": 0,
+      "errors": [],
+      "expected_markers": [],
+      "expected_absent_markers": [
+        "OTAE",
+        "claim",
+        "confounder",
+        "R2",
+        "hypothesis"
+      ]
+    },
+    {
+      "file": "anti-trigger\\A03.yaml",
+      "id": "A03",
+      "name": "docker-setup",
+      "category": "anti_trigger",
+      "passed": true,
+      "mode": "schema_validation_only",
+      "execution_time_ms": 0,
+      "errors": [],
+      "expected_markers": [],
+      "expected_absent_markers": [
+        "OTAE",
+        "claim",
+        "confounder",
+        "Phase 0",
+        "serendipity"
+      ]
+    },
+    {
+      "file": "anti-trigger\\A04.yaml",
+      "id": "A04",
+      "name": "meeting-summary",
+      "category": "anti_trigger",
+      "passed": true,
+      "mode": "schema_validation_only",
+      "execution_time_ms": 1,
+      "errors": [],
+      "expected_markers": [],
+      "expected_absent_markers": [
+        "OTAE",
+        "claim",
+        "confounder",
+        "R2",
+        "gate"
+      ]
+    },
+    {
+      "file": "anti-trigger\\A05.yaml",
+      "id": "A05",
+      "name": "csv-to-json-conversion",
+      "category": "anti_trigger",
+      "passed": true,
+      "mode": "schema_validation_only",
+      "execution_time_ms": 0,
+      "errors": [],
+      "expected_markers": [],
+      "expected_absent_markers": [
+        "OTAE",
+        "hypothesis",
+        "confounder",
+        "R2",
+        "Stage"
+      ]
+    },
+    {
+      "file": "anti-trigger\\A06.yaml",
+      "id": "A06",
+      "name": "general-chat",
+      "category": "anti_trigger",
+      "passed": true,
+      "mode": "schema_validation_only",
+      "execution_time_ms": 0,
+      "errors": [],
+      "expected_markers": [],
+      "expected_absent_markers": [
+        "OTAE",
+        "claim",
+        "confounder",
+        "R2",
+        "brainstorm",
+        "gate"
+      ]
+    },
+    {
+      "file": "golden-claims\\GC01.yaml",
+      "id": "GC01",
+      "name": "confounded-odds-ratio",
+      "category": "golden_claim",
+      "passed": true,
+      "mode": "schema_validation_only",
+      "execution_time_ms": 0,
+      "errors": [],
+      "expected_markers": [
+        "confounder",
+        "harness",
+        "propensity",
+        "matching",
+        "sign"
+      ],
+      "expected_absent_markers": []
+    },
+    {
+      "file": "golden-claims\\GC02.yaml",
+      "id": "GC02",
+      "name": "already-known-finding",
+      "category": "golden_claim",
+      "passed": true,
+      "mode": "schema_validation_only",
+      "execution_time_ms": 0,
+      "errors": [],
+      "expected_markers": [
+        "literature",
+        "prior art",
+        "known",
+        "L-1",
+        "search"
+      ],
+      "expected_absent_markers": []
+    },
+    {
+      "file": "golden-claims\\GC03.yaml",
+      "id": "GC03",
+      "name": "biologically-impossible-direction",
+      "category": "golden_claim",
+      "passed": true,
+      "mode": "schema_validation_only",
+      "execution_time_ms": 0,
+      "errors": [],
+      "expected_markers": [
+        "R2",
+        "impossible",
+        "artifact",
+        "contradict",
+        "biological"
+      ],
+      "expected_absent_markers": []
+    },
+    {
+      "file": "golden-claims\\GC04.yaml",
+      "id": "GC04",
+      "name": "noise-as-signal",
+      "category": "golden_claim",
+      "passed": true,
+      "mode": "schema_validation_only",
+      "execution_time_ms": 0,
+      "errors": [],
+      "expected_markers": [
+        "effect size",
+        "noise",
+        "Cohen",
+        "clinically",
+        "meaningful"
+      ],
+      "expected_absent_markers": []
+    },
+    {
+      "file": "golden-claims\\GC05.yaml",
+      "id": "GC05",
+      "name": "non-generalizable-ranking",
+      "category": "golden_claim",
+      "passed": true,
+      "mode": "schema_validation_only",
+      "execution_time_ms": 0,
+      "errors": [],
+      "expected_markers": [
+        "cross",
+        "dataset",
+        "generali",
+        "replicat",
+        "assay"
+      ],
+      "expected_absent_markers": []
+    },
+    {
+      "file": "golden-claims\\GC06.yaml",
+      "id": "GC06",
+      "name": "missing-confounder-harness",
+      "category": "golden_claim",
+      "passed": true,
+      "mode": "schema_validation_only",
+      "execution_time_ms": 0,
+      "errors": [],
+      "expected_markers": [
+        "confounder",
+        "harness",
+        "raw",
+        "conditioned",
+        "matched"
+      ],
+      "expected_absent_markers": []
+    },
+    {
+      "file": "golden-claims\\GC07.yaml",
+      "id": "GC07",
+      "name": "premature-paper-ready",
+      "category": "golden_claim",
+      "passed": true,
+      "mode": "schema_validation_only",
+      "execution_time_ms": 0,
+      "errors": [],
+      "expected_markers": [
+        "R2",
+        "Stage 5",
+        "review",
+        "ablation",
+        "S4"
+      ],
+      "expected_absent_markers": []
+    },
+    {
+      "file": "golden-claims\\GC08.yaml",
+      "id": "GC08",
+      "name": "number-mismatch-prose-data",
+      "category": "golden_claim",
+      "passed": true,
+      "mode": "schema_validation_only",
+      "execution_time_ms": 0,
+      "errors": [],
+      "expected_markers": [
+        "DQ4",
+        "sync",
+        "mismatch",
+        "source",
+        "SSOT"
+      ],
+      "expected_absent_markers": []
+    },
+    {
+      "file": "golden-claims\\GC09.yaml",
+      "id": "GC09",
+      "name": "skipped-literature-before-direction",
+      "category": "golden_claim",
+      "passed": true,
+      "mode": "schema_validation_only",
+      "execution_time_ms": 0,
+      "errors": [],
+      "expected_markers": [
+        "L-1",
+        "literature",
+        "search",
+        "Phase 0",
+        "before"
+      ],
+      "expected_absent_markers": []
+    },
+    {
+      "file": "golden-claims\\GC10.yaml",
+      "id": "GC10",
+      "name": "missing-serendipity-seed-after-kill",
+      "category": "golden_claim",
+      "passed": true,
+      "mode": "schema_validation_only",
+      "execution_time_ms": 0,
+      "errors": [],
+      "expected_markers": [
+        "Salvagente",
+        "serendipity",
+        "seed",
+        "killed",
+        "opportunity"
+      ],
+      "expected_absent_markers": []
+    },
+    {
+      "file": "golden-claims\\GC11.yaml",
+      "id": "GC11",
+      "name": "r2-rubber-stamping",
+      "category": "golden_claim",
+      "passed": true,
+      "mode": "schema_validation_only",
+      "execution_time_ms": 0,
+      "errors": [],
+      "expected_markers": [
+        "V0",
+        "SFI",
+        "vigilance",
+        "rubber",
+        "J0"
+      ],
+      "expected_absent_markers": []
+    },
+    {
+      "file": "golden-claims\\GC12.yaml",
+      "id": "GC12",
+      "name": "context-loss-no-crystallization",
+      "category": "golden_claim",
+      "passed": true,
+      "mode": "schema_validation_only",
+      "execution_time_ms": 0,
+      "errors": [],
+      "expected_markers": [
+        "LAW 10",
+        "crystallize",
+        "STATE",
+        "file",
+        "PROGRESS"
+      ],
+      "expected_absent_markers": []
+    },
+    {
+      "file": "trigger\\T01.yaml",
+      "id": "T01",
+      "name": "rnaseq-differential-expression",
+      "category": "trigger",
+      "passed": true,
+      "mode": "schema_validation_only",
+      "execution_time_ms": 0,
+      "errors": [],
+      "expected_markers": [
+        "OTAE",
+        "claim",
+        "gate",
+        "confounder",
+        "DQ"
+      ],
+      "expected_absent_markers": []
+    },
+    {
+      "file": "trigger\\T02.yaml",
+      "id": "T02",
+      "name": "correlation-robustness",
+      "category": "trigger",
+      "passed": true,
+      "mode": "schema_validation_only",
+      "execution_time_ms": 0,
+      "errors": [],
+      "expected_markers": [
+        "R2",
+        "confounder",
+        "harness",
+        "confound",
+        "artifact"
+      ],
+      "expected_absent_markers": []
+    },
+    {
+      "file": "trigger\\T03.yaml",
+      "id": "T03",
+      "name": "literature-gap-search",
+      "category": "trigger",
+      "passed": true,
+      "mode": "schema_validation_only",
+      "execution_time_ms": 0,
+      "errors": [],
+      "expected_markers": [
+        "brainstorm",
+        "gap",
+        "literature",
+        "L-1",
+        "hypothesis"
+      ],
+      "expected_absent_markers": []
+    },
+    {
+      "file": "trigger\\T04.yaml",
+      "id": "T04",
+      "name": "overfitting-detection",
+      "category": "trigger",
+      "passed": true,
+      "mode": "schema_validation_only",
+      "execution_time_ms": 0,
+      "errors": [],
+      "expected_markers": [
+        "R2",
+        "overfit",
+        "baseline",
+        "DQ2",
+        "cross-validation"
+      ],
+      "expected_absent_markers": []
+    },
+    {
+      "file": "trigger\\T05.yaml",
+      "id": "T05",
+      "name": "brainstorm-research-questions",
+      "category": "trigger",
+      "passed": true,
+      "mode": "schema_validation_only",
+      "execution_time_ms": 0,
+      "errors": [],
+      "expected_markers": [
+        "Phase 0",
+        "brainstorm",
+        "gap",
+        "hypothesis",
+        "triage"
+      ],
+      "expected_absent_markers": []
+    },
+    {
+      "file": "trigger\\T06.yaml",
+      "id": "T06",
+      "name": "cross-dataset-validation",
+      "category": "trigger",
+      "passed": true,
+      "mode": "schema_validation_only",
+      "execution_time_ms": 0,
+      "errors": [],
+      "expected_markers": [
+        "replication",
+        "ablation",
+        "Stage 4",
+        "cross",
+        "gate"
+      ],
+      "expected_absent_markers": []
+    }
+  ]
+}

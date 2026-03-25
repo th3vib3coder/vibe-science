@@ -44,4 +44,8 @@ Questa baseline e' utile come:
 - snapshot riproducibile del corpus eval attuale
 - punto di partenza per i report comparativi `6.0.0` vs `7.0.0-rc*`
 
+Artifact machine-readable fissato nel repo:
+
+- `evals/baselines/v6.0.0-schema-baseline.json`
+
 Non va usata come prova che Vibe Science passi gia' i Golden Claims a livello behavioral. Quel gap resta esplicitamente aperto finche' non esiste la harness behavioral dedicata.

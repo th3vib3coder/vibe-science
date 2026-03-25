@@ -38,13 +38,16 @@ import { loadR2CalibrationData, loadPendingSeeds as _loadPendingSeeds } from './
  * @returns {{
  *   state: string,
  *   memories: Array<{text: string, distance: number|null, metadata: object|null}>,
+ *   integrityWarnings: string[],
  *   r2Calibration: object,
  *   pendingSeeds: object[],
  *   alerts: object[]
  * }}
  */
 export function buildContext(db, projectPath, sessionId) {
-    const context = {};
+    const context = {
+        integrityWarnings: [],
+    };
 
     // ---------------------------------------------------------------
     // Layer 1: State snapshot from last completed session
@@ -76,7 +79,10 @@ export function buildContext(db, projectPath, sessionId) {
     // Layer 2: Semantic recall (top 3 relevant memories)
     // ---------------------------------------------------------------
     try {
-        refreshProjectRetrievalIndex(db, projectPath);
+        const refresh = refreshProjectRetrievalIndex(db, projectPath);
+        if (!refresh.available) {
+            context.integrityWarnings.push('Retrieval index unavailable; semantic recall degraded to fallback tiers.');
+        }
         const queryText = `${path.basename(projectPath)} ${context.state ?? ''}`;
         context.memories = vecSearch(db, queryText, {
             project_path: projectPath,
@@ -85,6 +91,7 @@ export function buildContext(db, projectPath, sessionId) {
         });
     } catch {
         context.memories = [];
+        context.integrityWarnings.push('Semantic recall failed during SessionStart context build.');
     }
 
     // ---------------------------------------------------------------
@@ -159,7 +166,7 @@ export function formatContextForInjection(context, alerts, r2Stats) {
     if (memories.length > 0) {
         parts.push('[MEMORY]');
         for (const m of memories) {
-            parts.push(`  - ${truncate(m.text, 150)}`);
+            parts.push(`  - ${formatMemoryBullet(m)}`);
         }
     }
 
@@ -207,6 +214,26 @@ export function truncate(text, maxLen) {
     if (!text) return '';
     if (text.length <= maxLen) return text;
     return text.substring(0, maxLen - 3) + '...';
+}
+
+function formatMemoryBullet(memory) {
+    const text = truncate(memory?.text, 150);
+    const metadata = memory?.metadata || {};
+    const provenance = [];
+    if (metadata.source_type || metadata.source) {
+        provenance.push(metadata.source_type || metadata.source);
+    }
+    if (metadata.created_at) {
+        provenance.push(String(metadata.created_at).slice(0, 10));
+    }
+    if (metadata.session_id) {
+        provenance.push(`session=${metadata.session_id}`);
+    }
+
+    if (provenance.length === 0) {
+        return text;
+    }
+    return `[${provenance.join(' | ')}] ${text}`;
 }
 
 /**

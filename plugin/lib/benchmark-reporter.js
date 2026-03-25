@@ -175,8 +175,10 @@ function compareVersions(db, versionA, versionB) {
     // Identify improved and regressed eval cases
     const improved = [];
     const regressed = [];
+    const caseMapB = {};
 
     for (const caseB of reportB.per_case) {
+        caseMapB[caseB.eval_case] = caseB;
         const caseA = caseMapA[caseB.eval_case];
         if (!caseA) {
             // New case in versionB — if passing, count as improved
@@ -190,6 +192,12 @@ function compareVersions(db, versionA, versionB) {
             improved.push(caseB.eval_case);
         } else if (caseB.pass_rate < caseA.pass_rate) {
             regressed.push(caseB.eval_case);
+        }
+    }
+
+    for (const caseA of reportA.per_case) {
+        if (!caseMapB[caseA.eval_case]) {
+            regressed.push(caseA.eval_case);
         }
     }
 

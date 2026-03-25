@@ -1,6 +1,9 @@
 # Vibe Science — Eval Framework
 
-Behavioral evaluation suite for testing Vibe Science skill triggering and quality gate enforcement.
+Schema-first eval framework for validating Vibe Science eval cases and benchmark recording.
+Behavioral hook/agent harnessing remains future work; today the executable path is
+`schema_validation_only` plus hook-level regression coverage in `__test_e2e.mjs`
+and end-to-end smoke/readiness checks.
 
 ## Quick Start
 

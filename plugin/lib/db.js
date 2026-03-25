@@ -750,6 +750,17 @@ export function getCitationChecks(db, filters = {}) {
     if (!db) return [];
     const { sessionId = null, claimId = null } = filters;
     try {
+        if (claimId && sessionId) {
+            return stmt(db,
+                `SELECT cc.* FROM citation_checks cc
+                 JOIN sessions s ON s.id = cc.session_id
+                 WHERE cc.claim_id = ?
+                   AND s.project_path = (
+                       SELECT project_path FROM sessions WHERE id = ?
+                   )
+                 ORDER BY cc.created_at DESC, cc.id DESC`
+            ).all(claimId, sessionId);
+        }
         if (claimId) {
             return stmt(db,
                 `SELECT * FROM citation_checks
@@ -838,6 +849,31 @@ export function queueForEmbedding(db, text, metadata = null) {
     return stmt(db,
         `INSERT INTO embed_queue (text, metadata, created_at) VALUES (?, ?, ?)`
     ).run(text, meta, new Date().toISOString());
+}
+
+/**
+ * Resolve the latest known agent role for a session from prompt_log.
+ *
+ * @param {import('better-sqlite3').Database} db
+ * @param {string} sessionId
+ * @returns {string|null}
+ */
+export function getLatestPromptRole(db, sessionId) {
+    if (!db || !sessionId) return null;
+    try {
+        const row = stmt(db,
+            `SELECT agent_role
+             FROM prompt_log
+             WHERE session_id = ?
+               AND agent_role IS NOT NULL
+               AND trim(agent_role) != ''
+             ORDER BY timestamp DESC, id DESC
+             LIMIT 1`
+        ).get(sessionId);
+        return row?.agent_role ?? null;
+    } catch {
+        return null;
+    }
 }
 
 // =====================================================

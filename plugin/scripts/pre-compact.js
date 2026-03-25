@@ -16,6 +16,7 @@
 
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { canonicalizeProjectPath } from '../lib/path-utils.js';
 
 // Dynamic imports — graceful if better-sqlite3 or other native deps missing
 let openDB, initDB, closeDB, logSpineEntry, queueForEmbedding;
@@ -50,7 +51,7 @@ try {
 async function main(event) {
     const sessionId = event.session_id ?? event.sessionId ?? null;
     const trigger = event.trigger ?? 'unknown';
-    const projectPath = event.project_path || event.cwd || process.cwd();
+    const projectPath = canonicalizeProjectPath(event.project_path || event.cwd || process.cwd());
 
     if (!sessionId) {
         return; // Nothing to snapshot without a session

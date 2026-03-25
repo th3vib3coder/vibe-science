@@ -2,10 +2,10 @@
  * Vibe Science v7.0 TRACE — Gate Engine
  *
  * Gate enforcement logic consumed by post-tool-use.js.
- * Implements DQ1-DQ4 data quality gates, DD0 data dictionary,
- * L-1+ literature gate, L0/D1 citation gates, and claim-level
- * gate aggregation. (DC0 design compliance is skill-level only —
- * no runtime producer yet.)
+ * Implements DQ4 data-quality sync, L-1+ literature gating,
+ * L0/D1 citation gates, and claim-level gate aggregation.
+ * DQ1-DQ3, DD0, and DC0 remain skill-level checks until
+ * runtime producers exist.
  *
  * All functions are pure or DB-dependent — no side-effects beyond
  * the return values.  The calling hook decides whether to BLOCK
@@ -34,32 +34,33 @@ import { getCitationChecks as getCitationChecksFromDb } from './db.js';
 
 /**
  * Core gates that every claim must pass before it can be written
- * to CLAIM-LEDGER.  Domain-specific configs may add more (G0-G6,
- * DQ1-DQ3, etc.) but these are always required.
+ * to CLAIM-LEDGER. Domain-specific or methodological gates may
+ * still exist at the skill level, but only mechanized runtime
+ * producers belong here.
  *
- * NOTE: DC0 (Design Compliance) is NOT included here because the runtime
- * has no automatic producer for it — it requires semantic comparison between
- * RQ.md design and actual execution that no hook can mechanize yet.
- * DC0 remains a prompt-level methodological check in the skill.
- * When a DC0 producer exists, add it back here.
+ * NOTE: DQ1-DQ3, DD0, and DC0 are NOT included here because the runtime
+ * has no automatic producers for them yet. They remain methodological,
+ * skill-level checks until the plugin can measure them honestly.
  */
 const BASE_CLAIM_GATES = ['DQ4'];
 
 /**
  * Extended gate sets keyed by claim "tier".
  * Tier is encoded in the claim ID:
- *   C0xx → observational (tier 0)  — needs DQ4
- *   C1xx → analytical   (tier 1)  — adds DQ1
- *   C2xx → model-based  (tier 2)  — adds DQ1 + DQ2
- *   C3xx → calibrated   (tier 3)  — adds DQ1 + DQ2 + DQ3
- *   (DC0 will be added back when a runtime producer exists)
+ *   C0xx → observational (tier 0)
+ *   C1xx → analytical   (tier 1)
+ *   C2xx → model-based  (tier 2)
+ *   C3xx → calibrated   (tier 3)
+ *
+ * The taxonomy is preserved for future runtime producers, but all
+ * tiers currently share the same mechanized gate set.
  *   CLAIM-N → legacy format, treated as tier 1
  */
 const TIER_GATES = {
     0: [...BASE_CLAIM_GATES],
-    1: [...BASE_CLAIM_GATES, 'DQ1'],
-    2: [...BASE_CLAIM_GATES, 'DQ1', 'DQ2'],
-    3: [...BASE_CLAIM_GATES, 'DQ1', 'DQ2', 'DQ3'],
+    1: [...BASE_CLAIM_GATES],
+    2: [...BASE_CLAIM_GATES],
+    3: [...BASE_CLAIM_GATES],
 };
 
 // ─────────────────────────────────────────────────────────────────────
@@ -136,17 +137,33 @@ export function checkClaimGates(db, claimId, sessionId) {
 
     const required = getRequiredGatesForClaim(claimId);
 
-    // Query PASS entries for this claim OR session-level (claim_id IS NULL).
+    // Query PASS entries scoped to the current project.
+    // Claim IDs are project-local, not globally unique, so both claim-level
+    // and session-level gates must stay inside the current project's boundary.
     // Session-level gates like DQ4 are logged without a specific claim_id
-    // but still satisfy the prerequisite for any claim in that session.
+    // and are valid across sessions of the same project.
     let passedGates = [];
     try {
-        const rows = db.prepare(
-            `SELECT DISTINCT gate_id FROM gate_checks
-             WHERE (claim_id = ? OR (claim_id IS NULL AND session_id = ?))
-               AND status = 'PASS'`
-        ).all(claimId, sessionId || '');
-        passedGates = rows.map(r => r.gate_id);
+        if (sessionId) {
+            const rows = db.prepare(
+                `SELECT DISTINCT gc.gate_id
+                 FROM gate_checks gc
+                 JOIN sessions s ON s.id = gc.session_id
+                 WHERE s.project_path = (
+                     SELECT project_path FROM sessions WHERE id = ?
+                 )
+                   AND gc.status = 'PASS'
+                   AND (gc.claim_id = ? OR gc.claim_id IS NULL)`
+            ).all(sessionId, claimId);
+            passedGates = rows.map(r => r.gate_id);
+        } else {
+            const rows = db.prepare(
+                `SELECT DISTINCT gate_id FROM gate_checks
+                 WHERE claim_id = ?
+                   AND status = 'PASS'`
+            ).all(claimId);
+            passedGates = rows.map(r => r.gate_id);
+        }
     } catch {
         // If DB is unavailable, fail open with a warning
         return { pass: true, _warning: 'DB unavailable — gate check skipped' };

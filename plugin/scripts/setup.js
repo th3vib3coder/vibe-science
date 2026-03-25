@@ -354,7 +354,7 @@ async function main(_event) {
 
     // ---- 6. Return result ---------------------------------------------------
     return {
-        status: dbReady ? 'ready' : 'degraded',
+        status: (dbReady && depsInstalled) ? 'ready' : 'degraded',
         db_path: dbPath,
         schema_applied: schemaApplied,
         schema_version: schemaVersion,

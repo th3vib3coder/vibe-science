@@ -22,6 +22,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join, basename, dirname } from 'node:path';
 import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
+import { canonicalizeProjectPath } from '../lib/path-utils.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -234,7 +235,7 @@ function loadDomainConfig(projectPath) {
 
 async function main(event) {
     const sessionId = randomUUID();
-    const projectPath = event.project_path || event.cwd || process.cwd();
+    const projectPath = canonicalizeProjectPath(event.project_path || event.cwd || process.cwd());
     const strictMode = process.env.VIBE_SCIENCE_STRICT === '1';
     const warnings = [];
     const integrityNotes = [];
@@ -311,6 +312,12 @@ async function main(event) {
             } else {
                 context = fallbackBuildContext(db, projectPath, sessionId);
             }
+            if (Array.isArray(context?.integrityWarnings)) {
+                for (const note of context.integrityWarnings) {
+                    warnings.push(note);
+                    markIntegrity(note);
+                }
+            }
         } catch (err) {
             warnings.push(`Context build failed: ${err.message}`);
             markIntegrity(`Context build failed: ${err.message}`);
@@ -319,6 +326,7 @@ async function main(event) {
                 memories: [],
                 pendingSeeds: [],
                 alerts: [],
+                integrityWarnings: [],
             };
         }
 
@@ -358,6 +366,7 @@ async function main(event) {
             memories: [],
             pendingSeeds: [],
             alerts: [],
+            integrityWarnings: [],
         };
         if (strictMode) {
             // TRACE strict mode is intentionally asymmetric here:

@@ -9,28 +9,35 @@ const PUBMED_PATH_RE = /\bpubmed(?:\.ncbi(?:\.nlm)?\.nih\.gov)?\/(\d+)\/?\b/gi;
 const ARXIV_RE = /\barxiv\s*:\s*([A-Z.-]+\/\d{7}(?:V\d+)?|\d{4}\.\d{4,5}(?:V\d+)?)\b/gi;
 const ARXIV_URL_RE = /\bhttps?:\/\/arxiv\.org\/(?:abs|pdf)\/([A-Z.-]+\/\d{7}(?:V\d+)?|\d{4}\.\d{4,5}(?:V\d+)?)(?:\.pdf)?\b/gi;
 const CLAIM_ID_RE = /\bC-?\d+\b|\bCLAIM-\d+\b/i;
+const CLAIM_ID_ALL_RE = /\bC-?\d+\b|\bCLAIM-\d+\b/gi;
 
 export function extractCitationsFromEvent(event = {}) {
     const sessionId = event.session_id || null;
     if (!sessionId) return { citations: [], claimId: null, warnings: [] };
 
     const sources = collectTextSources(event);
-    // Fallback claimId for sources that don't contain their own claim block
-    const fallbackClaimId = extractClaimIdFromTexts(sources.map(source => source.text));
+    const eventClaimIds = extractClaimIdsFromTexts(sources.map(source => source.text));
+    const fallbackClaimId = eventClaimIds.length === 1 ? eventClaimIds[0] : null;
     const warnings = [];
     const dedupe = new Map();
 
     for (const source of sources) {
-        // Per-source claim attribution: if this source text contains a claim ID,
-        // use it; otherwise fall back to the event-level claim.
-        // This fixes multi-claim writes (MultiEdit with C-001 + C-002).
-        const sourceClaimId = extractClaimIdFromTexts([source.text]) || fallbackClaimId;
-
-        for (const citation of extractCitationsFromText(source.text, {
+        const sourceClaimIds = extractClaimIdsFromTexts([source.text]);
+        const sourceClaimId = sourceClaimIds.length === 1 ? sourceClaimIds[0] : fallbackClaimId;
+        const extractedForSource = extractCitationsFromText(source.text, {
             sessionId,
             claimId: sourceClaimId,
             sourceLabel: source.label,
-        })) {
+        });
+
+        if (!sourceClaimId && extractedForSource.length > 0 && eventClaimIds.length > 1) {
+            warnings.push(
+                `Ambiguous citation attribution in ${source.label}; ` +
+                `multiple claim IDs present, citations stored at session scope.`
+            );
+        }
+
+        for (const citation of extractedForSource) {
             if (!dedupe.has(citation.citation_id)) {
                 dedupe.set(citation.citation_id, citation);
             }
@@ -95,7 +102,7 @@ export function normalizeDoi(value) {
         .replace(/^https?:\/\/(?:dx\.)?doi\.org\//i, '')
         .replace(/^doi:\s*/i, '')
         .trim();
-    const sanitized = withoutPrefix.replace(/[)\].,;:]+$/g, '');
+    const sanitized = withoutPrefix.replace(/[)\].,;:/]+$/g, '');
     return /^10\.\d{4,9}\/\S+$/i.test(sanitized) ? sanitized.toLowerCase() : null;
 }
 
@@ -112,7 +119,7 @@ export function normalizeArxivId(value) {
         .replace(/^arxiv:\s*/i, '')
         .replace(/\.pdf$/i, '')
         .trim();
-    const sanitized = withoutPrefix.replace(/[)\].,;:]+$/g, '');
+    const sanitized = withoutPrefix.replace(/[)\].,;:/]+$/g, '');
     return sanitized ? sanitized.toLowerCase() : null;
 }
 
@@ -156,6 +163,16 @@ function extractClaimIdFromTexts(texts) {
         if (match) return normalizeClaimId(match[0]);
     }
     return null;
+}
+
+function extractClaimIdsFromTexts(texts) {
+    const ids = new Set();
+    for (const text of texts) {
+        for (const match of String(text || '').matchAll(CLAIM_ID_ALL_RE)) {
+            ids.add(normalizeClaimId(match[0]));
+        }
+    }
+    return [...ids];
 }
 
 function buildCitationRecord({ sessionId, claimId, rawRef, citationType, normalizedId, sourceLabel }) {

@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+import { canonicalizeProjectPath } from '../lib/path-utils.js';
+
 /**
  * Vibe Science v7.0 TRACE -- Stop Hook
  *
@@ -72,7 +74,7 @@ try {
 
 async function main(event) {
     const sessionId = event.session_id ?? event.sessionId ?? null;
-    const projectPath = event.project_path || event.cwd || process.cwd();
+    const projectPath = canonicalizeProjectPath(event.project_path || event.cwd || process.cwd());
     const strictMode = process.env.VIBE_SCIENCE_STRICT === '1';
     const integrityNotes = [];
     let integrityStatus = 'INTEGRITY_OK';
@@ -182,17 +184,20 @@ async function main(event) {
         //    Must run BEFORE endSession to avoid setting ended_at prematurely
         // =========================================================
 
+        // Find claims whose MOST RECENT lifecycle event is CREATED (not yet reviewed/killed/disputed).
+        // This handles re-created claims correctly: if C-001 was reviewed in session 1 then
+        // re-created in session 2, the latest event is CREATED → requires new review.
         const unreviewedClaims = db.prepare(`
-            SELECT DISTINCT ce.claim_id
-            FROM claim_events ce
-            WHERE ce.session_id = ?
-              AND ce.event_type = 'CREATED'
-              AND ce.claim_id NOT IN (
-                  SELECT claim_id FROM claim_events
-                  WHERE session_id = ?
-                    AND event_type IN ('R2_REVIEWED', 'KILLED', 'DISPUTED')
-              )
-        `).all(sessionId, sessionId);
+            SELECT claim_id FROM (
+                SELECT ce.claim_id, ce.event_type,
+                       ROW_NUMBER() OVER (PARTITION BY ce.claim_id ORDER BY ce.timestamp DESC, ce.id DESC) AS rn
+                FROM claim_events ce
+                WHERE ce.session_id IN (
+                    SELECT id FROM sessions WHERE project_path = ?
+                )
+            )
+            WHERE rn = 1 AND event_type = 'CREATED'
+        `).all(projectPath);
 
         if (unreviewedClaims.length > 0) {
             const claimIds = unreviewedClaims.map(c => c.claim_id).join(', ');
@@ -223,17 +228,7 @@ async function main(event) {
         }
 
         // =========================================================
-        // 3. STATE EXPORT (LAW 7: resumability)
-        // =========================================================
-
-        try {
-            updateStateMdFromDB(db, sessionId, projectPath);
-        } catch (err) {
-            markIntegrity(`STATE export failed: ${err.message}`);
-        }
-
-        // =========================================================
-        // 4. PATTERN EXTRACTION (cross-session recurring patterns)
+        // 3. PATTERN EXTRACTION (cross-session recurring patterns)
         // =========================================================
 
         try {
@@ -285,6 +280,26 @@ async function main(event) {
                     unreviewed_claims: 0
                 }
             };
+        }
+
+        // =========================================================
+        // 4. STATE EXPORT (LAW 7: resumability)
+        //    Must happen AFTER endSession so STATE.md reflects
+        //    the persisted session summary/end markers.
+        // =========================================================
+
+        try {
+            updateStateMdFromDB(db, sessionId, projectPath);
+        } catch (err) {
+            markIntegrity(`STATE export failed: ${err.message}`);
+            try {
+                updateSessionIntegrity(db, sessionId, {
+                    status: 'INTEGRITY_DEGRADED',
+                    note: `STATE export failed: ${err.message}`,
+                });
+            } catch {
+                // Never block a successfully persisted stop on STATE export drift.
+            }
         }
 
         try {

@@ -56,6 +56,49 @@ export function normalizeClaimId(value) {
     return raw;
 }
 
+/**
+ * Extract the claim IDs that are actually being written in ledger content.
+ *
+ * Priority:
+ *   1. structured vibe-claim blocks (canonical source of truth)
+ *   2. freeform ledger lines that begin with a claim ID
+ *   3. first claim-like token as a last resort
+ *
+ * This avoids gating incidental references like "extends C-001" as if the
+ * user were editing claim C-001.
+ *
+ * @param {string} content
+ * @returns {string[]}
+ */
+export function extractClaimIdsForWrite(content) {
+    const text = String(content || '');
+    if (!text.trim()) return [];
+
+    const parsed = parseStructuredBlocks(text, { allowedTypes: ['claim'] });
+    const structuredIds = parsed.blocks
+        .filter(block => block.type === 'claim' && block.data?.id)
+        .map(block => normalizeClaimId(block.data.id))
+        .filter(Boolean);
+
+    if (structuredIds.length > 0) {
+        return [...new Set(structuredIds)];
+    }
+
+    const lineScopedIds = new Set();
+    for (const line of text.split(/\r?\n/)) {
+        const match = line.match(/^\s*(?:[-*+]\s*)?(C-?\d+|CLAIM-\d+)\b(?:\s*[:|-]|\s+)/i);
+        if (match) {
+            lineScopedIds.add(normalizeClaimId(match[1]));
+        }
+    }
+    if (lineScopedIds.size > 0) {
+        return [...lineScopedIds];
+    }
+
+    const fallbackId = extractFirstClaimId(text);
+    return fallbackId ? [fallbackId] : [];
+}
+
 function toClaimEventFromBlock(block, sessionId) {
     const claimId = normalizeClaimId(block.data.id);
     const eventType = normalizeEventType(block.data.event_type);

@@ -20,6 +20,7 @@
 import { createHash } from 'node:crypto';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { canonicalizeProjectPath } from '../lib/path-utils.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -112,7 +113,13 @@ function formatMemories(memories) {
         const text = typeof m === 'string' ? m : (m.text || m.content || JSON.stringify(m));
         const truncated = text.length > 200 ? text.substring(0, 200) + '...' : text;
         const distance = m.distance != null ? ` (relevance: ${(1 - m.distance).toFixed(2)})` : '';
-        lines.push(`  - ${truncated}${distance}`);
+        const metadata = typeof m === 'object' && m !== null ? (m.metadata || {}) : {};
+        const provenance = [];
+        if (metadata.source_type || metadata.source) provenance.push(metadata.source_type || metadata.source);
+        if (metadata.created_at) provenance.push(String(metadata.created_at).slice(0, 10));
+        if (metadata.session_id) provenance.push(`session=${metadata.session_id}`);
+        const prefix = provenance.length > 0 ? `[${provenance.join(' | ')}] ` : '';
+        lines.push(`  - ${prefix}${truncated}${distance}`);
     }
     return lines.join('\n');
 }
@@ -121,7 +128,7 @@ function formatMemories(memories) {
  * Extract project path from event, with fallbacks.
  */
 function getProjectPath(event) {
-    return event.project_path || event.cwd || process.cwd();
+    return canonicalizeProjectPath(event.project_path || event.cwd || process.cwd());
 }
 
 // ---------------------------------------------------------------------------
