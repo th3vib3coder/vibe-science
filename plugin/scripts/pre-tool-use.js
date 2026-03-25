@@ -279,7 +279,9 @@ function hasConfounderHarness(text) {
 function looksClaimLike(text) {
   const source = String(text || '');
   if (!source.trim()) return false;
-  return /```(?:vibe-)?claim\b|(?:^|\n)\s*(?:[-*]\s*)?(?:id\s*:\s*)?(?:C-?\d+|CLAIM-\d+)\b|event_type\s*:/i.test(source);
+  // Detect claim-like content: structured blocks or claim IDs at line start.
+  // NOTE: event_type alone is NOT sufficient — it appears in generic YAML/JSON configs.
+  return /```(?:vibe-)?claim\b|(?:^|\n)\s*(?:[-*]\s*)?(?:id\s*:\s*)?(?:C-?\d+|CLAIM-\d+)\b/i.test(source);
 }
 
 function detectGovernanceShellWrite(toolInput = {}) {
