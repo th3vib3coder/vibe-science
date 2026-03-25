@@ -15,14 +15,20 @@ export function extractCitationsFromEvent(event = {}) {
     if (!sessionId) return { citations: [], claimId: null, warnings: [] };
 
     const sources = collectTextSources(event);
-    const claimId = extractClaimIdFromTexts(sources.map(source => source.text));
+    // Fallback claimId for sources that don't contain their own claim block
+    const fallbackClaimId = extractClaimIdFromTexts(sources.map(source => source.text));
     const warnings = [];
     const dedupe = new Map();
 
     for (const source of sources) {
+        // Per-source claim attribution: if this source text contains a claim ID,
+        // use it; otherwise fall back to the event-level claim.
+        // This fixes multi-claim writes (MultiEdit with C-001 + C-002).
+        const sourceClaimId = extractClaimIdFromTexts([source.text]) || fallbackClaimId;
+
         for (const citation of extractCitationsFromText(source.text, {
             sessionId,
-            claimId,
+            claimId: sourceClaimId,
             sourceLabel: source.label,
         })) {
             if (!dedupe.has(citation.citation_id)) {
@@ -37,7 +43,7 @@ export function extractCitationsFromEvent(event = {}) {
 
     return {
         citations: [...dedupe.values()],
-        claimId,
+        claimId: fallbackClaimId,
         warnings,
     };
 }

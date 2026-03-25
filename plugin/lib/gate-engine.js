@@ -35,16 +35,23 @@ import { getCitationChecks as getCitationChecksFromDb } from './db.js';
  * Core gates that every claim must pass before it can be written
  * to CLAIM-LEDGER.  Domain-specific configs may add more (G0-G6,
  * DQ1-DQ3, etc.) but these are always required.
+ *
+ * NOTE: DC0 (Design Compliance) is NOT included here because the runtime
+ * has no automatic producer for it — it requires semantic comparison between
+ * RQ.md design and actual execution that no hook can mechanize yet.
+ * DC0 remains a prompt-level methodological check in the skill.
+ * When a DC0 producer exists, add it back here.
  */
-const BASE_CLAIM_GATES = ['DQ4', 'DC0'];
+const BASE_CLAIM_GATES = ['DQ4'];
 
 /**
  * Extended gate sets keyed by claim "tier".
  * Tier is encoded in the claim ID:
- *   C0xx → observational (tier 0)  — needs DQ4 + DC0
+ *   C0xx → observational (tier 0)  — needs DQ4
  *   C1xx → analytical   (tier 1)  — adds DQ1
  *   C2xx → model-based  (tier 2)  — adds DQ1 + DQ2
  *   C3xx → calibrated   (tier 3)  — adds DQ1 + DQ2 + DQ3
+ *   (DC0 will be added back when a runtime producer exists)
  *   CLAIM-N → legacy format, treated as tier 1
  */
 const TIER_GATES = {
