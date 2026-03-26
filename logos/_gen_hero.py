@@ -5,7 +5,7 @@ Epistemic Architecture: tighter panels, visible grid, stronger glow.
 from PIL import Image, ImageDraw, ImageFont
 import os, math
 
-W, H = 1280, 640
+W, H = 1400, 720
 FONT_DIR = os.path.expanduser(
     r"~/.claude/plugins/marketplaces/anthropic-agent-skills/skills/canvas-design/canvas-fonts"
 )
@@ -29,14 +29,14 @@ def font(name, size):
     p = os.path.join(FONT_DIR, name)
     return ImageFont.truetype(p, size) if os.path.exists(p) else ImageFont.load_default()
 
-f_title = font("BigShoulders-Bold.ttf", 76)
-f_sub = font("InstrumentSans-Regular.ttf", 21)
-f_mono = font("GeistMono-Regular.ttf", 12)
-f_mono_b = font("GeistMono-Bold.ttf", 13)
-f_label = font("InstrumentSans-Regular.ttf", 15)
-f_tag = font("GeistMono-Bold.ttf", 11)
-f_small = font("GeistMono-Regular.ttf", 10)
-f_tiny = font("GeistMono-Regular.ttf", 9)
+f_title = font("BigShoulders-Bold.ttf", 80)
+f_sub = font("InstrumentSans-Regular.ttf", 23)
+f_mono = font("GeistMono-Regular.ttf", 15)
+f_mono_b = font("GeistMono-Bold.ttf", 16)
+f_label = font("InstrumentSans-Regular.ttf", 17)
+f_tag = font("GeistMono-Bold.ttf", 13)
+f_small = font("GeistMono-Regular.ttf", 13)
+f_tiny = font("GeistMono-Regular.ttf", 12)
 
 img = Image.new("RGB", (W, H), BG)
 draw = ImageDraw.Draw(img)
@@ -68,9 +68,9 @@ x0, y0 = 60, 48
 # Tags
 def draw_tag(x, y, text, border, text_c):
     tw = draw.textlength(text, font=f_tag)
-    draw.rounded_rectangle([x, y, x+tw+20, y+24], radius=12, outline=border, width=1)
-    draw.text((x+10, y+5), text, fill=text_c, font=f_tag)
-    return tw + 20
+    draw.rounded_rectangle([x, y, x+tw+24, y+28], radius=14, outline=border, width=1)
+    draw.text((x+12, y+5), text, fill=text_c, font=f_tag)
+    return tw + 24
 
 tw1 = draw_tag(x0, y0, "v7.0 TRACE", GREEN, GREEN)
 draw_tag(x0 + tw1 + 10, y0, "TRACE+ADAPT V0", BLUE, BLUE)
@@ -89,11 +89,11 @@ bullets = [
     (BLUE,  "Gates block claims until evidence is verified"),
     (AMBER, "Adaptive harness, not adaptive truth"),
 ]
-by = y0 + 280
+by = y0 + 290
 for col, txt in bullets:
-    draw.ellipse([x0+1, by+3, x0+10, by+12], fill=col)
-    draw.text((x0+20, by), txt, fill=LIGHT, font=f_label)
-    by += 28
+    draw.ellipse([x0+1, by+4, x0+12, by+15], fill=col)
+    draw.text((x0+22, by), txt, fill=LIGHT, font=f_label)
+    by += 32
 
 # Horizontal accent line under bullets
 draw.line([(x0, by+12), (x0+440, by+12)], fill=PANEL_STROKE, width=1)
@@ -105,15 +105,15 @@ sx = x0
 for val, lbl in stats:
     draw.text((sx, sy), val, fill=WHITE, font=font("BigShoulders-Bold.ttf", 32))
     vw = draw.textlength(val, font=font("BigShoulders-Bold.ttf", 32))
-    draw.text((sx + vw + 6, sy + 12), lbl, fill=SLATE, font=f_small)
+    draw.text((sx + vw + 6, sy + 10), lbl, fill=SLATE, font=f_small)
     lw = draw.textlength(lbl, font=f_small)
     sx += vw + lw + 28
 
 # === RIGHT: ARCHITECTURE STACK ===
-px, py = 580, 48
-pw = W - px - 48
-panel_h = 148
-gap = 14
+px, py = 620, 48
+pw = W - px - 52
+panel_h = 170
+gap = 16
 
 layers = [
     ("01", "METHODOLOGY", GREEN, GREEN_DIM,
@@ -139,17 +139,17 @@ for i, (num, name, col, dim, items) in enumerate(layers):
     draw.text((px+40, ly+10), name, fill=col, font=f_mono_b)
 
     # Tags
-    tx, ty = px + 16, ly + 40
+    tx, ty = px + 18, ly + 44
     for item in items:
-        iw = draw.textlength(item, font=f_small) + 14
-        if tx + iw > px + pw - 16:
-            tx = px + 16
-            ty += 26
+        iw = draw.textlength(item, font=f_small) + 18
+        if tx + iw > px + pw - 18:
+            tx = px + 18
+            ty += 30
         tag_bg = tuple(dim[j]//3 for j in range(3))
         tag_border = tuple(col[j]//3 for j in range(3))
-        draw.rounded_rectangle([tx, ty, tx+iw, ty+20], radius=5, fill=tag_bg, outline=tag_border, width=1)
-        draw.text((tx+7, ty+3), item, fill=LIGHT, font=f_small)
-        tx += iw + 6
+        draw.rounded_rectangle([tx, ty, tx+iw, ty+24], radius=6, fill=tag_bg, outline=tag_border, width=1)
+        draw.text((tx+9, ty+4), item, fill=LIGHT, font=f_small)
+        tx += iw + 7
 
     # Connector
     if i < 2:
@@ -163,7 +163,7 @@ for i, (num, name, col, dim, items) in enumerate(layers):
         draw.polygon([(ax-4, ay+gap-4), (ax+4, ay+gap-4), (ax, ay+gap)], fill=col)
 
 # === BOTTOM PROOF STRIP ===
-bar_y = H - 48
+bar_y = H - 52
 draw.line([(48, bar_y), (W-48, bar_y)], fill=PANEL_STROKE, width=1)
 
 proofs = ["169/169 tests", "smoke passing", "readiness passing", "0 regressions"]
