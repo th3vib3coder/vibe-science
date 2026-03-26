@@ -54,7 +54,7 @@ The repo now also includes **TRACE+ADAPT V0**, a small deterministic adaptation 
 
 **Verification status (repo state):**
 
-- `169/169` end-to-end tests passing
+- `170/170` end-to-end tests passing
 - smoke passing
 - readiness passing
 
@@ -103,9 +103,9 @@ When Vibe Science is active, your Claude Code session behaves differently. Here'
 
 | What happens | When | What you'll see |
 |-------------|------|----------------|
-| **Context injection** | Session starts | ~700 tokens of prior state, alerts, calibration hints, pending seeds, and carry-over runtime discipline |
+| **Context injection** | Session starts | ~700-850 tokens of prior state, alerts, calibration hints, pending seeds, patterns, and carry-over runtime discipline |
 | **Literature gate** | You try to set a research direction | Blocked if no prior literature search is logged |
-| **Confounder barrier** | You write a claim to `CLAIM-LEDGER.md` | Blocked unless the claim carries the required confounder metadata |
+| **Confounder barrier** | You write a claim to `CLAIM-LEDGER.md` | Blocked unless the claim carries the required confounder metadata; the full raw -> conditioned -> matched judgment still happens at methodology/review level |
 | **Citation verification** | You reference a DOI/PMID/arXiv | Auto-extracted, verified, persisted. Unresolved sources block `L0` |
 | **Promotion gate** | You advance a claim | Blocked at `D1` if citations are not all `VERIFIED` |
 | **Stop blocking** | You try to end the session | Blocked if claims have not been reviewed, killed, or disputed |
@@ -163,8 +163,8 @@ Vibe Science is not a single file — it's three layers that reinforce each othe
 │  LAYER 3: PLUGIN (Enforcement Body)                                    │
 │  7 lifecycle hooks · Gate engine · Permission engine                    │
 │  SQLite persistence (16 tables + FTS5) · Research spine (auto-log)     │
-│  R2 auto-calibration · Pattern extraction · Silent observer            │
-│  Context builder (~700 tokens) · Narrative engine                      │
+│  R2 calibration hints · Pattern extraction + harness hints · Silent observer │
+│  Context builder (~700-850 tokens) · Narrative engine                  │
 │  → Enforces selected checks and persistence                            │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
@@ -186,7 +186,7 @@ Versions v3.5 through v5.5 were prompt-only: the agent was *told* to run quality
 | **Reviewer 2** | "Please review this claim" | Hook blocks clean session end if claims are still unreviewed |
 | **Quality Gates** | "Check gate DQ4 before proceeding" | Exit code 2 = tool action blocked until gate passes |
 | **Research Logging** | "Write to PROGRESS.md" | Auto-logged to SQLite after every tool use |
-| **Memory Recall** | "Read STATE.md at session start" | Hook injects ~700 tokens of context automatically |
+| **Memory Recall** | "Read STATE.md at session start" | Hook injects ~700-850 tokens of context automatically |
 
 The plugin wraps part of the skill in **code-level enforcement and persistence**: 7 lifecycle hooks, a gate engine, a permission engine, and SQLite state across sessions.
 
@@ -198,17 +198,23 @@ The plugin wraps part of the skill in **code-level enforcement and persistence**
 
 The methodology is built around Reviewer 2, an adversarial reviewer whose job is to destroy claims before they harden into conclusions. The skill defines 7 activation modes: INLINE, FORCED, BATCH, BRAINSTORM, SHADOW, VETO, and REDIRECT. The plugin then enforces some of the operational consequences of that posture, including stop-time checks on unreviewed claims.
 
+The important boundary is this: the runtime can ingest review artifacts and enforce claim lifecycle consequences, but it does **not** yet semantically verify the full quality of every R2 mode or every review protocol declared in the methodology.
+
 ### Quality Gates (32 gates, 8 schema-enforced)
 
 The methodology defines 32 gates across literature, decision, tree, brainstorm, and data-quality stages. 8 of them are schema-backed. The plugin currently hard-enforces a valuable subset of these checks and logs gate outcomes to SQLite; the rest remain skill-level methodology and review discipline.
+
+Today the hard-stop core in the plugin is centered on `DQ4`, `L-1+`, `L0`, and `D1`. Adjacent enforcement rails also exist for stop-time claim resolution, Salvagente, and TEAM permission boundaries.
 
 ### Confounder Harness (LAW 9)
 
 LAW 9 requires every quantitative claim to pass: raw -> conditioned -> matched. Sign change = ARTIFACT. Collapse >50% = CONFOUNDED. Survives all three = ROBUST. Today this discipline is central in the skill and partially enforced in the plugin through CLAIM-LEDGER constraints and gate logic.
 
+The plugin's hard guarantee today is narrower than the full harness semantics: it enforces metadata and structural discipline on claim-like writes, while the actual ARTIFACT / CONFOUNDED / ROBUST judgment still depends on the methodology and adversarial review flow.
+
 ### Seeded Fault Injection (SFI)
 
-The system injects known faults into claim sets before R2 reviews. R2 doesn't know which claims are seeded. If R2 misses seeded faults, the review is invalid. This tests R2's vigilance, not its knowledge.
+Seeded Fault Injection is a core review protocol: known faults are introduced before R2 review so vigilance can be tested rather than assumed. Runtime support today is mainly artifact ingestion, calibration, and downstream analysis of populated SFI fields, rather than full automatic enforcement of every SFI step.
 
 ### Tree Search Over Hypotheses
 
@@ -217,8 +223,8 @@ OTAE-Tree architecture explores multiple hypotheses in parallel with 7 node type
 ### Cross-Session Learning and Adaptation
 
 - **Pattern extraction**: Gate failure clusters, repeated actions, and claim lifecycle patterns are extracted at session end
-- **Instinct model**: Recurring patterns can become confidence-scored suggestions with temporal decay
-- **R2 calibration**: Historical weakness tracking exists in the architecture and data model, but depends on how fully review events are populated
+- **Instinct model**: The full reference model is broader than the current runtime; the live path today is pattern carry-over plus deterministic advisory hints, rather than a fully autonomous instinct lifecycle
+- **R2 calibration**: Historical weakness tracking is computed at read time from ingested `r2_reviews`; it is useful, but it is not yet a closed-loop evaluator of review quality
 - **Semantic recall**: Present in the architecture, but still environment-dependent and not yet the whole story of memory retrieval
 - **Harness adaptation (`TRACE+ADAPT V0`)**: recurring runtime failures can now surface as short advisory hints at `SessionStart`, with deterministic activation rules and cooldowns
 
@@ -234,7 +240,7 @@ Every cycle scans for unexpected findings. Score >= 10 → QUEUE for triage. Sco
 
 | Hook | Trigger | What It Does |
 |------|---------|-------------|
-| **SessionStart** | Session opens | Auto-setup, DB init, injects ~700 tokens (state, alerts, R2 calibration, seeds) |
+| **SessionStart** | Session opens | Auto-setup, DB init, injects ~700-850 tokens (state, alerts, R2 calibration, patterns, seeds, harness hints) |
 | **UserPromptSubmit** | Before each prompt | Agent role detection, prompt logging, semantic recall via vector search |
 | **PreToolUse** | Before Write/Edit tool | LAW 9: blocks CLAIM-LEDGER modifications without confounder_status |
 | **PostToolUse** | After every tool | Gate enforcement, permission checks, auto-logging to research spine, observer alerts |
@@ -250,7 +256,7 @@ Every cycle scans for unexpected findings. Score >= 10 → QUEUE for triage. Sco
 
 - **Gate Engine**: Enforces DQ4, L-1+, L0, D1, and claim-gate aggregation at PostToolUse. Exit code 2 = BLOCK. (DQ1-DQ3, DD0, and DC0 remain skill-level methodological checks until runtime producers exist.)
 - **Permission Engine**: TEAM mode with role-based access control (researcher, reviewer2, judge, serendipity, lead, experimenter).
-- **Context Builder**: Progressive disclosure with semantic recall (~700 tokens per session start).
+- **Context Builder**: Progressive disclosure with semantic recall (~700-850 tokens per session start, depending on carry-over).
 - **Narrative Engine**: Template-based session summaries (deterministic, no LLM).
 - **R2 Calibration**: Weakness tracking, SFI catch rates, J0 trends across sessions with temporal decay.
 - **Pattern Extractor**: Cross-session pattern detection with confidence scoring and auto-archiving.
@@ -314,7 +320,7 @@ The v6.0 skill lives in `skills/vibe/` and contains the full methodology:
 - **Linux:** `sudo apt install build-essential` (Debian/Ubuntu) or equivalent
 
 **Optional:**
-- **Python 3.8+** — for enforcement scripts (stdlib only, no pip dependencies)
+- **Python 3.8+** — for deterministic helper scripts used in audits and methodology support (stdlib only, no pip dependencies)
 
 ---
 
@@ -412,7 +418,7 @@ vibe-science/
 │   ├── SKILL.md                 ← Full methodology (528 lines)
 │   ├── AGENTS.md                ← 7 agent roles with YAML frontmatter
 │   ├── references/              ← 36 reference documents
-│   ├── scripts/                 ← 6 Python enforcement scripts
+│   ├── scripts/                 ← 6 Python helper scripts for deterministic checks
 │   ├── assets/
 │   │   └── schemas/             ← 12 JSON validation schemas
 │   └── agents/
@@ -431,7 +437,7 @@ vibe-science/
 │   │   └── worker-embed.js      ← Background embedding daemon (utility)
 │   ├── lib/                     ← selected engine modules (18 total)
 │   │   ├── db.js                ← SQLite operations
-│   │   ├── gate-engine.js       ← DQ/DC/DD/L-1+ enforcement
+│   │   ├── gate-engine.js       ← Runtime gate helpers (DQ4, L0, D1, L-1+, claim gate checks)
 │   │   ├── permission-engine.js ← Role-based access control
 │   │   ├── context-builder.js   ← Progressive context disclosure
 │   │   ├── harness-hints.js     ← Advisory carry-over hints at SessionStart

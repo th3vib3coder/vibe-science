@@ -16,7 +16,9 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep, WebSearch, WebFetch, Task
 
 # Vibe Science v7.0 TRACE — Observe · Recall · Operate
 
-> Research engine: agentic tree search over hypotheses, adversarial review by separate sub-agent, 32 quality gates (8 schema-enforced), serendipity detection, hook-based enforcement, cross-session learning, temporal decay calibration. Infinite loops until discovery.
+> Research engine: agentic tree search over hypotheses, adversarial review by separate sub-agent, 32 methodology gates (8 schema-enforced in the specification), serendipity detection, hook-based enforcement for the implemented runtime subset, cross-session pattern carry-over, and temporal-decay calibration hints. Infinite loops until discovery.
+
+> Runtime boundary note: this skill defines the full methodology. The Claude Code plugin currently hard-enforces only a subset of it (for example `DQ4`, `L-1+`, `L0`, `D1`, stop-time claim resolution, Salvagente, and TEAM permissions). The rest remains methodology until wired into runtime.
 
 ## WHY THIS SKILL EXISTS
 
@@ -49,7 +51,7 @@ In Claude Code, R2 is a **separate sub-agent** launched via the Task tool with i
 
 **LAW 1: DATA-FIRST** — No thesis without evidence from data. `NO DATA = NO GO.`
 **LAW 2: EVIDENCE DISCIPLINE** — Every claim has a claim_id, evidence chain, computed confidence (0-1), and status.
-**LAW 3: GATES BLOCK** — 32 quality gates are hard stops. Fix first, re-gate, then continue.
+**LAW 3: GATES BLOCK** — 32 quality gates are mandatory checkpoints in the methodology. The implemented runtime subset is mechanical hard-stop enforcement; the remainder stay procedural until wired into code.
 **LAW 4: REVIEWER 2 IS CO-PILOT** — R2 can VETO, REDIRECT, FORCE re-investigation. Non-negotiable.
 **LAW 5: SERENDIPITY IS THE MISSION** — Hunt for the unexpected at every cycle. Score >= 10 → QUEUE. >= 15 → INTERRUPT.
 **LAW 6: ARTIFACTS OVER PROSE** — If a step can produce a file, it MUST.
@@ -68,13 +70,13 @@ In Claude Code, R2 is a **separate sub-agent** launched via the Task tool with i
 
 | Innovation | What | Reference |
 |-----------|------|-----------|
-| Hook-Based Enforcement | 7 hooks (SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, Stop, PreCompact, SubagentStop) enforce laws mechanically | `references/hook-system.md` |
+| Hook-Based Enforcement | 7 hooks enforce the implemented runtime subset mechanically; broader methodology remains in the skill until wired | `references/hook-system.md` |
 | Cross-Session Learning | Pattern extraction at session end: gate failure clusters, repeated actions, claim lifecycle patterns | `references/pattern-extraction.md` |
-| Instinct Model | ECC-inspired learned behaviors with confidence decay. Observed patterns auto-promote after 3 confirmations. | `references/instinct-model.md` |
-| Temporal Decay R2 Calibration | R2 weakness tracking with exponential decay (weight = e^(-0.02 * weeks)). Recent reviews weigh more. | `references/r2-calibration.md` |
+| Instinct Model | ECC-inspired learned behaviors with confidence decay. Current runtime path is narrower than the full reference model. | `references/instinct-model.md` |
+| Temporal Decay R2 Calibration | Read-time R2 weakness tracking with exponential decay (weight = e^(-0.02 * weeks)) from ingested review artifacts. | `references/r2-calibration.md` |
 | PreCompact Context Resilience | Hook snapshots active research state to DB before context compaction | `references/context-resilience.md` |
 | Agent Handoff Protocol | Formal Context/Findings/Files/Questions/Recommendations documents for agent-to-agent transfers | `references/handoff-protocol.md` |
-| Progressive Context Building | SessionStart injects ~700 tokens: state, alerts, R2 calibration, patterns, pending seeds | `references/hook-system.md` |
+| Progressive Context Building | SessionStart injects ~700-850 tokens: state, alerts, R2 calibration, patterns, pending seeds, and runtime carry-over hints | `references/hook-system.md` |
 | DB-Backed Research Spine | Dual storage: SPINE.md file + spine_entries DB table. Embedding queue for semantic recall. | `references/research-spine.md` |
 | Claude Code Multi-Agent | Task tool delegation with native BFP. Model tiers: opus/sonnet/haiku per role. | `references/multi-agent-config.md` |
 
@@ -90,7 +92,7 @@ In Claude Code, R2 is a **separate sub-agent** launched via the Task tool with i
 | Data Dictionary Gate (DD0) | Document every dataset column before using it. Column names lie. | `references/data-dictionary.md` |
 | Design Compliance Gate (DC0) | Execution must match research design. Deviations documented. | `references/design-compliance.md` |
 | Literature Pre-Check (L-1) | Prior art search BEFORE committing to any direction. | `references/literature-precheck.md` |
-| Enforcement Scripts | Python scripts for deterministic gate checks (non-bypassable) | `scripts/` |
+| Enforcement Scripts | Python helper scripts for deterministic checks that support the methodology; the authoritative runtime path is the Claude Code hook layer | `scripts/` |
 
 ---
 
@@ -115,11 +117,11 @@ R2-DEEP as sub-agent (via Task tool) means it has NO access to the researcher's 
 ## SESSION INITIALIZATION
 
 ### Banner
-```
+``` 
 VIBE SCIENCE v7.0 TRACE — Observe · Recall · Operate
-HOOKS → SFI → BFP → R2 ENSEMBLE → V0/J0 → GATES (32 total, 8 schema-enforced)
+TRACE RUNTIME + REVIEW PROTOCOLS → R2 ENSEMBLE → METHODOLOGY GATES (32 total, runtime subset enforced)
 SERENDIPITY RADAR · RESEARCH SPINE · OBSERVER · DQ1-DQ4
-PATTERNS · INSTINCTS · TEMPORAL DECAY · HANDOFF PROTOCOL
+PATTERNS · HARNESS HINTS · TEMPORAL DECAY · HANDOFF PROTOCOL
 Detect · Persist · Demolish · Discover · Learn
 ```
 
@@ -131,8 +133,9 @@ At session start, the SessionStart hook automatically provides:
 3. **[R2 CALIBRATION]** — Temporal decay hints about R2's historical weaknesses
 4. **[PATTERNS]** — Cross-session learned patterns with confidence scores
 5. **[PENDING SEEDS]** — Serendipity seeds from prior sessions awaiting triage
+6. **[HARNESS HINTS]** — Deterministic carry-over guidance from recurring runtime failures
 
-This context is injected into the agent's system prompt (~700 tokens). No manual loading required.
+When the Claude Code plugin is active, this context is injected into the agent's system prompt (~700-850 tokens depending on carry-over). In skill-only mode, this automation layer is not available and context must be reconstructed manually.
 
 ### If `.vibe-science/` exists → RESUME
 1. Read STATE.md (includes tree state), last 20 lines of PROGRESS.md
@@ -185,7 +188,7 @@ Each cycle: ONE meaningful action. Each tree node = one OTAE cycle.
 
 | Phase | Actions | v5.5 Insertions | v6.0 Hooks |
 |-------|---------|-----------------|------------|
-| **OBSERVE** | Read STATE.md (includes tree state). Check pending gates, R2 demands, debug nodes. | Check Observer alerts. Check SPINE.md last entry. | SessionStart injects context: state, alerts, R2 calibration, patterns, seeds. |
+| **OBSERVE** | Read STATE.md (includes tree state). Check pending gates, R2 demands, debug nodes. | Check Observer alerts. Check SPINE.md last entry. | SessionStart injects context: state, alerts, R2 calibration, patterns, seeds, harness hints. |
 | **THINK** | Select next node or action. Plan: search, analyze, extract, compute, experiment. | **[DD0]** If new data: document all columns before use. **[L-1]** If new direction: literature pre-check. | Check instincts: any learned patterns relevant to current plan? |
 | **ACT** | Execute planned action. Produce artifacts. Debug if buggy (max 3, then prune). | **[DQ1]** After extraction. **[DQ2]** After training. **[DQ3]** After calibration. | PostToolUse auto-logs spine entries, runs observer checks. |
 | **EVALUATE** | Extract claims → CLAIM-LEDGER. Score confidence. Parse metrics. Detect serendipity. | **[DQ4]** Every finding: numbers match source. **[R2 INLINE]** 7-point checklist per finding. | Check instincts for relevant patterns. Update pattern confidence. |
@@ -193,7 +196,9 @@ Each cycle: ONE meaningful action. Each tree node = one OTAE cycle.
 | **CRYSTALLIZE** | Update STATE.md (including tree section), PROGRESS.md, CLAIM-LEDGER.md. | **[SPINE]** Mandatory structured entry. **[SSOT]** Run `sync_check.py`. | Stop hook generates narrative, exports STATE.md, extracts patterns. |
 
 ### v5.0 FORCED Review Path
-SFI injection → BFP Phase 1 (blind) → Full review Phase 2 → V0 gate → R3/J0 gate → Schema validation → Normal gate evaluation.
+Canonical methodology path: SFI injection → BFP Phase 1 (blind) → Full review Phase 2 → V0/J0 judgment → schema / gate consequences.
+
+Runtime note: the plugin currently supports this path mainly through artifact ingestion, downstream calibration, and claim-lifecycle consequences. It does not yet hook-enforce every semantic step of SFI/BFP/V0/J0 end-to-end.
 
 ### Tree Structure
 Tree modes: **LINEAR** (literature), **BRANCHING** (experiments), **HYBRID** (both). Tree search selects next node by confidence + metrics. Each node = one OTAE cycle.
@@ -204,16 +209,16 @@ Tree modes: **LINEAR** (literature), **BRANCHING** (experiments), **HYBRID** (bo
 
 ## HOOKS ENFORCEMENT
 
-7 hooks enforce the laws mechanically. They run as Node.js scripts triggered by Claude Code events.
+7 hooks enforce selected operational consequences of some laws mechanically. They run as Node.js scripts triggered by Claude Code events; the full methodology remains broader than the currently wired runtime.
 
 | Hook | Event | What It Does | Laws Enforced |
 |------|-------|-------------|---------------|
-| **SessionStart** | Session begins | Opens DB, creates session, builds progressive context (~700 tokens), loads R2 calibration + patterns + seeds | LAW 7 (resilience), LAW 12 (instinct) |
+| **SessionStart** | Session begins | Opens DB, creates session, builds progressive context (~700-850 tokens), loads R2 calibration + patterns + seeds + harness hints | LAW 7 (resilience), LAW 12 (pattern carry-over) |
 | **UserPromptSubmit** | Before each prompt | Identifies agent role, logs prompt hash, performs semantic recall via vector search | LAW 10 (crystallize), LAW 7 (resilience) |
 | **PostToolUse** | After every tool | Gate enforcement (DQ4, CLAIM-LEDGER prerequisites, L-1), permission checks, auto-logging spine entries, observer checks | LAW 3 (gates), LAW 6 (artifacts), LAW 10 (crystallize) |
 | **Stop** | Session ending | Narrative summary, blocks stop if unreviewed claims exist, exports STATE.md, extracts patterns | LAW 4 (R2 co-pilot), LAW 7 (resilience), LAW 12 (instinct) |
 | **PreCompact** | Before compaction | Snapshots active claims, pending seeds, spine count, STATE.md to DB | LAW 7 (resilience), LAW 10 (crystallize) |
-| **PreToolUse** | Before Write/Edit tool | Blocks CLAIM-LEDGER modifications without confounder_status field (regex matcher) | LAW 9 (confounder harness) |
+| **PreToolUse** | Before Write/Edit tool | Blocks CLAIM-LEDGER modifications without confounder_status field (metadata / structure guard, not full harness semantics) | LAW 9 operational guard |
 | **SubagentStop** | Subagent finishes | Checks killed claims have serendipity seeds (Salvagente Rule) | LAW 4 (R2 co-pilot), LAW 5 (serendipity) |
 
 All hooks degrade gracefully if the DB is unavailable. They never hard-crash.
@@ -236,20 +241,24 @@ Patterns are stored in the `research_patterns` DB table with confidence scores. 
 
 > Full protocol: `references/pattern-extraction.md`
 
-### Instinct Model (learned behaviors)
+### Instinct Model (reference design vs runtime)
 
-Inspired by the ECC instinct system. Atomic behavior patterns with confidence:
+The full ECC-style instinct ladder remains the reference design:
 
 - **Observation** (0.3): Pattern noticed once
 - **Pattern** (0.5): Observed 3+ times
 - **Instinct** (0.7): Confirmed by evidence
 - **Strong Instinct** (0.9): Never contradicted
 
-Decay: -0.02/week (exponential). Instincts below 0.2 are archived.
+Current runtime implementation is narrower:
 
-Scope: **project** (this RQ) or **global** (all RQs).
+- project-scoped pattern extraction into `research_patterns`
+- SessionStart pattern carry-over via `[PATTERNS]`
+- deterministic advisory carry-over via `[HARNESS HINTS]`
 
-> Full protocol: `references/instinct-model.md`
+Global instinct synthesis and automatic archival/strength transitions remain blueprint-level, not fully wired runtime behavior.
+
+> Full reference model: `references/instinct-model.md`
 
 ### R2 Calibration with Temporal Decay
 
@@ -313,7 +322,7 @@ This prevents context loss during agent transitions and satisfies LAW 7 (resilie
 | Mode | Trigger | Blocking? | Sub-Agent? |
 |------|---------|-----------|------------|
 | **BRAINSTORM** | Phase 0 completion | YES — must WEAK_ACCEPT | R2-DEEP |
-| **FORCED** | Major finding, stage transition, pivot, confidence explosion (>0.30/2cyc) | YES | R2-DEEP (SFI+BFP+V0+J0) |
+| **FORCED** | Major finding, stage transition, pivot, confidence explosion (>0.30/2cyc) | YES | R2-DEEP (full methodology target: SFI+BFP+V0+J0; runtime support today is partial) |
 | **BATCH** | 5 unreviewed claims accumulated | YES | R2-DEEP |
 | **SHADOW** | Every 3 cycles automatically | NO — can ESCALATE to FORCED | R2-DEEP |
 | **VETO** | R2 spots fatal flaw | YES — cannot be overridden except by human | R2-DEEP |
@@ -387,7 +396,7 @@ Three-part process: DETECTION → PERSISTENCE → VALIDATION.
 - **DD0**: Data dictionary — all columns documented before use
 - **DC0**: Design compliance — execution matches research design
 - **L-1**: Literature pre-check — prior art searched before committing direction
-- **V0**: Vigilance — SFI faults caught (RMS >= 0.80, FAR <= 0.10)
+- **V0**: Vigilance metric for SFI-enabled reviews — faults caught (RMS >= 0.80, FAR <= 0.10)
 - **J0**: Judge — R3 meta-review score >= 12/18, no dimension = 0
 
 > Full gate definitions: `references/gates-complete.md`
@@ -397,7 +406,7 @@ Three-part process: DETECTION → PERSISTENCE → VALIDATION.
 
 ## ENFORCEMENT SCRIPTS
 
-Python scripts for deterministic checks. Exit code 0 = PASS, non-zero = FAIL. Non-bypassable.
+Python scripts for deterministic checks. Exit code 0 = PASS, non-zero = FAIL. They support the methodology and audits, but the authoritative non-bypassable runtime path is the Node hook layer inside Claude Code.
 
 | Script | Purpose | CLI Example |
 |--------|---------|-------------|

@@ -41,7 +41,25 @@ v6.0 `NEXUS` introduced the dual architecture. v7.0 `TRACE` closes the operation
 - 7 lifecycle hooks remain the enforcement backbone
 - schema version advances to `4`
 - SQLite core now includes 16 regular tables, plus `memory_fts` and optional `vec_memories`
-- release verification includes `151/151` end-to-end tests, smoke, and readiness
+- release verification includes `170/170` end-to-end tests, smoke, and readiness
+
+### TRACE+ADAPT V0
+
+The current repo state also includes `TRACE+ADAPT V0`, a deterministic adaptation layer inside v7.0 TRACE.
+
+What it does:
+
+- computes short carry-over hints from already-persisted runtime failures
+- injects those hints at `SessionStart`
+- uses deterministic activation and cooldown rules
+- adds no schema changes and no LLM calls in hooks
+
+Boundary:
+
+- the harness may adapt
+- the truth model may not
+
+This means the runtime can improve how it reminds and steers work, but it does not redefine evidence validity, gate semantics, or scientific truth.
 
 TRACE is not a new philosophy. It is the moment the existing philosophy starts leaving enough structured evidence in the runtime to enforce itself.
 
@@ -49,9 +67,9 @@ TRACE is not a new philosophy. It is the moment the existing philosophy starts l
 
 ## v6.0 — NEXUS
 
-> *Methodology meets enforcement. The skill guides reasoning, the plugin makes violations structurally impossible.*
+> *Methodology meets enforcement. The skill guides reasoning, the plugin constrains selected behaviors and makes some shortcuts structurally impossible.*
 
-v5.5 proved that prompt-level methodology works — but it also proved that prompts can be ignored. 12 mistakes in the CP+CRISPR run, ZERO caught by automated checks. v6.0 solves this by splitting the system in two: the **skill** (methodology, unchanged from v5.5) guides *what to think*, while the **plugin** (new, code-level) controls *what can happen*.
+v5.5 proved that prompt-level methodology works — but it also proved that prompts can be ignored. 12 mistakes in the CP+CRISPR run, ZERO caught by automated checks. v6.0 solves this by splitting the system in two: the **skill** (methodology, unchanged from v5.5) guides *what to think*, while the **plugin** (new, code-level) constrains selected behaviors and persistence at runtime.
 
 ### Dual Architecture
 
@@ -60,14 +78,14 @@ v5.5 proved that prompt-level methodology works — but it also proved that prom
 │  SKILL (prompt-level)           │  PLUGIN (code-level)          │
 │  ─────────────────              │  ──────────────────           │
 │  OTAE loop                      │  7 lifecycle hooks            │
-│  R2 Ensemble (7 modes)          │  Gate Engine (DQ/DC/DD/L-1+)  │
+│  R2 Ensemble (7 modes)          │  Gate Engine (DQ4/L0/D1/L-1+) │
 │  SFI, BFP, R3 Judge             │  Permission Engine (6 roles)  │
 │  Brainstorm Engine               │  Research Spine (auto-log)    │
-│  Evidence Engine                 │  Context Builder (~700 tok)   │
+│  Evidence Engine                 │  Context Builder (~700-850 tok) │
 │  Serendipity Engine              │  Narrative Engine             │
-│  12 Constitutional Laws          │  R2 Auto-Calibration          │
+│  12 Constitutional Laws          │  R2 Calibration Hints         │
 │  21 protocols                    │  Silent Observer              │
-│                                  │  SQLite (13 tables)           │
+│                                  │  SQLite (16 tables + retrieval VTs) │
 │  Guides REASONING               │  Enforces BEHAVIOR            │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -93,7 +111,7 @@ Automatic structured logging of every significant action.
 - Links every numerical claim to its source
 
 #### Context Builder
-Progressive disclosure in ~700 tokens:
+Progressive disclosure targeting ~700-850 tokens:
 - Layer 1: STATE.md summary (~200 tok)
 - Layer 2: Semantic recall (~500 tok)
 - R2 calibration hints
@@ -108,18 +126,18 @@ Periodic integrity checks (every 10 tool uses):
 - Literature staleness
 
 #### R2 Auto-Calibration
-Cross-session learning for R2:
+Cross-session learning hints for R2:
 - Top weakness patterns
 - SFI miss categories
 - J0 score trends
 - Researcher error patterns
-- Hints injected at SessionStart
+- Hints injected at SessionStart from ingested review artifacts, not from a full autonomous review-quality loop
 
 ### Seven Lifecycle Hooks
 
 | Hook | When | What It Does |
 |------|------|-------------|
-| **SessionStart** | New conversation | Creates session, builds ~700-token context, loads R2 calibration. Auto-runs first-time setup (DB init, dependencies) if needed. |
+| **SessionStart** | New conversation | Creates session, builds ~700-850 token context, loads R2 calibration, active patterns, and advisory harness hints. Auto-runs first-time setup (DB init, dependencies) if needed. |
 | **UserPromptSubmit** | Every user message | Identifies agent role, logs prompt hash (privacy), semantic recall |
 | **PreToolUse** | Before Write/Edit tool | LAW 9: blocks CLAIM-LEDGER modifications without confounder_status field |
 | **PostToolUse** | Every tool action | **Gate enforcement**, permission check, auto-log to Spine, observer |
@@ -171,7 +189,7 @@ L-1+ is domain-aware with a 4-layer architecture:
 | `post-tool-use.js` | 1,767 | Gate enforcement, permissions, auto-logging, observer |
 | `session-start.js` | 446 | Context injection, R2 calibration, domain config |
 | `worker-embed.js` | 475 | Background embedding daemon |
-| `gate-engine.js` | 471 | DQ/DC/DD/L-1+ gate logic |
+| `gate-engine.js` | 471 | Runtime gate helpers for DQ4, L0, D1, L-1+, and claim prerequisites |
 | `db.js` | 668 | SQLite wrapper with prepared statement cache |
 | `prompt-submit.js` | 262 | Agent identification, semantic recall |
 | `context-builder.js` | 225 | Progressive disclosure |
