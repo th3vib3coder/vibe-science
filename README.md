@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="logos/logo-v7.0.svg" alt="Vibe Science" width="700">
+  <img src="logos/hero-v7.0-trace-adapt.svg" alt="Vibe Science v7.0 TRACE plus TRACE+ADAPT V0" width="980">
 </p>
 
 <p align="center">
@@ -41,6 +41,8 @@ The point is to make AI-assisted scientific work harder to rush, harder to fake,
 
 `TRACE` is the runtime-closure release. v6.0 `NEXUS` built the dual architecture; v7.0 makes the critical loops actually flow through the plugin.
 
+The repo now also includes **TRACE+ADAPT V0**, a small deterministic adaptation layer that sits on top of TRACE without changing the scientific truth model.
+
 **Operational today in the repo:**
 
 - 7 Claude Code lifecycle hooks
@@ -59,6 +61,24 @@ The point is to make AI-assisted scientific work harder to rush, harder to fake,
 Important scope note:
 
 Not every methodological rule is hard-enforced in the plugin yet. The core value proposition is already real, but some methodology still lives at skill/review level rather than code-level enforcement.
+
+### TRACE+ADAPT V0
+
+`TRACE+ADAPT V0` is **not** a new release codename. It is a feature layer inside v7.0 TRACE.
+
+What it adds:
+
+- deterministic carry-over hints injected at `SessionStart`
+- hints derived only from already-persisted runtime signals such as recurring gate failures and observer alerts
+- max 3 hints per session, with cooldown logic so stale patterns fade out
+- zero schema changes, zero LLM calls in hooks, zero protocol rewrites
+
+Its boundary is strict:
+
+- the harness may adapt
+- the truth model may not
+
+In practice, this means Vibe Science can improve **how it reminds and steers the workflow**, but it does not let the runtime redefine what counts as valid evidence, gate semantics, or scientific truth.
 
 ## Why This Project Exists
 
@@ -194,12 +214,13 @@ The system injects known faults into claim sets before R2 reviews. R2 doesn't kn
 
 OTAE-Tree architecture explores multiple hypotheses in parallel with 7 node types, 3 tree modes, and best-first selection. Minimum 3 draft nodes before any is promoted (LAW 8).
 
-### Cross-Session Learning (v6.0)
+### Cross-Session Learning and Adaptation
 
 - **Pattern extraction**: Gate failure clusters, repeated actions, and claim lifecycle patterns are extracted at session end
 - **Instinct model**: Recurring patterns can become confidence-scored suggestions with temporal decay
 - **R2 calibration**: Historical weakness tracking exists in the architecture and data model, but depends on how fully review events are populated
 - **Semantic recall**: Present in the architecture, but still environment-dependent and not yet the whole story of memory retrieval
+- **Harness adaptation (`TRACE+ADAPT V0`)**: recurring runtime failures can now surface as short advisory hints at `SessionStart`, with deterministic activation rules and cooldowns
 
 ### Serendipity Radar
 
