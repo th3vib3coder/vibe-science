@@ -14,23 +14,55 @@
 
 > Integrity-first research runtime for Claude Code. Plugin-enforced checks, adversarial review, confounder discipline, cross-session state, and audit trails for AI-assisted scientific work.
 
+## Start Here
+
+If you are landing on this repository for the first time, the shortest accurate summary is:
+
+**Vibe Science is an integrity-first research runtime for Claude Code.**
+
+It combines:
+
+- a **plugin** that persists state and structurally enforces selected checks
+- a **scientific skill** that defines the research methodology and adversarial review posture
+- a **design lineage** of blueprints and archives that explains how the system evolved
+
+It is **not** a paper-writing bot, and it is **not** just a prompt pack.  
+The point is to make AI-assisted scientific work harder to rush, harder to fake, and easier to audit.
+
+### If You Only Read Three Things
+
+| Goal | Read | Why |
+|------|------|-----|
+| **Try it quickly** | [Quick Start](#quick-start) | Fastest way to run the plugin in Claude Code |
+| **Understand the system** | [Three-Layer Architecture](#three-layer-architecture) | Explains the split between constitution, skill, and plugin |
+| **Inspect technical depth** | [ARCHITECTURE.md](ARCHITECTURE.md) | Runtime details, version history, and subsystem internals |
+
 ## Current Release — v7.0 TRACE
 
-`TRACE` is the runtime-closure release. v6.0 `NEXUS` built the dual architecture; v7.0 makes the critical loops actually flow through the plugin: claim/review/seed lifecycle persistence, citation extraction and verification gates, benchmark recording with A/B comparison, strict integrity tracking, and FTS5/BM25 retrieval closure.
+`TRACE` is the runtime-closure release. v6.0 `NEXUS` built the dual architecture; v7.0 makes the critical loops actually flow through the plugin.
 
-Vibe Science exists for a specific failure mode: an AI agent can analyze data, read papers, and produce a convincing conclusion faster than it can verify whether that conclusion is actually robust.
+**Operational today in the repo:**
 
-This repository combines three things:
+- 7 Claude Code lifecycle hooks
+- SQLite persistence for sessions, claim lifecycle, R2 reviews, serendipity seeds, gate checks, citations, observer alerts, patterns, and benchmarks
+- real `DQ4`, `L-1+`, `L0`, `D1`, and stop-time enforcement
+- citation extraction plus bounded DOI/PMID/arXiv verification
+- FTS5/BM25 retrieval with fallback tiers
+- SessionStart context recovery, observer alerts, cross-session patterns, and advisory harness hints
 
-- a **Claude Code plugin** with lifecycle hooks, SQLite persistence, gate checks, observer logic, and context recovery
-- a **scientific skill** with the methodology: OTAE loop, Reviewer 2, 32 gates, confounder harness, serendipity protocols, and research discipline
-- a **blueprint/archive history** showing how the system evolved from prompt-only skill to plugin-wrapped runtime
+**Verification status (repo state):**
 
-The goal is not "automatically write papers." The goal is to make the agent harder to fool, harder to rush, and easier to audit during scientific work.
+- `169/169` end-to-end tests passing
+- smoke passing
+- readiness passing
 
-## What It Already Caught In Practice
+Important scope note:
 
-Vibe Science was shaped by repeated real research failures, not by prompt aesthetics.
+Not every methodological rule is hard-enforced in the plugin yet. The core value proposition is already real, but some methodology still lives at skill/review level rather than code-level enforcement.
+
+## Why This Project Exists
+
+Vibe Science was shaped by repeated real research failure modes, not prompt aesthetics.
 
 Across **21 CRISPR research sprints**, the system caught a result that looked extremely publishable:
 
@@ -39,9 +71,11 @@ Across **21 CRISPR research sprints**, the system caught a result that looked ex
 - clean narrative
 - wrong conclusion
 
-After propensity matching, the sign reversed. Without an adversarial structure, that claim would have been written up as a finding.
+After propensity matching, the sign reversed. Without an adversarial structure, that claim would likely have been written up as a finding.
 
-That is the core reason this project exists.
+That is the failure mode this project is built against: an AI agent can analyze data, read papers, and produce a convincing conclusion faster than it can verify whether that conclusion is actually robust.
+
+This is also not just a local anecdote. Recent benchmark work points in the same direction: in **[MLR-Bench](https://arxiv.org/abs/2505.19955)**, current coding agents frequently produced fabricated or invalidated experimental results in a large fraction of cases. Vibe Science is an attempt to build against that structural problem, not around it.
 
 ## What You'll See In Your First Session
 
@@ -49,21 +83,16 @@ When Vibe Science is active, your Claude Code session behaves differently. Here'
 
 | What happens | When | What you'll see |
 |-------------|------|----------------|
-| **Context injection** | Session starts | ~700 tokens of prior state, alerts, R2 calibration hints, pending seeds appear automatically |
-| **Literature gate** | You try to set a research direction | Blocked if no prior literature search logged in this session |
-| **Confounder barrier** | You write a claim to CLAIM-LEDGER.md | Blocked unless the claim has `confounder_status` or `NOT_APPLICABLE` |
-| **Citation verification** | You reference a DOI/PMID/arXiv | Auto-extracted, verified via HTTP, persisted. Unresolved citations block L0 gate |
-| **Stop blocking** | You try to end the session | Blocked if any claim hasn't been reviewed by R2, killed, or disputed |
+| **Context injection** | Session starts | ~700 tokens of prior state, alerts, calibration hints, pending seeds, and carry-over runtime discipline |
+| **Literature gate** | You try to set a research direction | Blocked if no prior literature search is logged |
+| **Confounder barrier** | You write a claim to `CLAIM-LEDGER.md` | Blocked unless the claim carries the required confounder metadata |
+| **Citation verification** | You reference a DOI/PMID/arXiv | Auto-extracted, verified, persisted. Unresolved sources block `L0` |
+| **Promotion gate** | You advance a claim | Blocked at `D1` if citations are not all `VERIFIED` |
+| **Stop blocking** | You try to end the session | Blocked if claims have not been reviewed, killed, or disputed |
 | **Spine logging** | Every tool use | Auto-classified and logged to SQLite — no manual journaling needed |
-| **Integrity tracking** | Infrastructure fails | Session marked INTEGRITY_DEGRADED; `VIBE_SCIENCE_STRICT=1` makes failures loud |
+| **Integrity tracking** | Infrastructure fails | Session marked `INTEGRITY_DEGRADED`; `VIBE_SCIENCE_STRICT=1` makes failures loud |
 
-**The plugin doesn't replace your judgment.** It prevents the most dangerous shortcuts: publishing without confounder control, promoting without verified sources, closing without adversarial review, and losing context between sessions.
-
-## Why This Matters
-
-This is not just a local annoyance. Recent benchmark work is showing the same structural problem at field level: in **[MLR-Bench](https://arxiv.org/abs/2505.19955)**, current coding agents frequently produced **fabricated or invalidated experimental results in about 80% of cases**. Vibe Science is an attempt to build against that failure mode, not around it.
-
----
+**The plugin does not replace judgment.** It removes some of the most dangerous shortcuts: promoting without verified sources, closing without adversarial review, losing context between sessions, and writing polished prose detached from structured evidence.
 
 ## Quick Glossary
 
@@ -75,22 +104,16 @@ This is not just a local annoyance. Recent benchmark work is showing the same st
 | **SFI** | Seeded Fault Injection — known faults injected before R2 reviews to test vigilance |
 | **BFP** | Blind-First Pass — R2 reviews claims without seeing the researcher's justification first |
 | **DQ1-DQ4** | Data Quality gates at extraction, training, calibration, and finding stages |
-| **L0 / L-1+** | Literature gates: L-1+ requires search before direction, L0 verifies citation sources |
-| **D1** | Claim promotion gate — requires all citations VERIFIED before a claim advances |
+| **L0 / L-1+** | Literature gates: `L-1+` requires search before direction, `L0` verifies citation sources |
+| **D1** | Claim promotion gate — requires all citations `VERIFIED` before a claim advances |
 | **SSOT** | Single Source of Truth — numbers in prose must trace back to structured data files |
 | **Salvagente** | Italian for "life preserver" — when R2 kills a claim, it must produce a serendipity seed |
 | **SPINE** | Research Spine — structured audit trail of every action logged to SQLite |
 | **FTS5** | Full-Text Search 5 — SQLite's built-in search engine used for memory retrieval |
 
----
+## What This Repository Contains
 
-## What This Repo Actually Is
-
-If you are landing on this repository for the first time, the most important thing to know is this:
-
-Vibe Science is **not** just a prompt, and it is **not** just a plugin.
-
-It is a layered system for running research-oriented AI work under stronger discipline:
+This repository is a layered system for running research-oriented AI work under stronger discipline:
 
 - **Constitution layer**: project-level laws and behavioral constraints in `CLAUDE.md`
 - **Methodology layer**: the skill in `skills/vibe/`, which defines how the research process should work
@@ -98,44 +121,6 @@ It is a layered system for running research-oriented AI work under stronger disc
 - **Design lineage**: blueprints and archived versions that explain why the system looks the way it does
 
 That distinction matters because many capabilities live first as methodology, then later become plugin enforcement.
-
----
-
-## What Problem Does This Solve?
-
-AI agents are dangerous in science. Not because they hallucinate — that's the easy problem. The dangerous problem is that they find **real patterns** in **real data** and construct **plausible narratives** around them, without ever asking: *"What if this is an artifact?"*
-
-Over 21 CRISPR sprints, we watched the agent celebrate a result with OR=2.30 and p < 10^-100. After propensity matching, the sign reversed. Without a structural adversary, this would have been published as a finding.
-
-**The solution:** embed a "Reviewer 2" whose ONLY job is to destroy claims. Only what survives both builder and destroyer advances.
-
----
-
-## What You Get Today (March 2026)
-
-Vibe Science already has a serious working core.
-
-### Operational in code today
-
-- 7 Claude Code lifecycle hooks with setup/migration foundation
-- automatic claim, seed, and Reviewer 2 lifecycle ingestion into SQLite
-- citation extraction for DOI/PMID/arXiv plus bounded verification with real `L0` and `D1` gates
-- research spine auto-logging, stop-time enforcement, and strict integrity tracking (`INTEGRITY_OK` / `INTEGRITY_DEGRADED`)
-- benchmark artifacts, DB recording, smoke testing, and readiness A/B comparison
-- FTS5/BM25 retrieval closure with curated indexing and legacy/vector fallback tiers
-- session summaries, STATE export, PreCompact snapshots, observer alerts, and cross-session pattern extraction
-
-### Defined strongly in the skill and architecture
-
-- full 32-gate methodology
-- Reviewer 2 ensemble and adversarial review posture
-- LAW 9 confounder harness
-- serendipity workflow and seed preservation
-- tree-search methodology and domain-aware literature protocols
-
-### Important scope note
-
-Not every methodological rule is already hard-enforced in the plugin. The biggest remaining soft areas are richer behavioral evals beyond schema validation and the optional Tier 1 vector path, which still depends on environment availability. That is a scope boundary, not the core value proposition.
 
 ---
 
@@ -327,7 +312,7 @@ claude --plugin-dir .
 /vibe
 ```
 
-On first startup, the SessionStart hook auto-creates `~/.vibe-science/`, initializes the SQLite database (13 tables), and injects research context (~700 tokens).
+On first startup, the SessionStart hook auto-creates `~/.vibe-science/`, initializes the SQLite database (16 regular tables plus retrieval virtual tables), and injects structured research context (~700-850 tokens, depending on carry-over hints).
 
 ---
 
@@ -423,17 +408,19 @@ vibe-science/
 │   │   ├── subagent-stop.js     ← Salvagente Rule enforcement (v6.0.1)
 │   │   ├── setup.js             ← DB initialization (utility)
 │   │   └── worker-embed.js      ← Background embedding daemon (utility)
-│   ├── lib/                     ← 8 engine modules
+│   ├── lib/                     ← selected engine modules (18 total)
 │   │   ├── db.js                ← SQLite operations
 │   │   ├── gate-engine.js       ← DQ/DC/DD/L-1+ enforcement
 │   │   ├── permission-engine.js ← Role-based access control
 │   │   ├── context-builder.js   ← Progressive context disclosure
+│   │   ├── harness-hints.js     ← Advisory carry-over hints at SessionStart
 │   │   ├── narrative-engine.js  ← Template-based summaries
 │   │   ├── r2-calibration.js    ← Temporal decay calibration
 │   │   ├── pattern-extractor.js ← Cross-session pattern detection
-│   │   └── vec-search.js        ← Vector similarity search
+│   │   ├── vec-search.js        ← Vector similarity search
+│   │   └── ...                  ← Ingestion, parsing, benchmarking, and support modules
 │   └── db/
-│       ├── schema.sql           ← 13 table definitions
+│       ├── schema.sql           ← 16 regular tables + retrieval virtual tables
 │       └── domain-config-template.json
 │
 ├── commands/                    ← Slash commands (auto-discovered)
