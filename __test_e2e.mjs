@@ -2,7 +2,7 @@
  * Vibe Science v7.0 TRACE — End-to-End Test Suite
  *
  * Comprehensive test coverage for the plugin infrastructure:
- *   B1. Syntax & Import Tests (28 JS files)
+ *   B1. Syntax & Import Tests (30 JS files)
  *   B2. Schema SQL Tests (16 tables, FK constraints, indices)
  *   B3. Library Unit Tests (13 libs, export verification)
  *   B4. Script Integration Tests (setup, session-start, prompt-submit)
@@ -90,6 +90,7 @@ describe('B1. Syntax & Import Tests', () => {
         'plugin/lib/r2-ingestion.js',
         'plugin/lib/citation-extractor.js',
         'plugin/lib/citation-engine.js',
+        'plugin/lib/harness-hints.js',
     ];
 
     const allJsFiles = [...scripts, ...libs];
@@ -113,12 +114,12 @@ describe('B1. Syntax & Import Tests', () => {
         });
     }
 
-    it('all 29 JS files are present', () => {
-        assert.equal(allJsFiles.length, 29, 'Expected exactly 29 JS files (12 scripts + 17 libs)');
+    it('all 30 JS files are present', () => {
+        assert.equal(allJsFiles.length, 30, 'Expected exactly 30 JS files (12 scripts + 18 libs)');
         for (const file of allJsFiles) {
             assert.ok(fs.existsSync(rel(file)), `Missing: ${file}`);
         }
-        pass('all-29-present');
+        pass('all-30-present');
     });
 });
 
@@ -4228,6 +4229,406 @@ describe('B8. TRACE Foundation Tests', () => {
         assert.equal(unreviewedClaims[0].claim_id, 'C-001');
         db.close();
         pass('trace-stop-promoted-without-review');
+    });
+});
+
+// =====================================================
+// B9. Harness Hints Tests (TRACE+ADAPT V0)
+// =====================================================
+
+describe('B9. Harness Hints Tests', () => {
+    const SCHEMA_SQL = fs.readFileSync(rel('plugin', 'db', 'schema.sql'), 'utf-8');
+
+    async function setupHintsDb() {
+        const Database = (await import('better-sqlite3')).default;
+        const db = new Database(':memory:');
+        db.exec(SCHEMA_SQL);
+        return db;
+    }
+
+    function insertSession(db, id, projectPath, endedAt) {
+        db.prepare(
+            'INSERT INTO sessions (id, project_path, started_at, ended_at) VALUES (?, ?, datetime(\'now\'), ?)'
+        ).run(id, projectPath, endedAt);
+    }
+
+    function insertGateFail(db, sessionId, gateId) {
+        db.prepare(
+            'INSERT INTO gate_checks (session_id, gate_id, status, timestamp) VALUES (?, ?, \'FAIL\', datetime(\'now\'))'
+        ).run(sessionId, gateId);
+    }
+
+    function insertAlert(db, projectPath, message, createdAt) {
+        db.prepare(
+            'INSERT INTO observer_alerts (project_path, level, message, created_at) VALUES (?, \'WARN\', ?, ?)'
+        ).run(projectPath, message, createdAt);
+    }
+
+    // Canonicalize paths the same way session-start.js does (lowercase + forward slashes on Windows)
+    function canonicalize(p) {
+        let n = path.resolve(p).replace(/\\/g, '/').replace(/\/+$/, '');
+        if (process.platform === 'win32') n = n.toLowerCase();
+        return n;
+    }
+
+    async function setupIsolatedHintsDb(tempHome) {
+        const Database = (await import('better-sqlite3')).default;
+        const dbDir = path.join(tempHome, '.vibe-science', 'db');
+        fs.mkdirSync(dbDir, { recursive: true });
+        const dbPath = path.join(dbDir, 'vibe-science.db');
+        const db = new Database(dbPath);
+        db.exec(SCHEMA_SQL);
+        return { db, dbPath };
+    }
+
+    // ---- Test 1: exports ----
+    it('harness-hints.js exports computeHarnessHints', async () => {
+        const mod = await import(relUrl('plugin', 'lib', 'harness-hints.js'));
+        assert.equal(typeof mod.computeHarnessHints, 'function');
+        assert.equal(typeof mod.CATALOG, 'object');
+        assert.equal(mod.CATALOG.length, 8);
+        pass('harness-hints-exports');
+    });
+
+    // ---- Test 2: empty DB ----
+    it('returns empty string when no failures exist', async () => {
+        const mod = await import(relUrl('plugin', 'lib', 'harness-hints.js'));
+        const db = await setupHintsDb();
+        const result = mod.computeHarnessHints(db, '/test/project');
+        assert.equal(result, '');
+        db.close();
+        pass('harness-hints-empty');
+    });
+
+    // ---- Test 3: H-01 activation ----
+    it('H-01 activates after DQ4 fails in 2+ sessions', async () => {
+        const mod = await import(relUrl('plugin', 'lib', 'harness-hints.js'));
+        const db = await setupHintsDb();
+        insertSession(db, 's1', '/test/project', new Date().toISOString());
+        insertSession(db, 's2', '/test/project', new Date().toISOString());
+        insertGateFail(db, 's1', 'DQ4');
+        insertGateFail(db, 's2', 'DQ4');
+        const result = mod.computeHarnessHints(db, '/test/project');
+        assert.ok(result.includes('[H-01]'), 'H-01 should be active');
+        assert.ok(result.includes('DQ4'), 'hint should mention DQ4');
+        db.close();
+        pass('harness-hints-h01-activation');
+    });
+
+    // ---- Test 4: threshold ----
+    it('H-01 does NOT activate with only 1 session failure', async () => {
+        const mod = await import(relUrl('plugin', 'lib', 'harness-hints.js'));
+        const db = await setupHintsDb();
+        insertSession(db, 's1', '/test/project', new Date().toISOString());
+        insertGateFail(db, 's1', 'DQ4');
+        const result = mod.computeHarnessHints(db, '/test/project');
+        assert.ok(!result.includes('[H-01]'), 'H-01 should not activate on 1 session');
+        db.close();
+        pass('harness-hints-h01-threshold');
+    });
+
+    // ---- Test 5: cooldown after 3 clean sessions ----
+    it('gate cooldown: hint deactivates after 3 clean sessions', async () => {
+        const mod = await import(relUrl('plugin', 'lib', 'harness-hints.js'));
+        const db = await setupHintsDb();
+        insertSession(db, 's1', '/test/project', '2026-01-01T00:00:00Z');
+        insertSession(db, 's2', '/test/project', '2026-01-02T00:00:00Z');
+        insertGateFail(db, 's1', 'DQ4');
+        insertGateFail(db, 's2', 'DQ4');
+        insertSession(db, 's3', '/test/project', '2026-03-01T00:00:00Z');
+        insertSession(db, 's4', '/test/project', '2026-03-02T00:00:00Z');
+        insertSession(db, 's5', '/test/project', '2026-03-03T00:00:00Z');
+        const result = mod.computeHarnessHints(db, '/test/project');
+        assert.ok(!result.includes('[H-01]'), 'H-01 should be cooled off after 3 clean sessions');
+        db.close();
+        pass('harness-hints-gate-cooldown');
+    });
+
+    // ---- Test 6: cooldown stays active with fewer than 3 clean sessions ----
+    it('gate cooldown: hint stays active with fewer than 3 clean completed sessions', async () => {
+        const mod = await import(relUrl('plugin', 'lib', 'harness-hints.js'));
+        const db = await setupHintsDb();
+        insertSession(db, 's1', '/test/project', '2026-01-01T00:00:00Z');
+        insertSession(db, 's2', '/test/project', '2026-01-02T00:00:00Z');
+        insertGateFail(db, 's1', 'DQ4');
+        insertGateFail(db, 's2', 'DQ4');
+        // Only 2 clean sessions — last 3 by ended_at are: s4, s3, s2 (s2 has failure)
+        insertSession(db, 's3', '/test/project', '2026-03-01T00:00:00Z');
+        insertSession(db, 's4', '/test/project', '2026-03-02T00:00:00Z');
+        const result = mod.computeHarnessHints(db, '/test/project');
+        assert.ok(result.includes('[H-01]'), 'H-01 should stay active: last 3 sessions include 1 failure');
+        db.close();
+        pass('harness-hints-cooldown-insufficient-clean');
+    });
+
+    // ---- Test 7: observer H-09 via actual module behavior ----
+    it('observer behavior: H-09 fires for STATE.md stale messages', async () => {
+        const mod = await import(relUrl('plugin', 'lib', 'harness-hints.js'));
+        const db = await setupHintsDb();
+        const now = new Date().toISOString();
+        const tomorrow = new Date(Date.now() + 86400000).toISOString();
+        insertAlert(db, '/test/project',
+            'STATE.md has not been updated in 48 hours. Consider updating to reflect current progress.', now);
+        insertAlert(db, '/test/project',
+            'STATE.md has not been updated in 72 hours (>72h limit). The project state is severely stale.', tomorrow);
+        const result = mod.computeHarnessHints(db, '/test/project');
+        assert.match(result, /\[H-09\]/, 'H-09 should fire for STATE.md stale messages');
+        db.close();
+        pass('harness-hints-h09-observer');
+    });
+
+    // ---- Test 8: observer H-11 specificity ----
+    it('observer behavior: H-11 matches only Design-execution drift', async () => {
+        const mod = await import(relUrl('plugin', 'lib', 'harness-hints.js'));
+        const now = new Date().toISOString();
+        const tomorrow = new Date(Date.now() + 86400000).toISOString();
+
+        const db1 = await setupHintsDb();
+        insertAlert(db1, '/test/project', 'Data drift detected in feature distribution.', now);
+        insertAlert(db1, '/test/project', 'Concept drift in model predictions.', tomorrow);
+        const result1 = mod.computeHarnessHints(db1, '/test/project');
+        assert.doesNotMatch(result1, /\[H-11\]/, 'H-11 should NOT fire for generic drift');
+        db1.close();
+
+        const db2 = await setupHintsDb();
+        insertAlert(db2, '/test/project',
+            'Design-execution drift: STATE.md says phase is "DATA" but 80% of actions are "MODEL_TRAIN".', now);
+        insertAlert(db2, '/test/project',
+            'Design-execution drift: STATE.md says phase is "EXPLORE" but 60% of actions are "CALIBRATION".', tomorrow);
+        const result2 = mod.computeHarnessHints(db2, '/test/project');
+        assert.match(result2, /\[H-11\]/, 'H-11 should fire for Design-execution drift');
+        db2.close();
+        pass('harness-hints-h11-specificity');
+    });
+
+    // ---- Test 9: max 3 hints ----
+    it('max 3 hints returned', async () => {
+        const mod = await import(relUrl('plugin', 'lib', 'harness-hints.js'));
+        const db = await setupHintsDb();
+        insertSession(db, 's1', '/test/project', new Date().toISOString());
+        insertSession(db, 's2', '/test/project', new Date().toISOString());
+        for (const gate of ['DQ4', 'L-1+', 'L0', 'D1', 'SALVAGENTE']) {
+            insertGateFail(db, 's1', gate);
+            insertGateFail(db, 's2', gate);
+        }
+        const result = mod.computeHarnessHints(db, '/test/project');
+        const hintLines = result.split('\n').filter(l => l.trim().startsWith('[H-'));
+        assert.ok(hintLines.length <= 3, `Expected max 3 hints, got ${hintLines.length}`);
+        assert.ok(hintLines.length > 0, 'Should have at least 1 hint');
+        db.close();
+        pass('harness-hints-max-3');
+    });
+
+    // ---- Test 10: broken DB adapter ----
+    it('graceful degradation: broken DB adapter returns empty string', async () => {
+        const mod = await import(relUrl('plugin', 'lib', 'harness-hints.js'));
+        const brokenDb = { prepare: () => { throw new Error('DB broken'); } };
+        const result = mod.computeHarnessHints(brokenDb, '/test/project');
+        assert.equal(result, '', 'Should return empty string for broken DB');
+        pass('harness-hints-broken-db');
+    });
+
+    // ---- Test 11: session-start integration — hints present ----
+    it('session-start output includes HARNESS HINTS when expected', async () => {
+        const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'trace-adapt-'));
+        const tempProjectRaw = fs.mkdtempSync(path.join(os.tmpdir(), 'trace-adapt-project-'));
+        try {
+            const { db } = await setupIsolatedHintsDb(tempHome);
+            const tempProject = canonicalize(tempProjectRaw);
+            insertSession(db, 's1', tempProject, '2026-03-26T08:00:00.000Z');
+            insertGateFail(db, 's1', 'DQ4');
+            insertSession(db, 's2', tempProject, '2026-03-26T09:00:00.000Z');
+            insertGateFail(db, 's2', 'DQ4');
+            db.close();
+
+            const result = spawnSync('node', [rel('plugin', 'scripts', 'session-start.js')], {
+                cwd: ROOT,
+                input: JSON.stringify({ cwd: tempProject }),
+                encoding: 'utf-8',
+                timeout: 30000,
+                env: { ...process.env, HOME: tempHome, USERPROFILE: tempHome },
+            });
+            assert.equal(result.status, 0, `session-start failed: ${result.stderr}`);
+            const output = JSON.parse(result.stdout);
+            const text = output.hookSpecificOutput?.additionalContext || '';
+            assert.match(text, /\[HARNESS HINTS\]/, 'Should contain [HARNESS HINTS] section');
+            assert.match(text, /\[H-01\]/, 'Should contain H-01 hint');
+            pass('harness-hints-integration-present');
+        } finally {
+            fs.rmSync(tempHome, { recursive: true, force: true });
+            fs.rmSync(tempProjectRaw, { recursive: true, force: true });
+        }
+    });
+
+    // ---- Test 12: session-start integration — hints absent ----
+    it('session-start output omits HARNESS HINTS when no recurring failures exist', async () => {
+        const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'trace-adapt-'));
+        const tempProjectRaw = fs.mkdtempSync(path.join(os.tmpdir(), 'trace-adapt-project-'));
+        try {
+            const { db } = await setupIsolatedHintsDb(tempHome);
+            const tempProject = canonicalize(tempProjectRaw);
+            insertSession(db, 's1', tempProject, new Date().toISOString());
+            db.close();
+
+            const result = spawnSync('node', [rel('plugin', 'scripts', 'session-start.js')], {
+                cwd: ROOT,
+                input: JSON.stringify({ cwd: tempProject }),
+                encoding: 'utf-8',
+                timeout: 30000,
+                env: { ...process.env, HOME: tempHome, USERPROFILE: tempHome },
+            });
+            assert.equal(result.status, 0, `session-start failed: ${result.stderr}`);
+            const output = JSON.parse(result.stdout);
+            const text = output.hookSpecificOutput?.additionalContext || '';
+            assert.doesNotMatch(text, /\[HARNESS HINTS\]/, 'Should NOT contain [HARNESS HINTS]');
+            pass('harness-hints-integration-absent');
+        } finally {
+            fs.rmSync(tempHome, { recursive: true, force: true });
+            fs.rmSync(tempProjectRaw, { recursive: true, force: true });
+        }
+    });
+
+    // ---- Test 13: token budget sentinel ----
+    it('final assembled session-start context stays within budget sentinel', async () => {
+        const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'trace-adapt-'));
+        const tempProjectRaw = fs.mkdtempSync(path.join(os.tmpdir(), 'trace-adapt-project-'));
+        try {
+            const { db } = await setupIsolatedHintsDb(tempHome);
+            const tempProject = canonicalize(tempProjectRaw);
+            insertSession(db, 's1', tempProject, '2026-03-26T08:00:00.000Z');
+            insertSession(db, 's2', tempProject, '2026-03-26T09:00:00.000Z');
+            for (const gate of ['DQ4', 'L-1+', 'L0', 'D1', 'SALVAGENTE']) {
+                insertGateFail(db, 's1', gate);
+                insertGateFail(db, 's2', gate);
+            }
+            db.close();
+
+            const result = spawnSync('node', [rel('plugin', 'scripts', 'session-start.js')], {
+                cwd: ROOT,
+                input: JSON.stringify({ cwd: tempProject }),
+                encoding: 'utf-8',
+                timeout: 30000,
+                env: { ...process.env, HOME: tempHome, USERPROFILE: tempHome },
+            });
+            assert.equal(result.status, 0, `session-start failed: ${result.stderr}`);
+            const output = JSON.parse(result.stdout);
+            const text = output.hookSpecificOutput?.additionalContext || '';
+            const approxTokens = Math.ceil(text.length / 4);
+            assert.ok(approxTokens <= 850, `Context too large: ~${approxTokens} tokens (limit 850)`);
+            pass('harness-hints-budget-sentinel');
+        } finally {
+            fs.rmSync(tempHome, { recursive: true, force: true });
+            fs.rmSync(tempProjectRaw, { recursive: true, force: true });
+        }
+    });
+
+    // ---- Test 14: observer H-10 (SSOT desync) ----
+    it('observer behavior: H-10 fires for SSOT desync messages', async () => {
+        const mod = await import(relUrl('plugin', 'lib', 'harness-hints.js'));
+        const db = await setupHintsDb();
+        const now = new Date().toISOString();
+        const tomorrow = new Date(Date.now() + 86400000).toISOString();
+        insertAlert(db, '/test/project',
+            'FINDINGS.md (analysis.md) is 45 minutes newer than its JSON source (analysis.json). Possible SSOT desync -- verify numbers match.', now);
+        insertAlert(db, '/test/project',
+            'FINDINGS.md (results.md) is 30 minutes newer than its JSON source (results.json). Possible SSOT desync -- verify numbers match.', tomorrow);
+        const result = mod.computeHarnessHints(db, '/test/project');
+        assert.match(result, /\[H-10\]/, 'H-10 should fire for SSOT desync messages');
+        db.close();
+        pass('harness-hints-h10-observer');
+    });
+
+    // ---- Test 15: per-entry query failures stay advisory ----
+    it('session-start survives when hint queries encounter partial schema', async () => {
+        const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'trace-adapt-'));
+        const tempProjectRaw = fs.mkdtempSync(path.join(os.tmpdir(), 'trace-adapt-project-'));
+        try {
+            // Create DB with full schema then drop gate_checks to break individual hint queries.
+            // computeHarnessHints() should swallow per-entry failures and SessionStart must stay healthy.
+            const { db } = await setupIsolatedHintsDb(tempHome);
+            const tempProject = canonicalize(tempProjectRaw);
+            insertSession(db, 's1', tempProject, new Date().toISOString());
+            db.exec('DROP TABLE IF EXISTS gate_checks');
+            db.close();
+
+            const result = spawnSync('node', [rel('plugin', 'scripts', 'session-start.js')], {
+                cwd: ROOT,
+                input: JSON.stringify({ cwd: tempProject }),
+                encoding: 'utf-8',
+                timeout: 30000,
+                env: { ...process.env, HOME: tempHome, USERPROFILE: tempHome },
+            });
+            // Must exit 0 — hints are advisory, never blocking
+            assert.equal(result.status, 0, `session-start should not crash: ${result.stderr}`);
+            const output = JSON.parse(result.stdout);
+            const text = output.hookSpecificOutput?.additionalContext || '';
+            // Context must still be valid (has markers)
+            assert.match(text, /VIBE SCIENCE CONTEXT/, 'Context should still be present');
+            // No [HARNESS HINTS] should leak from failed computation
+            assert.doesNotMatch(text, /\[HARNESS HINTS\]/, 'Should NOT contain [HARNESS HINTS] from failed computation');
+            pass('harness-hints-partial-schema-resilience');
+        } finally {
+            fs.rmSync(tempHome, { recursive: true, force: true });
+            fs.rmSync(tempProjectRaw, { recursive: true, force: true });
+        }
+    });
+
+    // ---- Test 16: session-start catch path when computeHarnessHints throws ----
+    it('session-start preserves context and warning when computeHarnessHints throws', async () => {
+        const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'trace-adapt-'));
+        const tempProjectRaw = fs.mkdtempSync(path.join(os.tmpdir(), 'trace-adapt-project-'));
+        try {
+            const { db } = await setupIsolatedHintsDb(tempHome);
+            const tempProject = canonicalize(tempProjectRaw);
+            insertSession(db, 's1', tempProject, '2026-03-26T08:00:00.000Z');
+            insertGateFail(db, 's1', 'DQ4');
+            insertSession(db, 's2', tempProject, '2026-03-26T09:00:00.000Z');
+            insertGateFail(db, 's2', 'DQ4');
+            db.close();
+
+            const preloadPath = path.join(tempHome, 'force-hints-throw.cjs');
+            fs.writeFileSync(preloadPath, [
+                'const originalSort = Array.prototype.sort;',
+                'Array.prototype.sort = function (...args) {',
+                "  const stack = new Error().stack || '';",
+                "  if (stack.includes('harness-hints.js')) {",
+                "    throw new Error('FORCED_HINTS_FAILURE');",
+                '  }',
+                '  return originalSort.apply(this, args);',
+                '};',
+            ].join('\n'));
+
+            const result = spawnSync('node', [rel('plugin', 'scripts', 'session-start.js')], {
+                cwd: ROOT,
+                input: JSON.stringify({ cwd: tempProject }),
+                encoding: 'utf-8',
+                timeout: 30000,
+                env: {
+                    ...process.env,
+                    HOME: tempHome,
+                    USERPROFILE: tempHome,
+                    NODE_OPTIONS: [process.env.NODE_OPTIONS, `--require=${preloadPath}`].filter(Boolean).join(' '),
+                },
+            });
+            assert.equal(result.status, 0, `session-start should not crash: ${result.stderr}`);
+            const output = JSON.parse(result.stdout);
+            const text = output.hookSpecificOutput?.additionalContext || '';
+            assert.match(text, /VIBE SCIENCE CONTEXT/, 'Context should still be present');
+            assert.doesNotMatch(text, /\[HARNESS HINTS\]/, 'Failed hint computation must not leak a hint block');
+            assert.match(String(output.systemMessage || ''), /Harness hints failed: FORCED_HINTS_FAILURE/, 'Failure should surface as warning text');
+            pass('harness-hints-session-start-throw');
+        } finally {
+            fs.rmSync(tempHome, { recursive: true, force: true });
+            fs.rmSync(tempProjectRaw, { recursive: true, force: true });
+        }
+    });
+
+    // ---- Test 17: null db (module-level) ----
+    it('graceful degradation: null db returns empty string', async () => {
+        const mod = await import(relUrl('plugin', 'lib', 'harness-hints.js'));
+        const result = mod.computeHarnessHints(null, '/test/project');
+        assert.equal(result, '');
+        pass('harness-hints-null-db');
     });
 });
 

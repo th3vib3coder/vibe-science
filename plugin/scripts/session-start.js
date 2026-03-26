@@ -79,6 +79,14 @@ try {
     // context-builder.js not yet implemented -- use inline fallback
 }
 
+let computeHarnessHints = null;
+try {
+    const hintsMod = await import('../lib/harness-hints.js');
+    computeHarnessHints = hintsMod.computeHarnessHints;
+} catch {
+    // harness-hints.js not available -- skip
+}
+
 // ---------------------------------------------------------------------------
 // Inline fallback: build context without external lib
 // ---------------------------------------------------------------------------
@@ -325,6 +333,7 @@ async function main(event) {
     let alerts = [];
     let r2Stats = { hint: null, topWeaknesses: [], totalReviews: 0 };
     let researchPatterns = [];
+    let harnessHintsBlock = '';
 
     if (db && dbAvailable) {
         // Use external context-builder if available, otherwise fallback
@@ -381,6 +390,16 @@ async function main(event) {
             warnings.push(`Pattern load failed: ${err.message}`);
             markIntegrity(`Pattern load failed: ${err.message}`);
         }
+
+        // ---- 4c. Compute harness hints (TRACE+ADAPT V0) ----------------
+        try {
+            if (computeHarnessHints) {
+                harnessHintsBlock = computeHarnessHints(db, projectPath);
+            }
+        } catch (err) {
+            warnings.push(`Harness hints failed: ${err.message}`);
+            // Never block — hints are advisory
+        }
     } else {
         // No DB -- minimal context
         const stateFallback = loadStateMdSnapshot(projectPath);
@@ -424,14 +443,35 @@ async function main(event) {
         contextString = '--- VIBE SCIENCE CONTEXT ---\n[STATE] Context formatting error.\n--- END CONTEXT ---';
     }
 
-    // Append cross-session patterns (works with both formatters)
-    if (researchPatterns.length > 0 && formatContextForInjection) {
-        // External formatter doesn't know about patterns yet — inject before END marker
-        const patternLines = researchPatterns.slice(0, 5).map(
-            p => `  - [${p.pattern_type}] ${p.description} (conf: ${(p.confidence ?? 0).toFixed(2)}, seen: ${p.occurrences}x)`
-        );
-        const patternBlock = '\n[PATTERNS]\n' + patternLines.join('\n');
-        contextString = contextString.replace('--- END CONTEXT ---', patternBlock + '\n--- END CONTEXT ---');
+    // Append [PATTERNS] and [HARNESS HINTS] in canonical order before END marker.
+    // Single injection pass prevents ordering inversions between formatter paths.
+    {
+        const suffix = [];
+
+        // [PATTERNS] — descriptive cross-session patterns.
+        // Guard: only inject when using the external formatter (formatContextForInjection != null),
+        // because fallbackFormatContext() already emits [PATTERNS] internally.
+        // The external formatter (context-builder.js) deliberately omits [PATTERNS] — it delegates
+        // that responsibility to session-start.js.  This three-way invariant must be preserved.
+        if (researchPatterns.length > 0 && formatContextForInjection) {
+            const patternLines = researchPatterns.slice(0, 5).map(
+                p => `  - [${p.pattern_type}] ${p.description} (conf: ${(p.confidence ?? 0).toFixed(2)}, seen: ${p.occurrences}x)`
+            );
+            suffix.push('[PATTERNS]', ...patternLines);
+        }
+
+        // [HARNESS HINTS] — prescriptive carry-over hints (unconditional: works with both formatters)
+        if (harnessHintsBlock) {
+            suffix.push('[HARNESS HINTS]', harnessHintsBlock);
+        }
+
+        if (suffix.length > 0) {
+            const endMarker = '--- END CONTEXT ---';
+            const renderedSuffix = '\n' + suffix.join('\n');
+            contextString = contextString.includes(endMarker)
+                ? contextString.replace(endMarker, renderedSuffix + '\n' + endMarker)
+                : contextString + renderedSuffix;
+        }
     }
 
     // Append domain info if available
