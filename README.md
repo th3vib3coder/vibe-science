@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="logos/hero-v7.0-trace-adapt.svg" alt="Vibe Science v7.0 TRACE plus TRACE+ADAPT V0" width="980">
+  <img src="logos/hero-v7.0-trace-adapt.png" alt="Vibe Science v7.0 TRACE + TRACE+ADAPT V0" width="980">
 </p>
 
 <p align="center">
