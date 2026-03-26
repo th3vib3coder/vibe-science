@@ -9,9 +9,10 @@
  *   1. Open DB and create a new session record (UUID)
  *   2. Build progressive context (Layer 1: state snapshot)
  *   3. Load observer alerts
- *   4. Load R2 calibration data
- *   5. Load domain config if present
- *   6. Format and output context string (~700 tokens)
+ *   4. Load R2 calibration data + active patterns
+ *   5. Compute advisory harness hints (TRACE+ADAPT V0)
+ *   6. Load domain config if present
+ *   7. Format and output context string (~700-850 tokens depending on carry-over)
  *
  * Output: JSON with `context` field injected into the agent's system prompt,
  *         plus `sessionId` for downstream hooks.
@@ -80,11 +81,12 @@ try {
 }
 
 let computeHarnessHints = null;
+let harnessHintsImportWarning = null;
 try {
     const hintsMod = await import('../lib/harness-hints.js');
     computeHarnessHints = hintsMod.computeHarnessHints;
-} catch {
-    // harness-hints.js not available -- skip
+} catch (err) {
+    harnessHintsImportWarning = `harness-hints.js unavailable: ${err.message}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -279,6 +281,11 @@ async function main(event) {
         if (!integrityNotes.includes(text)) integrityNotes.push(text);
     }
 
+    if (harnessHintsImportWarning) {
+        warnings.push(harnessHintsImportWarning);
+        markIntegrity(harnessHintsImportWarning);
+    }
+
     // ---- 0. Auto-setup: run setup.js if DB doesn't exist (replaces "Setup" hook) --
     const globalDbPath = join(homedir(), '.vibe-science', 'db', 'vibe-science.db');
     if (!existsSync(globalDbPath)) {
@@ -392,12 +399,18 @@ async function main(event) {
         }
 
         // ---- 4c. Compute harness hints (TRACE+ADAPT V0) ----------------
+        const harnessHintWarnings = [];
         try {
             if (computeHarnessHints) {
-                harnessHintsBlock = computeHarnessHints(db, projectPath);
+                harnessHintsBlock = computeHarnessHints(db, projectPath, harnessHintWarnings);
+            }
+            for (const note of harnessHintWarnings) {
+                warnings.push(note);
+                markIntegrity(note);
             }
         } catch (err) {
             warnings.push(`Harness hints failed: ${err.message}`);
+            markIntegrity(`Harness hints failed: ${err.message}`);
             // Never block — hints are advisory
         }
     } else {

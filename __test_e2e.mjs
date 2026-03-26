@@ -4,7 +4,7 @@
  * Comprehensive test coverage for the plugin infrastructure:
  *   B1. Syntax & Import Tests (30 JS files)
  *   B2. Schema SQL Tests (16 tables, FK constraints, indices)
- *   B3. Library Unit Tests (13 libs, export verification)
+ *   B3. Library Unit Tests (18 libs, export verification)
  *   B4. Script Integration Tests (setup, session-start, prompt-submit)
  *   B5. Package & Config Tests (package.json, hooks.json, plugin.json, schemas)
  *   B6. Content Integrity Tests (forbidden names, file references, CLAUDE.md)
@@ -4428,6 +4428,16 @@ describe('B9. Harness Hints Tests', () => {
         pass('harness-hints-broken-db');
     });
 
+    it('collects diagnostics when individual hint queries fail', async () => {
+        const mod = await import(relUrl('plugin', 'lib', 'harness-hints.js'));
+        const diagnostics = [];
+        const brokenDb = { prepare: () => { throw new Error('missing table: gate_checks'); } };
+        const result = mod.computeHarnessHints(brokenDb, '/test/project', diagnostics);
+        assert.equal(result, '', 'Failed hint queries should still return empty string');
+        assert.ok(diagnostics.some(d => /Harness hints partially degraded/.test(d)), 'Should surface partial degradation diagnostics');
+        pass('harness-hints-diagnostics');
+    });
+
     // ---- Test 11: session-start integration — hints present ----
     it('session-start output includes HARNESS HINTS when expected', async () => {
         const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'trace-adapt-'));
@@ -4566,6 +4576,7 @@ describe('B9. Harness Hints Tests', () => {
             assert.match(text, /VIBE SCIENCE CONTEXT/, 'Context should still be present');
             // No [HARNESS HINTS] should leak from failed computation
             assert.doesNotMatch(text, /\[HARNESS HINTS\]/, 'Should NOT contain [HARNESS HINTS] from failed computation');
+            assert.match(String(output.systemMessage || ''), /Harness hints partially degraded/, 'Partial hint failures should surface as warning text');
             pass('harness-hints-partial-schema-resilience');
         } finally {
             fs.rmSync(tempHome, { recursive: true, force: true });

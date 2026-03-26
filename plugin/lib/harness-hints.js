@@ -12,6 +12,12 @@ const MAX_HINTS = 3;
 const COOLDOWN_SESSIONS = 3;
 const COOLDOWN_DAYS = 7;
 
+function pushDiagnostic(diagnostics, message) {
+  if (!Array.isArray(diagnostics)) return;
+  if (!message || diagnostics.includes(message)) return;
+  diagnostics.push(message);
+}
+
 // ─────────────────────────────────────────────────────────────────────
 // Catalog
 // ─────────────────────────────────────────────────────────────────────
@@ -146,19 +152,30 @@ function observerAlertStrength(db, projectPath, messagePattern) {
  * @param {string} projectPath
  * @returns {string} formatted hint lines, or empty string
  */
-export function computeHarnessHints(db, projectPath) {
+export function computeHarnessHints(db, projectPath, diagnostics = null) {
   if (!db) return '';
 
   const active = [];
+  const failedEntries = [];
+  let firstError = null;
 
   for (const entry of CATALOG) {
     try {
       const result = entry.query(db, projectPath);
       if (!result) continue;
       active.push({ id: entry.id, strength: result.strength, text: entry.hint });
-    } catch {
-      // Individual hint eval failed — skip, never block
+    } catch (err) {
+      failedEntries.push(entry.id);
+      if (!firstError) firstError = err;
     }
+  }
+
+  if (failedEntries.length > 0) {
+    const detail = firstError?.message ? `: ${firstError.message}` : '';
+    pushDiagnostic(
+      diagnostics,
+      `Harness hints partially degraded (${failedEntries.join(', ')})${detail}`
+    );
   }
 
   if (active.length === 0) return '';

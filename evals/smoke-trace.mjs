@@ -65,6 +65,11 @@ function main() {
         );
     }
 
+    // Close the parent handle before spawning hook subprocesses.
+    // This avoids cross-process SQLite handle contention on Windows,
+    // which can otherwise manifest as flaky native crashes.
+    db.close();
+
     const claimWrite = runHook('plugin/scripts/post-tool-use.js', {
         session_id: session.id,
         cwd: projectDir,
@@ -109,11 +114,12 @@ function main() {
         project_path: projectDir,
     }, env);
 
-    const schemaVersion = db.prepare(`SELECT value FROM meta WHERE key = 'schema_version'`).get();
-    const claimEvents = db.prepare(`SELECT COUNT(*) AS n FROM claim_events WHERE session_id = ?`).get(session.id).n;
-    const seedCount = db.prepare(`SELECT COUNT(*) AS n FROM serendipity_seeds WHERE created_session = ?`).get(session.id).n;
-    const citationCount = db.prepare(`SELECT COUNT(*) AS n FROM citation_checks WHERE session_id = ?`).get(session.id).n;
-    db.close();
+    const verifyDb = new Database(dbPath);
+    const schemaVersion = verifyDb.prepare(`SELECT value FROM meta WHERE key = 'schema_version'`).get();
+    const claimEvents = verifyDb.prepare(`SELECT COUNT(*) AS n FROM claim_events WHERE session_id = ?`).get(session.id).n;
+    const seedCount = verifyDb.prepare(`SELECT COUNT(*) AS n FROM serendipity_seeds WHERE created_session = ?`).get(session.id).n;
+    const citationCount = verifyDb.prepare(`SELECT COUNT(*) AS n FROM citation_checks WHERE session_id = ?`).get(session.id).n;
+    verifyDb.close();
 
     const checks = {
         setup_ready: parseJson(setup.stdout)?.status === 'ready',
