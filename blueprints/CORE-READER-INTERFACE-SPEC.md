@@ -63,9 +63,47 @@ Reason:
 
 ---
 
+## Bootstrap: `createReader`
+
+The outer project must not import `openAndInit` from `db.js` or `canonicalizeProjectPath` from `path-utils.js` directly. That would couple the outer project to kernel internal module structure, defeating the purpose of this contract surface.
+
+Instead, `core-reader.js` exports a factory function:
+
+```js
+export function createReader(projectPath)
+```
+
+Purpose:
+
+- canonicalize the project path using kernel rules
+- open (or reuse) the kernel DB for that project
+- return an object with all reader methods bound to the correct `db` and `projectPath`
+
+Returns:
+
+```js
+{
+  projectPath,       // canonicalized
+  getProjectOverview(options = {}),
+  listClaimHeads(options = {}),
+  listGateChecks(options = {}),
+  listLiteratureSearches(options = {}),
+  listObserverAlerts(options = {}),
+  listCitationChecks(options = {}),
+  getStateSnapshot(),
+  close()            // releases the DB handle
+}
+```
+
+The outer project calls `createReader(process.cwd())` once and uses the returned object. It never touches `db.js` or `path-utils.js` directly.
+
+If the DB does not exist or cannot be opened, `createReader` returns `null` and the outer project degrades gracefully (shows "no kernel state available" instead of crashing).
+
+---
+
 ## Phase 1 Required Functions
 
-Phase 1 requires at least these functions.
+Phase 1 requires at least these functions. In the signatures below, `db` and `projectPath` are shown for clarity but are already bound by `createReader` — outer callers use the bound methods.
 
 ### 1. `getProjectOverview`
 
@@ -175,7 +213,7 @@ Inputs:
 - `db`
 - `projectPath`
 - `options.gateIds = null`
-- `options.statuses = ['FAIL', 'WARN', 'PASS']`
+- `options.statuses = null` (null = no filter; pass `['FAIL']` or `['FAIL', 'WARN']` to filter)
 - `options.limit = 50`
 
 Returns:
@@ -274,14 +312,17 @@ Returns:
 
 Implementation mapping:
 
-- `getUnresolvedAlerts` can support the unresolved subset
-- broader listing needs a small additional read query
+- `observer_alerts` has its own `project_path` column — no JOIN through `sessions` needed (unlike `claim_events` or `gate_checks`)
+- `getUnresolvedAlerts` in `db.js` already queries this table
+- broader listing (including resolved alerts) needs a small additional read query
 
-### 6. `getStateSnapshot`
+### 7. `getStateSnapshot`
 
 ```js
 export function getStateSnapshot(projectPath)
 ```
+
+Note: this function does NOT take `db` — it reads from the filesystem (`STATE.md`), not from the database. This is intentional: STATE.md is a workspace projection, not a DB artifact.
 
 Purpose:
 
@@ -308,13 +349,63 @@ Implementation mapping:
 
 ---
 
+### 6. `listCitationChecks`
+
+```js
+export function listCitationChecks(db, projectPath, options = {})
+```
+
+Purpose:
+
+- expose citation verification state so the writing handoff knows which claims have verified vs unverified citations
+- a PROMOTED claim with RETRACTED or UNVERIFIED citations is NOT safe to write about in Results — Story 4 requires this
+
+Inputs:
+
+- `db`
+- `projectPath`
+- `options.claimId = null` (filter to a specific claim)
+- `options.verificationStatuses = null` (null = all; pass `['VERIFIED']` or `['PENDING', 'UNRESOLVED']` to filter)
+- `options.limit = 100`
+
+Returns:
+
+```js
+[
+  {
+    citationId,
+    claimId,
+    rawRef,
+    citationType,       // DOI / PMID / ARXIV / URL / OTHER
+    normalizedId,
+    verificationStatus, // PENDING / VERIFIED / UNRESOLVED / RETRACTED / ERROR
+    resolver,
+    resolvedTitle,
+    retractionStatus,   // RETRACTED / CLEAR / UNKNOWN / null
+    checkedAt
+  }
+]
+```
+
+Implementation mapping:
+
+- `citation_checks` joins through `sessions` for project scoping, or can filter by `claim_id` directly (indexed: `idx_citations_claim`)
+- `getCitationChecks` in `db.js` already exists but uses a different filter shape — adapt or wrap
+
+Why this is Phase 1 required, not optional:
+
+- `listClaimHeads` tells you a claim is PROMOTED
+- `listCitationChecks` tells you its citations are actually VERIFIED
+- without both, the writing handoff cannot answer "is this claim safe to write about?"
+
+---
+
 ## Phase 1 Optional Extension Functions
 
 These are useful, but not required to start Phase 1:
 
 - `listPendingSeeds(db, projectPath, options = {})`
 - `listPatterns(db, projectPath, options = {})`
-- `getCitationStatus(db, projectPath, options = {})`
 - `getSessionSummary(db, sessionId)`
 - `getHarnessHints(db, projectPath)`
 
@@ -361,13 +452,14 @@ The point of Phase 1 is to expose the minimum stable read contract, not to publi
 
 ## Why This Is Enough For Phase 1
 
-With the six required functions above, the outer project can already support:
+With `createReader` + seven required functions, the outer project can:
 
-- a project overview
-- literature flow history
-- experiment-flow context tied to claims, alerts, and gate failures
-- writing handoff awareness of active claims
-- human-readable session-state carry-over
+- bootstrap itself with a single call (`createReader(process.cwd())`) — no kernel internal imports needed
+- show a project overview (claims, alerts, gate failures, session history)
+- power the literature flow (search history, gap surfacing)
+- power the experiment flow (claims tied to gates and alerts, blocker identification)
+- answer "is this claim safe to write about?" (claim status via `listClaimHeads` + citation verification via `listCitationChecks`)
+- expose the human-readable STATE.md snapshot
 
 That is enough to start validating the Flow Engine MVP without overdesigning the contract.
 
