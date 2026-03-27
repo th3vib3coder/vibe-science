@@ -129,6 +129,8 @@ These are real and useful but they depend on Phases 1-3 existing. Do not build:
 
 Plan these when Phase 3 is done and tested.
 
+Platform substrate for Phase 4+: build connectors on Claude Code **Channels** (event ingress, two-way chat, webhook receivers, permission relay — v2.1.80+). Build durable automations on Claude Code **Desktop/Cloud Scheduled Tasks** (survive session close, unlike session-scoped `/loop`). Do not reinvent transport or scheduling infrastructure.
+
 ---
 
 ## What We Deliberately Avoid

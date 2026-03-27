@@ -183,6 +183,8 @@ This module is deferred. Build it after the Flow Engine, Memory, Experiment Ops,
 
 When built: connectors are adapters, not truth sources. They sync bibliography, mirror notes, and export artifacts. They do not define evidence semantics.
 
+Implementation note: Claude Code v2.1.80+ ships native **Channels** — MCP servers that push external events (Telegram, Discord, iMessage, webhooks) into a running session. Channels also support two-way reply and remote permission relay. Use Channels as the transport/event ingress layer rather than building custom bridges. Channels are substrato (event pipes + mobile approval), not domain logic — our domain logic (literature tracking, experiment alerts, advisor feedback parsing) runs on top.
+
 ---
 
 ## Module 6: Automations And Digests (build later)
@@ -192,6 +194,8 @@ Purpose: reduce operator burden with session-start checks, digests, and reminder
 This module is deferred. Some automation already exists in TRACE+ADAPT (harness hints at SessionStart). Additional automations should wait until the Flow Engine defines what "stale" and "blocked" mean in practice. Otherwise we automate reminders for concepts that don't exist yet.
 
 When built: automations assist, they do not sign off. No unsupervised claim promotion.
+
+Implementation note: Claude Code provides **Scheduled Tasks** at three levels — session-scoped (`/loop`, CronCreate — dies when session closes, 3-day max), Desktop (durable, local machine), and Cloud (durable, Anthropic infrastructure). Use session-scoped for in-session reminders and polling. Use Desktop/Cloud for durable automations like weekly digests and advisor-prep reminders. Do not build a custom scheduler.
 
 ---
 
