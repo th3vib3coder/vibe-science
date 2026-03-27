@@ -62,10 +62,13 @@ How flows interact with the kernel:
 - Flows may NOT promote claims, certify evidence, or reinterpret gate outcomes.
 - If a flow tries to include a killed claim in a writing handoff, it must surface a warning, not silently include it.
 
-Open design questions (to resolve before implementation):
+V1 storage decision:
 
 - How granular are flow stages? Per-session? Per-week? Per research question?
-- Does the flow persist state in the kernel DB (new tables) or in workspace files?
+- **Flow state lives outside the kernel in workspace-scoped files for V1.**
+- The kernel remains read-only from the flow's point of view.
+- No new kernel tables are introduced for flow state in V1.
+- If the outer project later proves that file-backed flow state is insufficient, that becomes a separate kernel-review decision rather than a default.
 - What happens when the researcher wants to work on something the flow doesn't expect? Override mechanism needed.
 
 Not allowed:
@@ -147,25 +150,28 @@ What this makes possible that is impossible today:
 Important boundary — writing is not all claim-backed:
 
 - **Claim-backed writing** (Results, quantitative conclusions): must reference PROMOTED/ROBUST claims. Killed/disputed claims require explicit caveat.
+- **Artifact-backed writing** (Methods, preprocessing descriptions, protocol choices, thresholds, seeds, dataset provenance): must be grounded in experiment manifests, result bundles, and other structured artifacts even if it is not claim-backed in the same sense as Results.
 - **Free writing** (Introduction, Discussion, hypotheses, speculation): the kernel has no authority here. The researcher writes freely. The environment may help organize but does not gate.
 
-This distinction is critical. A system that blocks all writing until claims are promoted is unusable for real academic work. The kernel's authority is over quantitative findings, not over the researcher's prose.
+This distinction is critical. A system that blocks all writing until claims are promoted is unusable for real academic work. But a system that treats methods as pure free prose creates a factual bypass around provenance and reproducibility. The kernel's strongest authority is over quantitative findings; the outer project must still keep methods tied to artifacts.
 
 Safe responsibilities:
 
 - claim-aware export for validated findings
+- artifact-backed export for Methods sections
 - report assembly
 - figure catalogs
 - appendix / artifact bundle preparation
 - advisor-meeting packs
 - rebuttal prep packs
-- free-writing support for non-claim sections (intro, discussion, methods narrative)
+- free-writing support for non-claim sections (intro, discussion, speculative notes)
 
 Not allowed:
 
 - free invention of validated findings
 - inclusion of killed / disputed claims in Results sections without explicit caveat
-- blocking the researcher from writing Introduction, Discussion, or Methods because claims aren't promoted yet
+- treating Methods as ungrounded prose detached from manifests, bundles, and protocol artifacts
+- blocking the researcher from writing Introduction or Discussion because claims aren't promoted yet
 
 ---
 

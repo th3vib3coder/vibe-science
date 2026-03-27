@@ -28,13 +28,17 @@ Deliverables:
 - user stories — **DONE** (2026-03-27, in V1 spec)
 - adversarial review of spec — **DONE** (2026-03-27)
 - repo-topology decision — **PENDING**
+- `core-reader.js` ownership decision — **DONE** (kernel-side contract surface)
 - minimal `core-reader.js` design — **PENDING**
+- V1 flow-state persistence decision — **DONE** (`workspace files`, not kernel tables)
 
 Exit gate:
 
 - [ ] kernel boundary is explicit and reviewed
 - [ ] user stories exist and are grounded in real workflow pain
+- [ ] `core-reader.js` ownership is explicit: kernel-side contract surface in the Vibe Science repo
 - [ ] core-reader.js interface is designed (function signatures + return types)
+- [ ] V1 flow state is explicitly out-of-kernel and file-backed
 - [ ] repo topology is decided
 
 Phase 0 is done when ALL boxes are checked. No partial credit.
@@ -52,7 +56,7 @@ Goal:
 
 Deliverables:
 
-- `core-reader.js` — read-only module wrapping kernel DB queries
+- `core-reader.js` — kernel-side read-only contract surface in the Vibe Science repo
 - `/flow-literature` — register papers, track relevance to claims, surface gaps
 - `/flow-experiment` — register experiments with manifests, track blockers, assemble result bundles
 - project overview command — "where am I, what's pending, what's blocked"
@@ -65,6 +69,7 @@ Exit gate:
 - [ ] project overview produces a useful human-readable summary from kernel state
 - [ ] all new code has tests (happy path + graceful failure + kernel works without it)
 - [ ] kernel test suite still passes (170+ tests green)
+- [ ] at least one real operator session confirms the Flow Engine reduces orientation or retrieval pain without adding unacceptable overhead
 
 ---
 
@@ -133,7 +138,7 @@ Plan these when Phase 3 is done and tested.
 - dashboard-led truth mutation
 - giant connector surface before inner flows work
 - domain packs before the base workflow exists
-- any work on the kernel during shell development (kernel evolves on its own track)
+- kernel truth-semantic changes during shell development; only contract-surface work such as `core-reader.js` is allowed on the kernel track
 
 ---
 
@@ -146,4 +151,3 @@ Every module added to the environment consumes context in Claude Code sessions. 
 - Is there a way to make it lazy-loaded (only present when invoked)?
 
 A system that is so large it suffocates the context available for actual research is worse than no system at all.
-
