@@ -6,6 +6,16 @@
 
 ## Recommended Topology
 
+This document should now be read together with:
+
+- [Repo Topology Decision](../REPO-TOPOLOGY-DECISION.md)
+
+Decided V1 incubation shape:
+
+- the outer research environment stays in the same repo for now
+- it lives in a strictly separated top-level workspace
+- the current placeholder name for that workspace is `environment/`
+
 Recommended long-term shape:
 
 - `vibe-science` remains the protected kernel repo
@@ -20,7 +30,7 @@ Why this is the preferred direction:
 
 Short version:
 
-**separate products, coupled by contract**
+**same repo now, separate product later, always coupled by contract**
 
 ---
 
@@ -137,4 +147,3 @@ It is **epistemic drift by convenience**:
 - automation starts acting like truth
 
 The topology exists to stop that drift before it starts.
-

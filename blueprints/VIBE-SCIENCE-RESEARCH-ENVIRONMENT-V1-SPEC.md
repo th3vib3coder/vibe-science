@@ -13,6 +13,7 @@ Read these first:
 1. [Current Vibe Science System Map](./CURRENT-VIBE-SCIENCE-SYSTEM-MAP.md)
 2. [Vibe Science Core Contract](./VIBE-SCIENCE-CORE-CONTRACT.md)
 3. [Vibe Science Broader System Spec](./VIBE-SCIENCE-BROADER-SYSTEM-SPEC.md)
+4. [Repo Topology Decision](./REPO-TOPOLOGY-DECISION.md)
 
 ---
 
@@ -153,4 +154,3 @@ The outer-project track is ready for implementation planning only if all four mo
 - phased delivery order
 
 If any proposed feature requires weakening the kernel contract, it is out of scope for this track.
-

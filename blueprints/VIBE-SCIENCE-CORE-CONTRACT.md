@@ -361,8 +361,11 @@ Architecturally, the cleanest long-term model is:
 - `vibe-science` remains the protected kernel
 - a distinct outer project consumes the kernel through read-only interfaces and safe command paths
 
-That decision can be finalized later.
-The contract itself remains the same.
+The adopted V1 incubation decision is documented in:
+
+- [Repo Topology Decision](./REPO-TOPOLOGY-DECISION.md)
+
+The contract itself remains the same across either topology.
 
 ---
 

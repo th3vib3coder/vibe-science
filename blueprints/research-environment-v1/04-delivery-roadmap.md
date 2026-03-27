@@ -27,7 +27,7 @@ Deliverables:
 - `VIBE-SCIENCE-CORE-CONTRACT.md` — **DONE** (2026-03-27)
 - user stories — **DONE** (2026-03-27, in V1 spec)
 - adversarial review of spec — **DONE** (2026-03-27)
-- repo-topology decision — **PENDING**
+- repo-topology decision — **DONE** ([`REPO-TOPOLOGY-DECISION.md`](../REPO-TOPOLOGY-DECISION.md))
 - `core-reader.js` ownership decision — **DONE** (kernel-side contract surface)
 - minimal `core-reader.js` design — **PENDING**
 - V1 flow-state persistence decision — **DONE** (`workspace files`, not kernel tables)
@@ -39,7 +39,7 @@ Exit gate:
 - [ ] `core-reader.js` ownership is explicit: kernel-side contract surface in the Vibe Science repo
 - [ ] core-reader.js interface is designed (function signatures + return types)
 - [ ] V1 flow state is explicitly out-of-kernel and file-backed
-- [ ] repo topology is decided
+- [x] repo topology is decided
 
 Phase 0 is done when ALL boxes are checked. No partial credit.
 
