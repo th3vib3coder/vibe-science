@@ -94,7 +94,7 @@ Returns:
   listObserverAlerts(options = {}),
   listCitationChecks(options = {}),
   getStateSnapshot(),
-  close()            // releases the DB handle; optional — SQLite auto-closes on GC
+  close()            // explicit cleanup; required when the caller is done with this reader
 }
 ```
 
@@ -104,9 +104,19 @@ The outer project calls `createReader(process.cwd())` once and uses the returned
 
 - when the DB is present: `dbAvailable = true`, all methods work normally
 - when the DB is missing or corrupt: `dbAvailable = false`, DB-backed methods return empty projections (`[]` or `null`), `getStateSnapshot()` still works because it reads from the filesystem
-- `close()` is for explicit cleanup but is not mandatory — the DB handle is released on garbage collection
+- `close()` is part of the contract, not a courtesy: callers should invoke it when they are done with the reader
+- `close()` should be idempotent: safe to call multiple times without throwing
+- if the implementation later adds handle reuse or caching, that remains an internal kernel concern; the caller contract does not change
 
 This avoids a brittle `null` bootstrap contract and lets the outer project degrade gracefully instead of branching around reader existence.
+
+### Ownership rule
+
+`createReader()` owns the lifecycle of the DB handle it opens or acquires on the caller's behalf.
+
+- outer callers must not import or call `closeDB()` directly
+- outer callers must call `reader.close()` when they are done
+- if the kernel internally pools or reuses handles, `reader.close()` should release that lease/ref safely rather than exposing pooling semantics to callers
 
 ---
 
@@ -205,32 +215,24 @@ Returns:
 
 Field definitions:
 
-- `currentStatus` — the `new_status` value from the latest status-bearing event for this claim
-- `statusSourceEventType` — which event type produced `currentStatus` (e.g. `PROMOTED`, `KILLED`)
+- `currentStatus` — the `new_status` value from the latest **state-bearing row** for this claim
+- `statusSourceEventType` — the `event_type` stored on that same state-bearing row
 - `isActive` — `true` when `currentStatus` is NOT in `['KILLED', 'DISPUTED']`. Active claims are those that are still live in the research pipeline (including draft, under review, promoted, robust). Killed and disputed claims are explicitly inactive.
 
-Status-bearing event types (the ones that change a claim's lifecycle status):
+State-bearing row rule:
 
-- `CREATED` — claim enters the pipeline
-- `PROMOTED` — claim passes review and is promotable
-- `KILLED` — claim is rejected (with kill_reason)
-- `DISPUTED` — claim is frozen by circuit breaker
-- `VERIFIED` — claim passes verification / confounder harness (may set status to ROBUST)
-- `R2_REVIEWED` — may change status if r2_verdict triggers promotion or rejection
-- `CONFOUNDER_TESTED` — may kill or downgrade if sign change or collapse detected
-
-Non-status-bearing event types (audit events that do NOT change lifecycle status):
-
-- `GATE_PASSED` — gate audit, no status change
-- `GATE_FAILED` — gate audit, no status change
-- `CONFIDENCE_UPDATED` — changes confidence value but not lifecycle status
+- a claim-event row is state-bearing if and only if `new_status IS NOT NULL`
+- rows with `new_status = NULL` are audit/context rows and must not determine the visible claim head
+- the reader contract deliberately does **not** duplicate a hardcoded whitelist of event types from ingestion logic
+- this keeps the read contract aligned with kernel truth even if event taxonomy evolves
 
 Implementation note:
 
 - this is **not** the full timeline
 - it must represent the **current visible claim state**, not merely the latest raw event row
-- the reader should derive status from the latest status-bearing event (see list above), scoped to the project through `sessions`
-- non-status events like `GATE_PASSED` or `GATE_FAILED` must be skipped when determining the head — they are audit entries, not lifecycle transitions
+- derive the head from the latest project-scoped claim-event row where `new_status IS NOT NULL`
+- use a deterministic tie-breaker such as `ORDER BY timestamp DESC, id DESC`
+- `statusSourceEventType` remains useful for auditability, but it is descriptive metadata, not the rule that decides whether a row is lifecycle-bearing
 
 ### 3. `listGateChecks`
 
@@ -272,6 +274,10 @@ Implementation mapping:
 
 - new read query over `gate_checks JOIN sessions`
 
+Default ordering:
+
+- `timestamp DESC, id DESC`
+
 ### 4. `listLiteratureSearches`
 
 ```js
@@ -312,6 +318,10 @@ Implementation note:
 
 - `sources` and `keyPapers` should be parsed from stored JSON where valid
 
+Default ordering:
+
+- `timestamp DESC, id DESC`
+
 ### 5. `listObserverAlerts`
 
 ```js
@@ -350,6 +360,11 @@ Implementation mapping:
 - `getUnresolvedAlerts` in `db.js` already queries this table
 - broader listing (including resolved alerts) needs a small additional read query
 
+Default ordering:
+
+- unresolved view: preserve the kernel helper behavior, `level DESC, created_at DESC, id DESC`
+- broader mixed view: still keep severity first, then recency
+
 ### 6. `listCitationChecks`
 
 ```js
@@ -383,7 +398,8 @@ Returns:
     resolver,
     resolvedTitle,
     retractionStatus,   // RETRACTED / CLEAR / UNKNOWN / null
-    checkedAt
+    checkedAt,
+    createdAt
   }
 ]
 ```
@@ -393,6 +409,10 @@ Implementation mapping:
 - `citation_checks` should always be project-scoped through `sessions` first
 - `claim_id` is an optional narrowing filter inside that project scope, not a substitute for project scoping
 - `getCitationChecks` in `db.js` already exists but uses a different filter shape — adapt or wrap
+
+Default ordering:
+
+- most recent verification activity first: `COALESCE(checked_at, created_at) DESC, id DESC`
 
 Why this is Phase 1 required, not optional:
 
@@ -467,7 +487,7 @@ The point of Phase 1 is to expose the minimum stable read contract, not to publi
 
 ## Return-Shape Conventions
 
-- **sort order**: all `list*` functions return results ordered by `timestamp DESC` (most recent first) unless the caller explicitly overrides. This is the only sane default for a "show me what happened" interface.
+- **sort order**: each `list*` function defines its own default ordering using that projection's real recency field and any domain-specific secondary sort. Do not force a fake global `timestamp DESC` rule onto projections that use `created_at`, `checked_at`, severity-first ordering, or other legitimate shapes.
 - timestamps are returned as stored ISO-like text strings
 - JSON-bearing fields such as `sources`, `keyPapers`, and `details` should be parsed when safe
 - malformed JSON should degrade gracefully to the original string or `null`
