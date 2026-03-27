@@ -29,19 +29,19 @@ Deliverables:
 - adversarial review of spec — **DONE** (2026-03-27)
 - repo-topology decision — **DONE** ([`REPO-TOPOLOGY-DECISION.md`](../REPO-TOPOLOGY-DECISION.md))
 - `core-reader.js` ownership decision — **DONE** (kernel-side contract surface)
-- minimal `core-reader.js` design — **PENDING**
+- minimal `core-reader.js` design — **DONE** ([`CORE-READER-INTERFACE-SPEC.md`](../CORE-READER-INTERFACE-SPEC.md))
 - V1 flow-state persistence decision — **DONE** (`workspace files`, not kernel tables)
 
 Exit gate:
 
-- [ ] kernel boundary is explicit and reviewed
-- [ ] user stories exist and are grounded in real workflow pain
-- [ ] `core-reader.js` ownership is explicit: kernel-side contract surface in the Vibe Science repo
-- [ ] core-reader.js interface is designed (function signatures + return types)
-- [ ] V1 flow state is explicitly out-of-kernel and file-backed
+- [x] kernel boundary is explicit and reviewed
+- [x] user stories exist and are grounded in real workflow pain
+- [x] `core-reader.js` ownership is explicit: kernel-side contract surface in the Vibe Science repo
+- [x] core-reader.js interface is designed (function signatures + return types)
+- [x] V1 flow state is explicitly out-of-kernel and file-backed
 - [x] repo topology is decided
 
-Phase 0 is done when ALL boxes are checked. No partial credit.
+Phase 0 is complete.
 
 ---
 

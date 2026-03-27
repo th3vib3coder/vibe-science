@@ -278,6 +278,10 @@ Design rule:
 
 This keeps future shell work insulated from schema churn.
 
+The Phase 0 design for that surface is documented in:
+
+- [Core Reader Interface Spec](./CORE-READER-INTERFACE-SPEC.md)
+
 ---
 
 ## Safe Read Classes

@@ -19,5 +19,6 @@ Prerequisites:
 2. [Vibe Science Core Contract](../VIBE-SCIENCE-CORE-CONTRACT.md)
 3. [Vibe Science Broader System Spec](../VIBE-SCIENCE-BROADER-SYSTEM-SPEC.md)
 4. [Repo Topology Decision](../REPO-TOPOLOGY-DECISION.md)
+5. [Core Reader Interface Spec](../CORE-READER-INTERFACE-SPEC.md)
 
 This is an outer-project spec, not a kernel spec.
