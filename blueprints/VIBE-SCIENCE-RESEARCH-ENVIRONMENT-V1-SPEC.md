@@ -135,7 +135,7 @@ This means:
 - The kernel remains authoritative for claim truth, citation truth, gate meaning, integrity state, and stop semantics.
 - The outer project may consume projections, not mutate truth.
 - Memory is a mirror, never a competing authority.
-- Writing is claim-aware for Results and quantitative conclusions. Introduction, Discussion, and hypothesis-writing are free — the kernel has no authority over the researcher's prose, only over quantitative findings.
+- Writing has three tiers: Results and quantitative conclusions are claim-backed (must reference PROMOTED/ROBUST claims). Methods are artifact-backed (must be grounded in experiment manifests and result bundles). Introduction, Discussion, and hypothesis-writing are free — the kernel has no authority over the researcher's prose.
 - Automations may assist, remind, package, and summarize; they may not self-legitimate research conclusions.
 - The environment must not consume so much context that the researcher can't do research. Lazy-loading and minimal SessionStart footprint are architectural requirements.
 
