@@ -6,6 +6,11 @@ The design principle is simple:
 
 `protect the kernel, widen the shell`
 
+Read these kernel documents first:
+
+1. [Current Vibe Science System Map](../CURRENT-VIBE-SCIENCE-SYSTEM-MAP.md)
+2. [Vibe Science Core Contract](../VIBE-SCIENCE-CORE-CONTRACT.md)
+
 Read in this order:
 
 1. [Core Invariants](./01-core-invariants.md)

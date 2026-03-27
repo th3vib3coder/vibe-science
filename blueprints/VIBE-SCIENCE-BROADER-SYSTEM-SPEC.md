@@ -8,6 +8,11 @@ This file is the canonical entrypoint for the "broader system" work inside the r
 
 It intentionally stays short. Detailed product and architecture guidance is split into atomic documents under [broader-system](./broader-system/README.md).
 
+Before reading the outer-system docs, first anchor on the current kernel:
+
+1. [Current Vibe Science System Map](./CURRENT-VIBE-SCIENCE-SYSTEM-MAP.md)
+2. [Vibe Science Core Contract](./VIBE-SCIENCE-CORE-CONTRACT.md)
+
 ## Goal
 
 Broaden Vibe Science from an integrity-first research runtime into a wider semi-automated research environment for real PhD work:
