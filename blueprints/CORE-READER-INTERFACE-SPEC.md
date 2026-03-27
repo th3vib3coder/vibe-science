@@ -51,7 +51,8 @@ Reason:
    Only ship what the Flow Engine MVP and project overview actually need.
 
 4. **Canonical inputs**
-   `projectPath` must already be canonicalized according to kernel rules.
+   The public factory `createReader(projectPath)` accepts a raw workspace path and canonicalizes it using kernel rules.
+   Lower-level helper signatures shown below assume that canonicalization has already happened.
 
 5. **Predictable return behavior**
    - singular lookups return `null` when missing
@@ -84,6 +85,8 @@ Returns:
 ```js
 {
   projectPath,       // canonicalized
+  dbAvailable,       // true when the kernel DB is readable; false when DB is missing or corrupt
+  error,             // null when healthy; short diagnostic string when degraded
   getProjectOverview(options = {}),
   listClaimHeads(options = {}),
   listGateChecks(options = {}),
@@ -91,13 +94,19 @@ Returns:
   listObserverAlerts(options = {}),
   listCitationChecks(options = {}),
   getStateSnapshot(),
-  close()            // releases the DB handle
+  close()            // releases the DB handle; optional — SQLite auto-closes on GC
 }
 ```
 
 The outer project calls `createReader(process.cwd())` once and uses the returned object. It never touches `db.js` or `path-utils.js` directly.
 
-If the DB does not exist or cannot be opened, `createReader` returns `null` and the outer project degrades gracefully (shows "no kernel state available" instead of crashing).
+`createReader` always returns a reader object, never `null`:
+
+- when the DB is present: `dbAvailable = true`, all methods work normally
+- when the DB is missing or corrupt: `dbAvailable = false`, DB-backed methods return empty projections (`[]` or `null`), `getStateSnapshot()` still works because it reads from the filesystem
+- `close()` is for explicit cleanup but is not mandatory — the DB handle is released on garbage collection
+
+This avoids a brittle `null` bootstrap contract and lets the outer project degrade gracefully instead of branching around reader existence.
 
 ---
 
@@ -155,6 +164,7 @@ Implementation mapping:
 - `getActivePatterns`
 - `loadPendingSeeds`
 - new lightweight query for recent gate failures joined through `sessions`
+- `activeClaimCount` should be derived from `listClaimHeads` current-status logic, not from raw event counts
 
 ### 2. `listClaimHeads`
 
@@ -171,7 +181,7 @@ Inputs:
 - `db`
 - `projectPath`
 - `options.limit = 100`
-- `options.statuses = null`
+- `options.statuses = null` (filters derived `currentStatus`, not raw event types)
 
 Returns:
 
@@ -180,23 +190,47 @@ Returns:
   {
     claimId,
     sessionId,
-    latestEventType,
-    oldStatus,
-    newStatus,
+    currentStatus,
+    statusSourceEventType,
     confidence,
     r2Verdict,
     killReason,
     gateId,
     narrative,
-    timestamp
+    timestamp,
+    isActive
   }
 ]
 ```
 
+Field definitions:
+
+- `currentStatus` — the `new_status` value from the latest status-bearing event for this claim
+- `statusSourceEventType` — which event type produced `currentStatus` (e.g. `PROMOTED`, `KILLED`)
+- `isActive` — `true` when `currentStatus` is NOT in `['KILLED', 'DISPUTED']`. Active claims are those that are still live in the research pipeline (including draft, under review, promoted, robust). Killed and disputed claims are explicitly inactive.
+
+Status-bearing event types (the ones that change a claim's lifecycle status):
+
+- `CREATED` — claim enters the pipeline
+- `PROMOTED` — claim passes review and is promotable
+- `KILLED` — claim is rejected (with kill_reason)
+- `DISPUTED` — claim is frozen by circuit breaker
+- `VERIFIED` — claim passes verification / confounder harness (may set status to ROBUST)
+- `R2_REVIEWED` — may change status if r2_verdict triggers promotion or rejection
+- `CONFOUNDER_TESTED` — may kill or downgrade if sign change or collapse detected
+
+Non-status-bearing event types (audit events that do NOT change lifecycle status):
+
+- `GATE_PASSED` — gate audit, no status change
+- `GATE_FAILED` — gate audit, no status change
+- `CONFIDENCE_UPDATED` — changes confidence value but not lifecycle status
+
 Implementation note:
 
 - this is **not** the full timeline
-- it is the latest event per claim, scoped to the project through `sessions`
+- it must represent the **current visible claim state**, not merely the latest raw event row
+- the reader should derive status from the latest status-bearing event (see list above), scoped to the project through `sessions`
+- non-status events like `GATE_PASSED` or `GATE_FAILED` must be skipped when determining the head — they are audit entries, not lifecycle transitions
 
 ### 3. `listGateChecks`
 
@@ -316,39 +350,6 @@ Implementation mapping:
 - `getUnresolvedAlerts` in `db.js` already queries this table
 - broader listing (including resolved alerts) needs a small additional read query
 
-### 7. `getStateSnapshot`
-
-```js
-export function getStateSnapshot(projectPath)
-```
-
-Note: this function does NOT take `db` — it reads from the filesystem (`STATE.md`), not from the database. This is intentional: STATE.md is a workspace projection, not a DB artifact.
-
-Purpose:
-
-- expose the latest kernel-authored `STATE.md` projection to the outer project without turning it into truth authority
-
-Inputs:
-
-- `projectPath`
-
-Returns:
-
-```js
-{
-  exists,
-  path,
-  updatedAt,
-  content
-} | null
-```
-
-Implementation mapping:
-
-- `loadStateMdSnapshot` logic in `session-start.js` should be factored or reused
-
----
-
 ### 6. `listCitationChecks`
 
 ```js
@@ -389,7 +390,8 @@ Returns:
 
 Implementation mapping:
 
-- `citation_checks` joins through `sessions` for project scoping, or can filter by `claim_id` directly (indexed: `idx_citations_claim`)
+- `citation_checks` should always be project-scoped through `sessions` first
+- `claim_id` is an optional narrowing filter inside that project scope, not a substitute for project scoping
 - `getCitationChecks` in `db.js` already exists but uses a different filter shape — adapt or wrap
 
 Why this is Phase 1 required, not optional:
@@ -397,6 +399,39 @@ Why this is Phase 1 required, not optional:
 - `listClaimHeads` tells you a claim is PROMOTED
 - `listCitationChecks` tells you its citations are actually VERIFIED
 - without both, the writing handoff cannot answer "is this claim safe to write about?"
+
+### 7. `getStateSnapshot`
+
+```js
+export function getStateSnapshot(projectPath)
+```
+
+Note: this function does NOT take `db` — it reads from the filesystem (`STATE.md`), not from the database. This is intentional: `STATE.md` is a workspace projection, not a DB artifact.
+
+Purpose:
+
+- expose the latest kernel-authored `STATE.md` projection to the outer project without turning it into truth authority
+
+Inputs:
+
+- `projectPath`
+
+Returns:
+
+```js
+{
+  exists,           // true if STATE.md file exists, false otherwise
+  path,             // resolved path to STATE.md
+  updatedAt,        // file mtime as ISO string, null if file doesn't exist
+  content           // file content as string, null if file doesn't exist
+}
+```
+
+Always returns an object, never `null`. When the file doesn't exist: `{ exists: false, path: '...', updatedAt: null, content: null }`. This is consistent with the degraded-reader pattern — the caller checks `exists`, not truthiness of the return value.
+
+Implementation mapping:
+
+- `loadStateMdSnapshot` logic in `session-start.js` should be factored or reused
 
 ---
 
@@ -432,6 +467,7 @@ The point of Phase 1 is to expose the minimum stable read contract, not to publi
 
 ## Return-Shape Conventions
 
+- **sort order**: all `list*` functions return results ordered by `timestamp DESC` (most recent first) unless the caller explicitly overrides. This is the only sane default for a "show me what happened" interface.
 - timestamps are returned as stored ISO-like text strings
 - JSON-bearing fields such as `sources`, `keyPapers`, and `details` should be parsed when safe
 - malformed JSON should degrade gracefully to the original string or `null`
@@ -478,4 +514,3 @@ It is:
 1. decide exact file placement under `plugin/lib/`
 2. implement the first read-only functions
 3. test them against the existing kernel DB
-
