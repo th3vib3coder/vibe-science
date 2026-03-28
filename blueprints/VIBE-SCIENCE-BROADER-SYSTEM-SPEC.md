@@ -20,7 +20,12 @@ There are two spec tracks. They are not duplicates — they serve different purp
 - **This file + `broader-system/`** — internal architectural governance. Defines invariants, boundaries, protected zones, and sequencing rules. This is the "what must not break" reference. Read this when deciding whether a proposed feature is safe.
 - **`VIBE-SCIENCE-RESEARCH-ENVIRONMENT-V1-SPEC.md` + `research-environment-v1/`** — the product spec. Defines user stories, competitive context, module shapes, and delivery roadmap. This is the "what we build and why" reference. Read this when planning implementation.
 
-If the two tracks ever contradict each other, the invariants in `broader-system/01-core-invariants.md` win.
+If the two tracks ever contradict each other:
+
+- **kernel invariants, truth boundaries, and protected-zone rules** from `broader-system/01-core-invariants.md` win
+- **execution model, command registration, flow-state substrate, and delivery sequencing** from `research-environment-v1/` win
+
+This split is intentional: governance protects the kernel; the product spec defines how the outer project actually runs.
 
 ## Goal
 

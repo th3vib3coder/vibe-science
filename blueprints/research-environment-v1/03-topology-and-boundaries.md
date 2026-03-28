@@ -59,7 +59,7 @@ The following belongs outside the kernel:
 - typed project memory
 - experiment registry and packaging
 - reporting and writing handoff
-- dashboards and control plane
+- dashboards and other operator-facing operational surfaces
 - connectors and channels
 - reminders, digests, and operator automations
 - domain packs and presets
