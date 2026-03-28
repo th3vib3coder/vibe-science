@@ -261,9 +261,10 @@ Instead, the core should expose a stable read-only interface module, for example
 - `listSessions(projectPath, limit, cursor)`
 - `getSessionSummary(sessionId)`
 - `listClaimHeads(projectPath)`
+- `listUnresolvedClaims(projectPath)`
 - `getClaimTimeline(projectPath, claimId)`
 - `listGateChecks(projectPath, filters)`
-- `getCitationStatus(projectPath, claimId?)`
+- `listCitationChecks(projectPath, filters)`
 - `listObserverAlerts(projectPath, unresolvedOnly)`
 - `listSerendipitySeeds(projectPath, status)`
 - `listPatterns(projectPath, activeOnly)`

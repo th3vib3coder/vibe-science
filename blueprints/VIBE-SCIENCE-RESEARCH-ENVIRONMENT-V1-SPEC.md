@@ -60,7 +60,7 @@ The advisor wants: current results, what changed since last meeting, open questi
 
 Carmine has 12 claims in the ledger. Some are PROMOTED, some DISPUTED, some still under review. He starts writing and accidentally includes a finding that R2 killed two sessions ago. The paper draft now contains a false claim.
 
-**What the environment gives him:** A claim-aware writing handoff. When he starts writing Results, the environment shows only PROMOTED/ROBUST claims with their evidence chains. Killed and disputed claims are flagged with warnings. If a claim gets killed after being exported to a draft, he gets an alert.
+**What the environment gives him:** A claim-aware writing handoff. When he starts writing Results, the environment shows only **export-eligible** claims with their evidence chains. In V1, export eligibility is derived by combining three kernel projections rather than reading one magic status label: lifecycle head (`listClaimHeads`), unresolved-review set (`listUnresolvedClaims`), and citation verification (`listCitationChecks`). If a claim later becomes killed/disputed or falls out of eligibility, he gets an alert.
 
 ### Story 5: "I found 3 papers that are directly relevant but I have no structured way to track them"
 
@@ -119,7 +119,13 @@ This means:
 - the environment may assist writing and reporting
 - the environment may run reminders and digests
 - the environment may integrate with external tools
+- the environment may expose thin Claude Code command entrypoints while keeping its product logic in a separate outer workspace
 - the environment may not validate claims on behalf of the kernel
+
+Execution model note:
+
+- this outer project runs as **Claude Code commands plus workspace artifacts**, not as a standalone JavaScript application with a conventional import graph
+- when a flow needs structured kernel facts beyond what workspace files safely expose, it reaches them through a thin CLI bridge over `core-reader.js`
 
 ---
 
@@ -136,8 +142,11 @@ This means:
 
 - The kernel remains authoritative for claim truth, citation truth, gate meaning, integrity state, and stop semantics.
 - The outer project may consume projections, not mutate truth.
+- V1 flow state lives in a separate outer-project workspace (`.vibe-science-environment/`), not in kernel tables and not in `.vibe-science/`.
+- V1 flow re-entry is explicit and command-driven (`/flow-status`, `/flow-*`), not hidden inside kernel SessionStart behavior.
 - Memory is a mirror, never a competing authority.
-- Writing has three tiers: Results and quantitative conclusions are claim-backed (must reference PROMOTED/ROBUST claims). Methods are artifact-backed (must be grounded in experiment manifests and result bundles). Introduction, Discussion, and hypothesis-writing are free — the kernel has no authority over the researcher's prose.
+- Writing has three tiers: Results and quantitative conclusions are claim-backed (must reference **export-eligible** claims under current kernel facts, not merely a raw label like `PROMOTED`). In V1, that eligibility is derived from multiple kernel projections, not assumed from one lifecycle status. Methods are artifact-backed (must be grounded in experiment manifests and result bundles). Introduction, Discussion, and hypothesis-writing are free — the kernel has no authority over the researcher's prose.
+- Export eligibility is outer-project policy built on kernel facts. In V1 it must live in a shared outer-project helper, not inside `core-reader.js` and not duplicated across flows.
 - Automations may assist, remind, package, and summarize; they may not self-legitimate research conclusions.
 - The environment must not consume so much context that the researcher can't do research. Lazy-loading and minimal SessionStart footprint are architectural requirements.
 

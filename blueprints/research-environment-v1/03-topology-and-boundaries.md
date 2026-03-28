@@ -55,6 +55,7 @@ The following stays in the kernel repo:
 The following belongs outside the kernel:
 
 - workflow orchestration
+- outer-project policy helpers (for example export eligibility or flow-state helpers)
 - typed project memory
 - experiment registry and packaging
 - reporting and writing handoff
@@ -71,7 +72,8 @@ The outer project may interact with the kernel through:
 
 1. read-only projection interfaces
 2. kernel-safe commands
-3. ordinary non-authoritative workspace artifacts
+3. kernel-owned CLI bridges that wrap read-only projection interfaces for prompt-driven commands
+4. ordinary non-authoritative workspace artifacts
 
 The outer project may not interact with the kernel through:
 
@@ -79,6 +81,7 @@ The outer project may not interact with the kernel through:
 2. direct mutation of kernel-owned projections
 3. convenience shortcuts that bypass hooks
 4. direct mutation of claim / citation / gate truth state
+5. ad hoc inline module imports or SQL snippets embedded in command markdown as a substitute for a real contract surface
 
 ---
 
@@ -97,6 +100,53 @@ These must only be modified through kernel-observed paths.
 
 The outer project may stage or draft around them.
 It may not silently write through them.
+
+---
+
+## Host-Facing Entrypoint Exception
+
+Claude Code command registration is a host constraint, not a reason to blur ownership.
+
+For V1:
+
+- outer-project slash commands may appear as thin entrypoint files in top-level `commands/`
+- expected examples: `commands/flow-status.md`, `commands/flow-literature.md`, `commands/flow-experiment.md`
+- these files are **host-facing shims**, not the home of flow logic
+- real flow assets, state helpers, templates, schemas, and policy helpers still live under `environment/`
+- when a command needs structured DB-backed kernel facts, it reaches them through a kernel-owned CLI bridge such as `plugin/scripts/core-reader-cli.js`
+- command shims depend only on the CLI bridge's stable JSON envelope, never on raw SQL, raw SQLite output, or incidental console text
+- changing a flow command should normally mean editing `environment/` plus a minimal command shim, not adding domain logic to kernel files
+
+This is the one deliberate topology exception: host registration lives where Claude Code expects it, while product logic remains in the outer workspace.
+
+---
+
+## V1 Workspace State Boundary
+
+Runtime code and workspace state must be separated as clearly as kernel and shell code.
+
+Kernel-owned workspace state:
+
+- `.vibe-science/STATE.md`
+- `.vibe-science/CLAIM-LEDGER.md`
+- `.vibe-science/PROGRESS.md`
+- any other kernel-authored projections and governance-sensitive artifacts
+
+Outer-project workspace state for V1:
+
+- `.vibe-science-environment/flows/index.json`
+- `.vibe-science-environment/flows/literature.json`
+- `.vibe-science-environment/flows/experiment.json`
+- `.vibe-science-environment/experiments/manifests/`
+- later outer-project artifacts under `.vibe-science-environment/experiments/`, `.vibe-science-environment/writing/`, and similar paths
+
+Rule:
+
+- the outer project must not write its own state into `.vibe-science/`
+- the kernel does not auto-load outer flow state during SessionStart in V1
+- flow resumption is explicit: outer commands read `.vibe-science-environment/` when invoked
+
+This keeps kernel truth state and outer workflow state physically separate even when both live in the same workspace.
 
 ---
 

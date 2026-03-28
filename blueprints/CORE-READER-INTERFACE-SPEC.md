@@ -39,6 +39,91 @@ Reason:
 
 ---
 
+## Claude Code Execution Bridge
+
+The outer project does **not** run as a normal JavaScript application with imports and a call stack.
+
+In this repo, flow entrypoints are Claude Code command files (`commands/*.md`) with frontmatter plus prompt instructions. They execute by telling Claude which tools to use (`Read`, `Write`, `Edit`, `Bash`, and so on).
+
+That means:
+
+- command files do **not** import `createReader()` directly
+- the command layer needs a prompt-friendly bridge to the kernel reader
+- inline `node -e "import(...)"` snippets are technically possible but architecturally ugly and should not become the contract
+
+V1 decision:
+
+- `plugin/lib/core-reader.js` remains the canonical JavaScript read contract
+- a thin CLI wrapper should be added at `plugin/scripts/core-reader-cli.js`
+- Claude Code command shims invoke that wrapper through `Bash`, consume JSON on stdout, and continue the flow
+
+Example command shape:
+
+```bash
+node plugin/scripts/core-reader-cli.js overview --project .
+node plugin/scripts/core-reader-cli.js claim-heads --project . --limit 20
+node plugin/scripts/core-reader-cli.js unresolved-claims --project .
+```
+
+Minimum CLI contract:
+
+- subcommands mirror reader projections rather than inventing a second vocabulary:
+  - `overview`
+  - `claim-heads`
+  - `unresolved-claims`
+  - `gate-checks`
+  - `literature-searches`
+  - `observer-alerts`
+  - `citation-checks`
+- all subcommands accept `--project <path>`
+- projection-specific flags such as `--limit`, `--claim-id`, or `--statuses` are allowed, but the top-level command shape stays uniform
+
+Stdout contract:
+
+```json
+{
+  "ok": true,
+  "projection": "overview",
+  "projectPath": "C:/example/project",
+  "data": {}
+}
+```
+
+Error envelope:
+
+```json
+{
+  "ok": false,
+  "projection": "overview",
+  "projectPath": "C:/example/project",
+  "error": {
+    "code": "INVALID_ARGUMENT",
+    "message": "Unknown projection: overveiw"
+  },
+  "data": null
+}
+```
+
+Rules:
+
+- stdout should contain JSON only, so prompt-driven command shims can read it reliably
+- stderr is for human diagnostics only
+- normal "no data yet" conditions still return `ok: true` with an empty projection or degraded object shape
+- programmer/configuration errors return a non-zero exit code **and** the JSON error envelope
+- command shims should depend on this stable envelope, not on incidental formatting details
+
+Expected wrapper behavior:
+
+- parse command-line flags
+- call `createReader(projectPath)`
+- execute one reader projection
+- print normalized JSON to stdout
+- exit non-zero only for programmer/configuration errors, not for normal "no data yet" conditions
+
+This is the execution bridge that makes a kernel-side JavaScript reader usable from prompt-driven Claude Code commands without coupling the outer project to raw schema or ad hoc shell one-liners.
+
+---
+
 ## Design Rules
 
 1. **Read-only only**
@@ -55,7 +140,7 @@ Reason:
    Lower-level helper signatures shown below assume that canonicalization has already happened.
 
 5. **Predictable return behavior**
-   - singular lookups return `null` when missing
+   - singular lookups return `null` when missing, unless the function explicitly defines a stable degraded object shape
    - collection lookups return `[]`
    - reader functions do not silently mutate, fallback-write, or heal state
 
@@ -89,6 +174,7 @@ Returns:
   error,             // null when healthy; short diagnostic string when degraded
   getProjectOverview(options = {}),
   listClaimHeads(options = {}),
+  listUnresolvedClaims(options = {}),
   listGateChecks(options = {}),
   listLiteratureSearches(options = {}),
   listObserverAlerts(options = {}),
@@ -98,12 +184,12 @@ Returns:
 }
 ```
 
-The outer project calls `createReader(process.cwd())` once and uses the returned object. It never touches `db.js` or `path-utils.js` directly.
+Direct JavaScript callers inside kernel-owned scripts, tests, or the CLI bridge may call `createReader(process.cwd())` (or another workspace path) and use the returned object. Prompt-driven command shims do not call it directly; they go through `plugin/scripts/core-reader-cli.js`. In all cases, outer logic never touches `db.js` or `path-utils.js` directly.
 
 `createReader` always returns a reader object, never `null`:
 
 - when the DB is present: `dbAvailable = true`, all methods work normally
-- when the DB is missing or corrupt: `dbAvailable = false`, DB-backed methods return empty projections (`[]` or `null`), `getStateSnapshot()` still works because it reads from the filesystem
+- when the DB is missing or corrupt: `dbAvailable = false`, DB-backed methods return empty projections or documented degraded objects, and `getStateSnapshot()` still works because it reads from the filesystem
 - `close()` is part of the contract, not a courtesy: callers should invoke it when they are done with the reader
 - `close()` should be idempotent: safe to call multiple times without throwing
 - if the implementation later adds handle reuse or caching, that remains an internal kernel concern; the caller contract does not change
@@ -120,9 +206,9 @@ This avoids a brittle `null` bootstrap contract and lets the outer project degra
 
 ---
 
-## Phase 1 Required Functions
+## Required V1 Reader Functions
 
-Phase 1 requires at least these functions. In the signatures below, `db` and `projectPath` are shown for clarity but are already bound by `createReader` — outer callers use the bound methods.
+The agreed V1 reader surface includes at least these functions. They may be implemented incrementally across the early outer-project phases, but these shapes are part of the contract now. In the signatures below, `db` and `projectPath` are shown for clarity but are already bound by `createReader` — outer callers use the bound methods.
 
 ### 1. `getProjectOverview`
 
@@ -162,10 +248,16 @@ Returns:
   pendingSeedCount,
   activePatternCount,
   recentGateFailures: [
-    { sessionId, gateId, claimId, status, timestamp }
+    { sessionId, gateId, claimId, status, timestamp } // status is always `FAIL` in this projection
   ]
 }
 ```
+
+Degraded behavior:
+
+- this function should still return an object when project data is unavailable
+- degraded shape: `{ projectPath, lastSession: null, activeClaimCount: 0, unresolvedAlertCount: 0, pendingSeedCount: 0, activePatternCount: 0, recentGateFailures: [] }`
+- callers should not have to branch on `null` just to render a basic project overview
 
 Implementation mapping:
 
@@ -173,7 +265,7 @@ Implementation mapping:
 - `getUnresolvedAlerts`
 - `getActivePatterns`
 - `loadPendingSeeds`
-- new lightweight query for recent gate failures joined through `sessions`
+- new lightweight query for recent gate failures joined through `sessions`, filtered to `gate_checks.status = 'FAIL'`
 - `activeClaimCount` should be derived from `listClaimHeads` current-status logic, not from raw event counts
 
 ### 2. `listClaimHeads`
@@ -184,7 +276,7 @@ export function listClaimHeads(db, projectPath, options = {})
 
 Purpose:
 
-- provide the latest visible state per claim for Flow Engine, project overview, and writing handoff
+- provide the latest visible lifecycle state per claim for Flow Engine, project overview, and writing handoff
 
 Inputs:
 
@@ -207,7 +299,7 @@ Returns:
     killReason,
     gateId,
     narrative,
-    timestamp,
+    timestamp, // timestamp of the state-bearing head row
     isActive
   }
 ]
@@ -217,7 +309,10 @@ Field definitions:
 
 - `currentStatus` — the `new_status` value from the latest **state-bearing row** for this claim
 - `statusSourceEventType` — the `event_type` stored on that same state-bearing row
+- `timestamp` — timestamp of that same state-bearing head row
 - `isActive` — `true` when `currentStatus` is NOT in `['KILLED', 'DISPUTED']`. Active claims are those that are still live in the research pipeline (including draft, under review, promoted, robust). Killed and disputed claims are explicitly inactive.
+- `confidence`, `r2Verdict`, `killReason`, `gateId`, `narrative`, and `timestamp` come from that same head row
+- these fields are **not** backfilled from older rows; if the head row does not carry one of them, the projection returns `null` for that field
 
 State-bearing row rule:
 
@@ -229,12 +324,62 @@ State-bearing row rule:
 Implementation note:
 
 - this is **not** the full timeline
-- it must represent the **current visible claim state**, not merely the latest raw event row
+- it must represent the **current visible lifecycle state**, not a merged summary of every orthogonal kernel judgment
 - derive the head from the latest project-scoped claim-event row where `new_status IS NOT NULL`
 - use a deterministic tie-breaker such as `ORDER BY timestamp DESC, id DESC`
 - `statusSourceEventType` remains useful for auditability, but it is descriptive metadata, not the rule that decides whether a row is lifecycle-bearing
 
-### 3. `listGateChecks`
+### 3. `listUnresolvedClaims`
+
+```js
+export function listUnresolvedClaims(db, projectPath, options = {})
+```
+
+Purpose:
+
+- expose which claims the kernel currently considers unresolved under stop-hook semantics
+- preserve the kernel's current definition of "needs review" without making outer callers reimplement it
+
+Inputs:
+
+- `db`
+- `projectPath`
+- `options.limit = 100`
+
+Returns:
+
+```js
+[
+  {
+    claimId,
+    latestEventType,
+    latestEventTimestamp
+  }
+]
+```
+
+Field definitions:
+
+- `latestEventType` — the latest raw `claim_events.event_type` for this claim
+- `latestEventTimestamp` — timestamp of that latest raw claim-event row
+
+Kernel rule mirrored here:
+
+- this projection intentionally mirrors the current `stop.js` rule
+- a claim is unresolved when its latest raw event type is **not** in `['R2_REVIEWED', 'KILLED', 'DISPUTED']`
+- this is a kernel judgment about review resolution, not a lifecycle-head derivation
+
+Implementation mapping:
+
+- use the same query shape as `stop.js`: latest raw row per `claim_id`, project-scoped through `sessions`, then filter by event type
+- use the same deterministic tie-breaker as the hook: `ORDER BY ce.timestamp DESC, ce.id DESC`
+- if the kernel later centralizes this rule, `listUnresolvedClaims` should wrap that shared helper instead of duplicating SQL
+
+Default ordering:
+
+- `latestEventTimestamp DESC, claimId ASC`
+
+### 4. `listGateChecks`
 
 ```js
 export function listGateChecks(db, projectPath, options = {})
@@ -278,7 +423,7 @@ Default ordering:
 
 - `timestamp DESC, id DESC`
 
-### 4. `listLiteratureSearches`
+### 5. `listLiteratureSearches`
 
 ```js
 export function listLiteratureSearches(db, projectPath, options = {})
@@ -322,7 +467,7 @@ Default ordering:
 
 - `timestamp DESC, id DESC`
 
-### 5. `listObserverAlerts`
+### 6. `listObserverAlerts`
 
 ```js
 export function listObserverAlerts(db, projectPath, options = {})
@@ -365,7 +510,7 @@ Default ordering:
 - unresolved view: preserve the kernel helper behavior, `level DESC, created_at DESC, id DESC`
 - broader mixed view: still keep severity first, then recency
 
-### 6. `listCitationChecks`
+### 7. `listCitationChecks`
 
 ```js
 export function listCitationChecks(db, projectPath, options = {})
@@ -374,7 +519,7 @@ export function listCitationChecks(db, projectPath, options = {})
 Purpose:
 
 - expose citation verification state so the writing handoff knows which claims have verified vs unverified citations
-- a PROMOTED claim with RETRACTED or UNVERIFIED citations is NOT safe to write about in Results — Story 4 requires this
+- a claim that looks promotable on lifecycle status alone is not automatically safe to write about in Results when citations remain non-verified (`PENDING`, `UNRESOLVED`, `ERROR`, or `RETRACTED`)
 
 Inputs:
 
@@ -416,11 +561,17 @@ Default ordering:
 
 Why this is Phase 1 required, not optional:
 
-- `listClaimHeads` tells you a claim is PROMOTED
-- `listCitationChecks` tells you its citations are actually VERIFIED
-- without both, the writing handoff cannot answer "is this claim safe to write about?"
+- `listClaimHeads` tells you the claim's lifecycle head
+- `listUnresolvedClaims` tells you which claims the kernel still considers unresolved under stop semantics
+- `listCitationChecks` supplies the per-citation verification facts the writing handoff must aggregate per claim
+- without all three, the writing handoff cannot responsibly determine whether a claim is safe to export into Results
 
-### 7. `getStateSnapshot`
+Important boundary:
+
+- `listCitationChecks` does **not** itself compute a final safe/unsafe writing verdict for a claim
+- it exposes the underlying citation-state facts so the writing handoff can aggregate them explicitly
+
+### 8. `getStateSnapshot`
 
 ```js
 export function getStateSnapshot(projectPath)
@@ -500,7 +651,7 @@ The point of Phase 1 is to expose the minimum stable read contract, not to publi
 `core-reader.js` should follow these rules:
 
 - invalid arguments may throw programmer-facing errors
-- missing project data should not throw; return empty projections instead
+- missing project data should not throw; return empty projections or documented degraded objects instead
 - reader failure must never degrade kernel truth
 - outer callers remain responsible for handling unavailable projections gracefully
 
@@ -508,13 +659,13 @@ The point of Phase 1 is to expose the minimum stable read contract, not to publi
 
 ## Why This Is Enough For Phase 1
 
-With `createReader` + seven required functions, the outer project can:
+With `createReader` + a thin CLI bridge + eight required functions, the outer project can:
 
-- bootstrap itself with a single call (`createReader(process.cwd())`) — no kernel internal imports needed
+- expose structured kernel facts to prompt-driven command shims without raw SQL or inline module-import hacks
 - show a project overview (claims, alerts, gate failures, session history)
 - power the literature flow (search history, gap surfacing)
 - power the experiment flow (claims tied to gates and alerts, blocker identification)
-- answer "is this claim safe to write about?" (claim status via `listClaimHeads` + citation verification via `listCitationChecks`)
+- provide the facts needed for writing export-eligibility decisions (lifecycle head via `listClaimHeads`, unresolved-review set via `listUnresolvedClaims`, citation verification facts via `listCitationChecks`)
 - expose the human-readable STATE.md snapshot
 
 That is enough to start validating the Flow Engine MVP without overdesigning the contract.
@@ -531,6 +682,6 @@ The next step after this document is not more spec.
 
 It is:
 
-1. decide exact file placement under `plugin/lib/`
-2. implement the first read-only functions
-3. test them against the existing kernel DB
+1. implement `plugin/lib/core-reader.js`
+2. implement `plugin/scripts/core-reader-cli.js`
+3. test both against the existing kernel DB
