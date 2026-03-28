@@ -44,6 +44,12 @@ Carmine has been working on a scRNA-seq analysis for 3 weeks across 15+ sessions
 
 **What the environment gives him:** A typed project memory mirror — a human-readable `project-overview.md` synced at session end, showing: active claims and their status, pending experiments, open blockers, last advisor feedback, and a "where you left off" section. He reads it in 2 minutes and starts working.
 
+Phase-traceability note:
+
+- the **full** version of this story is completed only when the Memory Layer exists
+- Phase 1 addresses the orientation subset of the pain (claims, blockers, current flow state, recent experiments)
+- advisor-feedback memory belongs to Phase 2 rather than the Flow Engine MVP
+
 ### Story 2: "I ran 6 experiments but can't find the results from experiment 3"
 
 The analysis produced multiple outputs across sessions: CSV files, plots, intermediate dataframes. Some are in `outputs/`, some in `figures/`, some lost in a previous session's working directory. When the advisor asks "show me the ablation where you removed batch correction," Carmine can't find it.

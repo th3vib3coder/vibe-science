@@ -62,7 +62,7 @@ Deliverables:
 - `plugin/scripts/core-reader-cli.js` — thin CLI bridge that exposes reader projections as JSON to prompt-driven command shims
 - `commands/flow-status.md` — thin command shim that reloads outer-project flow state and renders "where am I, what's pending, what's blocked"
 - `commands/flow-literature.md` — thin command shim for the literature flow
-- `commands/flow-experiment.md` — thin command shim for the experiment flow
+- `commands/flow-experiment.md` — thin command shim for the experiment flow, including manifest creation and manifest listing
 - minimal outer-project workspace state under `.vibe-science-environment/flows/`
 - experiment manifests under `.vibe-science-environment/experiments/manifests/`
 - baseline context-budget measurement for kernel + one flow command
@@ -75,6 +75,7 @@ Exit gate:
 - [ ] `/flow-status` can resume from `.vibe-science-environment/flows/index.json` and produce a useful human-readable summary
 - [ ] `/flow-literature` registers a paper and links it to a claim
 - [ ] `/flow-experiment` creates an experiment manifest and tracks outputs
+- [ ] `/flow-experiment` can list existing experiment manifests and their output paths without requiring manual file inspection
 - [ ] flow state remains outside `.vibe-science/` and no new kernel tables are introduced for it
 - [ ] at least one Phase 1 flow demonstrates the two-substrate rule clearly: workspace-first when files are enough, CLI bridge when structured kernel facts are needed
 - [ ] all new **runtime code** has tests (happy path + graceful failure + kernel works without it) — `core-reader.js`, `core-reader-cli.js`, and any JS helpers in `environment/`
@@ -91,6 +92,12 @@ Goal:
 
 - make project state durable and human-readable across sessions (Story 1)
 - make experiment results findable and packageable (Story 2)
+
+Boundary note:
+
+- Phase 2 must explicitly define the Memory Layer execution model
+- the kernel stop hook must not become the writer of outer-project mirrors
+- writer ownership, sync trigger, and degradation behavior must be specified before memory implementation starts
 
 Deliverables:
 

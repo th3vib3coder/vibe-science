@@ -150,6 +150,22 @@ This keeps kernel truth state and outer workflow state physically separate even 
 
 ---
 
+## Naming Clarification
+
+Two similarly named paths serve different roles and must not be confused:
+
+- `environment/` — source-controlled outer-project code and assets in the repo
+- `.vibe-science-environment/` — workspace-local runtime state produced and consumed by the outer project
+
+Short rule:
+
+- `environment/` is product source
+- `.vibe-science-environment/` is product state
+
+They are related conceptually but neither one contains the other.
+
+---
+
 ## Suggested Naming Model
 
 The new outer project should likely have its own name.
