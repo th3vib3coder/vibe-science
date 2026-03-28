@@ -255,26 +255,13 @@ Short version:
 
 The future outer system must not couple itself directly to raw table layout.
 
-Instead, the core should expose a stable read-only interface module, for example `core-reader.js`, with projection-oriented functions such as:
+Instead, the core exposes a stable read-only interface module: `core-reader.js` at `plugin/lib/core-reader.js`, with a CLI bridge at `plugin/scripts/core-reader-cli.js` for prompt-driven callers.
 
-- `getProjectOverview(projectPath)`
-- `listSessions(projectPath, limit, cursor)`
-- `getSessionSummary(sessionId)`
-- `listClaimHeads(projectPath)`
-- `listUnresolvedClaims(projectPath)`
-- `getClaimTimeline(projectPath, claimId)`
-- `listGateChecks(projectPath, filters)`
-- `listCitationChecks(projectPath, filters)`
-- `listObserverAlerts(projectPath, unresolvedOnly)`
-- `listSerendipitySeeds(projectPath, status)`
-- `listPatterns(projectPath, activeOnly)`
-- `getHarnessHints(projectPath)`
-- `getStateSnapshot(projectPath)`
-- `searchMemory(projectPath, query, limit)`
+The canonical V1 function surface is defined in [CORE-READER-INTERFACE-SPEC.md](./CORE-READER-INTERFACE-SPEC.md). Do not duplicate the function list here — it will drift. The Interface Spec is authoritative for scope, signatures, and return shapes.
 
 Design rule:
 
-- outer systems speak to projections
+- outer systems speak to projections via `createReader()` or the CLI bridge
 - only the core speaks to raw truth internals
 
 This keeps future shell work insulated from schema churn.

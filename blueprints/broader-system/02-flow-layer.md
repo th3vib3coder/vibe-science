@@ -25,20 +25,15 @@ It does not certify truth.
 
 ## Target Flows
 
-### A. Ideation Flow
+### A. Ideation Flow (deferred — not in V1 product spec)
 
-Goal:
+**Note:** The Ideation Flow is not present in the V1 product spec ([02-product-architecture.md](../research-environment-v1/02-product-architecture.md)). The existing `/start` command already covers early-stage brainstorming (Phase 0 scientific brainstorm in start.md). If a dedicated Ideation Flow is built later, it should not duplicate what `/start` already does.
+
+Goal (when built):
 
 - move from vague topic to researchable direction
 - structure early literature discovery
 - capture open questions and candidate hypotheses
-
-Allowed outputs:
-
-- research questions
-- literature maps
-- hypothesis drafts
-- project briefs
 
 Not allowed:
 

@@ -94,15 +94,24 @@ The plugin currently includes **18 library modules**. In practical terms they cl
 
 ### Commands
 
-The repo currently exposes **5 top-level commands**:
+The repo currently exposes **7 top-level commands**:
 
 - `init`
 - `loop`
 - `reviewer2`
 - `search`
 - `start`
+- `flow-status` (outer-project command shim — Phase 1)
+- `flow-literature` (outer-project command shim — Phase 1)
 
-These are operator-facing workflow entrypoints, not sources of truth.
+The first 5 are kernel-track operator entrypoints. The `flow-*` commands are outer-project command shims that consume kernel state via `core-reader.js` but do not modify kernel truth. Additional flow commands (`flow-experiment`) are planned for Phase 1.
+
+### Decided But Not Yet Implemented
+
+The following kernel-side surfaces are designed and specced but not yet implemented as runtime code:
+
+- `plugin/lib/core-reader.js` — read-only contract surface for outer-project consumption. Factory + 8 projection functions. Spec: [CORE-READER-INTERFACE-SPEC.md](./CORE-READER-INTERFACE-SPEC.md).
+- `plugin/scripts/core-reader-cli.js` — CLI bridge that exposes core-reader projections as JSON on stdout for prompt-driven command shims. Stable envelope contract defined in the interface spec.
 
 ### Database Footprint
 

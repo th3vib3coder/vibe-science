@@ -28,13 +28,13 @@ If an initiative tries to invert this order, it increases risk.
 
 Build:
 
-- project memory mirror
-- experiment registry mirror
-- results summary mirror
-- literature inventory
-- advisor meeting prep pack
+- project memory mirror → product Phase 2
+- experiment registry mirror → product Phase 2
+- results summary mirror → product Phase 2
+- literature inventory → product Phase 1 (via `/flow-literature`)
+- advisor meeting prep pack → product Phase 3
 
-Why first:
+Why first (as governance priority):
 
 - high usability gain
 - low threat to core truth
@@ -43,10 +43,10 @@ Why first:
 
 Build:
 
-- results-report
-- stats appendix
-- figure catalog
-- paper handoff pack
+- results-report → product Phase 3
+- stats appendix → product Phase 3
+- figure catalog → product Phase 2
+- paper handoff pack → product Phase 3
 - rebuttal prep pack
 
 Why second:
