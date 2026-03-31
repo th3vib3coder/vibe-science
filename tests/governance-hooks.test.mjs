@@ -152,6 +152,107 @@ test('pre-tool-use blocks protected schema writes and logs schema_modification_a
     }
 });
 
+test('pre-tool-use blocks promotion without prior R2 review and logs r2_bypass_attempt', () => {
+    const harness = createHarness();
+    const db = openHarnessDb(harness.dbPath);
+    try {
+        dbMod.logClaimEvent(db, {
+            claim_id: 'C-001',
+            session_id: 'sess-001',
+            event_type: 'CREATED',
+            new_status: 'CREATED',
+            confidence: 0.41,
+            narrative: 'claim created but not reviewed',
+            timestamp: '2026-03-31T10:05:00Z',
+        });
+    } finally {
+        dbMod.closeDB(db);
+    }
+
+    const result = spawnHook('plugin/scripts/pre-tool-use.js', {
+        tool_name: 'Write',
+        tool_input: {
+            file_path: path.join(harness.projectDir, 'CLAIM-LEDGER.md'),
+            content: [
+                'C-001',
+                'event_type: PROMOTED',
+                'new_status: PROMOTED',
+                'confounder_status: ROBUST',
+                'confidence: 0.82',
+                'narrative: attempted promotion without R2 review',
+            ].join('\n'),
+        },
+        session_id: 'sess-001',
+        cwd: harness.projectDir,
+    }, harness);
+
+    assert.equal(result.status, 2, result.stderr || result.stdout);
+    assert.equal(JSON.parse(result.stdout).hookSpecificOutput.permissionDecision, 'deny');
+    assert.match(result.stderr, /R2 BYPASS BLOCKED/i);
+
+    const verificationDb = openHarnessDb(harness.dbPath);
+    try {
+        const events = dbMod.getGovernanceEvents(verificationDb, {
+            eventType: 'r2_bypass_attempt',
+            limit: 10,
+        });
+        assert.equal(events.length, 1);
+        assert.equal(events[0].tool_name, 'Write');
+        assert.equal(events[0].details.claim_id, 'C-001');
+        assert.equal(events[0].details.attempted_event_type, 'PROMOTED');
+        assert.equal(events[0].details.latest_event_type, 'CREATED');
+    } finally {
+        dbMod.closeDB(verificationDb);
+    }
+});
+
+test('pre-tool-use allows promotion after prior R2 review', () => {
+    const harness = createHarness();
+    const db = openHarnessDb(harness.dbPath);
+    try {
+        dbMod.logClaimEvent(db, {
+            claim_id: 'C-001',
+            session_id: 'sess-001',
+            event_type: 'CREATED',
+            new_status: 'CREATED',
+            confidence: 0.41,
+            narrative: 'claim created',
+            timestamp: '2026-03-31T10:05:00Z',
+        });
+        dbMod.logClaimEvent(db, {
+            claim_id: 'C-001',
+            session_id: 'sess-001',
+            event_type: 'R2_REVIEWED',
+            new_status: null,
+            r2_verdict: 'ACCEPT',
+            narrative: 'claim reviewed by R2',
+            timestamp: '2026-03-31T10:10:00Z',
+        });
+    } finally {
+        dbMod.closeDB(db);
+    }
+
+    const result = spawnHook('plugin/scripts/pre-tool-use.js', {
+        tool_name: 'Write',
+        tool_input: {
+            file_path: path.join(harness.projectDir, 'CLAIM-LEDGER.md'),
+            content: [
+                'C-001',
+                'event_type: PROMOTED',
+                'new_status: PROMOTED',
+                'confounder_status: ROBUST',
+                'confidence: 0.82',
+                'narrative: promotion after review',
+            ].join('\n'),
+        },
+        session_id: 'sess-001',
+        cwd: harness.projectDir,
+    }, harness);
+
+    assert.equal(result.status, 0, result.stderr || result.stdout);
+    assert.equal(JSON.parse(result.stdout).hookSpecificOutput.permissionDecision, 'allow');
+});
+
 test('stop hook logs law_violation when unresolved claims block session end', () => {
     const harness = createHarness();
     const db = openHarnessDb(harness.dbPath);

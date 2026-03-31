@@ -17,7 +17,9 @@
       "Edit(**/schemas/*)",
       "Write(**/schemas/*)",
       "Edit(**/fault-taxonomy.yaml)",
-      "Write(**/fault-taxonomy.yaml)"
+      "Write(**/fault-taxonomy.yaml)",
+      "Edit(**/judge-rubric.yaml)",
+      "Write(**/judge-rubric.yaml)"
     ]
   },
   "hooks": {
