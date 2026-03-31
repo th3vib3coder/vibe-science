@@ -11,6 +11,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
+import { randomUUID } from 'node:crypto';
 
 // Dynamic import: better-sqlite3 requires native compilation.
 // If unavailable, all DB functions degrade gracefully (return null/no-op).
@@ -463,6 +464,95 @@ export function logClaimEvent(db, event) {
     );
 }
 
+// =====================================================
+// Governance event helpers
+// =====================================================
+
+/**
+ * Log an append-only governance event.
+ *
+ * @param {import('better-sqlite3').Database} db
+ * @param {object} event
+ * @param {string} [event.id]
+ * @param {string|null} [event.session_id]
+ * @param {string} event.event_type
+ * @param {string} [event.tool_name]
+ * @param {string} [event.severity] - info / warning / critical
+ * @param {string|object} [event.details]
+ * @param {number} [event.timestamp] - unix epoch milliseconds
+ * @returns {import('better-sqlite3').RunResult}
+ */
+export function logGovernanceEvent(db, event) {
+    const details = typeof event.details === 'object' && event.details !== null
+        ? JSON.stringify(event.details)
+        : (event.details ?? null);
+    const severity = event.severity ? String(event.severity).toLowerCase() : null;
+    const timestamp = Number.isFinite(event.timestamp) ? Number(event.timestamp) : Date.now();
+
+    return stmt(db,
+        `INSERT INTO governance_events
+            (id, session_id, event_type, tool_name, severity, details, timestamp)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`
+    ).run(
+        event.id ?? `GOV-${randomUUID()}`,
+        event.session_id ?? null,
+        event.event_type,
+        event.tool_name ?? null,
+        severity,
+        details,
+        timestamp
+    );
+}
+
+/**
+ * Fetch governance events for inspection/debugging.
+ *
+ * @param {import('better-sqlite3').Database} db
+ * @param {{sessionId?: string, eventType?: string, limit?: number}} [filters]
+ * @returns {object[]}
+ */
+export function getGovernanceEvents(db, filters = {}) {
+    if (!db) return [];
+
+    const { sessionId = null, eventType = null, limit = 50 } = filters;
+    const safeLimit = Number.isFinite(limit) ? Math.max(1, Math.min(Number(limit), 500)) : 50;
+    let rows = [];
+
+    if (sessionId && eventType) {
+        rows = stmt(db,
+            `SELECT * FROM governance_events
+             WHERE session_id = ? AND event_type = ?
+             ORDER BY timestamp DESC, id DESC
+             LIMIT ?`
+        ).all(sessionId, eventType, safeLimit);
+    } else if (sessionId) {
+        rows = stmt(db,
+            `SELECT * FROM governance_events
+             WHERE session_id = ?
+             ORDER BY timestamp DESC, id DESC
+             LIMIT ?`
+        ).all(sessionId, safeLimit);
+    } else if (eventType) {
+        rows = stmt(db,
+            `SELECT * FROM governance_events
+             WHERE event_type = ?
+             ORDER BY timestamp DESC, id DESC
+             LIMIT ?`
+        ).all(eventType, safeLimit);
+    } else {
+        rows = stmt(db,
+            `SELECT * FROM governance_events
+             ORDER BY timestamp DESC, id DESC
+             LIMIT ?`
+        ).all(safeLimit);
+    }
+
+    return rows.map(row => ({
+        ...row,
+        details: parseJsonMaybe(row.details),
+    }));
+}
+
 /**
  * Mark a session as degraded or append integrity notes.
  *
@@ -851,6 +941,15 @@ export function queueForEmbedding(db, text, metadata = null) {
     ).run(text, meta, new Date().toISOString());
 }
 
+function parseJsonMaybe(value) {
+    if (typeof value !== 'string') return value;
+    try {
+        return JSON.parse(value);
+    } catch {
+        return value;
+    }
+}
+
 /**
  * Resolve the latest known agent role for a session from prompt_log.
  *
@@ -1013,6 +1112,8 @@ export default {
     getLastSession,
     logSpineEntry,
     logGateCheck,
+    logGovernanceEvent,
+    getGovernanceEvents,
     logLiteratureSearch,
     getCalibrationData,
     logClaimEvent,
