@@ -29,7 +29,7 @@ import path from 'node:path';
 // Imports from lib modules (dynamic — graceful if better-sqlite3 missing)
 // =====================================================================
 
-let openDB, initDB, closeDB, checkPermission, queueForEmbedding, updateSessionIntegrity, applyMigrations, getLatestPromptRole;
+let openDB, initDB, closeDB, checkPermission, queueForEmbedding, updateSessionIntegrity, applyMigrations, getLatestPromptRole, logGovernanceEvent;
 let ingestClaimEvents, ingestSerendipitySeeds, ingestR2Reviews;
 let upsertCitationCheck, updateCitationVerification;
 let extractCitationsFromEvent, verifyCitationsQuick;
@@ -42,6 +42,7 @@ try {
     initDB = dbMod.initDB;
     closeDB = dbMod.closeDB;
     updateSessionIntegrity = dbMod.updateSessionIntegrity;
+    logGovernanceEvent = dbMod.logGovernanceEvent;
     upsertCitationCheck = dbMod.upsertCitationCheck;
     updateCitationVerification = dbMod.updateCitationVerification;
     getLatestPromptRole = dbMod.getLatestPromptRole;
@@ -70,6 +71,7 @@ try {
     initDB = () => {};
     closeDB = () => {};
     updateSessionIntegrity = () => {};
+    logGovernanceEvent = () => {};
     applyMigrations = () => {};
     getLatestPromptRole = () => null;
     checkPermission = () => null;
@@ -270,6 +272,11 @@ async function main(event) {
             };
         }
 
+        const governanceAuditTrailResult = enforceGovernanceAuditTrailImmutability(db, event);
+        if (governanceAuditTrailResult) {
+            return governanceAuditTrailResult;
+        }
+
         // ==============================================================
         // 0. PERMISSION ENFORCEMENT (TEAM MODE)
         //     Must happen before any provenance/logging mutation.
@@ -421,6 +428,62 @@ function extractDomainFromUrl(url) {
     } catch {
         return 'unknown';
     }
+}
+
+function enforceGovernanceAuditTrailImmutability(db, event) {
+    const detection = detectGovernanceAuditTrailMutation(event);
+    if (!detection) return null;
+
+    try {
+        logGovernanceEvent(db, {
+            session_id: event.session_id ?? event.sessionId ?? null,
+            event_type: 'law_violation',
+            tool_name: event.tool_name ?? null,
+            severity: 'critical',
+            details: {
+                law: 'governance_audit_trail',
+                reason: 'PostToolUse detected DELETE/UPDATE targeting governance_events',
+                source: detection.source,
+                snippet: detection.snippet,
+            },
+        });
+    } catch {
+        // Secondary guarantee remains active even if the audit insert fails.
+    }
+
+    return {
+        exitCode: 2,
+        stderr:
+            'GOVERNANCE EVENTS IMMUTABLE: PostToolUse detected a DELETE/UPDATE targeting governance_events. ' +
+            'The governance audit trail is append-only; INSERT only.'
+    };
+}
+
+function detectGovernanceAuditTrailMutation(event) {
+    if (event.tool_name !== 'Bash') return null;
+
+    const toolInput = event.tool_input || {};
+    const command = String(
+        toolInput.command ||
+        toolInput.cmd ||
+        toolInput.script ||
+        toolInput.bash_command ||
+        ''
+    );
+    if (!command.trim()) return null;
+
+    const normalized = command.replace(/\s+/g, ' ');
+    const regex = /\b(?:update\s+(?:main\.)?governance_events|delete\s+from\s+(?:main\.)?governance_events)\b/i;
+    const match = normalized.match(regex);
+    if (!match) return null;
+
+    return {
+        source: 'bash_command',
+        snippet: normalized.slice(
+            Math.max(0, match.index - 20),
+            Math.min(normalized.length, (match.index || 0) + match[0].length + 40)
+        ),
+    };
 }
 
 /**

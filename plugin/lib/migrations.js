@@ -8,7 +8,7 @@
  *         applyMigrations, columnExists, tableExists
  */
 
-export const CURRENT_SCHEMA_VERSION = 4;
+export const CURRENT_SCHEMA_VERSION = 5;
 
 /**
  * Ensure the meta table exists.
@@ -109,6 +109,9 @@ function setSchemaVersion(db, version) {
  * Step 4:
  *   - create TRACE FTS5 retrieval table
  *
+ * Step 5:
+ *   - create governance_events append-only audit trail
+ *
  * @param {import('better-sqlite3').Database} db
  * @returns {{ currentVersion: number, applied: number[], pending: number[] }}
  */
@@ -167,6 +170,12 @@ export function applyMigrations(db) {
             version: 4,
             run() {
                 ensureMemoryFtsTable(db);
+            }
+        },
+        {
+            version: 5,
+            run() {
+                ensureGovernanceEventsTable(db);
             }
         }
     ];
@@ -315,5 +324,34 @@ function ensureMemoryFtsTable(db) {
             created_at UNINDEXED,
             tokenize = "porter unicode61 tokenchars '-_'"
         )
+    `);
+}
+
+function ensureGovernanceEventsTable(db) {
+    db.exec(`
+        CREATE TABLE IF NOT EXISTS governance_events (
+            id TEXT PRIMARY KEY,
+            session_id TEXT REFERENCES sessions(id),
+            event_type TEXT NOT NULL,
+            tool_name TEXT,
+            severity TEXT,
+            details TEXT,
+            timestamp REAL NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_governance_session ON governance_events(session_id, timestamp);
+        CREATE INDEX IF NOT EXISTS idx_governance_event_type ON governance_events(event_type, timestamp);
+        CREATE INDEX IF NOT EXISTS idx_governance_timestamp ON governance_events(timestamp);
+
+        CREATE TRIGGER IF NOT EXISTS governance_events_no_update
+        BEFORE UPDATE ON governance_events
+        BEGIN
+            SELECT RAISE(ABORT, 'governance_events is append-only');
+        END;
+
+        CREATE TRIGGER IF NOT EXISTS governance_events_no_delete
+        BEFORE DELETE ON governance_events
+        BEGIN
+            SELECT RAISE(ABORT, 'governance_events is append-only');
+        END;
     `);
 }

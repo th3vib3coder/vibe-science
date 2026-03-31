@@ -9,18 +9,29 @@
 // Input (stdin JSON): { tool_name, tool_input, session_id, cwd, hook_event_name, agent_role? }
 // Output (stdout JSON): { hookSpecificOutput: { permissionDecision: "allow"|"deny" } }
 
-let openDB, initDB, closeDB, getLatestPromptRole, checkPermission, parseStructuredBlocks;
+const PROTECTED_CONFIG_RULES = [
+  'skills/vibe/assets/schemas/*.schema.json',
+  'skills/vibe/assets/fault-taxonomy.yaml',
+  'skills/vibe/assets/judge-rubric.yaml',
+];
+
+let openDB, initDB, closeDB, getLatestPromptRole, applyMigrations, logGovernanceEvent, checkPermission, parseStructuredBlocks;
 try {
   const dbMod = await import('../lib/db.js');
   openDB = dbMod.openDB;
   initDB = dbMod.initDB;
   closeDB = dbMod.closeDB;
   getLatestPromptRole = dbMod.getLatestPromptRole;
+  logGovernanceEvent = dbMod.logGovernanceEvent;
+  const migrationMod = await import('../lib/migrations.js');
+  applyMigrations = migrationMod.applyMigrations;
 } catch {
   openDB = null;
   initDB = null;
   closeDB = () => {};
   getLatestPromptRole = () => null;
+  applyMigrations = () => {};
+  logGovernanceEvent = () => {};
 }
 
 try {
@@ -50,6 +61,7 @@ process.stdin.on('end', () => {
 });
 
 async function main(event) {
+  const sessionId = event.session_id || event.sessionId || null;
   try {
     const toolName = event.tool_name || '';
     const toolInput = event.tool_input || {};
@@ -69,6 +81,13 @@ async function main(event) {
         denyStrict('cannot verify role / permission barrier because no agent role could be resolved');
         return;
       }
+
+      const protectedTarget = detectProtectedConfigMutation(toolName, toolInput);
+      if (protectedTarget) {
+        denyImmutableConfig(toolName, protectedTarget, { db, sessionId });
+        return;
+      }
+
       if (agentRole) {
         const violation = checkPermission(agentRole, toolName, toolInput);
         if (violation) {
@@ -76,77 +95,89 @@ async function main(event) {
           return;
         }
       }
+
+      if (toolName === 'Bash') {
+        const shellGovernanceViolation = detectGovernanceShellWrite(toolInput);
+        if (shellGovernanceViolation) {
+          denyShellGovernance(shellGovernanceViolation);
+          return;
+        }
+      }
+
+      // Only write-like file tools participate in LAW 9 harness checks.
+      if (toolName !== 'Write' && toolName !== 'Edit' && toolName !== 'MultiEdit') {
+        allow();
+        return;
+      }
+
+      const filePath = (toolInput.file_path || '').replace(/\\/g, '/');
+      const normalizedFilePath = filePath.toLowerCase();
+
+      // Only intercept modifications to CLAIM-LEDGER
+      if (!normalizedFilePath.includes('claim-ledger')) {
+        allow();
+        return;
+      }
+
+      const segments = collectSegments(toolName, toolInput);
+      let touchedClaimContent = false;
+
+      for (const segment of segments) {
+        const newText = String(segment.newText || '');
+        const oldText = String(segment.oldText || '');
+        const oldClaims = extractClaimSegments(oldText);
+        const newClaims = extractClaimSegments(newText);
+        const touchesHarness = touchesHarnessMarker(oldText) || touchesHarnessMarker(newText);
+
+        if (touchesHarness && oldClaims.length === 0 && newClaims.length === 0) {
+          deny(toolName, 'touches confounder_status/NOT_APPLICABLE without enough claim context; rewrite the full claim block instead of editing the marker line in isolation', {
+            db,
+            sessionId,
+            filePath,
+          });
+          return;
+        }
+
+        const touchesClaim = oldClaims.length > 0 || newClaims.length > 0;
+        if (!touchesClaim) continue;
+
+        touchedClaimContent = true;
+
+        const newByKey = new Map(newClaims.map(claim => [claim.key, claim]));
+
+        for (const oldClaim of oldClaims) {
+          const newClaim = newByKey.get(oldClaim.key);
+          if (hasConfounderHarness(oldClaim.text) && (!newClaim || !hasConfounderHarness(newClaim.text))) {
+            deny(toolName, `removed an existing confounder_status/NOT_APPLICABLE marker from claim ${oldClaim.id || oldClaim.key}`, {
+              db,
+              sessionId,
+              filePath,
+            });
+            return;
+          }
+        }
+
+        for (const claim of newClaims) {
+          if (!hasConfounderHarness(claim.text)) {
+            deny(toolName, `omits confounder_status/NOT_APPLICABLE on claim ${claim.id || claim.key}`, {
+              db,
+              sessionId,
+              filePath,
+            });
+            return;
+          }
+        }
+      }
+
+      if (!touchedClaimContent) {
+        allow();
+        return;
+      }
+
+      allow();
     } finally {
       closeHookDb(db);
     }
-
-    if (toolName === 'Bash') {
-      const shellGovernanceViolation = detectGovernanceShellWrite(toolInput);
-      if (shellGovernanceViolation) {
-        denyShellGovernance(shellGovernanceViolation);
-        return;
-      }
-    }
-
-    // Only write-like file tools participate in LAW 9 harness checks.
-    if (toolName !== 'Write' && toolName !== 'Edit' && toolName !== 'MultiEdit') {
-      allow();
-      return;
-    }
-
-    const filePath = (toolInput.file_path || '').replace(/\\/g, '/');
-    const normalizedFilePath = filePath.toLowerCase();
-
-    // Only intercept modifications to CLAIM-LEDGER
-    if (!normalizedFilePath.includes('claim-ledger')) {
-      allow();
-      return;
-    }
-
-    const segments = collectSegments(toolName, toolInput);
-    let touchedClaimContent = false;
-
-    for (const segment of segments) {
-      const newText = String(segment.newText || '');
-      const oldText = String(segment.oldText || '');
-      const oldClaims = extractClaimSegments(oldText);
-      const newClaims = extractClaimSegments(newText);
-      const touchesHarness = touchesHarnessMarker(oldText) || touchesHarnessMarker(newText);
-
-      if (touchesHarness && oldClaims.length === 0 && newClaims.length === 0) {
-        deny(toolName, 'touches confounder_status/NOT_APPLICABLE without enough claim context; rewrite the full claim block instead of editing the marker line in isolation');
-        return;
-      }
-
-      const touchesClaim = oldClaims.length > 0 || newClaims.length > 0;
-      if (!touchesClaim) continue;
-
-      touchedClaimContent = true;
-
-      const newByKey = new Map(newClaims.map(claim => [claim.key, claim]));
-
-      for (const oldClaim of oldClaims) {
-        const newClaim = newByKey.get(oldClaim.key);
-        if (hasConfounderHarness(oldClaim.text) && (!newClaim || !hasConfounderHarness(newClaim.text))) {
-          deny(toolName, `removed an existing confounder_status/NOT_APPLICABLE marker from claim ${oldClaim.id || oldClaim.key}`);
-          return;
-        }
-      }
-
-      for (const claim of newClaims) {
-        if (!hasConfounderHarness(claim.text)) {
-          deny(toolName, `omits confounder_status/NOT_APPLICABLE on claim ${claim.id || claim.key}`);
-          return;
-        }
-      }
-    }
-
-    if (!touchedClaimContent) {
-      allow();
-      return;
-    }
-
-    allow();
   } catch (e) {
     // Graceful degradation — never block on infrastructure failure
     allow();
@@ -163,7 +194,17 @@ function allow() {
   process.exit(0);
 }
 
-function deny(toolName, reason) {
+function deny(toolName, reason, context = {}) {
+  recordGovernanceEvent(context.db, {
+    session_id: context.sessionId ?? null,
+    event_type: 'claim_without_harness',
+    tool_name: toolName,
+    severity: 'critical',
+    details: {
+      reason,
+      file_path: context.filePath ?? null,
+    },
+  });
   const result = {
     hookSpecificOutput: {
       permissionDecision: 'deny'
@@ -176,6 +217,31 @@ function deny(toolName, reason) {
     '(RAW | CONDITIONED | MATCHED | ROBUST | NOT_APPLICABLE). ' +
     'Run the confounder harness (raw → conditioned → matched) first, ' +
     'or mark as NOT_APPLICABLE with justification.'
+  );
+  process.exit(2);
+}
+
+function denyImmutableConfig(toolName, target, context = {}) {
+  recordGovernanceEvent(context.db, {
+    session_id: context.sessionId ?? null,
+    event_type: 'schema_modification_attempt',
+    tool_name: toolName,
+    severity: 'critical',
+    details: {
+      file_path: target.path,
+      protected_rule: target.rule,
+    },
+  });
+
+  const result = {
+    hookSpecificOutput: {
+      permissionDecision: 'deny'
+    }
+  };
+  process.stdout.write(JSON.stringify(result));
+  process.stderr.write(
+    `IMMUTABLE FILE BLOCKED: ${target.path} is protected by ${target.rule}. ` +
+    'These files are IMMUTABLE. Fix the claim/analysis, not the schema.'
   );
   process.exit(2);
 }
@@ -228,6 +294,7 @@ function openHookDb() {
   try {
     const db = openDB();
     if (db && initDB) initDB(db);
+    if (db && applyMigrations) applyMigrations(db);
     return db;
   } catch {
     return null;
@@ -291,6 +358,41 @@ function touchesHarnessMarker(text) {
   return /confounder_status/i.test(String(text || '')) || /\bNOT_APPLICABLE\b/i.test(String(text || ''));
 }
 
+function detectProtectedConfigMutation(toolName, toolInput = {}) {
+  if (toolName === 'Write' || toolName === 'Edit' || toolName === 'MultiEdit') {
+    const filePath = String(toolInput.file_path || '').replace(/\\/g, '/');
+    const rule = matchProtectedConfigPath(filePath);
+    return rule ? { path: filePath, rule } : null;
+  }
+
+  if (toolName === 'Bash') {
+    const command = getBashCommand(toolInput);
+    if (!bashCommandHasWriteIntent(command)) return null;
+    const candidate = extractCommandPathCandidates(command).find(path => matchProtectedConfigPath(path));
+    if (!candidate) return null;
+    return { path: candidate, rule: matchProtectedConfigPath(candidate) };
+  }
+
+  return null;
+}
+
+function matchProtectedConfigPath(filePath) {
+  const normalized = normalizePathRule(filePath);
+  if (!normalized) return null;
+
+  if (normalized.includes('skills/vibe/assets/schemas/') && normalized.endsWith('.schema.json')) {
+    return PROTECTED_CONFIG_RULES[0];
+  }
+  if (normalized === PROTECTED_CONFIG_RULES[1] || normalized.endsWith(`/${PROTECTED_CONFIG_RULES[1]}`)) {
+    return PROTECTED_CONFIG_RULES[1];
+  }
+  if (normalized === PROTECTED_CONFIG_RULES[2] || normalized.endsWith(`/${PROTECTED_CONFIG_RULES[2]}`)) {
+    return PROTECTED_CONFIG_RULES[2];
+  }
+
+  return null;
+}
+
 function looksClaimLike(text) {
   const source = String(text || '');
   if (!source.trim()) return false;
@@ -300,28 +402,13 @@ function looksClaimLike(text) {
 }
 
 function detectGovernanceShellWrite(toolInput = {}) {
-  const command = String(
-    toolInput.command ||
-    toolInput.cmd ||
-    toolInput.script ||
-    toolInput.bash_command ||
-    ''
-  );
+  const command = getBashCommand(toolInput);
   if (!command.trim()) return null;
 
   const normalized = command.replace(/\\/g, '/').toLowerCase();
   const hasInterpreterScriptInvocation =
     /\b(?:python(?:3)?|py|node|perl|ruby|pwsh|powershell|bash|sh)\b(?:\s+-\w+(?:\s+\S+)*)*\s+\S+/i.test(command);
-  const hasWriteIntent =
-    />{1,2}/.test(normalized) ||
-    // Cover both full PowerShell cmdlets and their common aliases on Windows.
-    /\b(?:out-file|set-content|sc|add-content|ac|copy-item|copy|ci|move-item|move|mi|rename-item|rename|ren|remove-item|ri|new-item|ni|tee|touch|cp|mv|rm|del)\b/i.test(command) ||
-    /\bsed\s+-i\b/i.test(command) ||
-    /\bperl\s+-pi\b/i.test(command) ||
-    /\bwritefile|appendfile\b/i.test(normalized) ||
-    /\b(?:write|append|copy|move|rename|replace|remove|unlink|delete)\w*\s*\(/i.test(command) ||
-    /\bwrite_(?:text|bytes)\s*\(/i.test(command) ||
-    /\bopen\s*\([^)]*,\s*['"](?:w|a|x)/i.test(command);
+  const hasWriteIntent = bashCommandHasWriteIntent(command);
 
   const targets = [
     { rule: 'claim-ledger', label: 'CLAIM-LEDGER.md' },
@@ -343,9 +430,51 @@ function detectGovernanceShellWrite(toolInput = {}) {
   return null;
 }
 
+function getBashCommand(toolInput = {}) {
+  return String(
+    toolInput.command ||
+    toolInput.cmd ||
+    toolInput.script ||
+    toolInput.bash_command ||
+    ''
+  );
+}
+
+function bashCommandHasWriteIntent(command) {
+  const normalized = String(command || '').replace(/\\/g, '/').toLowerCase();
+  return (
+    />{1,2}/.test(normalized) ||
+    // Cover both full PowerShell cmdlets and their common aliases on Windows.
+    /\b(?:out-file|set-content|sc|add-content|ac|copy-item|copy|ci|move-item|move|mi|rename-item|rename|ren|remove-item|ri|new-item|ni|tee|touch|cp|mv|rm|del)\b/i.test(command) ||
+    /\bsed\s+-i\b/i.test(command) ||
+    /\bperl\s+-pi\b/i.test(command) ||
+    /\bwritefile|appendfile\b/i.test(normalized) ||
+    /\b(?:write|append|copy|move|rename|replace|remove|unlink|delete)\w*\s*\(/i.test(command) ||
+    /\bwrite_(?:text|bytes)\s*\(/i.test(command) ||
+    /\bopen\s*\([^)]*,\s*['"](?:w|a|x)/i.test(command)
+  );
+}
+
 function detectDirectionShellTarget(normalizedCommand) {
   const source = String(normalizedCommand || '');
   return /(?:^|[\/\s])\d{0,2}-?directions?(?:[\/\s]|$)|\bdirection[^\/\s]*\.(?:md|json)\b|\brq\.md\b/.test(source);
+}
+
+function normalizePathRule(value) {
+  return String(value || '')
+    .replace(/\\/g, '/')
+    .toLowerCase()
+    .replace(/^\.?\//, '')
+    .replace(/\/+$/, '');
+}
+
+function recordGovernanceEvent(db, event) {
+  if (!db || !logGovernanceEvent) return;
+  try {
+    logGovernanceEvent(db, event);
+  } catch {
+    // Best effort only — audit capture must not weaken the deny path.
+  }
 }
 
 function isMutationSensitiveTool(toolName) {

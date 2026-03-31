@@ -133,6 +133,35 @@ CREATE INDEX IF NOT EXISTS idx_gates_session ON gate_checks(session_id);
 CREATE INDEX IF NOT EXISTS idx_gates_claim ON gate_checks(claim_id);
 
 -- =====================================================
+-- GOVERNANCE: Append-only audit trail
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS governance_events (
+    id TEXT PRIMARY KEY,
+    session_id TEXT REFERENCES sessions(id),
+    event_type TEXT NOT NULL,
+    tool_name TEXT,
+    severity TEXT,  -- info / warning / critical
+    details TEXT,
+    timestamp REAL NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_governance_session ON governance_events(session_id, timestamp);
+CREATE INDEX IF NOT EXISTS idx_governance_event_type ON governance_events(event_type, timestamp);
+CREATE INDEX IF NOT EXISTS idx_governance_timestamp ON governance_events(timestamp);
+
+CREATE TRIGGER IF NOT EXISTS governance_events_no_update
+BEFORE UPDATE ON governance_events
+BEGIN
+    SELECT RAISE(ABORT, 'governance_events is append-only');
+END;
+
+CREATE TRIGGER IF NOT EXISTS governance_events_no_delete
+BEFORE DELETE ON governance_events
+BEGIN
+    SELECT RAISE(ABORT, 'governance_events is append-only');
+END;
+
+-- =====================================================
 -- LITERATURE: Search tracking per L-1+ enforcement
 -- =====================================================
 
@@ -270,7 +299,8 @@ CREATE VIRTUAL TABLE IF NOT EXISTS memory_fts USING fts5(
 
 -- Fallback table when sqlite-vec is not available.
 -- Created by worker-embed.js at runtime, defined here for documentation.
--- NOT counted in the "13 tables" total — this is an optional fallback.
+-- Counted in the 16 schema-defined regular table definitions, but optional at
+-- runtime because deployments using sqlite-vec may rely on vec_memories instead.
 CREATE TABLE IF NOT EXISTS memory_embeddings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     text TEXT NOT NULL,

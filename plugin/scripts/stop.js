@@ -20,7 +20,7 @@ import { canonicalizeProjectPath } from '../lib/path-utils.js';
  */
 
 // Dynamic imports — graceful if better-sqlite3 or other native deps missing
-let openDB, initDB, closeDB, endSession, updateSessionIntegrity, applyMigrations, generateNarrativeSummary, updateStateMdFromDB, queueForEmbedding, syncSessionRetrievalIndex;
+let openDB, initDB, closeDB, endSession, updateSessionIntegrity, applyMigrations, logGovernanceEvent, generateNarrativeSummary, updateStateMdFromDB, queueForEmbedding, syncSessionRetrievalIndex, queryUnresolvedClaims;
 let upsertPattern = () => {};
 let extractPatterns = () => [];
 
@@ -31,6 +31,7 @@ try {
     closeDB = dbMod.closeDB;
     endSession = dbMod.endSession;
     updateSessionIntegrity = dbMod.updateSessionIntegrity;
+    logGovernanceEvent = dbMod.logGovernanceEvent;
     upsertPattern = dbMod.upsertPattern;
     const migrationMod = await import('../lib/migrations.js');
     applyMigrations = migrationMod.applyMigrations;
@@ -40,7 +41,15 @@ try {
     closeDB = () => {};
     endSession = () => {};
     updateSessionIntegrity = () => {};
+    logGovernanceEvent = () => {};
     applyMigrations = () => {};
+}
+
+try {
+    const readerMod = await import('../lib/core-reader.js');
+    queryUnresolvedClaims = readerMod.queryUnresolvedClaims;
+} catch {
+    queryUnresolvedClaims = null;
 }
 
 try {
@@ -187,20 +196,38 @@ async function main(event) {
         // Find claims whose MOST RECENT lifecycle event has NOT been resolved by R2.
         // "Resolved" means R2_REVIEWED, KILLED, or DISPUTED. Any other final state
         // (CREATED, PROMOTED, VERIFIED, CONFIDENCE_UPDATED) means the claim needs R2.
-        const unreviewedClaims = db.prepare(`
-            SELECT claim_id FROM (
-                SELECT ce.claim_id, ce.event_type,
-                       ROW_NUMBER() OVER (PARTITION BY ce.claim_id ORDER BY ce.timestamp DESC, ce.id DESC) AS rn
-                FROM claim_events ce
-                WHERE ce.session_id IN (
-                    SELECT id FROM sessions WHERE project_path = ?
+        const unreviewedClaims = queryUnresolvedClaims
+            ? queryUnresolvedClaims(db, projectPath, { limit: 1000 })
+            : db.prepare(`
+                SELECT claim_id AS claimId FROM (
+                    SELECT ce.claim_id, ce.event_type,
+                           ROW_NUMBER() OVER (PARTITION BY ce.claim_id ORDER BY ce.timestamp DESC, ce.id DESC) AS rn
+                    FROM claim_events ce
+                    WHERE ce.session_id IN (
+                        SELECT id FROM sessions WHERE project_path = ?
+                    )
                 )
-            )
-            WHERE rn = 1 AND event_type NOT IN ('R2_REVIEWED', 'KILLED', 'DISPUTED')
-        `).all(projectPath);
+                WHERE rn = 1 AND event_type NOT IN ('R2_REVIEWED', 'KILLED', 'DISPUTED')
+            `).all(projectPath);
 
         if (unreviewedClaims.length > 0) {
-            const claimIds = unreviewedClaims.map(c => c.claim_id).join(', ');
+            const claimIds = unreviewedClaims.map(c => c.claimId ?? c.claim_id).join(', ');
+            try {
+                logGovernanceEvent(db, {
+                    session_id: sessionId,
+                    event_type: 'law_violation',
+                    tool_name: 'Stop',
+                    severity: 'critical',
+                    details: {
+                        law: 'LAW 4',
+                        reason: 'stop blocked with unresolved claims',
+                        unreviewed_claim_count: unreviewedClaims.length,
+                        unreviewed_claim_ids: unreviewedClaims.map(c => c.claimId ?? c.claim_id),
+                    },
+                });
+            } catch {
+                // Best effort only — stop blocking stays active even if audit insert fails.
+            }
             return {
                 exitCode: 2,
                 message: `STOP BLOCKED: ${unreviewedClaims.length} unreviewed claims without R2 review: ${claimIds}. TRACE lifecycle enforcement is active in v7; LAW 4: R2 is co-pilot.`,
