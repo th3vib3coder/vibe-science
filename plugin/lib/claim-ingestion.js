@@ -45,6 +45,58 @@ export function ingestClaimEvents(db, payload) {
     return { inserted, skipped, warnings: parsed.warnings };
 }
 
+export function previewClaimEvents(content, sessionId = 'preview') {
+    const text = String(content || '');
+    if (!text.trim()) return [];
+
+    const parsed = parseStructuredBlocks(text, { allowedTypes: ['claim'] });
+    const candidates = parsed.blocks
+        .filter(block => block.type === 'claim' && block.data)
+        .map(block => toClaimEventFromBlock(block, sessionId));
+
+    if (candidates.length === 0) {
+        for (const segment of extractFreeformClaimSegments(text)) {
+            const fallback = toClaimEventFromFreeform(segment, sessionId);
+            if (fallback) candidates.push(fallback);
+        }
+    }
+
+    return candidates.filter(event => event && event.claim_id && event.event_type);
+}
+
+export function validateClaimLifecycleTransitions(db, events = []) {
+    if (!db || !Array.isArray(events) || events.length === 0) return [];
+
+    const latestByClaim = new Map();
+    const violations = [];
+
+    for (const event of events) {
+        const claimId = event?.claim_id;
+        const eventType = event?.event_type;
+        if (!claimId || !eventType) continue;
+
+        let latest = latestByClaim.get(claimId);
+        if (latest === undefined) {
+            latest = getLatestClaimEvent(db, claimId);
+            latestByClaim.set(claimId, latest);
+        }
+
+        if (eventType === 'PROMOTED' && latest?.event_type !== 'R2_REVIEWED') {
+            violations.push({
+                code: 'PROMOTION_REQUIRES_R2_REVIEW',
+                claim_id: claimId,
+                attempted_event_type: eventType,
+                latest_event_type: latest?.event_type ?? null,
+            });
+            continue;
+        }
+
+        latestByClaim.set(claimId, { event_type: eventType });
+    }
+
+    return violations;
+}
+
 export function normalizeClaimId(value) {
     if (!value) return null;
     const raw = String(value).trim().toUpperCase();
@@ -183,6 +235,20 @@ function shouldSkipClaimEvent(db, event) {
         );
     } catch {
         return false;
+    }
+}
+
+function getLatestClaimEvent(db, claimId) {
+    try {
+        return db.prepare(`
+            SELECT event_type
+            FROM claim_events
+            WHERE claim_id = ?
+            ORDER BY timestamp DESC, id DESC
+            LIMIT 1
+        `).get(claimId) || null;
+    } catch {
+        return null;
     }
 }
 

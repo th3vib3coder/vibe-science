@@ -9,13 +9,15 @@
 // Input (stdin JSON): { tool_name, tool_input, session_id, cwd, hook_event_name, agent_role? }
 // Output (stdout JSON): { hookSpecificOutput: { permissionDecision: "allow"|"deny" } }
 
+import { existsSync, readFileSync } from 'node:fs';
+
 const PROTECTED_CONFIG_RULES = [
   'skills/vibe/assets/schemas/*.schema.json',
   'skills/vibe/assets/fault-taxonomy.yaml',
   'skills/vibe/assets/judge-rubric.yaml',
 ];
 
-let openDB, initDB, closeDB, getLatestPromptRole, applyMigrations, logGovernanceEvent, checkPermission, parseStructuredBlocks;
+let openDB, initDB, closeDB, getLatestPromptRole, applyMigrations, logGovernanceEvent, checkPermission, parseStructuredBlocks, previewClaimEvents, validateClaimLifecycleTransitions;
 try {
   const dbMod = await import('../lib/db.js');
   openDB = dbMod.openDB;
@@ -46,6 +48,15 @@ try {
   parseStructuredBlocks = parserMod.parseStructuredBlocks;
 } catch {
   parseStructuredBlocks = null;
+}
+
+try {
+  const claimIngestionMod = await import('../lib/claim-ingestion.js');
+  previewClaimEvents = claimIngestionMod.previewClaimEvents;
+  validateClaimLifecycleTransitions = claimIngestionMod.validateClaimLifecycleTransitions;
+} catch {
+  previewClaimEvents = () => [];
+  validateClaimLifecycleTransitions = () => [];
 }
 
 let inputData = '';
@@ -167,6 +178,19 @@ async function main(event) {
             return;
           }
         }
+
+        const oldLifecycleEvents = previewClaimEvents(oldText, sessionId);
+        const newLifecycleEvents = previewClaimEvents(newText, sessionId);
+        const changedLifecycleEvents = getChangedLifecycleEvents(oldLifecycleEvents, newLifecycleEvents);
+        const lifecycleViolations = validateClaimLifecycleTransitions(db, changedLifecycleEvents);
+        if (lifecycleViolations.length > 0) {
+          denyLifecycle(toolName, lifecycleViolations[0], {
+            db,
+            sessionId,
+            filePath,
+          });
+          return;
+        }
       }
 
       if (!touchedClaimContent) {
@@ -243,6 +267,46 @@ function denyImmutableConfig(toolName, target, context = {}) {
     `IMMUTABLE FILE BLOCKED: ${target.path} is protected by ${target.rule}. ` +
     'These files are IMMUTABLE. Fix the claim/analysis, not the schema.'
   );
+  process.exit(2);
+}
+
+function denyLifecycle(toolName, violation, context = {}) {
+  const claimId = violation.claim_id || 'unknown';
+  const latestEvent = violation.latest_event_type || 'none';
+
+  recordGovernanceEvent(context.db, {
+    session_id: context.sessionId ?? null,
+    event_type: violation.code === 'PROMOTION_REQUIRES_R2_REVIEW' ? 'r2_bypass_attempt' : 'law_violation',
+    tool_name: toolName,
+    severity: 'critical',
+    details: {
+      claim_id: claimId,
+      attempted_event_type: violation.attempted_event_type ?? null,
+      latest_event_type: violation.latest_event_type ?? null,
+      file_path: context.filePath ?? null,
+      reason: violation.code,
+    },
+  });
+
+  const result = {
+    hookSpecificOutput: {
+      permissionDecision: 'deny'
+    }
+  };
+  process.stdout.write(JSON.stringify(result));
+
+  if (violation.code === 'PROMOTION_REQUIRES_R2_REVIEW') {
+    process.stderr.write(
+      `R2 BYPASS BLOCKED: Claim ${claimId} cannot be promoted because the latest recorded event is ${latestEvent}. ` +
+      `A claim must pass through R2_REVIEWED before PROMOTED. Run the R2 review path first, then retry the promotion.`
+    );
+  } else {
+    process.stderr.write(
+      `CLAIM LIFECYCLE BLOCKED: Claim ${claimId} triggered lifecycle rule ${violation.code}. ` +
+      `Latest recorded event: ${latestEvent}.`
+    );
+  }
+
   process.exit(2);
 }
 
@@ -330,7 +394,16 @@ function normalizeAgentRole(value) {
 
 function collectSegments(toolName, toolInput) {
   if (toolName === 'Write') {
-    return [{ oldText: '', newText: String(toolInput.content || '') }];
+    const filePath = String(toolInput.file_path || '');
+    let oldText = '';
+    try {
+      if (filePath && existsSync(filePath)) {
+        oldText = readFileSync(filePath, 'utf-8');
+      }
+    } catch {
+      oldText = '';
+    }
+    return [{ oldText, newText: String(toolInput.content || '') }];
   }
 
   if (toolName === 'Edit') {
@@ -475,6 +548,31 @@ function recordGovernanceEvent(db, event) {
   } catch {
     // Best effort only — audit capture must not weaken the deny path.
   }
+}
+
+function getChangedLifecycleEvents(oldEvents = [], newEvents = []) {
+  const oldByClaim = new Map(oldEvents.map(event => [event.claim_id, event]));
+  const changed = [];
+
+  for (const event of newEvents) {
+    const previous = oldByClaim.get(event.claim_id);
+    if (!previous || lifecycleSignature(previous) !== lifecycleSignature(event)) {
+      changed.push(event);
+    }
+  }
+
+  return changed;
+}
+
+function lifecycleSignature(event = {}) {
+  return [
+    event.claim_id ?? '',
+    event.event_type ?? '',
+    event.old_status ?? '',
+    event.new_status ?? '',
+    event.r2_verdict ?? '',
+    event.kill_reason ?? '',
+  ].join('|');
 }
 
 function isMutationSensitiveTool(toolName) {
