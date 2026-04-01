@@ -2,9 +2,9 @@
  * Vibe Science v7.0 TRACE — End-to-End Test Suite
  *
  * Comprehensive test coverage for the plugin infrastructure:
- *   B1. Syntax & Import Tests (32 JS files)
+ *   B1. Syntax & Import Tests (30 JS files)
  *   B2. Schema SQL Tests (16 tables, FK constraints, indices)
- *   B3. Library Unit Tests (19 libs, export verification)
+ *   B3. Library Unit Tests (18 libs, export verification)
  *   B4. Script Integration Tests (setup, session-start, prompt-submit)
  *   B5. Package & Config Tests (package.json, hooks.json, plugin.json, schemas)
  *   B6. Content Integrity Tests (forbidden names, file references, CLAUDE.md)
@@ -59,7 +59,6 @@ function fail(label) {
 describe('B1. Syntax & Import Tests', () => {
     const scripts = [
         'plugin/scripts/setup.js',
-        'plugin/scripts/core-reader-cli.js',
         'plugin/scripts/session-start.js',
         'plugin/scripts/prompt-submit.js',
         'plugin/scripts/post-tool-use.js',
@@ -75,7 +74,6 @@ describe('B1. Syntax & Import Tests', () => {
 
     const libs = [
         'plugin/lib/db.js',
-        'plugin/lib/core-reader.js',
         'plugin/lib/gate-engine.js',
         'plugin/lib/permission-engine.js',
         'plugin/lib/path-utils.js',
@@ -116,8 +114,8 @@ describe('B1. Syntax & Import Tests', () => {
         });
     }
 
-    it('all 32 JS files are present', () => {
-        assert.equal(allJsFiles.length, 32, 'Expected exactly 32 JS files (13 scripts + 19 libs)');
+    it('all 30 JS files are present', () => {
+        assert.equal(allJsFiles.length, 30, 'Expected exactly 30 JS files (12 scripts + 18 libs)');
         for (const file of allJsFiles) {
             assert.ok(fs.existsSync(rel(file)), `Missing: ${file}`);
         }
@@ -448,21 +446,6 @@ describe('B3. Library Unit Tests', () => {
         const b = mod.canonicalizeProjectPath('c:/repo/study');
         assert.equal(a, b, 'project path canonicalization should absorb slash/case drift on Windows');
         pass('path-utils-exports');
-    });
-
-    it('core-reader.js exports the agreed V1 read surface', async () => {
-        const mod = await import(relUrl('plugin', 'lib', 'core-reader.js'));
-        assert.equal(typeof mod.createReader, 'function', 'createReader should be exported');
-        assert.equal(typeof mod.getProjectOverview, 'function', 'getProjectOverview should be exported');
-        assert.equal(typeof mod.listClaimHeads, 'function', 'listClaimHeads should be exported');
-        assert.equal(typeof mod.listUnresolvedClaims, 'function', 'listUnresolvedClaims should be exported');
-        assert.equal(typeof mod.queryUnresolvedClaims, 'function', 'queryUnresolvedClaims should be exported');
-        assert.equal(typeof mod.listGateChecks, 'function', 'listGateChecks should be exported');
-        assert.equal(typeof mod.listLiteratureSearches, 'function', 'listLiteratureSearches should be exported');
-        assert.equal(typeof mod.listObserverAlerts, 'function', 'listObserverAlerts should be exported');
-        assert.equal(typeof mod.listCitationChecks, 'function', 'listCitationChecks should be exported');
-        assert.equal(typeof mod.getStateSnapshot, 'function', 'getStateSnapshot should be exported');
-        pass('core-reader-exports');
     });
 
     it('vec-search.js exports vecSearch and queueForEmbedding', async () => {

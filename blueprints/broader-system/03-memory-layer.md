@@ -1,18 +1,5 @@
 # 03. Memory Layer
 
-## Status Note
-
-This document defines **safe memory boundaries**, not the fully detailed Phase 2 execution model.
-
-The Memory Layer must pass the same review standard as the Flow Engine did:
-
-- explicit writer ownership
-- explicit workspace path
-- explicit sync triggers
-- explicit degradation behavior
-
-Until those are fully designed in the product track, this document should be read as a governance document rather than a runtime design.
-
 ## Purpose
 
 Define a broader human-readable memory system without replacing runtime truth.
@@ -48,15 +35,15 @@ But researchers also need:
 
 ### A. Project Memory
 
-Suggested structure under the outer-project workspace:
+Suggested structure:
 
-- `.vibe-science-environment/memory/Project/`
-- `.vibe-science-environment/memory/Papers/`
-- `.vibe-science-environment/memory/Experiments/`
-- `.vibe-science-environment/memory/Results/`
-- `.vibe-science-environment/memory/Writing/`
-- `.vibe-science-environment/memory/Daily/`
-- `.vibe-science-environment/memory/Meetings/`
+- `project-memory/`
+- `Papers/`
+- `Experiments/`
+- `Results/`
+- `Writing/`
+- `Daily/`
+- `Meetings/`
 
 ### B. Writing Memory
 
@@ -126,17 +113,11 @@ They may not certify scientific validity on behalf of the core.
 
 Mirrors must define when they update:
 
-1. **By outer-project-owned actions, not kernel hooks**: the kernel stop hook must not write outer memory mirrors. That would make the kernel do shell work and would violate the boundary.
-2. **On explicit command** (`/sync-memory`): researcher triggers a manual sync when needed mid-session or at session close.
-3. **Possibly later via outer-project automation**: if the outer project later adds a session-close or scheduled sync surface, that automation must remain shell-owned rather than kernel-owned.
-4. **Never automatically during scientific work**: sync must not interfere with the OTAE loop or gate enforcement.
+1. **At session end** (stop hook): export current runtime state to mirror files. This is the primary sync point.
+2. **On explicit command** (`/sync-memory`): researcher triggers a manual sync when needed mid-session.
+3. **Never automatically during scientific work**: sync must not interfere with the OTAE loop or gate enforcement.
 
 Every mirror file must carry a visible timestamp showing when it was last synced. Stale mirrors are worse than no mirrors — they are lies.
-
-Execution-model note:
-
-- who writes mirrors in detail is still a Phase 2 product decision
-- what is already decided is the boundary: mirrors are shell-owned, filesystem-first, and must not be written by kernel hooks
 
 ## Daily Notes Warning
 

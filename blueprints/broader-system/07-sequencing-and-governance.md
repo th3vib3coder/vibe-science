@@ -22,19 +22,17 @@ If an initiative tries to invert this order, it increases risk.
 
 ## Recommended Waves
 
-**Note:** The wave sequencing below was written before the product spec decided "Flow Engine first." The current operational sequencing is in [04-delivery-roadmap.md](../research-environment-v1/04-delivery-roadmap.md), which puts Phase 1 (core-reader + Flow Engine MVP) before mirrors, reporting, and connectors. The waves below remain valid as a governance priority order (low-risk first) but they no longer reflect the actual implementation sequence.
-
 ### Wave 1: Human-Readable Outer Shell
 
 Build:
 
-- project memory mirror → product Phase 2
-- experiment registry mirror → product Phase 2
-- results summary mirror → product Phase 2
-- literature inventory → product Phase 1 (via `/flow-literature`)
-- advisor meeting prep pack → product Phase 3
+- project memory mirror
+- experiment registry mirror
+- results summary mirror
+- literature inventory
+- advisor meeting prep pack
 
-Why first (as governance priority):
+Why first:
 
 - high usability gain
 - low threat to core truth
@@ -43,10 +41,10 @@ Why first (as governance priority):
 
 Build:
 
-- results-report → product Phase 3
-- stats appendix → product Phase 3
-- figure catalog → product Phase 2
-- paper handoff pack → product Phase 3
+- results-report
+- stats appendix
+- figure catalog
+- paper handoff pack
 - rebuttal prep pack
 
 Why second:
@@ -131,17 +129,16 @@ Every substantial broader-system proposal should be reviewed under an adversaria
 
 ## Next Step Rule
 
-**Note:** Phase 0 in the product spec is now complete. The governance principle below remains valid — plan before coding — but the planning work (core-reader interface spec, topology decision, execution model, CLI bridge contract, flow state persistence) has been done. The next step per the roadmap is Phase 1 implementation, not more planning artifacts.
+After this spec, the next artifact should **not** be code.
 
-Original governance principle (still valid as a check):
+The next artifact should be an implementation-planning split by module, with:
 
-Before coding any new module, there should be:
-
+- atomic work packages
 - explicit write sets
 - acceptance criteria
 - red-line boundaries
 
-The implementation-planning detail now lives in the Phase exit gates of [04-delivery-roadmap.md](../research-environment-v1/04-delivery-roadmap.md).
+Only then should coding begin.
 
 ## Testing Strategy
 
@@ -152,8 +149,6 @@ Every shell module must have at minimum:
 3. One independence test (the core works identically without the shell module loaded)
 
 Shell tests go in `__test_e2e.mjs` under B10+ blocks, following the same pattern as B9 (Harness Hints).
-
-**Important distinction:** runtime code (`core-reader.js`, `core-reader-cli.js`, JS helpers in `environment/`) is tested with unit/integration tests. Command shims (`commands/flow-*.md`) are prompt text and are validated by operator-session gates, not by unit tests. See the product spec testing notes in [04-delivery-roadmap.md](../research-environment-v1/04-delivery-roadmap.md).
 
 ## Competitive Context
 

@@ -40,39 +40,33 @@ The spec must start from real frustrations, not abstract modules. These are the 
 
 ### Story 1: "I open a new session and have no idea where I left off"
 
-The researcher has been working on a scRNA-seq analysis for 3 weeks across 15+ sessions. He opens Claude Code on Monday morning. The TRACE runtime injects ~700 tokens of state, but that's a compressed machine summary. He has no human-readable project overview: which experiments ran, which claims survived, which are stuck, what the advisor asked for last Thursday. He spends 20 minutes re-reading STATE.md and PROGRESS.md to reconstruct context.
+A PhD researcher has been working on a scRNA-seq analysis for 3 weeks across 15+ sessions. They open Claude Code on Monday morning. The TRACE runtime injects ~700 tokens of state, but that's a compressed machine summary. They have no human-readable project overview: which experiments ran, which claims survived, which are stuck, what the advisor asked for last Thursday. They spend 20 minutes re-reading STATE.md and PROGRESS.md to reconstruct context.
 
-**What the environment gives him:** A typed project memory mirror — a human-readable `project-overview.md` synced at session end, showing: active claims and their status, pending experiments, open blockers, last advisor feedback, and a "where you left off" section. He reads it in 2 minutes and starts working.
-
-Phase-traceability note:
-
-- the **full** version of this story is completed only when the Memory Layer exists
-- Phase 1 addresses the orientation subset of the pain (claims, blockers, current flow state, recent experiments)
-- advisor-feedback memory belongs to Phase 2 rather than the Flow Engine MVP
+**What the environment gives them:** A typed project memory mirror — a human-readable `project-overview.md` synced at session end, showing: active claims and their status, pending experiments, open blockers, last advisor feedback, and a "where you left off" section. They read it in 2 minutes and start working.
 
 ### Story 2: "I ran 6 experiments but can't find the results from experiment 3"
 
 The analysis produced multiple outputs across sessions: CSV files, plots, intermediate dataframes. Some are in `outputs/`, some in `figures/`, some lost in a previous session's working directory. When the advisor asks "show me the ablation where you removed batch correction," the researcher can't find it.
 
-**What the environment gives him:** An experiment registry. Each experiment gets a manifest (parameters, code version, random seed, output paths). Results are bundled. When the advisor asks, the researcher runs `/experiment list` and gets a table of all runs with links to their bundles.
+**What the environment gives them:** An experiment registry. Each experiment gets a manifest (parameters, code version, random seed, output paths). Results are bundled. When the advisor asks, the researcher runs `/experiment list` and gets a table of all runs with links to their bundles.
 
 ### Story 3: "I need to prepare for my advisor meeting and it takes me 2 hours"
 
 The advisor wants: current results, what changed since last meeting, open questions, and next steps. The researcher manually assembles this from CLAIM-LEDGER.md, PROGRESS.md, scattered figures, and memory. It takes 2 hours of copy-paste and reformatting every time.
 
-**What the environment gives him:** An advisor-meeting pack generator. It reads kernel state (validated claims, gate history, recent experiments) and assembles a structured report: claims with evidence status, new figures, open blockers, proposed next steps. The researcher reviews and edits it in 20 minutes.
+**What the environment gives them:** An advisor-meeting pack generator. It reads kernel state (validated claims, gate history, recent experiments) and assembles a structured report: claims with evidence status, new figures, open blockers, proposed next steps. The researcher reviews and edits it in 20 minutes.
 
 ### Story 4: "I want to write the Results section but I don't know which findings are safe to write about"
 
-The researcher has 12 claims in the ledger. Some are PROMOTED, some DISPUTED, some still under review. He starts writing and accidentally includes a finding that R2 killed two sessions ago. The paper draft now contains a false claim.
+A researcher has 12 claims in the ledger. Some are PROMOTED, some DISPUTED, some still under review. They start writing and accidentally include a finding that R2 killed two sessions ago. The paper draft now contains a false claim.
 
-**What the environment gives him:** A claim-aware writing handoff. When he starts writing Results, the environment shows only **export-eligible** claims with their evidence chains. In V1, export eligibility is derived by combining three kernel projections rather than reading one magic status label: lifecycle head (`listClaimHeads`), unresolved-review set (`listUnresolvedClaims`), and citation verification (`listCitationChecks`). If a claim later becomes killed/disputed or falls out of eligibility, he gets an alert.
+**What the environment gives them:** A claim-aware writing handoff. When they start writing Results, the environment shows only PROMOTED/ROBUST claims with their evidence chains. Killed and disputed claims are flagged with warnings. If a claim gets killed after being exported to a draft, they get an alert.
 
 ### Story 5: "I found 3 papers that are directly relevant but I have no structured way to track them"
 
-During analysis, the researcher finds papers via WebSearch that relate to his claims. He pastes URLs into notes, but there's no structured tracking. Two weeks later he can't remember which paper supported which claim, or whether he already checked a specific paper against his methodology.
+During analysis, a researcher finds papers via WebSearch that relate to their claims. They paste URLs into notes, but there's no structured tracking. Two weeks later they can't remember which paper supported which claim, or whether they already checked a specific paper against their methodology.
 
-**What the environment gives him:** A literature tracking flow. Papers get registered with metadata (DOI, relevance, which claims they relate to). The flow surfaces papers that haven't been cross-checked against methodology yet, and tracks which literature searches have been done for which research directions.
+**What the environment gives them:** A literature tracking flow. Papers get registered with metadata (DOI, relevance, which claims they relate to). The flow surfaces papers that haven't been cross-checked against methodology yet, and tracks which literature searches have been done for which research directions.
 
 ---
 
@@ -125,13 +119,7 @@ This means:
 - the environment may assist writing and reporting
 - the environment may run reminders and digests
 - the environment may integrate with external tools
-- the environment may expose thin Claude Code command entrypoints while keeping its product logic in a separate outer workspace
 - the environment may not validate claims on behalf of the kernel
-
-Execution model note:
-
-- this outer project runs as **Claude Code commands plus workspace artifacts**, not as a standalone JavaScript application with a conventional import graph
-- when a flow needs structured kernel facts beyond what workspace files safely expose, it reaches them through a thin CLI bridge over `core-reader.js`
 
 ---
 
@@ -148,11 +136,8 @@ Execution model note:
 
 - The kernel remains authoritative for claim truth, citation truth, gate meaning, integrity state, and stop semantics.
 - The outer project may consume projections, not mutate truth.
-- V1 flow state lives in a separate outer-project workspace (`.vibe-science-environment/`), not in kernel tables and not in `.vibe-science/`.
-- V1 flow re-entry is explicit and command-driven (`/flow-status`, `/flow-*`), not hidden inside kernel SessionStart behavior.
 - Memory is a mirror, never a competing authority.
-- Writing has three tiers: Results and quantitative conclusions are claim-backed (must reference **export-eligible** claims under current kernel facts, not merely a raw label like `PROMOTED`). In V1, that eligibility is derived from multiple kernel projections, not assumed from one lifecycle status. Methods are artifact-backed (must be grounded in experiment manifests and result bundles). Introduction, Discussion, and hypothesis-writing are free — the kernel has no authority over the researcher's prose.
-- Export eligibility is outer-project policy built on kernel facts. In V1 it must live in a shared outer-project helper, not inside `core-reader.js` and not duplicated across flows.
+- Writing has three tiers: Results and quantitative conclusions are claim-backed (must reference PROMOTED/ROBUST claims). Methods are artifact-backed (must be grounded in experiment manifests and result bundles). Introduction, Discussion, and hypothesis-writing are free — the kernel has no authority over the researcher's prose.
 - Automations may assist, remind, package, and summarize; they may not self-legitimate research conclusions.
 - The environment must not consume so much context that the researcher can't do research. Lazy-loading and minimal SessionStart footprint are architectural requirements.
 
