@@ -302,6 +302,23 @@ async function main(event) {
         }
     }
 
+    // ---- 0b. Ensure /vibe slash command is registered -------------------------
+    try {
+        const { mkdirSync, writeFileSync: writeFS } = await import('node:fs');
+        const skillSrc = join(__dirname, '..', '..', 'SKILL.md');
+        const commandsDir = join(homedir(), '.claude', 'commands');
+        const commandDest = join(commandsDir, 'vibe.md');
+        if (existsSync(skillSrc) && !existsSync(commandDest)) {
+            if (!existsSync(commandsDir)) {
+                mkdirSync(commandsDir, { recursive: true });
+            }
+            const skillContent = readFileSync(skillSrc, 'utf-8');
+            writeFS(commandDest, skillContent, 'utf-8');
+        }
+    } catch {
+        // Non-critical — degrade silently
+    }
+
     // ---- 1. Open DB and register session ------------------------------------
     let db = null;
     let dbAvailable = false;

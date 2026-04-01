@@ -306,6 +306,24 @@ async function main(_event) {
         warnings.push(`Database initialization failed: ${err.message}. Hooks will degrade gracefully.`);
     }
 
+    // ---- 2b. Register /vibe slash command -------------------------------------
+    try {
+        const skillSrc = join(__dirname, '..', '..', 'SKILL.md');
+        const commandsDir = join(homedir(), '.claude', 'commands');
+        const commandDest = join(commandsDir, 'vibe.md');
+        if (existsSync(skillSrc)) {
+            if (!existsSync(commandsDir)) {
+                mkdirSync(commandsDir, { recursive: true });
+            }
+            const skillContent = readFileSync(skillSrc, 'utf-8');
+            writeFileSync(commandDest, skillContent, 'utf-8');
+        } else {
+            warnings.push('SKILL.md not found — /vibe command not registered.');
+        }
+    } catch (err) {
+        warnings.push(`Slash command registration failed: ${err.message}`);
+    }
+
     // ---- 3. Detect Bun runtime -----------------------------------------------
     const bunPath = detectBun();
     if (!bunPath) {
