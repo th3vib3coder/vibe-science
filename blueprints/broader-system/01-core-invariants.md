@@ -121,16 +121,11 @@ But it must not broaden by replacing rigor with convenience.
 
 ## Core Read Interface
 
-The shell must never query the TRACE database directly. All shell modules access core state through a dedicated read-only interface module (`core-reader.js` or equivalent) that exposes functions like:
+The shell must never query the TRACE database directly. All shell modules access core state through `core-reader.js`, a dedicated kernel-side read-only contract surface.
 
-- `getClaimState(claimId)` — lifecycle status, confidence, confounder result
-- `getCitationState(citationId)` — verification status, resolver, retraction
-- `getGateHistory(projectPath, gateId)` — pass/fail history
-- `getPatterns(projectPath)` — active cross-session patterns
-- `getSessionSummary(sessionId)` — narrative, counts, integrity status
-- `getHarnessHints(projectPath)` — current active hints
+The full interface — factory, function signatures, return shapes, CLI bridge contract, and execution model — is specified in [CORE-READER-INTERFACE-SPEC.md](../CORE-READER-INTERFACE-SPEC.md). Do not duplicate function lists here; they will drift.
 
-This insulates the shell from schema changes and prevents tight coupling to internal tables.
+Key invariant: the reader is projection-only. It exposes facts. It does not compute policy (like export-eligibility), write state, or mutate kernel truth.
 
 ## Acceptance Test For Any New Feature
 

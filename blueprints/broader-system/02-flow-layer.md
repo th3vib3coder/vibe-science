@@ -1,5 +1,17 @@
 # 02. Flow Layer
 
+## Status Note
+
+This document defines **governance boundaries** for the flow layer.
+
+Detailed V1 execution choices now live in:
+
+- [Vibe Science Research Environment V1 Spec](../VIBE-SCIENCE-RESEARCH-ENVIRONMENT-V1-SPEC.md)
+- [Product Architecture](../research-environment-v1/02-product-architecture.md)
+- [Topology and Boundaries](../research-environment-v1/03-topology-and-boundaries.md)
+
+If this document and the product spec disagree on flow execution mechanics, the product spec wins. This document is about what the flow layer may and may not do, not about the full runtime substrate.
+
 ## Purpose
 
 Define the broader workflow layer around the core runtime.
@@ -13,20 +25,15 @@ It does not certify truth.
 
 ## Target Flows
 
-### A. Ideation Flow
+### A. Ideation Flow (deferred — not in V1 product spec)
 
-Goal:
+**Note:** The Ideation Flow is not present in the V1 product spec ([02-product-architecture.md](../research-environment-v1/02-product-architecture.md)). The existing `/start` command already covers early-stage brainstorming (Phase 0 scientific brainstorm in start.md). If a dedicated Ideation Flow is built later, it should not duplicate what `/start` already does.
+
+Goal (when built):
 
 - move from vague topic to researchable direction
 - structure early literature discovery
 - capture open questions and candidate hypotheses
-
-Allowed outputs:
-
-- research questions
-- literature maps
-- hypothesis drafts
-- project briefs
 
 Not allowed:
 
@@ -104,7 +111,7 @@ Not allowed:
 
 ## User Interaction Model
 
-Flows are invoked explicitly by the researcher as **skill commands** (e.g. `/flow-literature`, `/flow-experiment`, `/flow-results`). They are never auto-triggered by hooks or hidden behind automatic orchestration.
+Flows are invoked explicitly by the researcher through **Claude Code command entrypoints** (e.g. `/flow-literature`, `/flow-experiment`, `/flow-results`). They are never auto-triggered by hooks or hidden behind automatic orchestration.
 
 The researcher decides when to enter a flow. The flow guides the work. The core gates still block if integrity conditions are not met.
 
@@ -112,7 +119,7 @@ The researcher decides when to enter a flow. The flow guides the work. The core 
 
 The writing handoff is the most delicate boundary in the entire system. Rules:
 
-1. The writing flow may only consume claims with status `PROMOTED` or `ROBUST`. Draft, disputed, or killed claims must not appear in writing artifacts without explicit caveat.
+1. The writing flow may only consume claims that are **export-eligible under current kernel facts**. In V1 that is a derived policy, not a single raw lifecycle label. Draft, disputed, killed, unresolved, or citation-unverified claims must not appear in Results-facing artifacts without explicit caveat.
 2. Every claim-to-text export must carry the `claim_id` as traceability metadata, so the origin is auditable.
 3. If a claim is killed or disputed after export, the memory layer should surface an alert in the writing memory (e.g. "Claim C-042 was killed after being exported to paper draft on 2026-03-25").
 4. Free writing that invents findings not traceable to validated claims is the single most dangerous failure mode of this layer.
@@ -121,7 +128,7 @@ The writing handoff is the most delicate boundary in the entire system. Rules:
 
 Likely components:
 
-- skill commands (invocable via `/flow-*`)
+- command shims (invocable via `/flow-*`)
 - orchestration helpers
 - project templates
 - artifact exporters
