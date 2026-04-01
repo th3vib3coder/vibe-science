@@ -9,6 +9,12 @@ Define external integrations that make Vibe Science broader without letting exte
 Connectors should make Vibe Science easier to live with.
 They should not become alternate scientific runtimes.
 
+## Status Note
+
+This document defines connector governance, not the final V1 runtime model.
+The current product sequencing defers connectors until Phase 4+ and prefers Claude Code native transport surfaces where available.
+If this file ever conflicts with the execution mechanics in `research-environment-v1/02-product-architecture.md` or `research-environment-v1/04-delivery-roadmap.md`, those product documents win on implementation shape while this file continues to govern boundaries.
+
 ## Target Connectors
 
 ### A. Zotero Connector
@@ -64,6 +70,33 @@ Use cases:
 - appendix export
 - figure-catalog export
 
+Safe role:
+
+- transport/export surface for artifacts already produced by the Writing & Deliverables module
+
+Unsafe role:
+
+- owning advisor-pack generation, figure-catalog generation, or writing-policy decisions
+- becoming a hidden second implementation of writing handoff
+
+### E. Claude-Native Event Connector
+
+Use cases:
+
+- advisor feedback arriving over Telegram / Discord
+- CI or webhook events surfacing into a live session
+- remote approval / permission relay during active work
+
+Safe role:
+
+- transport and event ingress surface for the outer project
+
+Unsafe role:
+
+- product logic in disguise
+- connector-defined workflow semantics
+- a substitute for the Flow Engine, writing policy, or kernel truth
+
 ## Connector Rules
 
 ### Rule 1: Adapter, Not Authority
@@ -96,6 +129,16 @@ If Zotero, Obsidian, or any other external tool is unavailable:
 - integrity remains honest
 - connector failure is visible
 
+### Rule 5: Prefer Host-Native Transport Over Custom Bridges
+
+If Claude Code already provides a safe host surface for transport or ingress:
+
+- use that host-native surface first
+- build domain logic on top of it
+- do not create a parallel Telegram / Discord / webhook bridge just to feel more "platform-like"
+
+In practice, this means Claude Code **Channels** should be the default Phase 4+ event-ingress substrate unless a concrete connector need cannot be met there.
+
 ## Safe Early Connector Work
 
 - Zotero import helper
@@ -103,9 +146,11 @@ If Zotero, Obsidian, or any other external tool is unavailable:
 - paper-note exporter
 - results-report exporter
 - figure bundle exporter
+- channel-backed event ingress layered on Claude Code Channels rather than a custom bridge
 
 ## Unsafe Early Connector Work
 
 - letting external notes drive claim state
 - treating library metadata as verified evidence
 - silent two-way sync into canonical runtime artifacts
+- rebuilding transport and notification infrastructure that Claude Code already provides natively

@@ -25,9 +25,9 @@ Examples:
 Examples:
 
 - weekly research digest
-- advisor meeting prep pack
-- result bundle packaging
-- figure catalog refresh
+- advisor meeting prep refresh (not primary ownership of pack generation)
+- result bundle packaging refresh/helper
+- figure catalog refresh (not primary ownership of catalog generation)
 - appendix skeleton refresh
 
 ### C. Workflow Orchestration
@@ -50,12 +50,13 @@ Examples:
 
 ## Runtime Model
 
-Claude Code does not have cron or background daemons. Automations execute in two ways:
+**Note:** This section has been superseded by the product spec decisions in [02-product-architecture.md](../research-environment-v1/02-product-architecture.md) and [04-delivery-roadmap.md](../research-environment-v1/04-delivery-roadmap.md). The current agreed model is:
 
-1. **SessionStart-triggered checks**: lightweight checks that run when the researcher opens a session (like TRACE+ADAPT hints already do). These surface stale state, pending reviews, and drift without blocking.
-2. **On-demand commands**: researcher invokes `/weekly-digest`, `/advisor-prep`, `/experiment-close` explicitly. These produce artifacts but never run unsupervised.
+1. **Command-driven automations**: the researcher invokes `/weekly-digest`, `/advisor-prep`, `/experiment-close` explicitly. These produce artifacts but never run unsupervised.
+2. **Claude Code Scheduled Tasks** for durable automation: session-scoped (`/loop`, CronCreate — 3-day max) for in-session polling; Desktop/Cloud Scheduled Tasks for persistent recurring work like weekly digests.
+3. **Kernel SessionStart is NOT an outer-project automation trigger.** SessionStart is kernel-owned and handles TRACE+ADAPT hints. Outer-project automation does not piggyback on it.
 
-"Recurring" means "runs each time the researcher opens a session or invokes it" — not "runs on a schedule in the background."
+"Recurring" means "runs when the researcher invokes a command, or when a Claude Code Scheduled Task fires" — not "injected by the kernel at session start."
 
 ## Automation Rules
 
@@ -106,14 +107,17 @@ If the core reports:
 
 automations should surface that, not hide it.
 
-## Safe Early Automations
+## Safe Later Automations
 
-- weekly digest
-- advisor meeting prep pack
+These become safe only **after** the underlying artifact-producing modules already exist and have a clear owner.
+Automation may trigger, refresh, or schedule them; it does not become the primary owner of the artifact itself.
+
+- weekly digest refresh
+- advisor meeting prep refresh (after the advisor-pack generator exists in the writing/deliverables layer)
 - stale literature reminder
 - unresolved-claim reminder
 - pending-seed digest
-- experiment packaging helper
+- experiment packaging refresh/helper (after experiment bundles already exist)
 
 ## Unsafe Early Automations
 

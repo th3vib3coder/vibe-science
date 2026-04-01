@@ -20,5 +20,6 @@ Prerequisites:
 3. [Vibe Science Broader System Spec](../VIBE-SCIENCE-BROADER-SYSTEM-SPEC.md)
 4. [Repo Topology Decision](../REPO-TOPOLOGY-DECISION.md)
 5. [Core Reader Interface Spec](../CORE-READER-INTERFACE-SPEC.md)
+6. [Adversarial Review Protocol](../ADVERSARIAL-REVIEW-PROTOCOL.md)
 
 This is an outer-project spec, not a kernel spec.

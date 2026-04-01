@@ -1,0 +1,18 @@
+{
+  "experimentId": null,
+  "title": null,
+  "objective": null,
+  "status": "planned",
+  "createdAt": null,
+  "completedAt": null,
+  "parameters": {},
+  "codeRef": {
+    "entrypoint": null,
+    "gitCommit": null
+  },
+  "inputArtifacts": [],
+  "outputArtifacts": [],
+  "relatedClaims": [],
+  "blockers": [],
+  "notes": ""
+}
