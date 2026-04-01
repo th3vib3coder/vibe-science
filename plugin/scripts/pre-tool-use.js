@@ -541,6 +541,28 @@ function normalizePathRule(value) {
     .replace(/\/+$/, '');
 }
 
+function extractCommandPathCandidates(command) {
+  const source = String(command || '');
+  if (!source.trim()) return [];
+
+  const candidates = new Set();
+  const patterns = [
+    /(?:^|[;&\s])(?:[A-Za-z_][A-Za-z0-9_]*)=([A-Za-z0-9_./\\-]+(?:\.[A-Za-z0-9_]+)?)/g,
+    /\bcd\s+([A-Za-z0-9_./\\-]+)/gi,
+    /(?:^|[\s"'`])([A-Za-z0-9_./\\-]*[\\/][A-Za-z0-9_./\\-]+)(?=$|[\s"'`;,|&])/g,
+    /(?:^|[\s"'`])([A-Za-z0-9_.-]+\.(?:md|json|yaml|yml|txt|csv|tsv|js|mjs|cjs|ts|py|sqlite|db))(?=$|[\s"'`;,|&])/g,
+  ];
+
+  for (const pattern of patterns) {
+    for (const match of source.matchAll(pattern)) {
+      const value = normalizePathRule(match[1]).replace(/\/+$/, '');
+      if (value) candidates.add(value);
+    }
+  }
+
+  return [...candidates];
+}
+
 function recordGovernanceEvent(db, event) {
   if (!db || !logGovernanceEvent) return;
   try {
