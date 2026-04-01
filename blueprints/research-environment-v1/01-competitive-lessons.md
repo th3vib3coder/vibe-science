@@ -62,14 +62,13 @@ Design lesson for us:
 - experiments should create **structured result packages**
 - writing and reporting should have a clear export path
 - cross-run lessons should feed operator guidance and workflow presets
-- artifact and connector portability may matter later, but **host abstraction is not a V1 driver**
+- portability matters
 
 What we should not import:
 
 - full autonomy as a default epistemic mode
 - "one topic in, one paper out" as a scientific truth promise
 - paper completion as the product's primary truth criterion
-- premature multi-host abstraction before the Claude Code execution model proves itself
 
 For us, deliverables are downstream of integrity, not proof of integrity.
 
@@ -92,15 +91,15 @@ Design lesson for us:
 - the outer project should model research as **project / workflow / task / artifact**
 - memory should be **typed**, not just a note dump
 - experiment operations should include **blocker tracking**
-- operator-facing status surfaces and digests are worth building
-- a visible operational surface can exist without weakening the kernel
+- operator-facing dashboards and digests are worth building
+- a control plane can exist without weakening the kernel
 
 What we should not import:
 
 - a second research truth layer parallel to the kernel
 - workflow convenience features that silently drift into authority
 
-For us, any operator-facing operational surface is infrastructure, not scientific judge.
+For us, the control plane is operational infrastructure, not scientific judge.
 
 ---
 
@@ -113,7 +112,7 @@ Across these systems, the market signal is clear:
 - users want packaging, not only reasoning
 - users want project memory
 - users want reminders, dashboards, and artifacts
-- some users are attracted to multi-agent or multi-role orchestration, but this is not required to prove V1 value
+- users want multi-agent or multi-role orchestration
 
 This is exactly where Vibe Science is currently narrower than the field.
 
@@ -144,7 +143,7 @@ The outer project should include:
 4. blocker and reminder surfaces
 5. cross-run workflow lessons
 6. connectors and channels
-7. a local-first operational surface without a second truth layer
+7. a local-first control plane
 
 The outer project must not include:
 
@@ -152,3 +151,4 @@ The outer project must not include:
 2. paper-writing as a substitute for claim validation
 3. external memory overriding kernel state
 4. autonomous workflows that bypass the kernel
+

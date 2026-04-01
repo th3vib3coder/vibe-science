@@ -30,7 +30,6 @@ Deliverables:
 - repo-topology decision — **DONE** ([`REPO-TOPOLOGY-DECISION.md`](../REPO-TOPOLOGY-DECISION.md))
 - `core-reader.js` ownership decision — **DONE** (kernel-side contract surface)
 - minimal `core-reader.js` design — **DONE** ([`CORE-READER-INTERFACE-SPEC.md`](../CORE-READER-INTERFACE-SPEC.md))
-- Claude Code execution-bridge decision — **DONE** (`plugin/scripts/core-reader-cli.js` as the prompt-driven bridge over `core-reader.js`)
 - V1 flow-state persistence decision — **DONE** (`workspace files`, not kernel tables)
 
 Exit gate:
@@ -39,7 +38,6 @@ Exit gate:
 - [x] user stories exist and are grounded in real workflow pain
 - [x] `core-reader.js` ownership is explicit: kernel-side contract surface in the Vibe Science repo
 - [x] core-reader.js interface is designed (function signatures + return types)
-- [x] prompt-driven execution model is explicit (command shims + CLI bridge)
 - [x] V1 flow state is explicitly out-of-kernel and file-backed
 - [x] repo topology is decided
 
@@ -53,36 +51,25 @@ This is the make-or-break phase. If the Flow Engine doesn't help the researcher,
 
 Goal:
 
-- expose kernel state through a stable read-only API plus a prompt-friendly CLI bridge
+- expose kernel state via a stable read-only API
 - build the first two flows (literature + experiment) that solve Story 1, 2, and 5 from the user stories
 
 Deliverables:
 
 - `core-reader.js` — kernel-side read-only contract surface in the Vibe Science repo
-- `plugin/scripts/core-reader-cli.js` — thin CLI bridge that exposes reader projections as JSON to prompt-driven command shims
-- `commands/flow-status.md` — thin command shim that reloads outer-project flow state and renders "where am I, what's pending, what's blocked"
-- `commands/flow-literature.md` — thin command shim for the literature flow
-- `commands/flow-experiment.md` — thin command shim for the experiment flow, including manifest creation and manifest listing
-- minimal outer-project workspace state under `.vibe-science-environment/flows/`
-- experiment manifests under `.vibe-science-environment/experiments/manifests/`
-- baseline context-budget measurement for kernel + one flow command
+- `/flow-literature` — register papers, track relevance to claims, surface gaps
+- `/flow-experiment` — register experiments with manifests, track blockers, assemble result bundles
+- project overview command — "where am I, what's pending, what's blocked"
 
 Exit gate:
 
-- [x] core-reader.js has at least 5 tested projection functions
-- [x] `plugin/scripts/core-reader-cli.js` can expose at least `overview` and one list projection as normalized JSON
-- [x] the CLI bridge has a documented stable stdout envelope (`ok`, `projection`, `projectPath`, `data/error`) and non-zero exit behavior for real errors
-- [ ] `/flow-status` can resume from `.vibe-science-environment/flows/index.json` and produce a useful human-readable summary
+- [ ] core-reader.js has at least 5 tested projection functions
 - [ ] `/flow-literature` registers a paper and links it to a claim
 - [ ] `/flow-experiment` creates an experiment manifest and tracks outputs
-- [ ] `/flow-experiment` can list existing experiment manifests and their output paths without requiring manual file inspection
-- [x] flow state remains outside `.vibe-science/` and no new kernel tables are introduced for it
-- [ ] at least one Phase 1 flow demonstrates the two-substrate rule clearly: workspace-first when files are enough, CLI bridge when structured kernel facts are needed
-- [x] all new **runtime code** has tests (happy path + graceful failure + kernel works without it) — `core-reader.js`, `core-reader-cli.js`, and any JS helpers in `environment/`
-- [ ] command shims (`commands/flow-*.md`) are validated by the operator session gate, not by unit tests — they are prompt text, not executable code
-- [x] kernel test suite still passes (170+ tests green)
+- [ ] project overview produces a useful human-readable summary from kernel state
+- [ ] all new code has tests (happy path + graceful failure + kernel works without it)
+- [ ] kernel test suite still passes (170+ tests green)
 - [ ] at least one real operator session confirms the Flow Engine reduces orientation or retrieval pain without adding unacceptable overhead
-- [ ] baseline context cost is measured and documented for: `CLAUDE.md`, `SKILL.md`, SessionStart injection, and one invoked flow command
 
 ---
 
@@ -92,12 +79,6 @@ Goal:
 
 - make project state durable and human-readable across sessions (Story 1)
 - make experiment results findable and packageable (Story 2)
-
-Boundary note:
-
-- Phase 2 must explicitly define the Memory Layer execution model
-- the kernel stop hook must not become the writer of outer-project mirrors
-- writer ownership, sync trigger, and degradation behavior must be specified before memory implementation starts
 
 Deliverables:
 
@@ -125,14 +106,12 @@ Deliverables:
 
 - `/flow-writing` — claim-aware export for Results section
 - `/flow-results` — aggregate validated findings with figure catalogs
-- `environment/lib/export-eligibility.js` — shared outer-project policy helper used by writing and results flows
 - advisor-meeting pack generator
 - rebuttal prep pack
 
 Exit gate:
 
-- [ ] writing handoff only exports claims that are export-eligible under current kernel facts (lifecycle head not killed/disputed, absent from `listUnresolvedClaims`, citations VERIFIED)
-- [ ] export-eligibility logic is implemented once in a shared outer-project helper, not duplicated across flows
+- [ ] writing handoff only exports PROMOTED/ROBUST claims to Results
 - [ ] killed claims produce visible warnings if referenced
 - [ ] advisor pack is assembleable from one command
 - [ ] free writing (intro, discussion) is not blocked by claim status
@@ -165,15 +144,12 @@ Platform substrate for Phase 4+: build connectors on Claude Code **Channels** (e
 
 ---
 
-## Context Budget Gate
+## Context Budget Warning
 
-Every module added to the environment consumes context in Claude Code sessions. CLAUDE.md + SKILL.md + hooks already consume significant tokens. This must be measured, not merely acknowledged.
+Every module added to the environment consumes context in Claude Code sessions. CLAUDE.md + SKILL.md + hooks already consume significant tokens. Before implementing any module, estimate its context cost:
 
-Before a phase that adds new flow surfaces can exit, record its context cost:
-
-- How many tokens does its command shim or skill definition add?
+- How many tokens does its skill definition add?
 - How much does its SessionStart output add?
 - Is there a way to make it lazy-loaded (only present when invoked)?
-- Can the same user value be delivered through a command shim plus workspace files instead of more always-loaded prompt text?
 
 A system that is so large it suffocates the context available for actual research is worse than no system at all.

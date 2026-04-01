@@ -33,8 +33,8 @@ The kernel is real, but it is still actively evolving:
 
 - TRACE is recent
 - TRACE+ADAPT V0 is recent
-- `core-reader.js` now exists but has only just become a live contract surface
-- the outer product has its first working bridge and prompt shims, but the product track is still early
+- `core-reader.js` does not exist yet
+- the outer product does not yet have working code
 
 Splitting into a separate repo immediately would impose overhead too early:
 
@@ -71,7 +71,7 @@ Pros:
 
 Cons:
 
-- too much overhead before the reader contract has earned stability
+- too much overhead before `core-reader.js` exists
 - contract is still being crystallized
 - Phase 1 would spend time on packaging and cross-repo mechanics instead of validating the Flow Engine
 
@@ -201,16 +201,13 @@ Phase 0 is now resolved as follows:
 
 ## Practical Consequence
 
-The topology decision is no longer waiting on speculative design.
-
-The kernel-side contract surface and CLI bridge now exist, the minimal `environment/` workspace shape exists, and the repo has prompt-driven Flow Engine shims plus concrete JSON templates.
-
-So the next step after this decision is not more topology debate.
+The next design step after this decision is not implementation.
 
 It is:
 
-1. keep the kernel/outer boundary disciplined during Phase 1 implementation
-2. validate the Flow Engine with real operator sessions
-3. split repos later only if the migration triggers are actually met
+1. define `core-reader.js` signatures
+2. define the minimal `environment/` workspace shape
+3. only then plan Phase 1
 
-That keeps speed without sacrificing boundary clarity.
+That sequence keeps speed without sacrificing boundary clarity.
+

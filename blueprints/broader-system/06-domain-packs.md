@@ -8,12 +8,6 @@ Define how Vibe Science can broaden across domains without bloating the core.
 
 Domain variation belongs in packs, not in the kernel.
 
-## Status Note
-
-This document defines pack boundaries and safe contents, not the final loading/runtime behavior for V1.
-Domain packs are deferred until Phase 4+ in the product roadmap, after the Flow Engine has real workflow stages to preset.
-If this file conflicts with the product execution model, the product spec wins on loading mechanics while this file continues to govern what packs may and may not do.
-
 ## Why Packs Matter
 
 Different fields need different:
@@ -66,7 +60,7 @@ Every pack must declare:
 
 ## Loading Mechanism
 
-A pack is activated by a `domain-config.json` file in the project root. The file declares:
+A pack is activated by a `domain-config.json` file in the project root (already supported by session-start.js). The file declares:
 
 ```json
 {
@@ -78,9 +72,7 @@ A pack is activated by a `domain-config.json` file in the project root. The file
 }
 ```
 
-For V1+, the pack is read by outer-project commands and helpers when they need workflow presets.
-Kernel SessionStart does **not** auto-load domain packs for the outer project.
-No environment variables are required. The pack is project-scoped, not global.
+SessionStart loads this automatically. No environment variables, no CLI flags. The pack is project-scoped, not global.
 
 ## Safe Early Pack Strategy
 
@@ -90,10 +82,8 @@ Start with:
 - report templates
 - project-memory scaffolds
 - connector presets
-- flow defaults consumed by outer-project commands after the base Flow Engine exists
 
 Avoid early:
 
 - domain-specific runtime branching inside hooks
 - conditional gate semantics by domain
-- any pack-loading path that makes kernel hooks responsible for outer-project behavior

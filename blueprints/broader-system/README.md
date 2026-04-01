@@ -11,7 +11,6 @@ Read these kernel documents first:
 1. [Current Vibe Science System Map](../CURRENT-VIBE-SCIENCE-SYSTEM-MAP.md)
 2. [Vibe Science Core Contract](../VIBE-SCIENCE-CORE-CONTRACT.md)
 3. [Vibe Science Research Environment V1 Spec](../VIBE-SCIENCE-RESEARCH-ENVIRONMENT-V1-SPEC.md)
-4. [Adversarial Review Protocol](../ADVERSARIAL-REVIEW-PROTOCOL.md)
 
 Read in this order:
 

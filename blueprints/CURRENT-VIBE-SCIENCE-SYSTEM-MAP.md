@@ -1,7 +1,7 @@
 # Current Vibe Science System Map
 
 **Status:** Canonical snapshot of the current system  
-**Date:** 2026-03-28  
+**Date:** 2026-03-27  
 **Purpose:** Describe what Vibe Science actually is now, before broadening around it
 
 ---
@@ -39,9 +39,8 @@ flowchart TD
     B --> C["plugin/<br/>Runtime kernel"]
     C --> D["SQLite + STATE.md<br/>authoritative runtime projections"]
     C --> E["Context / retrieval / summaries / hints<br/>non-authoritative support surfaces"]
-    F["commands/<br/>kernel-track commands + outer-project shims"] --> B
-    F --> G["Outer-project incubation surface"]
-    H["blueprints/"] --> I["Future design lineage"]
+    F["commands/"] --> B
+    G["blueprints/"] --> H["Future design lineage"]
 ```
 
 The current repository contains five distinct layers:
@@ -53,7 +52,7 @@ The current repository contains five distinct layers:
 3. **Runtime kernel**
    `plugin/` persists state, blocks selected bad moves, and projects carry-over context.
 4. **Support surfaces**
-   retrieval, narrative summaries, calibration hints, patterns, harness hints, and a now-mixed `commands/` directory containing both kernel-track commands and outer-project prompt shims.
+   commands, retrieval, narrative summaries, calibration hints, patterns, and harness hints.
 5. **Design lineage**
    `blueprints/`, archived releases, and implementation specs that explain how the system evolved.
 
@@ -77,15 +76,14 @@ These are the hard spine of runtime behavior.
 
 ### Supporting Runtime Scripts
 
-The plugin also includes **3 support scripts** that are not lifecycle hooks:
+The plugin also includes **2 support scripts** that are not lifecycle hooks:
 
 - `setup.js`
 - `worker-embed.js`
-- `core-reader-cli.js`
 
 ### Library Surface
 
-The plugin currently includes **19 library modules**. In practical terms they cluster into:
+The plugin currently includes **18 library modules**. In practical terms they cluster into:
 
 - persistence and migrations
 - gate and permission enforcement
@@ -96,32 +94,21 @@ The plugin currently includes **19 library modules**. In practical terms they cl
 
 ### Commands
 
-The repo currently exposes **8 top-level command files**:
+The repo currently exposes **5 top-level commands**:
 
 - `init`
 - `loop`
 - `reviewer2`
 - `search`
 - `start`
-- `flow-status` (outer-project command shim — Phase 1)
-- `flow-literature` (outer-project command shim — Phase 1)
-- `flow-experiment` (outer-project command shim — Phase 1)
 
-The first 5 are kernel-track operator entrypoints.
-The `flow-*` commands are outer-project command shims. They are prompt assets, not executable JS modules, and they consume structured kernel facts through the live `core-reader.js` / `core-reader-cli.js` bridge when available. They remain part of the outer-project incubation surface and do not modify kernel truth.
-
-### Implemented Read Surface
-
-The following kernel-side surfaces are now implemented as runtime code:
-
-- `plugin/lib/core-reader.js` — read-only contract surface for outer-project consumption. Factory + 8 projection functions. Spec: [CORE-READER-INTERFACE-SPEC.md](./CORE-READER-INTERFACE-SPEC.md).
-- `plugin/scripts/core-reader-cli.js` — CLI bridge that exposes core-reader projections as JSON on stdout for prompt-driven command shims. Stable envelope contract defined in the interface spec.
+These are operator-facing workflow entrypoints, not sources of truth.
 
 ### Database Footprint
 
-The current schema defines:
+The current kernel persists to SQLite with:
 
-- **16 regular table definitions** (including the optional `memory_embeddings` fallback table)
+- **16 regular tables**
 - **1 live FTS virtual table** (`memory_fts`)
 - **optional vector-memory path** (`vec_memories` remains optional / commented)
 
@@ -143,12 +130,6 @@ The regular tables currently visible in the runtime schema are:
 14. `embed_queue`
 15. `research_patterns`
 16. `benchmark_runs`
-
-Important nuance:
-
-- `memory_embeddings` is a documented fallback regular table for environments where `sqlite-vec` is unavailable
-- the schema definition includes it, but a given runtime may rely on `vec_memories` instead
-- so "16 regular tables" is a schema-level count, not a guarantee that every runtime instance materializes the same embedding path
 
 ---
 
