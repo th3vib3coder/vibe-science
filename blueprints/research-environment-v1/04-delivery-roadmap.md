@@ -69,18 +69,18 @@ Deliverables:
 
 Exit gate:
 
-- [ ] core-reader.js has at least 5 tested projection functions
-- [ ] `plugin/scripts/core-reader-cli.js` can expose at least `overview` and one list projection as normalized JSON
-- [ ] the CLI bridge has a documented stable stdout envelope (`ok`, `projection`, `projectPath`, `data/error`) and non-zero exit behavior for real errors
+- [x] core-reader.js has at least 5 tested projection functions
+- [x] `plugin/scripts/core-reader-cli.js` can expose at least `overview` and one list projection as normalized JSON
+- [x] the CLI bridge has a documented stable stdout envelope (`ok`, `projection`, `projectPath`, `data/error`) and non-zero exit behavior for real errors
 - [ ] `/flow-status` can resume from `.vibe-science-environment/flows/index.json` and produce a useful human-readable summary
 - [ ] `/flow-literature` registers a paper and links it to a claim
 - [ ] `/flow-experiment` creates an experiment manifest and tracks outputs
 - [ ] `/flow-experiment` can list existing experiment manifests and their output paths without requiring manual file inspection
-- [ ] flow state remains outside `.vibe-science/` and no new kernel tables are introduced for it
+- [x] flow state remains outside `.vibe-science/` and no new kernel tables are introduced for it
 - [ ] at least one Phase 1 flow demonstrates the two-substrate rule clearly: workspace-first when files are enough, CLI bridge when structured kernel facts are needed
-- [ ] all new **runtime code** has tests (happy path + graceful failure + kernel works without it) — `core-reader.js`, `core-reader-cli.js`, and any JS helpers in `environment/`
+- [x] all new **runtime code** has tests (happy path + graceful failure + kernel works without it) — `core-reader.js`, `core-reader-cli.js`, and any JS helpers in `environment/`
 - [ ] command shims (`commands/flow-*.md`) are validated by the operator session gate, not by unit tests — they are prompt text, not executable code
-- [ ] kernel test suite still passes (170+ tests green)
+- [x] kernel test suite still passes (170+ tests green)
 - [ ] at least one real operator session confirms the Flow Engine reduces orientation or retrieval pain without adding unacceptable overhead
 - [ ] baseline context cost is measured and documented for: `CLAUDE.md`, `SKILL.md`, SessionStart injection, and one invoked flow command
 

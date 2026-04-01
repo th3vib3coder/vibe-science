@@ -1,8 +1,8 @@
 # Core Reader Interface Spec
 
-**Status:** Phase 0 design decision  
-**Date:** 2026-03-27  
-**Scope:** Define the minimal read-only kernel interface required before the outer research environment starts implementation
+**Status:** Implemented V1 runtime surface  
+**Date:** 2026-03-28  
+**Scope:** Define and document the read-only kernel interface used by the outer research environment
 
 ---
 
@@ -27,7 +27,7 @@ This file defines:
 
 `core-reader.js` is a **kernel-side module**.
 
-Planned location:
+Implemented location:
 
 - `plugin/lib/core-reader.js`
 
@@ -54,7 +54,7 @@ That means:
 V1 decision:
 
 - `plugin/lib/core-reader.js` remains the canonical JavaScript read contract
-- a thin CLI wrapper should be added at `plugin/scripts/core-reader-cli.js`
+- a thin CLI wrapper exists at `plugin/scripts/core-reader-cli.js`
 - Claude Code command shims invoke that wrapper through `Bash`, consume JSON on stdout, and continue the flow
 
 Example command shape:
@@ -659,7 +659,7 @@ The point of Phase 1 is to expose the minimum stable read contract, not to publi
 
 ## Why This Is Enough For Phase 1
 
-With `createReader` + a thin CLI bridge + eight required functions, the outer project can:
+With `createReader` + the implemented CLI bridge + eight required functions, the outer project can:
 
 - expose structured kernel facts to prompt-driven command shims without raw SQL or inline module-import hacks
 - show a project overview (claims, alerts, gate failures, session history)
@@ -672,16 +672,18 @@ That is enough to start validating the Flow Engine MVP without overdesigning the
 
 ---
 
-## Phase 0 Consequence
+## Current Consequence
 
-This document closes the last open Phase 0 design gate:
+This document no longer describes a planned interface only.
 
-- `core-reader.js` function signatures and return shapes are now explicit
+It now documents the implemented kernel read surface:
 
-The next step after this document is not more spec.
+1. `plugin/lib/core-reader.js`
+2. `plugin/scripts/core-reader-cli.js`
+3. tests that validate both against the kernel data model
 
-It is:
+The next step after this document is not to redesign the reader again unless a real caller pressure appears. The right discipline now is:
 
-1. implement `plugin/lib/core-reader.js`
-2. implement `plugin/scripts/core-reader-cli.js`
-3. test both against the existing kernel DB
+1. keep the runtime and this spec aligned
+2. add new projections only when a concrete flow or command shim truly needs them
+3. reuse shared helpers (for example unresolved-claim logic) rather than duplicating SQL across scripts

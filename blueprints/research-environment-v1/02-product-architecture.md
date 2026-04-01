@@ -283,7 +283,7 @@ Implementation note: Claude Code v2.1.80+ ships native **Channels** — MCP serv
 
 ## Module 6: Automations And Digests (build later)
 
-Purpose: reduce operator burden with session-start checks, digests, and reminders.
+Purpose: reduce operator burden with digests, reminders, and scheduled checks.
 
 This module is deferred. Some automation already exists in TRACE+ADAPT (harness hints at SessionStart). Additional automations should wait until the Flow Engine defines what "stale" and "blocked" mean in practice. Otherwise we automate reminders for concepts that don't exist yet.
 
@@ -308,7 +308,7 @@ When built: packs change presets, not truth semantics. Loaded via `domain-config
 Every module in this environment runs inside Claude Code sessions with limited context. The architecture must account for this:
 
 - Modules should be **lazy-loaded** — their command shims or skill definitions are only present when the researcher invokes them, not always in context.
-- SessionStart output from the environment should be **minimal** — a few lines of "here's what's pending", not a wall of state.
+- The environment's always-loaded prompt surface should be **minimal**. In V1 this means command-driven loading, not piggybacking on kernel SessionStart.
 - If a module can work from workspace files instead of injecting context, prefer workspace files.
 
 A system that fills the context window with its own overhead before the researcher types anything is broken by design.

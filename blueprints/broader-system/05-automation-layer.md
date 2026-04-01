@@ -25,9 +25,9 @@ Examples:
 Examples:
 
 - weekly research digest
-- advisor meeting prep pack
-- result bundle packaging
-- figure catalog refresh
+- advisor meeting prep refresh (not primary ownership of pack generation)
+- result bundle packaging refresh/helper
+- figure catalog refresh (not primary ownership of catalog generation)
 - appendix skeleton refresh
 
 ### C. Workflow Orchestration
@@ -107,14 +107,17 @@ If the core reports:
 
 automations should surface that, not hide it.
 
-## Safe Early Automations
+## Safe Later Automations
 
-- weekly digest
-- advisor meeting prep pack
+These become safe only **after** the underlying artifact-producing modules already exist and have a clear owner.
+Automation may trigger, refresh, or schedule them; it does not become the primary owner of the artifact itself.
+
+- weekly digest refresh
+- advisor meeting prep refresh (after the advisor-pack generator exists in the writing/deliverables layer)
 - stale literature reminder
 - unresolved-claim reminder
 - pending-seed digest
-- experiment packaging helper
+- experiment packaging refresh/helper (after experiment bundles already exist)
 
 ## Unsafe Early Automations
 

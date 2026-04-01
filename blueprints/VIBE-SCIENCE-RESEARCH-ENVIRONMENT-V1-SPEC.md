@@ -40,7 +40,7 @@ The spec must start from real frustrations, not abstract modules. These are the 
 
 ### Story 1: "I open a new session and have no idea where I left off"
 
-Carmine has been working on a scRNA-seq analysis for 3 weeks across 15+ sessions. He opens Claude Code on Monday morning. The TRACE runtime injects ~700 tokens of state, but that's a compressed machine summary. He has no human-readable project overview: which experiments ran, which claims survived, which are stuck, what the advisor asked for last Thursday. He spends 20 minutes re-reading STATE.md and PROGRESS.md to reconstruct context.
+The researcher has been working on a scRNA-seq analysis for 3 weeks across 15+ sessions. He opens Claude Code on Monday morning. The TRACE runtime injects ~700 tokens of state, but that's a compressed machine summary. He has no human-readable project overview: which experiments ran, which claims survived, which are stuck, what the advisor asked for last Thursday. He spends 20 minutes re-reading STATE.md and PROGRESS.md to reconstruct context.
 
 **What the environment gives him:** A typed project memory mirror — a human-readable `project-overview.md` synced at session end, showing: active claims and their status, pending experiments, open blockers, last advisor feedback, and a "where you left off" section. He reads it in 2 minutes and starts working.
 
@@ -52,25 +52,25 @@ Phase-traceability note:
 
 ### Story 2: "I ran 6 experiments but can't find the results from experiment 3"
 
-The analysis produced multiple outputs across sessions: CSV files, plots, intermediate dataframes. Some are in `outputs/`, some in `figures/`, some lost in a previous session's working directory. When the advisor asks "show me the ablation where you removed batch correction," Carmine can't find it.
+The analysis produced multiple outputs across sessions: CSV files, plots, intermediate dataframes. Some are in `outputs/`, some in `figures/`, some lost in a previous session's working directory. When the advisor asks "show me the ablation where you removed batch correction," the researcher can't find it.
 
-**What the environment gives him:** An experiment registry. Each experiment gets a manifest (parameters, code version, random seed, output paths). Results are bundled. When the advisor asks, Carmine runs `/experiment list` and gets a table of all runs with links to their bundles.
+**What the environment gives him:** An experiment registry. Each experiment gets a manifest (parameters, code version, random seed, output paths). Results are bundled. When the advisor asks, the researcher runs `/experiment list` and gets a table of all runs with links to their bundles.
 
 ### Story 3: "I need to prepare for my advisor meeting and it takes me 2 hours"
 
-The advisor wants: current results, what changed since last meeting, open questions, and next steps. Carmine manually assembles this from CLAIM-LEDGER.md, PROGRESS.md, scattered figures, and memory. It takes 2 hours of copy-paste and reformatting every time.
+The advisor wants: current results, what changed since last meeting, open questions, and next steps. The researcher manually assembles this from CLAIM-LEDGER.md, PROGRESS.md, scattered figures, and memory. It takes 2 hours of copy-paste and reformatting every time.
 
-**What the environment gives him:** An advisor-meeting pack generator. It reads kernel state (validated claims, gate history, recent experiments) and assembles a structured report: claims with evidence status, new figures, open blockers, proposed next steps. Carmine reviews and edits it in 20 minutes.
+**What the environment gives him:** An advisor-meeting pack generator. It reads kernel state (validated claims, gate history, recent experiments) and assembles a structured report: claims with evidence status, new figures, open blockers, proposed next steps. The researcher reviews and edits it in 20 minutes.
 
 ### Story 4: "I want to write the Results section but I don't know which findings are safe to write about"
 
-Carmine has 12 claims in the ledger. Some are PROMOTED, some DISPUTED, some still under review. He starts writing and accidentally includes a finding that R2 killed two sessions ago. The paper draft now contains a false claim.
+The researcher has 12 claims in the ledger. Some are PROMOTED, some DISPUTED, some still under review. He starts writing and accidentally includes a finding that R2 killed two sessions ago. The paper draft now contains a false claim.
 
 **What the environment gives him:** A claim-aware writing handoff. When he starts writing Results, the environment shows only **export-eligible** claims with their evidence chains. In V1, export eligibility is derived by combining three kernel projections rather than reading one magic status label: lifecycle head (`listClaimHeads`), unresolved-review set (`listUnresolvedClaims`), and citation verification (`listCitationChecks`). If a claim later becomes killed/disputed or falls out of eligibility, he gets an alert.
 
 ### Story 5: "I found 3 papers that are directly relevant but I have no structured way to track them"
 
-During analysis, Carmine finds papers via WebSearch that relate to his claims. He pastes URLs into notes, but there's no structured tracking. Two weeks later he can't remember which paper supported which claim, or whether he already checked a specific paper against his methodology.
+During analysis, the researcher finds papers via WebSearch that relate to his claims. He pastes URLs into notes, but there's no structured tracking. Two weeks later he can't remember which paper supported which claim, or whether he already checked a specific paper against his methodology.
 
 **What the environment gives him:** A literature tracking flow. Papers get registered with metadata (DOI, relevance, which claims they relate to). The flow surfaces papers that haven't been cross-checked against methodology yet, and tracks which literature searches have been done for which research directions.
 

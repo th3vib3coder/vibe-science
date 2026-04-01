@@ -70,6 +70,15 @@ Use cases:
 - appendix export
 - figure-catalog export
 
+Safe role:
+
+- transport/export surface for artifacts already produced by the Writing & Deliverables module
+
+Unsafe role:
+
+- owning advisor-pack generation, figure-catalog generation, or writing-policy decisions
+- becoming a hidden second implementation of writing handoff
+
 ### E. Claude-Native Event Connector
 
 Use cases:
