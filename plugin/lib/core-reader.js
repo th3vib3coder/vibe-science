@@ -4,18 +4,16 @@
  * Ships the 8 projections the VRE `environment/lib/kernel-bridge.js` helper
  * expects (per Phase 6 WP-150 contract).
  *
- * Design principle: thin, safe-default wrappers over existing `plugin/lib/db.js`
- * helpers and the static kernel contracts (valid claim sequences, non-negotiable
- * governance hooks). Kernel governance invariants encoded here are documented
- * and testable rather than spread across runtime hooks.
- *
- * Degraded mode: if `better-sqlite3` is unavailable OR the DB file is missing,
- * every projection returns safe empty / default shapes. The envelope is still
- * well-formed; VRE's bridge treats the degraded payload as "kernel reports
- * nothing" (not "kernel broken").
+ * Design principle: thin wrappers over existing `plugin/lib/db.js` helpers,
+ * hook configuration files, and static kernel contracts. Degraded projections
+ * are explicitly marked in the CLI envelope; they are never reported as
+ * verified kernel-backed zeroes.
  */
 
 import fs from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import {
     DEFAULT_DB_PATH,
@@ -30,6 +28,10 @@ import {
 // Static kernel contracts — encoded in source, not persisted.
 // ----------------------------------------------------------------------------
 
+const here = path.dirname(fileURLToPath(import.meta.url));
+const KERNEL_ROOT = path.resolve(here, '..', '..');
+const PROJECTION_META = Symbol('vibeScienceProjectionMeta');
+
 /**
  * Governance profile enum. Defaults live in CLAUDE.md / MODE_HOOKS; the kernel
  * does not persist a "current profile" in DB today. Phase 6.1 contract: the
@@ -39,18 +41,34 @@ import {
 const VALID_PROFILES = Object.freeze(['default', 'strict']);
 const DEFAULT_PROFILE = 'default';
 
-/**
- * Non-negotiable governance hooks — enforced at runtime by pre-tool-use.js and
- * peers. These are NOT gate_id values in the gate_checks table (those are
- * data-quality gates like DQ1/G0-G6). We surface them as synthetic entries so
- * VRE's Gate 17 probe can assert their presence.
- */
-const NON_NEGOTIABLE_HOOKS = Object.freeze([
-    'confounder_check',
-    'stop_blocking',
-    'integrity_degradation_tracking',
-    'schema_file_protection',
+const GOVERNANCE_HOOKS = Object.freeze([
+    {
+        hook: 'confounder_check',
+        event: 'PreToolUse',
+        script: 'plugin/scripts/pre-tool-use.js',
+        testHint: 'tests/governance-hooks.test.mjs',
+    },
+    {
+        hook: 'schema_file_protection',
+        event: 'PreToolUse',
+        script: 'plugin/scripts/pre-tool-use.js',
+        testHint: 'tests/governance-hooks.test.mjs',
+    },
+    {
+        hook: 'stop_blocking',
+        event: 'Stop',
+        script: 'plugin/scripts/stop.js',
+        testHint: 'tests/governance-hooks.test.mjs',
+    },
+    {
+        hook: 'integrity_degradation_tracking',
+        event: 'PostToolUse',
+        script: 'plugin/scripts/post-tool-use.js',
+        testHint: 'tests/governance-hooks.test.mjs',
+    },
 ]);
+
+const NON_NEGOTIABLE_HOOKS = Object.freeze(GOVERNANCE_HOOKS.map((entry) => entry.hook));
 
 /**
  * Valid claim-state transition sequences. Authoritative source:
@@ -68,30 +86,204 @@ const VALID_CLAIM_SEQUENCES = Object.freeze([
 // DB open/close plumbing — always safe
 // ----------------------------------------------------------------------------
 
+function attachProjectionMeta(value, meta) {
+    if (value != null && (typeof value === 'object' || typeof value === 'function')) {
+        Object.defineProperty(value, PROJECTION_META, {
+            value: Object.freeze({ ...meta }),
+            enumerable: false,
+            configurable: false,
+        });
+    }
+    return value;
+}
+
+export function getProjectionMeta(value) {
+    return value?.[PROJECTION_META] ?? {
+        dbAvailable: true,
+        sourceMode: 'kernel-backed',
+        degradedReason: null,
+    };
+}
+
 function safeOpen(dbPath = DEFAULT_DB_PATH) {
     try {
-        if (!fs.existsSync(dbPath)) return null;
-        return openDB(dbPath);
+        if (!fs.existsSync(dbPath)) {
+            return {
+                db: null,
+                degradedReason: `kernel DB missing at ${dbPath}`,
+            };
+        }
+        const db = openDB(dbPath);
+        if (!db) {
+            return {
+                db: null,
+                degradedReason: 'better-sqlite3 unavailable; kernel DB cannot be opened',
+            };
+        }
+        return { db, degradedReason: null };
+    } catch (error) {
+        return {
+            db: null,
+            degradedReason: `kernel DB open failed: ${error.message}`,
+        };
+    }
+}
+
+function withDb(fn, { dbPath = DEFAULT_DB_PATH, fallback = null } = {}) {
+    const { db, degradedReason } = safeOpen(dbPath);
+    if (!db) {
+        return attachProjectionMeta(
+            typeof fallback === 'function' ? fallback() : fallback,
+            { dbAvailable: false, sourceMode: 'degraded', degradedReason }
+        );
+    }
+    try {
+        return attachProjectionMeta(
+            fn(db),
+            { dbAvailable: true, sourceMode: 'kernel-backed', degradedReason: null }
+        );
+    } catch (error) {
+        return attachProjectionMeta(
+            typeof fallback === 'function' ? fallback() : fallback,
+            {
+                dbAvailable: false,
+                sourceMode: 'degraded',
+                degradedReason: `kernel DB projection failed: ${error.message}`,
+            }
+        );
+    } finally {
+        try { closeDB(db); } catch { /* ignore */ }
+    }
+}
+
+function readJsonIfPresent(relativePath) {
+    const absolutePath = path.join(KERNEL_ROOT, relativePath);
+    try {
+        if (!fs.existsSync(absolutePath)) return null;
+        return JSON.parse(fs.readFileSync(absolutePath, 'utf8'));
     } catch {
         return null;
     }
 }
 
-function withDb(fn, { dbPath = DEFAULT_DB_PATH, fallback = null } = {}) {
-    const db = safeOpen(dbPath);
-    if (!db) {
-        return typeof fallback === 'function' ? fallback() : fallback;
-    }
+function scriptIsRunnable(absolutePath) {
     try {
-        return fn(db);
+        fs.accessSync(absolutePath, fs.constants.R_OK);
+        if (process.platform !== 'win32') {
+            fs.accessSync(absolutePath, fs.constants.X_OK);
+        }
+        return true;
     } catch {
-        // Any schema-driven SQL error degrades to the fallback rather than
-        // propagating — the core-reader must not break the VRE bridge on
-        // legitimate schema drift. The CLI's envelope shape always parses.
-        return typeof fallback === 'function' ? fallback() : fallback;
-    } finally {
-        try { closeDB(db); } catch { /* ignore */ }
+        return false;
     }
+}
+
+function runGovernanceHookProbe() {
+    const relativePath = 'tests/governance-hooks.test.mjs';
+    const absolutePath = path.join(KERNEL_ROOT, relativePath);
+    if (!fs.existsSync(absolutePath)) {
+        return {
+            status: 'missing',
+            testHint: relativePath,
+            details: `missing probe ${relativePath}`,
+            exitCode: null,
+        };
+    }
+
+    const result = spawnSync(process.execPath, ['--test', absolutePath], {
+        cwd: KERNEL_ROOT,
+        encoding: 'utf8',
+        timeout: 15_000,
+        windowsHide: true,
+        env: {
+            ...process.env,
+            NODE_OPTIONS: '',
+        },
+    });
+
+    if (result.error) {
+        return {
+            status: 'missing',
+            testHint: relativePath,
+            details: `governance hook probe failed to execute: ${result.error.message}`,
+            exitCode: null,
+        };
+    }
+
+    if (result.status !== 0) {
+        const diagnostic = `${result.stderr ?? ''}\n${result.stdout ?? ''}`.trim();
+        return {
+            status: 'missing',
+            testHint: relativePath,
+            details: `governance hook probe failed with exit ${result.status}: ${diagnostic.slice(0, 300)}`,
+            exitCode: result.status,
+        };
+    }
+
+    return {
+        status: 'ok',
+        testHint: relativePath,
+        details: `governance hook probe ${relativePath} passed`,
+        exitCode: 0,
+    };
+}
+
+function configReferencesScript(config, event, scriptRelPath) {
+    const entries = config?.hooks?.[event];
+    if (!Array.isArray(entries)) return false;
+    const needle = scriptRelPath.replace(/\\/g, '/');
+    return entries.some((entry) => {
+        const serialized = JSON.stringify(entry).replace(/\\/g, '/');
+        return serialized.includes(needle) || serialized.includes(path.basename(needle));
+    });
+}
+
+function inspectGovernanceHooks(projectPath = null) {
+    const claudeSettings = readJsonIfPresent('.claude/settings.json');
+    const packagedHooks = readJsonIfPresent('hooks/hooks.json');
+    const probe = runGovernanceHookProbe();
+
+    return GOVERNANCE_HOOKS.map((entry) => {
+        const scriptPath = path.join(KERNEL_ROOT, entry.script);
+        const testPath = path.join(KERNEL_ROOT, entry.testHint);
+        const scriptExists = fs.existsSync(scriptPath);
+        const runnable = scriptExists && scriptIsRunnable(scriptPath);
+        const testExists = fs.existsSync(testPath);
+        const configuredIn = [];
+
+        if (configReferencesScript(claudeSettings, entry.event, entry.script)) {
+            configuredIn.push('.claude/settings.json');
+        }
+        if (configReferencesScript(packagedHooks, entry.event, entry.script)) {
+            configuredIn.push('hooks/hooks.json');
+        }
+
+        const status = runnable && configuredIn.length > 0 && probe.status === 'ok' ? 'ok' : 'missing';
+        const missing = [];
+        if (!scriptExists) missing.push(`missing script ${entry.script}`);
+        if (scriptExists && !runnable) missing.push(`script ${entry.script} is not runnable`);
+        if (configuredIn.length === 0) missing.push(`no ${entry.event} config references ${entry.script}`);
+        if (probe.status !== 'ok') missing.push(probe.details);
+
+        return {
+            gateId: null,
+            hook: entry.hook,
+            status,
+            projectPath: projectPath ?? null,
+            createdAt: null,
+            details: status === 'ok'
+                ? `Runtime hook ${entry.script} is present, runnable, configured for ${entry.event}, and covered by ${probe.testHint}.`
+                : missing.join('; '),
+            synthetic: false,
+            source: 'hook-config',
+            scriptPath: entry.script,
+            runnable,
+            configuredIn,
+            probeTest: testExists ? entry.testHint : null,
+            probeStatus: probe.status,
+            probeExitCode: probe.exitCode,
+        };
+    });
 }
 
 // ----------------------------------------------------------------------------
@@ -267,24 +459,17 @@ export function listObserverAlerts({ projectPath = null, dbPath = DEFAULT_DB_PAT
 }
 
 /**
- * Projection 7 — gate checks merged with non-negotiable hook synthesis.
+ * Projection 7 — gate checks merged with runtime hook configuration.
  * The kernel's `gate_checks` table tracks data-quality gates (DQ1/G0-G6).
- * Governance non-negotiable hooks are enforced at runtime by pre-tool-use.js
- * and peers; we synthesize them here so VRE's Gate 17 probe can validate the
- * contract against a uniform projection surface.
+ * Governance non-negotiable hooks are checked against committed hook config
+ * and scripts; no hook is reported `ok` just because it appears in a static
+ * allowlist.
  */
 export function listGateChecks({ projectPath = null, dbPath = DEFAULT_DB_PATH, limit = 100 } = {}) {
-    const synthetic = NON_NEGOTIABLE_HOOKS.map((hook) => ({
-        gateId: null,
-        hook,
-        status: 'ok',
-        projectPath: projectPath ?? null,
-        createdAt: null,
-        details: 'Non-negotiable hook enforced by kernel runtime (pre-tool-use.js et al.); synthesized for projection surface.',
-        synthetic: true,
-    }));
+    const hookChecks = inspectGovernanceHooks(projectPath);
+    const hookStatusOk = hookChecks.every((entry) => entry.status === 'ok');
 
-    return withDb((db) => {
+    const concrete = withDb((db) => {
         const rows = db.prepare(`
             SELECT gc.gate_id AS gateId, gc.status AS status, gc.timestamp AS createdAt,
                    s.project_path AS projectPath, gc.details AS details
@@ -295,7 +480,7 @@ export function listGateChecks({ projectPath = null, dbPath = DEFAULT_DB_PATH, l
             LIMIT @limit
         `).all({ projectPath: projectPath ?? '', limit });
 
-        const concrete = rows.map((r) => ({
+        return rows.map((r) => ({
             gateId: r.gateId,
             hook: r.gateId,  // data-quality gates don't have "hook" names; reuse gateId
             status: r.status,
@@ -303,9 +488,28 @@ export function listGateChecks({ projectPath = null, dbPath = DEFAULT_DB_PATH, l
             createdAt: r.createdAt,
             details: r.details,
         }));
+    }, { dbPath, fallback: [] });
 
-        return [...concrete, ...synthetic];
-    }, { dbPath, fallback: () => synthetic });
+    const dbMeta = getProjectionMeta(concrete);
+    const sourceMode = !hookStatusOk
+        ? 'degraded'
+        : dbMeta.sourceMode === 'kernel-backed'
+            ? 'kernel-backed'
+            : 'mixed';
+    const degradedReason = !hookStatusOk
+        ? `one or more governance hooks are not installed/configured: ${
+            hookChecks.filter((entry) => entry.status !== 'ok').map((entry) => entry.hook).join(', ')
+        }`
+        : dbMeta.degradedReason;
+
+    return attachProjectionMeta(
+        [...concrete, ...hookChecks],
+        {
+            dbAvailable: dbMeta.dbAvailable,
+            sourceMode,
+            degradedReason,
+        }
+    );
 }
 
 /** Projection 8 — state snapshot. Profile + valid sequences. */

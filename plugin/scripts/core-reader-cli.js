@@ -18,7 +18,7 @@
  * nothing, not kernel broken".
  */
 
-import { PROJECTIONS } from '../lib/core-reader.js';
+import { PROJECTIONS, getProjectionMeta } from '../lib/core-reader.js';
 
 function resolveProjection(name) {
     if (typeof name !== 'string' || name.trim() === '') {
@@ -69,10 +69,14 @@ async function main() {
 
     try {
         const data = await projectionFn(input);
+        const meta = getProjectionMeta(data);
         writeEnvelope({
             ok: true,
             projection,
             projectPath: input.projectPath ?? null,
+            dbAvailable: meta.dbAvailable,
+            sourceMode: meta.sourceMode,
+            degradedReason: meta.degradedReason,
             data,
         });
     } catch (error) {
