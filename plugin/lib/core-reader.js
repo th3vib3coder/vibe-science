@@ -228,13 +228,40 @@ function runGovernanceHookProbe() {
     };
 }
 
+function escapeRegExp(value) {
+    return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function commandReferencesScript(command, scriptRelPath) {
+    if (typeof command !== 'string' || command.trim() === '') return false;
+    const normalized = command.replace(/\\/g, '/');
+    const needle = scriptRelPath.replace(/\\/g, '/');
+    const escapedNeedle = escapeRegExp(needle);
+    const rootPatterns = [
+        '\\$CLAUDE_PROJECT_DIR',
+        '\\$\\{CLAUDE_PROJECT_DIR\\}',
+        '\\$CLAUDE_PLUGIN_ROOT',
+        '\\$\\{CLAUDE_PLUGIN_ROOT\\}',
+    ];
+    const scriptTokenBoundary = '($|[\\s"\'])';
+
+    if (new RegExp(`(^|[\\s"\'])${escapedNeedle}${scriptTokenBoundary}`).test(normalized)) {
+        return true;
+    }
+
+    return rootPatterns.some((rootPattern) =>
+        new RegExp(`(^|[\\s"\'])${rootPattern}/${escapedNeedle}${scriptTokenBoundary}`).test(normalized)
+    );
+}
+
 function configReferencesScript(config, event, scriptRelPath) {
     const entries = config?.hooks?.[event];
     if (!Array.isArray(entries)) return false;
-    const needle = scriptRelPath.replace(/\\/g, '/');
     return entries.some((entry) => {
-        const serialized = JSON.stringify(entry).replace(/\\/g, '/');
-        return serialized.includes(needle) || serialized.includes(path.basename(needle));
+        const hooks = Array.isArray(entry?.hooks) ? entry.hooks : [];
+        return hooks.some((hook) =>
+            hook?.type === 'command' && commandReferencesScript(hook.command, scriptRelPath)
+        );
     });
 }
 
@@ -495,7 +522,7 @@ export function listGateChecks({ projectPath = null, dbPath = DEFAULT_DB_PATH, l
         ? 'degraded'
         : dbMeta.sourceMode === 'kernel-backed'
             ? 'kernel-backed'
-            : 'mixed';
+            : 'degraded';
     const degradedReason = !hookStatusOk
         ? `one or more governance hooks are not installed/configured: ${
             hookChecks.filter((entry) => entry.status !== 'ok').map((entry) => entry.hook).join(', ')
