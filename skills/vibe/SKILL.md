@@ -13,6 +13,14 @@ skill_type: capability_uplift
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, WebSearch, WebFetch, Task
 ---
 <!-- v7.0.0 | Apache-2.0 | Author: th3vib3coder | Requires: Node.js 18+ for enforcement hooks -->
+<!-- delivery-discipline: exempt -->
+<!--
+  Retroactive exemption: this vibe-science monolithic meta-skill predates
+  Phase 8 (Delivery Discipline). It teaches scientific-truth discipline,
+  not delivery-completeness discipline, and is exempted from the
+  attestation block requirement. Wave 4 will log this exemption as a
+  `delivery_discipline_exemption_used` governance event.
+-->
 
 # Vibe Science v7.0 TRACE — Observe · Recall · Operate
 

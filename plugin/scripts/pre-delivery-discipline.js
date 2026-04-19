@@ -155,10 +155,14 @@ export function hasValidAttestation(text) {
  */
 export function hasExemptionComment(text) {
   if (typeof text !== 'string') return false;
-  // Threshold 1500 chars accommodates YAML frontmatter (commonly 400-1000
-  // chars) + an introductory paragraph, while still forcing the exemption
-  // declaration to live "near the top" of the file.
-  const head = text.slice(0, 1500);
+  // Threshold 5000 chars accommodates even oversized YAML frontmatter
+  // (e.g. the root SKILL.md changelog field is ~1800 chars alone) while
+  // still forcing the exemption declaration to live "near the top" of
+  // the file. At ~100 lines this is still unambiguously in the preamble
+  // region from a reviewer's perspective. Exemption usage is logged in
+  // Wave 4, so abuse becomes auditable regardless of where in the head
+  // the comment sits.
+  const head = text.slice(0, 5000);
   return /<!--\s*delivery-discipline:\s*exempt\s*-->/iu.test(head);
 }
 

@@ -19,7 +19,9 @@
       "Edit(**/fault-taxonomy.yaml)",
       "Write(**/fault-taxonomy.yaml)",
       "Edit(**/judge-rubric.yaml)",
-      "Write(**/judge-rubric.yaml)"
+      "Write(**/judge-rubric.yaml)",
+      "Edit(**/delivery-attestation.schema.json)",
+      "Write(**/delivery-attestation.schema.json)"
     ]
   },
   "hooks": {

@@ -1,3 +1,15 @@
+<!-- delivery-discipline: exempt -->
+<!--
+  Retroactive exemption: pre-Phase-8 release-note entries in this
+  CHANGELOG were authored without the Delivery Attestation block format
+  defined by the Phase 8 delivery-discipline skill. Rather than
+  retrofit every historical entry, this file is exempted as a whole.
+  FUTURE release-note additions SHOULD include an attestation block per
+  the skill, or the exemption should be removed when the CHANGELOG is
+  restructured. Wave 4 will log this exemption as a
+  `delivery_discipline_exemption_used` governance event.
+-->
+
 # Changelog
 
 All notable changes to Vibe Science are documented here.

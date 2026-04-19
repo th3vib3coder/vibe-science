@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "vibe-science.delivery-attestation.v1",
+  "title": "Delivery Attestation",
+  "description": "Phase 8 attestation block — required in any committable deliverable that declares closure (CLOSED/PASS/DONE/SHIPPED/COMPLETE/FINALIZED/READY) in declarative context. The Wave 2 PreToolUse hook (plugin/scripts/pre-delivery-discipline.js) and the Wave 3 CI validator (tests/validate-delivery-honesty.test.mjs) both enforce this shape. Implementation lives in hasValidAttestation() in pre-delivery-discipline.js; this schema file is the authoritative documentation of the contract.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "covered",
+    "scope_cuts",
+    "self_review_findings",
+    "external_review_status"
+  ],
+  "properties": {
+    "covered": {
+      "description": "Concrete items verified in this deliverable. Enumeration, not summary.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 3
+      }
+    },
+    "scope_cuts": {
+      "description": "Items explicitly left OUT of this deliverable, each with a reason. Empty array allowed but suspicious — forces the agent to look hard.",
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["item", "reason"],
+        "properties": {
+          "item": {
+            "type": "string",
+            "minLength": 3
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 10
+          }
+        }
+      }
+    },
+    "self_review_findings": {
+      "description": "Adversarial findings from Rule 4 self-review. At least 3 items, each substantive (>=20 characters). 'No findings' is itself evidence of insufficient review.",
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "string",
+        "minLength": 20
+      }
+    },
+    "external_review_status": {
+      "description": "External (R2/R3) review state for this deliverable. 'pending' = not yet reviewed; 'cleared' = review passed; 'blocked' = review found P0/P1 and the deliverable is not shippable until fixed. Full audit-log cross-reference of this field against real review-record entries is Phase 8.1 scope.",
+      "type": "string",
+      "enum": ["pending", "cleared", "blocked"]
+    }
+  }
+}

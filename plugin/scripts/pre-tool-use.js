@@ -15,6 +15,10 @@ const PROTECTED_CONFIG_RULES = [
   'skills/vibe/assets/schemas/*.schema.json',
   'skills/vibe/assets/fault-taxonomy.yaml',
   'skills/vibe/assets/judge-rubric.yaml',
+  // Wave 3 addition: delivery-attestation.schema.json is the authoritative
+  // contract for the Phase 8 attestation block. Same immutability as the
+  // existing 12 scientific-claim schemas.
+  'skills/vibe/assets/schemas/delivery-attestation.schema.json',
 ];
 
 let openDB, initDB, closeDB, getLatestPromptRole, applyMigrations, logGovernanceEvent, checkPermission, parseStructuredBlocks, previewClaimEvents, validateClaimLifecycleTransitions;

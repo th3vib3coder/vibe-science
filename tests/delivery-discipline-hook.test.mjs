@@ -164,13 +164,14 @@ describe('hasExemptionComment', () => {
     });
 
     it('does not detect exemption when buried deep in the file', () => {
-        const filler = 'x'.repeat(1600);
+        const filler = 'x'.repeat(5100);
         const text = `# Doc\n${filler}\n<!-- delivery-discipline: exempt -->\n`;
         assert.equal(hasExemptionComment(text), false);
     });
 
-    it('detects exemption after a long YAML frontmatter', () => {
-        const frontmatter = `---\nname: example\ndescription: ${'a'.repeat(400)}\n---\n`;
+    it('detects exemption after a long YAML frontmatter (up to ~5000 chars)', () => {
+        // Oversized frontmatter: root SKILL.md's changelog field alone is ~1800 chars.
+        const frontmatter = `---\nname: example\ndescription: ${'a'.repeat(2000)}\n---\n`;
         const text = `${frontmatter}\n<!-- delivery-discipline: exempt -->\n\n# Body`;
         assert.equal(hasExemptionComment(text), true);
     });
