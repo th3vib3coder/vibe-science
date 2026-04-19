@@ -41,6 +41,9 @@ Detailed instructions for each agent role and enforcement protocols are in `.cla
 - **`.claude/rules/roles.md`** — Behavioral constraints for all 6 permission roles (researcher, R2, serendipity, experimenter, lead, judge). Note: these are the 6 access-control roles used by the Permission Engine. The 7 agent types defined in `skills/vibe/AGENTS.md` (researcher, r2-deep, r2-inline, observer, explorer, r3-judge, instinct-scanner) are a separate classification for model selection and disposition.
 - **`.claude/rules/enforcement.md`** — v6.0 structural enforcement: SFI, BFP, Schema-Validated Gates, Circuit Breaker, Agent Permission Model, Salvagente Rule
 
+**Delivery discipline skill (Phase 8):**
+- **`.claude/skills/delivery-discipline/SKILL.md`** — Mandatory before writing any deliverable that declares closure (phase closeouts, status reports, skill files, wave specs, README/CHANGELOG entries declaring completion). Forces 4 steps: surface mapping, explicit scope cuts, completeness proof by enumeration, adversarial self-review. The `## Delivery Attestation` section with fenced `json` block is required in every closure-declaring deliverable. A PreToolUse hook (Wave 2) blocks writes lacking the attestation; a CI validator (Wave 3) catches bypasses; the governance event log records violations and exemptions.
+
 ## FILE STRUCTURE
 
 Runtime state lives in `.vibe-science/` at the project root:
