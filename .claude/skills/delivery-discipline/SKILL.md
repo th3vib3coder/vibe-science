@@ -129,7 +129,7 @@ fenced json block under that heading and validates it against
 | "Self-review feels self-indulgent" | It's the cheap version of R2. Skip it and you pay in R2 corrections later. |
 | "The block only triggers on 'CLOSED' — I'll say 'finalized' instead" | The regex covers synonyms: CLOSED, DONE, PASS, PASSED, SHIPPED, COMPLETE, COMPLETED, FINALIZED, READY. Evasion gets logged. |
 | "I verified with a subagent, that's enough" | Subagents sample too. Spot-check critical items with Read tool before trusting. |
-| "External review status: cleared" (without actually running review) | Lying about external_review_status is traceable — the governance log keeps a record. A false `cleared` is caught by the CI validator cross-referencing audit events. |
+| "External review status: cleared" (without actually running review) | Lying about `external_review_status` is still traceable — when R2 / R3 runs later, it produces `external-review-record` entries that do NOT match, and the inconsistency surfaces at the next audit. The Wave 3 CI validator checks schema shape (enum + required fields); full governance-event cross-referencing is Phase 8.1 scope, not Wave 3. Don't rely on "nobody will notice" — the record trail is public. |
 | "I'll add the attestation at the end, after writing everything" | Writing the attestation FORCES you to enumerate. Skipping that step defeats the whole point. Write it as you go, not as an afterthought. |
 
 ## Red Flags — STOP and apply the skill

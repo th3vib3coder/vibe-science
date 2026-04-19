@@ -159,14 +159,17 @@ describe('delivery-discipline skill file', () => {
         );
     });
 
-    it('references the enforcement layer (hook / validator / governance)', () => {
+    it('references all three legs of the enforcement layer (hook + validator + governance)', () => {
         const source = readSkill();
-        // Soft link to the rest of Phase 8 so future maintainers understand
-        // the skill is one leg of a three-legged enforcement pattern.
-        assert.match(
-            source,
-            /hook|validator|governance/iu,
-            'skill should reference the hook/validator/governance-event enforcement layer',
-        );
+        // The skill is ONE leg of a three-legged enforcement pattern:
+        // (1) skill documents the contract, (2) hook blocks violations at
+        // write time, (3) validator catches bypasses at CI time, (4)
+        // governance_events records violations and exemptions for audit.
+        // The test was previously too lax — regex /hook|validator|governance/
+        // would pass if only one of the three appeared. Assert each
+        // independently so the three-legged model is actually documented.
+        assert.match(source, /\bhook\b/iu, 'skill must reference the PreToolUse hook');
+        assert.match(source, /\bvalidator\b/iu, 'skill must reference the CI validator');
+        assert.match(source, /\bgovernance\b/iu, 'skill must reference governance_events logging');
     });
 });
