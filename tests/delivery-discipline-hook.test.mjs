@@ -334,6 +334,122 @@ describe('evaluateDeliveryDiscipline', () => {
 });
 
 // ---------------------------------------------------------------------------
+// B2. Strict mode + DB availability (Wave 0 contract)
+// ---------------------------------------------------------------------------
+
+describe('evaluateDeliveryDiscipline — strict mode + DB availability', () => {
+    it('DENIES when strict + dbAvailable=false + closure claim with exemption', () => {
+        const content = `<!-- delivery-discipline: exempt -->\n\n# Phase\n\n**Phase 99 is CLOSED.**`;
+        const event = buildWriteEvent('phase99-closeout.md', content);
+        const result = evaluateDeliveryDiscipline(event, { strictMode: true, dbAvailable: false });
+        assert.equal(result.decision, 'deny');
+        assert.equal(result.reason, 'strict-mode-audit-unavailable');
+    });
+
+    it('DENIES when strict + dbAvailable=false + closure claim with valid attestation', () => {
+        const content = closeoutContent('**Phase 99 is CLOSED.**');
+        const event = buildWriteEvent('phase99-closeout.md', content);
+        const result = evaluateDeliveryDiscipline(event, { strictMode: true, dbAvailable: false });
+        assert.equal(result.decision, 'deny');
+        assert.equal(result.reason, 'strict-mode-audit-unavailable');
+    });
+
+    it('ALLOWS when strict + dbAvailable=true + valid attestation (normal enforcement)', () => {
+        const content = closeoutContent('**Phase 99 is CLOSED.**');
+        const event = buildWriteEvent('phase99-closeout.md', content);
+        const result = evaluateDeliveryDiscipline(event, { strictMode: true, dbAvailable: true });
+        assert.equal(result.decision, 'allow');
+        assert.equal(result.reason, 'closure-with-valid-attestation');
+    });
+
+    it('ALLOWS when strict + dbAvailable=false + NO closure claim (fast-path not triggered)', () => {
+        const event = buildWriteEvent('README.md', '# Project\n\nPlain prose no verdicts.');
+        const result = evaluateDeliveryDiscipline(event, { strictMode: true, dbAvailable: false });
+        assert.equal(result.decision, 'allow');
+        assert.equal(result.reason, 'no-closure-claim');
+    });
+
+    it('ALLOWS when NOT strict + dbAvailable=false + exemption (normal behavior)', () => {
+        const content = `<!-- delivery-discipline: exempt -->\n\n# Phase\n\n**Phase 99 is CLOSED.**`;
+        const event = buildWriteEvent('phase99-closeout.md', content);
+        const result = evaluateDeliveryDiscipline(event, { strictMode: false, dbAvailable: false });
+        assert.equal(result.decision, 'allow');
+        assert.equal(result.reason, 'exemption-comment');
+    });
+});
+
+// ---------------------------------------------------------------------------
+// B3. Fence-tag tightness (P2a: json tag required)
+// ---------------------------------------------------------------------------
+
+describe('evaluateDeliveryDiscipline — fence tag', () => {
+    it('DENIES an attestation with a non-json fence (bare ``` with no language tag)', () => {
+        const badFence = VALID_ATTESTATION.replace('```json', '```');
+        const content = `# Phase\n\n**Phase 99 is CLOSED.**\n\n${badFence}\n`;
+        const event = buildWriteEvent('phase99-closeout.md', content);
+        const result = evaluateDeliveryDiscipline(event);
+        assert.equal(result.decision, 'deny', 'attestation without explicit json fence tag must be rejected');
+    });
+
+    it('DENIES an attestation with a foreign fence tag (e.g. yaml)', () => {
+        const badFence = VALID_ATTESTATION.replace('```json', '```yaml');
+        const content = `# Phase\n\n**Phase 99 is CLOSED.**\n\n${badFence}\n`;
+        const event = buildWriteEvent('phase99-closeout.md', content);
+        const result = evaluateDeliveryDiscipline(event);
+        assert.equal(result.decision, 'deny', 'attestation must use ```json fence; yaml tag rejected');
+    });
+});
+
+// ---------------------------------------------------------------------------
+// B4. Dual-config regression (P2c: hook MUST be registered in both configs)
+// ---------------------------------------------------------------------------
+
+describe('pre-delivery-discipline — dual-config registration', () => {
+    it('is registered in .claude/settings.json PreToolUse[1]', async () => {
+        const { readFile } = await import('node:fs/promises');
+        const raw = await readFile(path.join(ROOT, '.claude', 'settings.json'), 'utf8');
+        const settings = JSON.parse(raw);
+        const preToolUse = settings?.hooks?.PreToolUse;
+        assert.ok(Array.isArray(preToolUse), 'PreToolUse must be an array');
+        const hasHook = preToolUse.some((entry) =>
+            (entry.hooks || []).some((h) => typeof h.command === 'string' && h.command.includes('pre-delivery-discipline.js')),
+        );
+        assert.ok(hasHook, 'settings.json must register pre-delivery-discipline.js in PreToolUse');
+    });
+
+    it('is registered in hooks/hooks.json PreToolUse with ${CLAUDE_PLUGIN_ROOT}', async () => {
+        const { readFile } = await import('node:fs/promises');
+        const raw = await readFile(path.join(ROOT, 'hooks', 'hooks.json'), 'utf8');
+        const settings = JSON.parse(raw);
+        const preToolUse = settings?.hooks?.PreToolUse;
+        assert.ok(Array.isArray(preToolUse), 'hooks.json PreToolUse must be an array');
+        const hookEntry = preToolUse
+            .flatMap((entry) => entry.hooks || [])
+            .find((h) => typeof h.command === 'string' && h.command.includes('pre-delivery-discipline.js'));
+        assert.ok(hookEntry, 'hooks.json must register pre-delivery-discipline.js');
+        assert.match(hookEntry.command, /\$\{CLAUDE_PLUGIN_ROOT\}/u, 'plugin-mode must use ${CLAUDE_PLUGIN_ROOT} substitution');
+    });
+
+    it('both configs use matcher Write|Edit|MultiEdit (no Bash) for the new hook', async () => {
+        const { readFile } = await import('node:fs/promises');
+        for (const configPath of [['.claude', 'settings.json'], ['hooks', 'hooks.json']]) {
+            const raw = await readFile(path.join(ROOT, ...configPath), 'utf8');
+            const settings = JSON.parse(raw);
+            const entries = settings?.hooks?.PreToolUse || [];
+            const ourEntry = entries.find((entry) =>
+                (entry.hooks || []).some((h) => typeof h.command === 'string' && h.command.includes('pre-delivery-discipline.js')),
+            );
+            assert.ok(ourEntry, `${configPath.join('/')} must contain the delivery-discipline hook`);
+            assert.equal(
+                ourEntry.matcher,
+                'Write|Edit|MultiEdit',
+                `${configPath.join('/')} matcher must be Write|Edit|MultiEdit (no Bash)`,
+            );
+        }
+    });
+});
+
+// ---------------------------------------------------------------------------
 // C. Process-boundary test — spawn the hook script with real stdin/stdout
 // ---------------------------------------------------------------------------
 

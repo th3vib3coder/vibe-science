@@ -127,7 +127,7 @@ fenced json block under that heading and validates it against
 | Writing a skill file | Include attestation even if short skill — the skill itself is a deliverable |
 | Updating CHANGELOG | Attestation required when declaring a release / version |
 | Updating README status section | Attestation required when declaring pass/fail or coverage |
-| Exempting a file legitimately | Add `<!-- delivery-discipline: exempt -->` comment near the top. Logged as audit event; abuse tracked. |
+| Exempting a file legitimately | Add `<!-- delivery-discipline: exempt -->` comment near the top. Wave 4 will log this as a `delivery_discipline_exemption_used` governance event; frequent use becomes an audit target at that point. |
 
 ## Rationalization Table — DO NOT fall for these
 
@@ -136,7 +136,7 @@ fenced json block under that heading and validates it against
 | "This is just a small doc, discipline is overkill" | Small docs are where premature closure starts. The attestation takes 60 seconds. |
 | "I don't have time for scope cuts" | The cut list takes 30 seconds. Skipping it costs 30 minutes when user pushes back. |
 | "Self-review feels self-indulgent" | It's the cheap version of R2. Skip it and you pay in R2 corrections later. |
-| "The block only triggers on 'CLOSED' — I'll say 'finalized' instead" | The regex covers synonyms: CLOSED, DONE, PASS, PASSED, SHIPPED, COMPLETE, COMPLETED, FINALIZED, READY. Evasion gets logged. |
+| "The block only triggers on 'CLOSED' — I'll say 'finalized' instead" | The regex covers synonyms: CLOSED, DONE, PASS, PASSED, SHIPPED, COMPLETE, COMPLETED, FINALIZED, READY. Wave 4 will log attempted evasions as governance events; until then, the block itself is the sanction. |
 | "I verified with a subagent, that's enough" | Subagents sample too. Spot-check critical items with Read tool before trusting. |
 | "External review status: cleared" (without actually running review) | Lying about `external_review_status` is still traceable — when R2 / R3 runs later, it produces `external-review-record` entries that do NOT match, and the inconsistency surfaces at the next audit. The Wave 3 CI validator checks schema shape (enum + required fields); full governance-event cross-referencing is Phase 8.1 scope, not Wave 3. Don't rely on "nobody will notice" — the record trail is public. |
 | "I'll add the attestation at the end, after writing everything" | Writing the attestation FORCES you to enumerate. Skipping that step defeats the whole point. Write it as you go, not as an afterthought. |
@@ -158,7 +158,7 @@ attestation block, then continue.**
 - **Skipping scope_cuts because "nothing was cut"**: if you genuinely cut nothing, you probably didn't look hard enough. Use the self-review step to find a scope cut.
 - **Putting attestation in a comment or footer**: it must be in a `## Delivery Attestation` section with a fenced json block. Other placements won't be parsed.
 - **Writing attestation as YAML or markdown list**: must be fenced `json` block. Other formats fail schema validation.
-- **Adding exemption comment to bypass**: exemptions ARE allowed and don't block, but they're logged as `delivery_discipline_exemption_used` events. Frequent use signals audit target.
+- **Adding exemption comment to bypass**: exemptions ARE allowed and don't block. Wave 4 will log each use as a `delivery_discipline_exemption_used` governance event; frequent use becomes an audit target once that logging is live. Strict mode (`VIBE_SCIENCE_STRICT=1`) additionally refuses to allow any bypass path (including exemption) when the governance DB is not importable, so the exemption cannot be abused when the audit trail is broken.
 
 ## Why This Exists
 
@@ -171,10 +171,13 @@ The pattern was observed repeatedly: Phase 6.1 "closed" but re-retracted
 when fresh-eyes review found P1s. Phase 7 Wave 1 shipped at 60%. The
 initial Phase 8 skill was missing 40% of the surface.
 
-This skill + the PreToolUse hook + the CI validator + the governance
-event log **force the same discipline on delivery that the existing
-hooks force on scientific claims**. A hook that blocks the write, not a
-review that catches the failure after the fact.
+This skill (Wave 1) + the PreToolUse hook (Wave 2) + the CI validator
+(Wave 3) + the governance event log (Wave 4) **together force the same
+discipline on delivery that the existing hooks force on scientific
+claims**. Wave 2 enforcement is active today: a hook that blocks the
+write, not a review that catches the failure after the fact. Waves 3-4
+add CI-time scanning and audit-trail logging so bypass attempts become
+tracked events rather than silent drift.
 
 ## When in Doubt
 

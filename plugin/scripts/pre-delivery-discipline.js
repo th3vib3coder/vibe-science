@@ -22,6 +22,12 @@
 //   - Full JSON-Schema validation via Ajv                 → Wave 3 (WP-8-3)
 //   - CI validator scanning tracked markdown              → Wave 3 (WP-8-3)
 //   - Audit-log cross-reference for external_review_status → Phase 8.1
+//
+// Strict mode (VIBE_SCIENCE_STRICT=1) denies any discipline-relevant
+// write when the governance DB is unavailable for Wave 4 logging. Even
+// though Wave 2 does not yet log, strict mode refuses to allow the
+// bypass paths (exemption / attestation) because the future audit
+// trail would be broken. This matches the Wave 0 contract.
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -106,9 +112,12 @@ export function hasValidAttestation(text) {
   if (!headingMatch) return false;
 
   const afterHeading = text.slice(headingMatch.index + headingMatch[0].length);
-  // Accept 3-tick or 4-tick fences. 4-tick outer fences let the skill
-  // display a 3-tick example literally, but real attestations use 3 ticks.
-  const fenceMatch = afterHeading.match(/`{3,4}(?:json)?\s*\n([\s\S]*?)\n`{3,4}/u);
+  // The Wave 0 contract requires the attestation to live in a fenced
+  // `json` block — the tag is mandatory so the CI validator in Wave 3
+  // can key off the same marker. Accept 3-tick or 4-tick outer fences
+  // (a skill file demonstrating the pattern wraps its example in 4
+  // ticks so the inner 3-tick fence renders literally).
+  const fenceMatch = afterHeading.match(/`{3,4}json\s*\n([\s\S]*?)\n`{3,4}/u);
   if (!fenceMatch) return false;
 
   let parsed;
@@ -245,14 +254,32 @@ export function evaluateDeliveryDiscipline(event, options = {}) {
     return { decision: 'allow', reason: 'empty-content' };
   }
 
-  // Fast exit 3: explicit exemption.
-  if (hasExemptionComment(content)) {
-    return { decision: 'allow', reason: 'exemption-comment' };
-  }
-
-  // Fast exit 4: no declared closure claim → nothing to enforce.
+  // Fast exit 3: no declared closure claim → nothing to enforce.
+  // (Checked before exemption so strict-mode only fires when the
+  // discipline would actually apply.)
   if (!hasDeclaredClosureClaim(content)) {
     return { decision: 'allow', reason: 'no-closure-claim' };
+  }
+
+  // Strict-mode gate: if VIBE_SCIENCE_STRICT=1 AND the governance DB
+  // is unavailable for future Wave 4 logging, refuse to exercise any
+  // bypass path (exemption or attestation) because the audit trail
+  // would be broken. The Wave 0 contract explicitly names this case.
+  const strictMode = options.strictMode === true;
+  const dbAvailable = options.dbAvailable === undefined ? true : options.dbAvailable === true;
+  if (strictMode && !dbAvailable) {
+    return {
+      decision: 'deny',
+      reason: 'strict-mode-audit-unavailable',
+      targetPath: filePath,
+      matched: closureExcerpt(content),
+    };
+  }
+
+  // Fast exit 4: explicit exemption (after strict-mode gate so strict
+  // mode can still refuse exemptions when no audit trail is available).
+  if (hasExemptionComment(content)) {
+    return { decision: 'allow', reason: 'exemption-comment' };
   }
 
   // At this point: the file is a deliverable that declares closure.
@@ -289,14 +316,28 @@ function writeAllowAndExit() {
   process.exit(0);
 }
 
-function writeDenyAndExit(targetPath, matched) {
-  const reason =
-    `DELIVERY DISCIPLINE BLOCK: ${targetPath} contains a closure claim ("${matched}") ` +
-    `but no valid "## Delivery Attestation" block with fenced JSON ` +
-    `(required fields: covered, scope_cuts, self_review_findings, external_review_status; ` +
-    `self_review_findings must have at least 3 entries of ≥20 characters each). ` +
-    `Add the attestation section before writing. ` +
-    `See .claude/skills/delivery-discipline/SKILL.md.`;
+function writeDenyAndExit(targetPath, matched, reasonCode) {
+  let reason;
+  if (reasonCode === 'strict-mode-audit-unavailable') {
+    reason =
+      `DELIVERY DISCIPLINE BLOCK (strict mode): ${targetPath} contains a closure claim ("${matched}") ` +
+      `but VIBE_SCIENCE_STRICT=1 is set and the governance DB (plugin/lib/db.js) is not importable. ` +
+      `Strict mode refuses to allow exemption or attestation bypass paths because the Wave 4 audit ` +
+      `trail cannot be recorded. Fix the DB setup or unset VIBE_SCIENCE_STRICT before retrying.`;
+  } else if (reasonCode === 'strict-mode-internal-error') {
+    reason =
+      `DELIVERY DISCIPLINE BLOCK (strict mode): internal error while evaluating ${targetPath}. ` +
+      `Strict mode fails closed because the discipline cannot be reliably evaluated. ` +
+      `Check hook logs or run with VIBE_SCIENCE_STRICT unset to bypass.`;
+  } else {
+    reason =
+      `DELIVERY DISCIPLINE BLOCK: ${targetPath} contains a closure claim ("${matched}") ` +
+      `but no valid "## Delivery Attestation" block with fenced JSON ` +
+      `(required fields: covered, scope_cuts, self_review_findings, external_review_status; ` +
+      `self_review_findings must have at least 3 entries of ≥20 characters each; fence must be \`\`\`json). ` +
+      `Add the attestation section before writing. ` +
+      `See .claude/skills/delivery-discipline/SKILL.md.`;
+  }
   const output = {
     hookSpecificOutput: {
       permissionDecision: 'deny',
@@ -315,13 +356,26 @@ const isDirectRun =
   typeof process.argv[1] === 'string' &&
   import.meta.url === pathToFileURL(process.argv[1]).href;
 
+async function probeDbAvailability() {
+  // Best-effort probe: in Wave 4 this module will be used to log
+  // violations / exemptions to governance_events. In Wave 2 we only
+  // need to know whether the future logging channel would work so
+  // strict mode can honor its contract.
+  try {
+    await import('../lib/db.js');
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 if (isDirectRun) {
   let inputData = '';
   process.stdin.setEncoding('utf8');
   process.stdin.on('data', (chunk) => {
     inputData += chunk;
   });
-  process.stdin.on('end', () => {
+  process.stdin.on('end', async () => {
     let event;
     try {
       event = JSON.parse(inputData);
@@ -330,16 +384,41 @@ if (isDirectRun) {
       writeAllowAndExit();
       return;
     }
+    const strictMode = process.env.VIBE_SCIENCE_STRICT === '1';
+    let dbAvailable = true;
+    if (strictMode) {
+      // Only pay the import cost when strict mode is on; normal mode
+      // never consults the DB availability, so we skip the probe.
+      try {
+        dbAvailable = await probeDbAvailability();
+      } catch {
+        dbAvailable = false;
+      }
+    }
     try {
-      const result = evaluateDeliveryDiscipline(event);
+      const result = evaluateDeliveryDiscipline(event, { strictMode, dbAvailable });
       if (result.decision === 'deny') {
-        writeDenyAndExit(result.targetPath || '<unknown>', result.matched || '<closure>');
+        writeDenyAndExit(
+          result.targetPath || '<unknown>',
+          result.matched || '<closure>',
+          result.reason,
+        );
       } else {
         writeAllowAndExit();
       }
     } catch {
-      // Internal error: graceful allow. Wave 4 will log to governance_events.
-      writeAllowAndExit();
+      // Internal error: graceful allow in non-strict mode. In strict
+      // mode we prefer to fail closed because an internal error means
+      // the discipline cannot be reliably evaluated.
+      if (strictMode) {
+        writeDenyAndExit(
+          event?.tool_input?.file_path || '<unknown>',
+          '<internal-error>',
+          'strict-mode-internal-error',
+        );
+      } else {
+        writeAllowAndExit();
+      }
     }
   });
 }
