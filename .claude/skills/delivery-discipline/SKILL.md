@@ -3,6 +3,15 @@ name: delivery-discipline
 description: Use when preparing or writing any committable deliverable (phase closeout, status report, skill file, wave spec, README section, summary document, CHANGELOG entry, or any markdown file declaring completion or pass/fail status). Applies before the write happens, not after. Without this discipline, agents ship 60% deliverables and declare closure prematurely.
 ---
 
+<!-- delivery-discipline: exempt -->
+<!--
+  This file DEFINES the delivery-discipline. It is documentation about the
+  discipline, not a closeout declaration subject to it. The exemption is
+  legitimate and is logged as `delivery_discipline_exemption_used` by Wave 4
+  so exemption usage remains auditable. Do not remove this comment unless
+  you are replacing SKILL.md with a proper attestation block.
+-->
+
 # Delivery Discipline
 
 ## Overview

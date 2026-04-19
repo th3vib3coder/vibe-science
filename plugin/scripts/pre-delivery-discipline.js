@@ -1,0 +1,345 @@
+#!/usr/bin/env node
+// PreToolUse hook — Phase 8 Wave 2 delivery-discipline write barrier.
+//
+// Blocks Write/Edit/MultiEdit BEFORE they mutate a commit-relevant
+// deliverable when the post-edit content declares closure
+// (CLOSED/DONE/PASS/SHIPPED/COMPLETE/FINALIZED/READY) in declarative
+// context but does NOT contain a valid `## Delivery Attestation` block
+// with fenced json that has the 4 required fields.
+//
+// Matcher: "Write|Edit|MultiEdit" (regex) — narrower than the existing
+// pre-tool-use.js matcher (which covers Bash too). This hook is
+// independent and runs in addition to pre-tool-use.js. Either blocking
+// denies the write.
+//
+// Exit 0 = allow, Exit 2 = deny, Exit 1 = internal error (graceful: allow).
+//
+// Input (stdin JSON): { tool_name, tool_input, session_id, cwd, hook_event_name }
+// Output (stdout JSON): { hookSpecificOutput: { permissionDecision, permissionDecisionReason? } }
+//
+// Scope cuts deferred to later waves:
+//   - Governance event logging of violations/exemptions  → Wave 4 (WP-8-4)
+//   - Full JSON-Schema validation via Ajv                 → Wave 3 (WP-8-3)
+//   - CI validator scanning tracked markdown              → Wave 3 (WP-8-3)
+//   - Audit-log cross-reference for external_review_status → Phase 8.1
+
+import fs from 'node:fs';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
+
+// ---------------------------------------------------------------------------
+// Pure helpers (exported for testing)
+// ---------------------------------------------------------------------------
+
+/**
+ * Deliverable path matcher. The hook only intercepts markdown files whose
+ * basename looks like a committable deliverable: closeout, status report,
+ * summary, verdict, phase N doc, wave N doc, skill file, README, CHANGELOG.
+ */
+export function matchesDeliverablePath(filePath) {
+  if (typeof filePath !== 'string' || !filePath.toLowerCase().endsWith('.md')) {
+    return false;
+  }
+  const basename = path.basename(filePath).toLowerCase();
+  return /(closeout|status|summary|verdict|phase[\d.-]+|wave[\d-]+|skill|readme|changelog)/u.test(basename);
+}
+
+/**
+ * Closure-claim detection in declarative context. Returns true only when
+ * a closure word appears in a position that signals "declared completion",
+ * not casual prose. Five patterns covered:
+ *   1. `Status: CLOSED` / `Verdict: PASS` / `Phase 8: CLOSED`
+ *   2. Line starting with closure word (`CLOSED.` / `**PASS**`)
+ *   3. Bold wrapped closure (`**Result: PASS**`)
+ *   4. Markdown table cell (`| PASS |` / `| CLOSED |`)
+ *   5. "Phase X is CLOSED" / "Wave Y is DONE" sentence form
+ */
+export function hasDeclaredClosureClaim(text) {
+  if (typeof text !== 'string' || text.length === 0) return false;
+
+  const CLOSURE = '(?:CLOSED|DONE|PASS(?:ED)?|SHIPPED|COMPLETED?|FINALIZED|READY)';
+
+  // Pattern 1: Status/Verdict/Result/Phase/Wave : CLOSURE
+  const p1 = new RegExp(
+    `\\b(?:status|verdict|result|outcome|phase\\s*[\\d.]*|wave\\s*\\d+)\\s*[:=]\\s*\\*{0,2}\\s*${CLOSURE}\\b`,
+    'iu',
+  );
+  if (p1.test(text)) return true;
+
+  // Pattern 2: Line starting with CLOSURE (bold/emph stripped)
+  const p2 = new RegExp(`^[ \\t>*_]*\\**\\s*${CLOSURE}\\s*[\\s.!:*]`, 'imu');
+  if (p2.test(text)) return true;
+
+  // Pattern 3: Bold wrapped with CLOSURE inside
+  const p3 = new RegExp(`\\*\\*[^*\\n]{0,80}\\b${CLOSURE}\\b[^*\\n]{0,80}\\*\\*`, 'iu');
+  if (p3.test(text)) return true;
+
+  // Pattern 4: Table cell
+  const p4 = new RegExp(`\\|\\s*${CLOSURE}\\s*\\|`, 'iu');
+  if (p4.test(text)) return true;
+
+  // Pattern 5: "Phase X is CLOSURE" sentence form
+  const p5 = new RegExp(
+    `\\b(?:phase|wave|stage|gate|sprint|release)\\s+[a-z0-9.\\-]+\\s+(?:is|are|=)\\s+\\*{0,2}${CLOSURE}\\b`,
+    'iu',
+  );
+  if (p5.test(text)) return true;
+
+  return false;
+}
+
+/**
+ * Attestation block detection + structural validation.
+ * Returns true when the text contains:
+ *   - A heading `##` or `###` followed by `Delivery Attestation` (case-insensitive)
+ *   - A fenced ```json block (3 or 4 backticks) after the heading
+ *   - Parsed JSON with the 4 required fields and basic shape checks
+ *
+ * Schema-shape enforcement (minLength, minItems) is delegated here to
+ * catch trivially-bypassed attestations. Full Ajv validation lives in
+ * Wave 3 CI validator.
+ */
+export function hasValidAttestation(text) {
+  if (typeof text !== 'string' || text.length === 0) return false;
+
+  const headingMatch = text.match(/^#{2,3}\s+delivery\s+attestation\s*$/imu);
+  if (!headingMatch) return false;
+
+  const afterHeading = text.slice(headingMatch.index + headingMatch[0].length);
+  // Accept 3-tick or 4-tick fences. 4-tick outer fences let the skill
+  // display a 3-tick example literally, but real attestations use 3 ticks.
+  const fenceMatch = afterHeading.match(/`{3,4}(?:json)?\s*\n([\s\S]*?)\n`{3,4}/u);
+  if (!fenceMatch) return false;
+
+  let parsed;
+  try {
+    parsed = JSON.parse(fenceMatch[1]);
+  } catch {
+    return false;
+  }
+  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) return false;
+
+  const required = ['covered', 'scope_cuts', 'self_review_findings', 'external_review_status'];
+  for (const field of required) {
+    if (!Object.prototype.hasOwnProperty.call(parsed, field)) return false;
+  }
+  if (!Array.isArray(parsed.covered) || parsed.covered.length < 1) return false;
+  if (!parsed.covered.every((x) => typeof x === 'string' && x.length >= 3)) return false;
+
+  if (!Array.isArray(parsed.scope_cuts)) return false;
+
+  if (!Array.isArray(parsed.self_review_findings)) return false;
+  if (parsed.self_review_findings.length < 3) return false;
+  if (!parsed.self_review_findings.every((x) => typeof x === 'string' && x.length >= 20)) return false;
+
+  if (!['pending', 'cleared', 'blocked'].includes(parsed.external_review_status)) return false;
+
+  return true;
+}
+
+/**
+ * Exemption comment detection. The agent can opt out of the block by
+ * placing `<!-- delivery-discipline: exempt -->` near the top of the
+ * file (first 500 chars). Wave 4 will log exemption usage as a
+ * `delivery_discipline_exemption_used` governance event so abuse is
+ * auditable. In Wave 2 we only check; logging is deferred.
+ */
+export function hasExemptionComment(text) {
+  if (typeof text !== 'string') return false;
+  // Threshold 1500 chars accommodates YAML frontmatter (commonly 400-1000
+  // chars) + an introductory paragraph, while still forcing the exemption
+  // declaration to live "near the top" of the file.
+  const head = text.slice(0, 1500);
+  return /<!--\s*delivery-discipline:\s*exempt\s*-->/iu.test(head);
+}
+
+/**
+ * Compute the post-edit full content the tool would land on disk.
+ *   - Write: tool_input.content is the full new file.
+ *   - Edit / MultiEdit: read current file from disk and apply the
+ *     replace(s) in-memory. If the file does not exist, treat as empty.
+ *
+ * Reading the disk file is necessary so that legitimate edits to files
+ * that ALREADY have an attestation block pass (the edit only sees the
+ * new_string, not the full file state).
+ */
+export function getPostEditContent(toolName, toolInput, { readFileImpl = fs.readFileSync } = {}) {
+  if (!toolInput || typeof toolInput !== 'object') return '';
+
+  if (toolName === 'Write') {
+    return typeof toolInput.content === 'string' ? toolInput.content : '';
+  }
+
+  const filePath = toolInput.file_path;
+  let currentContent = '';
+  if (typeof filePath === 'string' && filePath.length > 0) {
+    try {
+      currentContent = readFileImpl(filePath, 'utf8');
+    } catch {
+      currentContent = '';
+    }
+  }
+
+  if (toolName === 'Edit') {
+    const oldStr = typeof toolInput.old_string === 'string' ? toolInput.old_string : '';
+    const newStr = typeof toolInput.new_string === 'string' ? toolInput.new_string : '';
+    if (oldStr === '' && currentContent === '') {
+      // Edit creating a new file — treat new_string as full content.
+      return newStr;
+    }
+    if (toolInput.replace_all === true) {
+      return currentContent.split(oldStr).join(newStr);
+    }
+    return currentContent.replace(oldStr, newStr);
+  }
+
+  if (toolName === 'MultiEdit') {
+    const edits = Array.isArray(toolInput.edits) ? toolInput.edits : [];
+    let result = currentContent;
+    for (const edit of edits) {
+      if (!edit || typeof edit !== 'object') continue;
+      const oldStr = typeof edit.old_string === 'string' ? edit.old_string : '';
+      const newStr = typeof edit.new_string === 'string' ? edit.new_string : '';
+      if (edit.replace_all === true) {
+        result = result.split(oldStr).join(newStr);
+      } else {
+        result = result.replace(oldStr, newStr);
+      }
+    }
+    return result;
+  }
+
+  return '';
+}
+
+/**
+ * Main decision function. Pure — returns a decision object without
+ * touching stdin/stdout/process. Tested directly; the wrapper below
+ * marshals stdin/stdout around it.
+ *
+ * Returns:
+ *   { decision: 'allow', reason?: string, matched?: string, targetPath?: string }
+ *   { decision: 'deny', reason: string, matched: string, targetPath: string }
+ */
+export function evaluateDeliveryDiscipline(event, options = {}) {
+  if (!event || typeof event !== 'object') {
+    return { decision: 'allow', reason: 'malformed-event' };
+  }
+  const toolName = event.tool_name || '';
+  const toolInput = event.tool_input || {};
+
+  // Fast exit 1: only Write/Edit/MultiEdit are in scope.
+  if (!['Write', 'Edit', 'MultiEdit'].includes(toolName)) {
+    return { decision: 'allow', reason: 'tool-out-of-scope' };
+  }
+
+  // Fast exit 2: only markdown deliverable-looking paths are in scope.
+  const filePath = toolInput.file_path || '';
+  if (!matchesDeliverablePath(filePath)) {
+    return { decision: 'allow', reason: 'path-not-deliverable' };
+  }
+
+  // Compute post-edit content (the state the file would land in).
+  const content = getPostEditContent(toolName, toolInput, options);
+  if (content === '') {
+    return { decision: 'allow', reason: 'empty-content' };
+  }
+
+  // Fast exit 3: explicit exemption.
+  if (hasExemptionComment(content)) {
+    return { decision: 'allow', reason: 'exemption-comment' };
+  }
+
+  // Fast exit 4: no declared closure claim → nothing to enforce.
+  if (!hasDeclaredClosureClaim(content)) {
+    return { decision: 'allow', reason: 'no-closure-claim' };
+  }
+
+  // At this point: the file is a deliverable that declares closure.
+  // It MUST contain a valid attestation block.
+  if (hasValidAttestation(content)) {
+    return { decision: 'allow', reason: 'closure-with-valid-attestation' };
+  }
+
+  return {
+    decision: 'deny',
+    reason: 'missing-or-invalid-attestation',
+    matched: closureExcerpt(content),
+    targetPath: filePath,
+  };
+}
+
+function closureExcerpt(text) {
+  const CLOSURE = /\b(CLOSED|DONE|PASS(?:ED)?|SHIPPED|COMPLETED?|FINALIZED|READY)\b/iu;
+  const m = text.match(CLOSURE);
+  if (!m) return '<closure>';
+  const idx = m.index;
+  const start = Math.max(0, idx - 40);
+  const end = Math.min(text.length, idx + m[0].length + 40);
+  return text.slice(start, end).replace(/\s+/g, ' ').trim();
+}
+
+// ---------------------------------------------------------------------------
+// Output helpers (process-side; not exported; thin wrappers)
+// ---------------------------------------------------------------------------
+
+function writeAllowAndExit() {
+  const output = { hookSpecificOutput: { permissionDecision: 'allow' } };
+  process.stdout.write(JSON.stringify(output));
+  process.exit(0);
+}
+
+function writeDenyAndExit(targetPath, matched) {
+  const reason =
+    `DELIVERY DISCIPLINE BLOCK: ${targetPath} contains a closure claim ("${matched}") ` +
+    `but no valid "## Delivery Attestation" block with fenced JSON ` +
+    `(required fields: covered, scope_cuts, self_review_findings, external_review_status; ` +
+    `self_review_findings must have at least 3 entries of ≥20 characters each). ` +
+    `Add the attestation section before writing. ` +
+    `See .claude/skills/delivery-discipline/SKILL.md.`;
+  const output = {
+    hookSpecificOutput: {
+      permissionDecision: 'deny',
+      permissionDecisionReason: reason,
+    },
+  };
+  process.stdout.write(JSON.stringify(output));
+  process.exit(2);
+}
+
+// ---------------------------------------------------------------------------
+// stdin/stdout wrapper — only runs when invoked directly, not on import.
+// ---------------------------------------------------------------------------
+
+const isDirectRun =
+  typeof process.argv[1] === 'string' &&
+  import.meta.url === pathToFileURL(process.argv[1]).href;
+
+if (isDirectRun) {
+  let inputData = '';
+  process.stdin.setEncoding('utf8');
+  process.stdin.on('data', (chunk) => {
+    inputData += chunk;
+  });
+  process.stdin.on('end', () => {
+    let event;
+    try {
+      event = JSON.parse(inputData);
+    } catch {
+      // Malformed event: graceful allow (matches existing hook pattern).
+      writeAllowAndExit();
+      return;
+    }
+    try {
+      const result = evaluateDeliveryDiscipline(event);
+      if (result.decision === 'deny') {
+        writeDenyAndExit(result.targetPath || '<unknown>', result.matched || '<closure>');
+      } else {
+        writeAllowAndExit();
+      }
+    } catch {
+      // Internal error: graceful allow. Wave 4 will log to governance_events.
+      writeAllowAndExit();
+    }
+  });
+}
