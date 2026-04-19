@@ -28,6 +28,7 @@ const {
     hasExemptionComment,
     getPostEditContent,
     evaluateDeliveryDiscipline,
+    probeDbAvailability,
 } = hookModule;
 
 // Valid attestation fixture reused across tests.
@@ -403,6 +404,90 @@ describe('evaluateDeliveryDiscipline — fence tag', () => {
 // ---------------------------------------------------------------------------
 // B4. Dual-config regression (P2c: hook MUST be registered in both configs)
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// B5. probeDbAvailability — real DB probe, not just module import
+// ---------------------------------------------------------------------------
+
+describe('probeDbAvailability — actually verifies DB operability', () => {
+    function fakeDbMod({ openResult, prepareResult, closeThrows = false } = {}) {
+        return {
+            openDB: () => openResult,
+            initDB: () => {},
+            applyMigrations: () => {},
+            closeDB: () => {
+                if (closeThrows) throw new Error('close failed');
+            },
+        };
+    }
+
+    function fakeDbHandle({ tableExists = true } = {}) {
+        return {
+            prepare: () => ({
+                get: () => (tableExists ? { name: 'governance_events' } : undefined),
+            }),
+            close: () => {},
+        };
+    }
+
+    it('returns false when the injected module has no openDB function', async () => {
+        const mod = { openDB: null };
+        assert.equal(await probeDbAvailability({ dbModule: mod }), false);
+    });
+
+    it('returns false when openDB returns null (better-sqlite3 degraded mode)', async () => {
+        const mod = fakeDbMod({ openResult: null });
+        assert.equal(await probeDbAvailability({ dbModule: mod }), false);
+    });
+
+    it('returns false when openDB throws synchronously', async () => {
+        const mod = {
+            openDB: () => {
+                throw new Error('DB file corrupt');
+            },
+        };
+        assert.equal(await probeDbAvailability({ dbModule: mod }), false);
+    });
+
+    it('returns false when DB opens but governance_events table is missing', async () => {
+        const mod = fakeDbMod({ openResult: fakeDbHandle({ tableExists: false }) });
+        assert.equal(await probeDbAvailability({ dbModule: mod }), false);
+    });
+
+    it('returns true when DB opens AND governance_events table exists', async () => {
+        const mod = fakeDbMod({ openResult: fakeDbHandle({ tableExists: true }) });
+        assert.equal(await probeDbAvailability({ dbModule: mod }), true);
+    });
+
+    it('returns false on initDB throw (DB cannot be initialized)', async () => {
+        const mod = {
+            openDB: () => fakeDbHandle(),
+            initDB: () => {
+                throw new Error('init failed');
+            },
+            applyMigrations: () => {},
+            closeDB: () => {},
+        };
+        assert.equal(await probeDbAvailability({ dbModule: mod }), false);
+    });
+
+    it('returns false on applyMigrations throw (schema state unknown)', async () => {
+        const mod = {
+            openDB: () => fakeDbHandle(),
+            initDB: () => {},
+            applyMigrations: () => {
+                throw new Error('migration mismatch');
+            },
+            closeDB: () => {},
+        };
+        assert.equal(await probeDbAvailability({ dbModule: mod }), false);
+    });
+
+    it('still returns true when closeDB throws (close failure is not a probe failure)', async () => {
+        const mod = fakeDbMod({ openResult: fakeDbHandle(), closeThrows: true });
+        assert.equal(await probeDbAvailability({ dbModule: mod }), true);
+    });
+});
 
 describe('pre-delivery-discipline — dual-config registration', () => {
     it('is registered in .claude/settings.json PreToolUse[1]', async () => {

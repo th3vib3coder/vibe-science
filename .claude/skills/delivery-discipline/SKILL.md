@@ -154,11 +154,11 @@ attestation block, then continue.**
 
 ## Common Mistakes
 
-- **Fake attestation**: filling fields with generic strings ("looked at everything"). Schema enforces minLength; hook validates; CI validator cross-references. Lying is cheaper to catch than 60% shipping.
+- **Fake attestation**: filling fields with generic strings ("looked at everything"). Wave 2 hook enforces minLength + minItems on the attestation block at write time. Wave 3 CI validator will re-enforce schema shape on tracked markdown at commit time. Full audit-log cross-reference (checking whether `external_review_status: "cleared"` matches a real R2/R3 review record in `governance_events`) is Phase 8.1 scope, not Wave 3. Don't assume the current enforcement catches semantic lies — it catches structural ones.
 - **Skipping scope_cuts because "nothing was cut"**: if you genuinely cut nothing, you probably didn't look hard enough. Use the self-review step to find a scope cut.
 - **Putting attestation in a comment or footer**: it must be in a `## Delivery Attestation` section with a fenced json block. Other placements won't be parsed.
 - **Writing attestation as YAML or markdown list**: must be fenced `json` block. Other formats fail schema validation.
-- **Adding exemption comment to bypass**: exemptions ARE allowed and don't block. Wave 4 will log each use as a `delivery_discipline_exemption_used` governance event; frequent use becomes an audit target once that logging is live. Strict mode (`VIBE_SCIENCE_STRICT=1`) additionally refuses to allow any bypass path (including exemption) when the governance DB is not importable, so the exemption cannot be abused when the audit trail is broken.
+- **Adding exemption comment to bypass**: exemptions ARE allowed and don't block. Wave 4 will log each use as a `delivery_discipline_exemption_used` governance event; frequent use becomes an audit target once that logging is live. Strict mode (`VIBE_SCIENCE_STRICT=1`) additionally refuses to allow any bypass path (including exemption) when the governance DB cannot be opened or when the `governance_events` table is missing — i.e. when the Wave 4 audit trail would silently drop records. The strict-mode probe actually opens the DB and checks the schema, not just whether the module imports.
 
 ## Why This Exists
 

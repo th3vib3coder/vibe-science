@@ -321,9 +321,11 @@ function writeDenyAndExit(targetPath, matched, reasonCode) {
   if (reasonCode === 'strict-mode-audit-unavailable') {
     reason =
       `DELIVERY DISCIPLINE BLOCK (strict mode): ${targetPath} contains a closure claim ("${matched}") ` +
-      `but VIBE_SCIENCE_STRICT=1 is set and the governance DB (plugin/lib/db.js) is not importable. ` +
-      `Strict mode refuses to allow exemption or attestation bypass paths because the Wave 4 audit ` +
-      `trail cannot be recorded. Fix the DB setup or unset VIBE_SCIENCE_STRICT before retrying.`;
+      `but VIBE_SCIENCE_STRICT=1 is set and the governance DB probe failed (module unimportable, ` +
+      `better-sqlite3 unavailable, openDB() returned null, or governance_events table missing). ` +
+      `Strict mode refuses exemption / attestation bypass paths when the Wave 4 audit trail cannot ` +
+      `be recorded. Fix the DB setup (install better-sqlite3 native bindings, run migrations) or ` +
+      `unset VIBE_SCIENCE_STRICT before retrying.`;
   } else if (reasonCode === 'strict-mode-internal-error') {
     reason =
       `DELIVERY DISCIPLINE BLOCK (strict mode): internal error while evaluating ${targetPath}. ` +
@@ -356,16 +358,63 @@ const isDirectRun =
   typeof process.argv[1] === 'string' &&
   import.meta.url === pathToFileURL(process.argv[1]).href;
 
-async function probeDbAvailability() {
-  // Best-effort probe: in Wave 4 this module will be used to log
-  // violations / exemptions to governance_events. In Wave 2 we only
-  // need to know whether the future logging channel would work so
-  // strict mode can honor its contract.
+/**
+ * Probe whether the governance DB is actually usable for Wave 4 audit
+ * logging. An importable db.js module is NOT sufficient evidence — db.js
+ * intentionally catches better-sqlite3 load failures internally and
+ * exposes `openDB()` that returns `null` when the native binding is
+ * unavailable. Strict mode must therefore verify:
+ *   (1) the db module imports,
+ *   (2) openDB() returns a real handle (not null),
+ *   (3) the governance_events table exists in the schema
+ *       (Wave 4 logging targets this table),
+ *   (4) we can close the handle cleanly.
+ *
+ * Mirrors the openHookDb pattern from pre-tool-use.js so both hooks
+ * share the same notion of "DB works" in strict mode.
+ *
+ * Injection hooks (dbModule, dbPath) are exposed only for tests — the
+ * runtime call chain uses defaults.
+ */
+export async function probeDbAvailability({ dbModule = null, dbPath = null } = {}) {
+  let mod = dbModule;
+  if (!mod) {
+    try {
+      mod = await import('../lib/db.js');
+    } catch {
+      return false;
+    }
+  }
+
+  const { openDB, initDB, applyMigrations, closeDB } = mod;
+  if (typeof openDB !== 'function') return false;
+
+  let db = null;
   try {
-    await import('../lib/db.js');
+    db = dbPath === null ? openDB() : openDB(dbPath);
+    if (!db) return false;
+    if (typeof initDB === 'function') initDB(db);
+    if (typeof applyMigrations === 'function') applyMigrations(db);
+
+    // Verify governance_events table exists — Wave 4 logging needs it.
+    const tableRow = db
+      .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='governance_events'")
+      .get();
+    if (!tableRow) return false;
+
     return true;
   } catch {
     return false;
+  } finally {
+    if (db) {
+      try {
+        if (typeof closeDB === 'function') closeDB(db);
+        else if (typeof db.close === 'function') db.close();
+      } catch {
+        // Ignore close errors in a probe — the answer we care about is
+        // whether open/init/table-check succeeded.
+      }
+    }
   }
 }
 
