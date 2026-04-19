@@ -13,6 +13,9 @@ Thumbs.db
 UPGRADE_PLAN_V2.md
 CHANGELOG_V2.md
 
+# Private planning area — Phase 8+ scoped docs that are not published
+blueprints/private/
+
 # Legacy nested directory — now tracked (contains plugin manifest, commands, templates)
 # vibe-science/
 
