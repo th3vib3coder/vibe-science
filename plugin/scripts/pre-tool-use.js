@@ -174,6 +174,16 @@ async function main(event) {
           denyShellGovernance(shellGovernanceViolation);
           return;
         }
+        // Fixup-15 P1 #1: whole-tree writers (tar/unzip/7z/git-whole-
+        // tree/rsync-to-cwd) can overwrite arbitrary files in the
+        // working tree without naming the sensitive target. Deny
+        // unconditionally in production mode so an attacker-controlled
+        // archive/branch cannot land sensitive content.
+        const wholeTreeLabel = detectWholeTreeBashWrite(toolInput);
+        if (wholeTreeLabel) {
+          denyBashWholeTreeWrite(wholeTreeLabel, getBashCommand(toolInput));
+          return;
+        }
         // Fixup-10 P1 #1: also block Bash writes to markdown deliverables
         // so the delivery-discipline attestation barrier cannot be
         // bypassed by redirecting to a .md file from a shell.
@@ -348,6 +358,29 @@ function denyImmutableConfig(toolName, target, context = {}) {
       'These files are IMMUTABLE. Fix the claim/analysis, not the schema.'
     );
   }
+  process.exit(2);
+}
+
+function denyBashWholeTreeWrite(patternLabel, command) {
+  const result = {
+    hookSpecificOutput: {
+      permissionDecision: 'deny',
+    },
+  };
+  process.stdout.write(JSON.stringify(result));
+  process.stderr.write(
+    `DELIVERY DISCIPLINE BLOCK (whole-tree write): the Bash command uses a ` +
+    `${patternLabel} pattern that can overwrite arbitrary files in the workspace ` +
+    `(including CHANGELOG.md, final-report.md, or hook/config files) from ` +
+    `archive or branch contents without naming the target. Because the hook ` +
+    `cannot audit what the payload will land, whole-tree writers ` +
+    `(tar/unzip/7z/unrar extract, git checkout|restore|reset whole-tree, ` +
+    `rsync-to-cwd) are denied in production mode. ` +
+    `Use Write/Edit for individual files, or extract into a staging path ` +
+    `OUTSIDE the workspace first. If you are a plugin developer and this is ` +
+    `intentional, launch Claude Code with VIBE_SCIENCE_DEV=1. ` +
+    `Command preview: ${String(command).slice(0, 120)}`
+  );
   process.exit(2);
 }
 
@@ -686,6 +719,11 @@ function commandHasWritePrimitive(command) {
   // Generic "output-like flag" catchall — any tool that takes -o/--output
   // pointing at a file. Combined with the path-candidate check, this
   // closes the long tail of writers without enumerating each one.
+  // Fixup-15 P1 #2: also catches the ATTACHED short-flag form
+  // (`-oFILE` / `-OFILE` with no separator) that curl/wget/sort etc.
+  // accept as equivalent to `-o FILE`. Without this, the 14th review
+  // reproduced `curl -ofinal-report.md` bypasses.
+  if (/(?:^|\s)-[oO][^\s=;&|][^\s;&|]*/.test(source)) return true;
   if (/-{1,2}(?:o|O|out|output(?:[-=\s]?(?:file|document))?|dest|destination|write-out)(?:\s+|=)[^\s;&|]+/i.test(source)) return true;
   return false;
 }
@@ -723,6 +761,56 @@ function detectBashMutationOfSensitivePath(toolInput = {}) {
   return protectedHit
     ? { kind: 'protected', ...protectedHit }
     : { kind: 'deliverable', path: deliverableHit };
+}
+
+/**
+ * Fixup-15 P1 #1: whole-tree writer detection.
+ *
+ * The 14th adversarial review reproduced bypasses via commands that
+ * mutate the working tree or extract archives WITHOUT naming the
+ * sensitive file as a command argument. These commands can overwrite
+ * CHANGELOG.md, final-report.md, or guardrail files from payload
+ * contents while never exposing the sensitive filename to the
+ * path-candidate scanner. Examples reproduced by reviewer:
+ *
+ *   tar -xf payload.tar              (extracts to cwd by default)
+ *   unzip payload.zip                (extracts to cwd by default)
+ *   7z x payload.7z / unrar x|e ...
+ *   git checkout <branch> -- .       (whole-tree restore)
+ *   git restore --source=<branch> .  (whole-tree restore)
+ *   git reset --hard <branch>        (whole-tree reset)
+ *   rsync -a src/ .                  (sync into cwd)
+ *
+ * The path-candidate-first detector (fixup-14) doesn't help here
+ * because the command's visible arguments are archive/branch names,
+ * not the sensitive target paths the archive will overwrite.
+ *
+ * Policy: in production mode, whole-tree writers are denied
+ * unconditionally. Agents who genuinely need them set
+ * VIBE_SCIENCE_DEV=1 (environment of the launching human, not agent-
+ * settable). Returns the pattern label or null.
+ */
+function detectWholeTreeBashWrite(toolInput = {}) {
+  if (isDevModeEnabled()) return null;
+  const source = getBashCommand(toolInput);
+  if (!source.trim()) return null;
+  // tar extract (both dashed and legacy non-dashed flag styles):
+  //   tar -xf ARCHIVE, tar xf ARCHIVE, tar -x ARCHIVE, tar --extract ...
+  if (/\btar\b[^|;&\n]*\s+-[a-z]*x[a-z]*\b/i.test(source)) return 'tar-extract';
+  if (/\btar\b\s+[a-z]*x[a-z]*\b/i.test(source)) return 'tar-extract';
+  if (/\btar\b[^|;&\n]*\s+--extract\b/i.test(source)) return 'tar-extract';
+  // unzip (extracts to current directory by default)
+  if (/\bunzip\b/i.test(source)) return 'unzip';
+  // unrar / 7z extract
+  if (/\bunrar\b\s+[ex]\b/i.test(source)) return 'unrar-extract';
+  if (/\b7z\b\s+[ex]\b/i.test(source)) return '7z-extract';
+  // git whole-tree restore patterns: `-- .`, bare `.` at end, `--hard`
+  if (/\bgit\s+(?:checkout|restore)\b[^|;&\n]*--\s*\.(?:\s|$|[;&|])/i.test(source)) return 'git-whole-tree-restore';
+  if (/\bgit\s+restore\b[^|;&\n]*\s+\.\s*(?:$|[;&|])/i.test(source)) return 'git-whole-tree-restore';
+  if (/\bgit\s+reset\s+--hard\b/i.test(source)) return 'git-reset-hard';
+  // rsync into cwd or root: last arg is `.`, `./`, or trailing `/`
+  if (/\brsync\b[^|;&\n]*\s+\.\/?(?=\s|$|[;&|])/i.test(source)) return 'rsync-to-cwd';
+  return null;
 }
 
 function detectBashDeliverableWrite(toolInput = {}) {
@@ -947,6 +1035,15 @@ function extractCommandPathCandidates(command) {
     /\bcd\s+([A-Za-z0-9_./\\-]+)/gi,
     /(?:^|[\s"'`])([A-Za-z0-9_./\\-]*[\\/][A-Za-z0-9_./\\-]+)(?=$|[\s"'`;,|&])/g,
     /(?:^|[\s"'`])([A-Za-z0-9_.-]+\.(?:md|json|yaml|yml|txt|csv|tsv|js|mjs|cjs|ts|py|sqlite|db))(?=$|[\s"'`;,|&])/g,
+    // Fixup-15 P1 #2: attached short-flag output (`-oFILE` / `-OFILE`
+    // without a space separator). Without this, `curl -ofinal-report.md`
+    // did NOT surface `final-report.md` as a candidate and the deny
+    // path never fired. Long-form `--output=FILE` is already caught by
+    // pattern 4 (the `.md`/etc. extension pattern) when the value
+    // contains a recognized extension.
+    /(?:^|\s)-[oO]([^\s=;&|][^\s;&|]*)/g,
+    // Attached long-form: `--output=FILE` / `--out=FILE` etc.
+    /--(?:out|output(?:[-=]?(?:file|document))?|dest|destination|write-out)=([^\s;&|]+)/gi,
   ];
 
   for (const pattern of patterns) {

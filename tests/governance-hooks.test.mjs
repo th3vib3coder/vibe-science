@@ -630,8 +630,15 @@ for (const [label, command] of [
         }, harness);
         assert.equal(result.status, 2,
             `expected block for ${label}: ${command}; got stderr=${result.stderr || '(empty)'}`);
-        assert.match(result.stderr, /DELIVERY DISCIPLINE BLOCK \(Bash\)/i,
-            `expected Bash deliverable deny message for ${label}`);
+        // Fixup-15 refinement: tar/unzip/7z now hit the "whole-tree
+        // write" deny path BEFORE the deliverable-write path because
+        // they can mutate arbitrary files regardless of args. Either
+        // message is acceptable for the tools that can take both forms.
+        assert.match(
+            result.stderr,
+            /DELIVERY DISCIPLINE BLOCK \((?:Bash|whole-tree write)\)/i,
+            `expected a delivery-discipline Bash deny message for ${label}`,
+        );
     });
 }
 
@@ -835,6 +842,113 @@ test('fixup-14: VIBE_SCIENCE_DEV=1 still unlocks every blocked architectural pat
         assert.equal(result.status, 0,
             `dev-mode should unlock ${command}; stderr=${result.stderr || '(empty)'}`);
     }
+});
+
+// ---------------------------------------------------------------------------
+// Fixup-15: 14th adversarial review found two architectural P1s.
+// P1 #1: whole-tree writers (tar/unzip/7z/git-whole-tree/rsync-to-cwd)
+//        bypass the path-candidate gate because they don't name the
+//        sensitive target.
+// P1 #2: attached short-flag output form (`-oFILE` without separator)
+//        was not recognized as write primitive.
+// ---------------------------------------------------------------------------
+
+for (const [label, command] of [
+    ['tar -xf payload', 'tar -xf payload.tar'],
+    ['tar xf payload (legacy non-dashed)', 'tar xf payload.tar'],
+    ['tar --extract', 'tar --extract -f payload.tar'],
+    ['unzip payload.zip', 'unzip payload.zip'],
+    ['7z x payload.7z', '7z x payload.7z'],
+    ['unrar x payload.rar', 'unrar x payload.rar'],
+    ['git checkout whole-tree', 'git checkout attacker-branch -- .'],
+    ['git restore whole-tree', 'git restore --source=attacker-branch .'],
+    ['git reset --hard', 'git reset --hard attacker-branch'],
+    ['rsync -a to cwd (./)', 'rsync -a src/ ./'],
+    ['rsync -a to cwd (.)', 'rsync -a src/ .'],
+]) {
+    test(`fixup-15 P1 #1: whole-tree writer "${label}" is denied in production`, () => {
+        const harness = createHarness();
+        const result = spawnHook('plugin/scripts/pre-tool-use.js', {
+            tool_name: 'Bash',
+            tool_input: { command },
+            session_id: 'sess-001',
+            cwd: harness.projectDir,
+        }, harness);
+        assert.equal(result.status, 2,
+            `expected deny for ${label}: ${command}; stderr=${result.stderr || '(empty)'}`);
+        assert.match(result.stderr, /DELIVERY DISCIPLINE BLOCK \(whole-tree write\)/i,
+            `expected whole-tree deny reason for ${label}`);
+    });
+}
+
+for (const [label, command] of [
+    ['curl -oFILE attached', 'curl -ofinal-report.md https://example.test'],
+    ['wget -OFILE attached', 'wget -Ofinal-report.md https://example.test'],
+    ['sort -oFILE attached', 'sort -ofinal-report.md src.txt'],
+    ['unknown-tool -oFILE attached', 'unknown-tool -ofinal-report.md src.txt'],
+]) {
+    test(`fixup-15 P1 #2: attached output-flag "${label}" is denied`, () => {
+        const harness = createHarness();
+        const result = spawnHook('plugin/scripts/pre-tool-use.js', {
+            tool_name: 'Bash',
+            tool_input: { command },
+            session_id: 'sess-001',
+            cwd: harness.projectDir,
+        }, harness);
+        assert.equal(result.status, 2,
+            `expected deny for ${label}: ${command}; stderr=${result.stderr || '(empty)'}`);
+    });
+}
+
+test('fixup-15: VIBE_SCIENCE_DEV=1 unlocks whole-tree writers too', () => {
+    const harness = createHarness();
+    const attacks = [
+        'tar -xf payload.tar',
+        'unzip payload.zip',
+        'rsync -a src/ .',
+        'curl -ofinal-report.md https://example.test',
+    ];
+    for (const command of attacks) {
+        const result = spawnSync(
+            process.execPath,
+            [rel('plugin/scripts/pre-tool-use.js')],
+            {
+                cwd: harness.projectDir,
+                encoding: 'utf-8',
+                input: JSON.stringify({
+                    tool_name: 'Bash',
+                    tool_input: { command },
+                    session_id: 'sess-001',
+                    cwd: harness.projectDir,
+                }),
+                env: {
+                    ...process.env,
+                    HOME: harness.fakeHome,
+                    USERPROFILE: harness.fakeHome,
+                    VIBE_SCIENCE_DEV: '1',
+                },
+            }
+        );
+        assert.equal(result.status, 0,
+            `dev-mode should unlock ${command}; stderr=${result.stderr || '(empty)'}`);
+    }
+});
+
+test('fixup-15 sanity: writes into an explicit NON-workspace path are still allowed', () => {
+    const harness = createHarness();
+    // tar to /tmp is NOT cwd → should also be blocked under the broad
+    // whole-tree policy (because the archive could still reach cwd
+    // after a cd), BUT we test the case where no archive extract
+    // happens: rsync with non-cwd target.
+    const ok = "rsync -av /src/ /tmp/backup/";  // target is /tmp/backup, not .
+    const result = spawnHook('plugin/scripts/pre-tool-use.js', {
+        tool_name: 'Bash',
+        tool_input: { command: ok },
+        session_id: 'sess-001',
+        cwd: harness.projectDir,
+    }, harness);
+    assert.equal(result.status, 0,
+        `rsync to non-cwd destination must pass: stderr=${result.stderr || '(empty)'}`);
 });
 
 test('fixup-13: VIBE_SCIENCE_DEV=1 escape still unlocks all blocked Bash write paths', () => {
