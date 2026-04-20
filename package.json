@@ -8,7 +8,9 @@
     "worker": "node plugin/scripts/worker-embed.js",
     "eval": "node evals/eval-runner.mjs",
     "smoke": "node evals/smoke-trace.mjs",
-    "v7-readiness": "node scripts/v7-readiness.mjs"
+    "v7-readiness": "node scripts/v7-readiness.mjs",
+    "test": "node --test tests/governance-events.test.mjs tests/governance-hooks.test.mjs tests/delivery-discipline-skill.test.mjs tests/delivery-discipline-hook.test.mjs tests/validate-delivery-honesty.test.mjs",
+    "check": "npm test"
   },
   "dependencies": {
     "better-sqlite3": "^11.7.0",

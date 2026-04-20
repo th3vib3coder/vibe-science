@@ -40,58 +40,97 @@ import { pathToFileURL } from 'node:url';
 /**
  * Deliverable path matcher. The hook only intercepts markdown files whose
  * basename looks like a committable deliverable: closeout, status report,
- * summary, verdict, phase N doc, wave N doc, skill file, README, CHANGELOG.
+ * summary, verdict, phase N doc, wave N doc, sprint N doc, skill file,
+ * README, CHANGELOG.
  */
 export function matchesDeliverablePath(filePath) {
   if (typeof filePath !== 'string' || !filePath.toLowerCase().endsWith('.md')) {
     return false;
   }
   const basename = path.basename(filePath).toLowerCase();
-  return /(closeout|status|summary|verdict|phase[\d.-]+|wave[\d-]+|skill|readme|changelog)/u.test(basename);
+  return /(closeout|status|summary|verdict|phase[\d.-]+|wave[\d-]+|sprint[\d-]*|skill|readme|changelog)/u.test(basename);
+}
+
+// Closure vocabulary: positive closure + failure/partial statuses.
+// A declaration of FAILED/BLOCKED/PARTIAL/FALSE-POSITIVE is also a
+// consequential closeout claim and must be auditable, matching the
+// skill's stated scope ("pass/fail status declarations").
+const CLOSURE_WORD = '(?:CLOSED|DONE|PASS(?:ED)?|SHIPPED|COMPLETED?|FINALIZED|READY|FAILED|BLOCKED|PARTIAL|FALSE-POSITIVE)';
+
+// The 5 declarative-context patterns, each returned as a fresh regex
+// with the `g` + `i` + `m`/`u` flags needed by callers that want
+// positions (findAllClosureClaimPositions) vs callers that just want
+// a boolean (hasDeclaredClosureClaim).
+function closureClaimPatterns(globalFlag = false) {
+  const g = globalFlag ? 'g' : '';
+  return [
+    // Pattern 1: Status/Verdict/Result/Gate/Phase/Wave/Sprint : CLOSURE
+    new RegExp(
+      `\\b(?:status|verdict|result|outcome|gate\\s*[\\d.]*|phase\\s*[\\d.]*|wave\\s*\\d+|sprint\\s*\\d*)\\s*[:=]\\s*\\*{0,2}\\s*${CLOSURE_WORD}\\b`,
+      `${g}iu`,
+    ),
+    // Pattern 2: Line starting with CLOSURE (bold/emph stripped)
+    new RegExp(`^[ \\t>*_]*\\**\\s*${CLOSURE_WORD}\\s*[\\s.!:*]`, `${g}imu`),
+    // Pattern 3: Bold wrapped with CLOSURE inside
+    new RegExp(`\\*\\*[^*\\n]{0,80}\\b${CLOSURE_WORD}\\b[^*\\n]{0,80}\\*\\*`, `${g}iu`),
+    // Pattern 4: Table cell
+    new RegExp(`\\|\\s*${CLOSURE_WORD}\\s*\\|`, `${g}iu`),
+    // Pattern 5: "Phase X is CLOSURE" / "Sprint Y is BLOCKED" sentence form
+    new RegExp(
+      `\\b(?:phase|wave|stage|gate|sprint|release)\\s+[a-z0-9.\\-]+\\s+(?:is|are|=)\\s+\\*{0,2}${CLOSURE_WORD}\\b`,
+      `${g}iu`,
+    ),
+  ];
 }
 
 /**
  * Closure-claim detection in declarative context. Returns true only when
- * a closure word appears in a position that signals "declared completion",
- * not casual prose. Five patterns covered:
- *   1. `Status: CLOSED` / `Verdict: PASS` / `Phase 8: CLOSED`
- *   2. Line starting with closure word (`CLOSED.` / `**PASS**`)
- *   3. Bold wrapped closure (`**Result: PASS**`)
- *   4. Markdown table cell (`| PASS |` / `| CLOSED |`)
- *   5. "Phase X is CLOSED" / "Wave Y is DONE" sentence form
+ * a closure word (positive OR negative, positive=CLOSED/DONE/PASS/SHIPPED/
+ * COMPLETE/FINALIZED/READY; negative=FAILED/BLOCKED/PARTIAL/FALSE-POSITIVE)
+ * appears in a position that signals "declared status", not casual prose.
+ * Five patterns covered:
+ *   1. `Status: CLOSED` / `Verdict: FAILED` / `Phase 8: BLOCKED`
+ *   2. Line starting with closure word (`CLOSED.` / `**FAILED**`)
+ *   3. Bold wrapped closure (`**Result: PASS**` / `**Wave is PARTIAL**`)
+ *   4. Markdown table cell (`| PASS |` / `| FAILED |`)
+ *   5. "Phase X is CLOSED" / "Sprint Y is FAILED" sentence form
  */
 export function hasDeclaredClosureClaim(text) {
   if (typeof text !== 'string' || text.length === 0) return false;
-
-  const CLOSURE = '(?:CLOSED|DONE|PASS(?:ED)?|SHIPPED|COMPLETED?|FINALIZED|READY)';
-
-  // Pattern 1: Status/Verdict/Result/Phase/Wave : CLOSURE
-  const p1 = new RegExp(
-    `\\b(?:status|verdict|result|outcome|phase\\s*[\\d.]*|wave\\s*\\d+)\\s*[:=]\\s*\\*{0,2}\\s*${CLOSURE}\\b`,
-    'iu',
-  );
-  if (p1.test(text)) return true;
-
-  // Pattern 2: Line starting with CLOSURE (bold/emph stripped)
-  const p2 = new RegExp(`^[ \\t>*_]*\\**\\s*${CLOSURE}\\s*[\\s.!:*]`, 'imu');
-  if (p2.test(text)) return true;
-
-  // Pattern 3: Bold wrapped with CLOSURE inside
-  const p3 = new RegExp(`\\*\\*[^*\\n]{0,80}\\b${CLOSURE}\\b[^*\\n]{0,80}\\*\\*`, 'iu');
-  if (p3.test(text)) return true;
-
-  // Pattern 4: Table cell
-  const p4 = new RegExp(`\\|\\s*${CLOSURE}\\s*\\|`, 'iu');
-  if (p4.test(text)) return true;
-
-  // Pattern 5: "Phase X is CLOSURE" sentence form
-  const p5 = new RegExp(
-    `\\b(?:phase|wave|stage|gate|sprint|release)\\s+[a-z0-9.\\-]+\\s+(?:is|are|=)\\s+\\*{0,2}${CLOSURE}\\b`,
-    'iu',
-  );
-  if (p5.test(text)) return true;
-
+  for (const pattern of closureClaimPatterns(false)) {
+    if (pattern.test(text)) return true;
+  }
   return false;
+}
+
+/**
+ * Find every closure-claim position in `text`. Returns an array of
+ * `{index, length, match}` sorted by position, with overlapping
+ * matches from different patterns deduplicated.
+ *
+ * Used by everyClosureHasBoundAttestation() to bind each claim to
+ * its own attestation (prevents the "one stale attestation satisfies
+ * all future closure claims in the same file" bypass).
+ */
+export function findAllClosureClaimPositions(text) {
+  if (typeof text !== 'string' || text.length === 0) return [];
+  const raw = [];
+  for (const pattern of closureClaimPatterns(true)) {
+    for (const m of text.matchAll(pattern)) {
+      if (m.index === undefined) continue;
+      raw.push({ index: m.index, length: m[0].length, match: m[0] });
+    }
+  }
+  raw.sort((a, b) => a.index - b.index);
+  // Dedup: if two patterns matched overlapping ranges, keep the first.
+  const deduped = [];
+  for (const hit of raw) {
+    const last = deduped[deduped.length - 1];
+    if (!last || hit.index >= last.index + last.length) {
+      deduped.push(hit);
+    }
+  }
+  return deduped;
 }
 
 /**
@@ -162,6 +201,38 @@ export function hasValidAttestation(text) {
 
   if (!['pending', 'cleared', 'blocked'].includes(parsed.external_review_status)) return false;
 
+  return true;
+}
+
+/**
+ * Positional binding: each closure claim in `text` must be followed by
+ * its own valid attestation block BEFORE the next closure claim (or
+ * end of text). This prevents a single stale attestation from
+ * satisfying multiple later claims in the same file.
+ *
+ * Example that now FAILS (previously passed):
+ *   # v7.1 SHIPPED  ← closure claim 1
+ *   <no attestation>
+ *   # v7.0 SHIPPED  ← closure claim 2
+ *   ## Delivery Attestation   ← only here, orphaned
+ *   ```json {...} ```
+ *
+ * The first closure (v7.1) has no attestation in its scope (before
+ * v7.0 claim), so the file is rejected.
+ *
+ * Returns true when every claim is bound, or when there are no claims.
+ */
+export function everyClosureHasBoundAttestation(text) {
+  if (typeof text !== 'string' || text.length === 0) return true;
+  const claims = findAllClosureClaimPositions(text);
+  if (claims.length === 0) return true;
+
+  for (let i = 0; i < claims.length; i += 1) {
+    const start = claims[i].index;
+    const end = i + 1 < claims.length ? claims[i + 1].index : text.length;
+    const scoped = text.slice(start, end);
+    if (!hasValidAttestation(scoped)) return false;
+  }
   return true;
 }
 
@@ -306,8 +377,10 @@ export function evaluateDeliveryDiscipline(event, options = {}) {
   }
 
   // At this point: the file is a deliverable that declares closure.
-  // It MUST contain a valid attestation block.
-  if (hasValidAttestation(content)) {
+  // Every closure claim must have its OWN attestation block positioned
+  // after it (and before the next claim). A single stale attestation
+  // no longer satisfies multiple later claims.
+  if (everyClosureHasBoundAttestation(content)) {
     return { decision: 'allow', reason: 'closure-with-valid-attestation' };
   }
 

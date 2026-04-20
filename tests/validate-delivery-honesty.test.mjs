@@ -45,6 +45,7 @@ const {
     hasDeclaredClosureClaim,
     hasValidAttestation,
     hasExemptionComment,
+    everyClosureHasBoundAttestation,
 } = hookModule;
 
 // Placeholder for the self-import below (resolved at module eval time).
@@ -266,7 +267,10 @@ export function validateDeliveryHonesty(rootDir) {
             continue; // new content has no closure claim → no enforcement
         }
 
-        if (!hasValidAttestation(enforceable)) {
+        // Positional binding: each closure claim must have its own
+        // attestation scoped to the text between this claim and the
+        // next. Prevents stale/shared attestation bypass.
+        if (!everyClosureHasBoundAttestation(enforceable)) {
             violations.push({
                 file: rel,
                 reason: hasBoundary

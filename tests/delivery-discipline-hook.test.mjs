@@ -29,6 +29,8 @@ const {
     getPostEditContent,
     evaluateDeliveryDiscipline,
     probeDbAvailability,
+    findAllClosureClaimPositions,
+    everyClosureHasBoundAttestation,
 } = hookModule;
 
 // Valid attestation fixture reused across tests.
@@ -68,7 +70,7 @@ function closeoutWithoutAttestation(body) {
 // ---------------------------------------------------------------------------
 
 describe('matchesDeliverablePath', () => {
-    it('matches closeout / phase / wave / skill / readme / changelog basenames', () => {
+    it('matches closeout / phase / wave / sprint / skill / readme / changelog basenames', () => {
         assert.equal(matchesDeliverablePath('phase8-closeout.md'), true);
         assert.equal(matchesDeliverablePath('wave-3-summary.md'), true);
         assert.equal(matchesDeliverablePath('some/path/SKILL.md'), true);
@@ -77,6 +79,9 @@ describe('matchesDeliverablePath', () => {
         assert.equal(matchesDeliverablePath('phase8-01-wave-0-contracts.md'), true);
         assert.equal(matchesDeliverablePath('docs/project-status.md'), true);
         assert.equal(matchesDeliverablePath('verdict.md'), true);
+        // P2-A (review): skill promised sprint*-*.md; path matcher must honor it
+        assert.equal(matchesDeliverablePath('sprint0-plan.md'), true);
+        assert.equal(matchesDeliverablePath('sprint-3-retro.md'), true);
     });
 
     it('rejects plain notes + source code + non-markdown', () => {
@@ -108,6 +113,102 @@ describe('hasDeclaredClosureClaim', () => {
         assert.equal(hasDeclaredClosureClaim('The build passed unit tests.'), false);
         assert.equal(hasDeclaredClosureClaim('nothing here'), false);
         assert.equal(hasDeclaredClosureClaim(''), false);
+    });
+
+    // P2-B (review): failure/partial statuses are also closure declarations
+    it('matches negative closure declarations (FAILED / BLOCKED / PARTIAL / FALSE-POSITIVE)', () => {
+        assert.equal(hasDeclaredClosureClaim('Verdict: FAILED'), true);
+        assert.equal(hasDeclaredClosureClaim('Result: BLOCKED'), true);
+        assert.equal(hasDeclaredClosureClaim('Gate: PARTIAL'), true);
+        assert.equal(hasDeclaredClosureClaim('Phase 7 is FAILED.'), true);
+        assert.equal(hasDeclaredClosureClaim('**Sprint 0 is BLOCKED**'), true);
+        assert.equal(hasDeclaredClosureClaim('| gate | FALSE-POSITIVE |'), true);
+    });
+});
+
+// ---------------------------------------------------------------------------
+// Positional attestation binding (P1-B fix from fresh-eyes review)
+// ---------------------------------------------------------------------------
+
+describe('findAllClosureClaimPositions', () => {
+    it('returns empty array for text without closure claims', () => {
+        const positions = findAllClosureClaimPositions('Just casual prose.');
+        assert.equal(positions.length, 0);
+    });
+
+    it('returns one position for a single closure claim', () => {
+        const positions = findAllClosureClaimPositions('Preamble. **Phase 7 is CLOSED.** Trailing.');
+        assert.equal(positions.length, 1);
+        assert.ok(positions[0].match.includes('CLOSED'));
+    });
+
+    it('returns multiple positions sorted by index for multiple claims', () => {
+        const positions = findAllClosureClaimPositions(
+            '## v7.1\n**Phase 8 is SHIPPED.**\n\n## v7.0\n**Phase 7 is CLOSED.**\n',
+        );
+        assert.equal(positions.length, 2);
+        assert.ok(positions[0].index < positions[1].index);
+    });
+
+    it('deduplicates overlapping matches from different patterns', () => {
+        // "Phase 8 is CLOSED" matches both pattern 1 (Phase N : ...)
+        // and pattern 5 ("Phase X is CLOSURE"). Should appear once.
+        const positions = findAllClosureClaimPositions('Phase 8 is CLOSED');
+        assert.equal(positions.length, 1);
+    });
+});
+
+describe('everyClosureHasBoundAttestation', () => {
+    const VALID_ATTESTATION_INLINE = `\n## Delivery Attestation\n\n\`\`\`json\n${
+        JSON.stringify({
+            covered: ['Item A verified'],
+            scope_cuts: [{ item: 'Thing left out', reason: 'Deferred because it is complex' }],
+            self_review_findings: [
+                'A reviewer would push back on the regex edge cases in quoted code',
+                'The hash allowlist relies on exact-match; whitespace flips it',
+                'The closure vocabulary may need another synonym later',
+            ],
+            external_review_status: 'pending',
+        }, null, 2)
+    }\n\`\`\`\n`;
+
+    it('returns true for text with no closure claims', () => {
+        assert.equal(everyClosureHasBoundAttestation('Plain prose.'), true);
+    });
+
+    it('returns true when the single closure claim is followed by a valid attestation', () => {
+        const text = `# Phase\n\n**Phase 7 is CLOSED.**\n${VALID_ATTESTATION_INLINE}`;
+        assert.equal(everyClosureHasBoundAttestation(text), true);
+    });
+
+    it('returns false when attestation is ORPHANED (positioned BEFORE the claim)', () => {
+        const text = `${VALID_ATTESTATION_INLINE}\n\n# Phase\n\n**Phase 7 is CLOSED.**`;
+        assert.equal(everyClosureHasBoundAttestation(text), false,
+            'attestation must come after the closure claim it attests');
+    });
+
+    it('returns true when every claim has its OWN attestation in between', () => {
+        const text =
+            `# v7.1\n\n**Phase 8 is SHIPPED.**\n${VALID_ATTESTATION_INLINE}` +
+            `\n\n# v7.0\n\n**Phase 7 is CLOSED.**\n${VALID_ATTESTATION_INLINE}`;
+        assert.equal(everyClosureHasBoundAttestation(text), true);
+    });
+
+    it('returns false when two claims share one trailing attestation (the P1-B bypass)', () => {
+        const text =
+            '# v7.1\n\n**Phase 8 is SHIPPED.**\n\n' +
+            '# v7.0\n\n**Phase 7 is CLOSED.**\n' +
+            VALID_ATTESTATION_INLINE;
+        assert.equal(everyClosureHasBoundAttestation(text), false,
+            'the v7.1 claim has no attestation in its scope (before v7.0)');
+    });
+
+    it('returns false when an intermediate claim is missing attestation', () => {
+        const text =
+            `# v7.2\n\n**Phase 9 is SHIPPED.**\n${VALID_ATTESTATION_INLINE}` +
+            '\n# v7.1\n\n**Phase 8 is SHIPPED.**\n\n' + // no attestation here
+            `# v7.0\n\n**Phase 7 is CLOSED.**\n${VALID_ATTESTATION_INLINE}`;
+        assert.equal(everyClosureHasBoundAttestation(text), false);
     });
 });
 

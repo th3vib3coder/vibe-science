@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    name: Governance + Delivery-Discipline Test Suite
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Full history so `git ls-files` in validate-delivery-honesty
+          # sees the real tracked set, not just a shallow slice.
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run plugin test suite
+        # Runs the 5 suites: governance_events, governance hooks,
+        # delivery-discipline skill, delivery-discipline hook,
+        # delivery-honesty CI validator.
+        # The validator scans `git ls-files '*.md'` on this checkout
+        # and asserts zero delivery-discipline violations on the plugin
+        # repo itself (dogfood).
+        run: npm test
