@@ -132,10 +132,29 @@ export function hasValidAttestation(text) {
   for (const field of required) {
     if (!Object.prototype.hasOwnProperty.call(parsed, field)) return false;
   }
+  // Enforce additionalProperties:false — schema is canonical, and the
+  // helper must match it exactly. An attestation with extra top-level
+  // fields is rejected.
+  const allowed = new Set(required);
+  for (const key of Object.keys(parsed)) {
+    if (!allowed.has(key)) return false;
+  }
+
   if (!Array.isArray(parsed.covered) || parsed.covered.length < 1) return false;
   if (!parsed.covered.every((x) => typeof x === 'string' && x.length >= 3)) return false;
 
+  // scope_cuts is an array of {item, reason} objects per the schema.
+  // minItems: 0 allowed, but each item MUST have correct shape.
   if (!Array.isArray(parsed.scope_cuts)) return false;
+  for (const cut of parsed.scope_cuts) {
+    if (cut === null || typeof cut !== 'object' || Array.isArray(cut)) return false;
+    const cutKeys = Object.keys(cut);
+    if (!cutKeys.includes('item') || !cutKeys.includes('reason')) return false;
+    // additionalProperties:false on scope_cuts entries too
+    if (cutKeys.some((k) => k !== 'item' && k !== 'reason')) return false;
+    if (typeof cut.item !== 'string' || cut.item.length < 3) return false;
+    if (typeof cut.reason !== 'string' || cut.reason.length < 10) return false;
+  }
 
   if (!Array.isArray(parsed.self_review_findings)) return false;
   if (parsed.self_review_findings.length < 3) return false;

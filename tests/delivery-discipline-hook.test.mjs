@@ -155,6 +155,71 @@ describe('hasValidAttestation', () => {
     it('rejects when the Delivery Attestation heading is missing', () => {
         assert.equal(hasValidAttestation('Status: CLOSED\n\nSome prose.'), false);
     });
+
+    // Schema-conformance tightening (Wave 3 fixup P1-A):
+    // Helper must enforce additionalProperties:false AND the scope_cuts
+    // item shape {item, reason}, not just "is an array". Otherwise the
+    // schema becomes aspirational documentation only.
+
+    it('rejects attestation with EXTRA top-level fields (additionalProperties:false)', () => {
+        const badExtra = VALID_ATTESTATION.replace(
+            '"external_review_status": "pending"',
+            '"external_review_status": "pending",\n  "extra_bogus_field": "should not pass"',
+        );
+        assert.equal(hasValidAttestation(badExtra), false,
+            'attestation with unknown top-level field must be rejected');
+    });
+
+    it('rejects scope_cuts containing a bare string instead of {item, reason}', () => {
+        const badCut = VALID_ATTESTATION.replace(
+            /"scope_cuts":\s*\[[\s\S]*?\],/u,
+            '"scope_cuts": ["not an object, just a string"],',
+        );
+        assert.equal(hasValidAttestation(badCut), false,
+            'attestation with non-object scope_cuts entry must be rejected');
+    });
+
+    it('rejects scope_cuts entry missing the `reason` key', () => {
+        const badCut = VALID_ATTESTATION.replace(
+            /"scope_cuts":\s*\[[\s\S]*?\],/u,
+            '"scope_cuts": [{"item": "Something"}],',
+        );
+        assert.equal(hasValidAttestation(badCut), false);
+    });
+
+    it('rejects scope_cuts entry missing the `item` key', () => {
+        const badCut = VALID_ATTESTATION.replace(
+            /"scope_cuts":\s*\[[\s\S]*?\],/u,
+            '"scope_cuts": [{"reason": "Deferred because it is complex"}],',
+        );
+        assert.equal(hasValidAttestation(badCut), false);
+    });
+
+    it('rejects scope_cuts entry with `reason` shorter than 10 chars', () => {
+        const badCut = VALID_ATTESTATION.replace(
+            /"scope_cuts":\s*\[[\s\S]*?\],/u,
+            '"scope_cuts": [{"item": "Something", "reason": "short"}],',
+        );
+        assert.equal(hasValidAttestation(badCut), false);
+    });
+
+    it('rejects scope_cuts entry with extra properties beyond {item, reason}', () => {
+        const badCut = VALID_ATTESTATION.replace(
+            /"scope_cuts":\s*\[[\s\S]*?\],/u,
+            '"scope_cuts": [{"item": "Something", "reason": "Deferred because complex", "priority": "low"}],',
+        );
+        assert.equal(hasValidAttestation(badCut), false,
+            'additionalProperties:false must apply to scope_cuts entries too');
+    });
+
+    it('accepts an empty scope_cuts array (minItems: 0 allowed)', () => {
+        const empty = VALID_ATTESTATION.replace(
+            /"scope_cuts":\s*\[[\s\S]*?\],/u,
+            '"scope_cuts": [],',
+        );
+        assert.equal(hasValidAttestation(empty), true,
+            'empty scope_cuts is schema-legal (minItems: 0)');
+    });
 });
 
 describe('hasExemptionComment', () => {

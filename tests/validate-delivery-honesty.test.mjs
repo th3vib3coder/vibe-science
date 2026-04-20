@@ -31,6 +31,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
+import { spawnSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
@@ -49,24 +50,63 @@ const {
 // Validator core (exported-shape function, testable)
 // ---------------------------------------------------------------------------
 
-const SKIP_DIRS = new Set([
-    'node_modules',
-    '.git',
-    'private',
-    'archive',        // historical snapshots (pre-Phase 8); immutable, not subject to delivery discipline
-]);
-const SKIP_PATH_SUFFIXES = [
-    path.sep + 'blueprints' + path.sep + 'private',
-];
-const SKIP_BASENAMES = new Set([
-    // Gitignored files scanned on disk but not part of the public contract.
-    'CHANGELOG_V2.md',
-    'UPGRADE_PLAN_V2.md',
+// Pre-Phase-8 baseline: files that existed BEFORE Phase 8 and whose
+// entire current content predates the delivery-discipline contract.
+// Entries are skipped by the validator (reported as 'legacy-allowlist').
+// Adding new paths here requires an explicit code change + reviewer
+// approval — this is intentional. Per-file opt-outs for new files must
+// go through the in-file `<!-- delivery-discipline: exempt -->` comment
+// mechanism, which is logged by Wave 4 as `delivery_discipline_exemption_used`.
+export const LEGACY_ALLOWLIST = new Set([
+    'SKILL.md',                  // vibe-science monolithic meta-skill, pre-Phase-8
+    'skills/vibe/SKILL.md',      // same family, duplicate scientific-truth meta-skill
+    'CHANGELOG.md',              // pre-Phase-8 release-note entries; future entries SHOULD add attestation
 ]);
 
-function walkMarkdownFiles(rootDir) {
+// Directory prefixes whose entire contents are out of scope regardless
+// of allowlist. Historical snapshots + gitignored private planning.
+const LEGACY_DIR_PREFIXES = [
+    'archive/',
+    'blueprints/private/',
+];
+
+// Fallback walk only skips system dirs — legacy filtering is done
+// downstream by classifySkip() so the rule is a single source of truth.
+// In real git repos `git ls-files` returns only tracked files so the
+// gitignored basenames (CHANGELOG_V2.md, UPGRADE_PLAN_V2.md) never
+// appear. In tmp fixtures (where fallback runs) those files don't exist.
+const FALLBACK_SKIP_DIRS = new Set(['node_modules', '.git']);
+
+/**
+ * Preferred: use `git ls-files '*.md'` to get tracked markdown files.
+ * Falls back to a filesystem walk only if git is unavailable or rootDir
+ * is not a git repository (e.g. test fixtures in a tmp dir).
+ */
+function listMarkdownFiles(rootDir) {
+    try {
+        const result = spawnSync('git', ['-C', rootDir, 'ls-files', '*.md'], {
+            encoding: 'utf8',
+            timeout: 10000,
+        });
+        if (result.error) throw result.error;
+        if (result.status !== 0) {
+            throw new Error(`git ls-files exited ${result.status}: ${String(result.stderr).slice(0, 200)}`);
+        }
+        return result.stdout
+            .split(/\r?\n/u)
+            .map((line) => line.trim())
+            .filter((line) => line.length > 0);
+    } catch {
+        // Fallback: filesystem walk. Used for:
+        //   - test fixtures running in tmp dirs (not git repos)
+        //   - environments without git CLI
+        return fallbackWalk(rootDir);
+    }
+}
+
+function fallbackWalk(rootDir) {
     const out = [];
-    function walk(dir) {
+    function walk(dir, relDir) {
         let entries;
         try {
             entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -75,40 +115,68 @@ function walkMarkdownFiles(rootDir) {
         }
         for (const entry of entries) {
             const full = path.join(dir, entry.name);
+            const rel = relDir ? `${relDir}/${entry.name}` : entry.name;
             if (entry.isDirectory()) {
-                if (SKIP_DIRS.has(entry.name)) continue;
-                if (SKIP_PATH_SUFFIXES.some((suffix) => full.endsWith(suffix))) continue;
-                walk(full);
+                if (FALLBACK_SKIP_DIRS.has(entry.name)) continue;
+                walk(full, rel);
                 continue;
             }
             if (entry.isFile() && entry.name.toLowerCase().endsWith('.md')) {
-                if (SKIP_BASENAMES.has(entry.name)) continue;
-                out.push(full);
+                out.push(rel);
             }
         }
     }
-    walk(rootDir);
+    walk(rootDir, '');
     return out;
+}
+
+function classifySkip(relPath) {
+    if (LEGACY_ALLOWLIST.has(relPath)) return 'legacy-allowlist';
+    for (const prefix of LEGACY_DIR_PREFIXES) {
+        if (relPath.startsWith(prefix)) return 'legacy-directory';
+    }
+    return null;
 }
 
 /**
  * Validate delivery honesty across a repo root. Returns a structured
- * report: violations, exemptions, scanned count. Does NOT throw; caller
- * decides what to assert.
+ * report: violations, per-file-exempted, legacy-skipped, scanned count.
+ * Does NOT throw; caller decides what to assert.
+ *
+ * Two distinct skip channels:
+ *   - `legacyCount` counts files skipped via LEGACY_ALLOWLIST / LEGACY_DIR_PREFIXES
+ *     (validator-side, auditable via code change).
+ *   - `exemptedCount` counts files skipped via in-file
+ *     `<!-- delivery-discipline: exempt -->` comment (per-file, logged
+ *     by Wave 4 as governance event).
+ *
+ * This separation matters: legacy skips are permanent baseline state;
+ * exemption comments are per-file opt-outs that Wave 4 audits. Bundling
+ * them would let new edits to legacy files silently bypass enforcement
+ * forever — the P1-B pitfall of the first Wave 3 implementation.
  */
 export function validateDeliveryHonesty(rootDir) {
     const scanned = [];
     const violations = [];
     const exempted = [];
+    const legacy = [];
     const notDeliverable = [];
 
-    for (const filePath of walkMarkdownFiles(rootDir)) {
-        const rel = path.relative(rootDir, filePath).split(path.sep).join('/');
+    for (const rel of listMarkdownFiles(rootDir)) {
         scanned.push(rel);
+
+        const legacyReason = classifySkip(rel);
+        if (legacyReason !== null) {
+            legacy.push({ file: rel, reason: legacyReason });
+            continue;
+        }
+
         if (!matchesDeliverablePath(rel)) {
             notDeliverable.push(rel);
             continue;
         }
+
+        const filePath = path.join(rootDir, rel);
         let content;
         try {
             content = fs.readFileSync(filePath, 'utf8');
@@ -116,13 +184,16 @@ export function validateDeliveryHonesty(rootDir) {
             violations.push({ file: rel, reason: `read-error: ${error.message}` });
             continue;
         }
+
         if (hasExemptionComment(content)) {
             exempted.push(rel);
             continue;
         }
+
         if (!hasDeclaredClosureClaim(content)) {
             continue; // file matches path but declares no closure — no enforcement needed
         }
+
         if (!hasValidAttestation(content)) {
             violations.push({
                 file: rel,
@@ -133,10 +204,12 @@ export function validateDeliveryHonesty(rootDir) {
 
     return {
         scannedCount: scanned.length,
-        enforcedCount: scanned.length - notDeliverable.length - exempted.length,
+        enforcedCount: scanned.length - notDeliverable.length - exempted.length - legacy.length,
         exemptedCount: exempted.length,
+        legacyCount: legacy.length,
         violations,
         exempted,
+        legacy,
     };
 }
 
@@ -270,12 +343,50 @@ describe('validateDeliveryHonesty — synthetic fixtures', () => {
     it('skips a file carrying the exemption comment even with closure claim', () => {
         const dir = makeTempDir('vds-exempt-');
         try {
-            writeFile(dir, 'SKILL.md',
-                `<!-- delivery-discipline: exempt -->\n\n# Example skill\n\n**Phase 99 is CLOSED.**\n`);
+            // Deliberately NOT 'SKILL.md' — that's in LEGACY_ALLOWLIST, which
+            // would mark the file legacy-skipped instead of exemption-skipped.
+            // This test proves the in-file exemption path works for
+            // non-allowlisted deliverables.
+            writeFile(dir, 'phase42-closeout.md',
+                `<!-- delivery-discipline: exempt -->\n\n# Phase 42\n\n**Phase 42 is CLOSED.**\n`);
             const report = validateDeliveryHonesty(dir);
             assert.equal(report.violations.length, 0);
             assert.equal(report.exemptedCount, 1);
-            assert.match(report.exempted[0], /SKILL\.md/u);
+            assert.match(report.exempted[0], /phase42-closeout\.md/u);
+            assert.equal(report.legacyCount, 0, 'must NOT trigger legacy-allowlist path');
+        } finally {
+            fs.rmSync(dir, { recursive: true, force: true });
+        }
+    });
+
+    it('marks LEGACY_ALLOWLIST entries as legacy (not exempted) even without exemption comment', () => {
+        const dir = makeTempDir('vds-legacy-');
+        try {
+            // Simulate a pre-Phase-8 file — it's in the allowlist, so the
+            // validator skips it with reason 'legacy-allowlist' even when
+            // there's no `<!-- delivery-discipline: exempt -->` comment.
+            writeFile(dir, 'SKILL.md',
+                '# Legacy vibe-science meta-skill\n\n**Phase 7 is CLOSED.** No attestation.\n');
+            const report = validateDeliveryHonesty(dir);
+            assert.equal(report.violations.length, 0);
+            assert.equal(report.legacyCount, 1);
+            assert.equal(report.legacy[0].file, 'SKILL.md');
+            assert.equal(report.legacy[0].reason, 'legacy-allowlist');
+            assert.equal(report.exemptedCount, 0, 'must NOT trigger per-file exemption path');
+        } finally {
+            fs.rmSync(dir, { recursive: true, force: true });
+        }
+    });
+
+    it('skips files under LEGACY_DIR_PREFIXES like archive/', () => {
+        const dir = makeTempDir('vds-archive-');
+        try {
+            writeFile(dir, 'archive/v5.5/phase-closeout.md',
+                '# Historical\n\n**Phase 5 is CLOSED.** No attestation.\n');
+            const report = validateDeliveryHonesty(dir);
+            assert.equal(report.violations.length, 0);
+            assert.equal(report.legacyCount, 1);
+            assert.equal(report.legacy[0].reason, 'legacy-directory');
         } finally {
             fs.rmSync(dir, { recursive: true, force: true });
         }
@@ -305,22 +416,25 @@ describe('validateDeliveryHonesty — synthetic fixtures', () => {
         }
     });
 
-    it('treats multiple files correctly in one scan (mix of pass, fail, exempt, non-deliverable)', () => {
+    it('treats multiple files correctly in one scan (mix of pass, fail, exempt, legacy, non-deliverable)', () => {
         const dir = makeTempDir('vds-mixed-');
         try {
             writeFile(dir, 'phase1-closeout.md',
                 `# Phase 1\n\n**Phase 1 is CLOSED.**\n\n${VALID_ATTESTATION_BLOCK}`);
             writeFile(dir, 'phase2-closeout.md',
                 '# Phase 2\n\n**Phase 2 is CLOSED.**\n\nMissing attestation.\n');
+            writeFile(dir, 'phase3-closeout.md',
+                '<!-- delivery-discipline: exempt -->\n\n# Phase 3\n\n**Phase 3 is CLOSED.**\n');
             writeFile(dir, 'SKILL.md',
-                '<!-- delivery-discipline: exempt -->\n\n# Skill\n\n**Phase 3 is CLOSED.**\n');
+                '# Legacy skill\n\n**Phase 4 is CLOSED.** No attestation, but allowlisted.\n');
             writeFile(dir, 'notes.md', '# Random prose without closure\n');
 
             const report = validateDeliveryHonesty(dir);
             assert.equal(report.violations.length, 1);
             assert.match(report.violations[0].file, /phase2-closeout/u);
-            assert.equal(report.exemptedCount, 1);
-            assert.equal(report.scannedCount, 4);
+            assert.equal(report.exemptedCount, 1, 'phase3 uses per-file exemption');
+            assert.equal(report.legacyCount, 1, 'SKILL.md is allowlisted legacy');
+            assert.equal(report.scannedCount, 5);
         } finally {
             fs.rmSync(dir, { recursive: true, force: true });
         }
