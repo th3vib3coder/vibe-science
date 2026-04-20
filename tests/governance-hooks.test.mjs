@@ -690,6 +690,153 @@ test('fixup-13: non-deliverable Bash operations still pass (sanity guardrail)', 
     }
 });
 
+// ---------------------------------------------------------------------------
+// Fixup-14: architectural shift after 13th review — detection is now
+// "path candidates FIRST, then any write primitive" rather than "write
+// intent FIRST, then path candidates". Previous rounds whack-a-moled the
+// writer-tool allowlist; reviewer repro'd bypasses via rsync/scp/awk-i/
+// ed/vim/pandoc/python-m-shutil/perl sysopen/Rscript sink. Now any
+// command that mentions a sensitive path and has ANY write-capable
+// primitive (including the broad catchall of `-o`/`--output` on any
+// tool, copy/sync/transfer/editor/render tools) is denied.
+// ---------------------------------------------------------------------------
+
+for (const [label, command] of [
+    // P1 #1 — guardrail substrate via unrecognized writers
+    ['rsync to guardrail file', 'rsync src.txt plugin/scripts/pre-tool-use.js'],
+    ['scp to guardrail file', 'scp src.txt plugin/scripts/pre-tool-use.js'],
+    ['rsync -a to guardrail DIRECTORY', 'rsync -a src/ plugin/scripts/'],
+    ['awk -i inplace on guardrail file', "awk -i inplace '{print}' plugin/scripts/pre-tool-use.js"],
+    ['rsync to settings.json', 'rsync src.txt .claude/settings.json'],
+    ['vim -es on hooks.json', 'vim -es hooks/hooks.json -c "wq"'],
+]) {
+    test(`fixup-14 P1 #1 guardrail via ${label}`, () => {
+        const harness = createHarness();
+        const result = spawnHook('plugin/scripts/pre-tool-use.js', {
+            tool_name: 'Bash',
+            tool_input: { command },
+            session_id: 'sess-001',
+            cwd: harness.projectDir,
+        }, harness);
+        assert.equal(result.status, 2,
+            `expected deny for ${label}: ${command}; stderr=${result.stderr || '(empty)'}`);
+    });
+}
+
+for (const [label, command] of [
+    // P1 #2 — deliverable write via unrecognized writers
+    ['rsync to deliverable', 'rsync src.txt final-report.md'],
+    ['scp to deliverable', 'scp src.txt final-report.md'],
+    ['awk -i inplace on deliverable', "awk -i inplace '{print}' final-report.md"],
+    ['ed editor on deliverable', 'ed final-report.md'],
+    ['vim -es on deliverable', 'vim -es final-report.md -c "wq"'],
+    ['pandoc -o to deliverable', 'pandoc src.md -o final-report.md'],
+    ['python -m shutil copyfile', 'python -m shutil copyfile src.txt final-report.md'],
+    ['perl sysopen to deliverable', "perl -e \"sysopen(F,'final-report.md',577);\""],
+    ['Rscript sink to deliverable', "Rscript -e \"sink('final-report.md'); cat('x')\""],
+]) {
+    test(`fixup-14 P1 #2 deliverable via ${label}`, () => {
+        const harness = createHarness();
+        const result = spawnHook('plugin/scripts/pre-tool-use.js', {
+            tool_name: 'Bash',
+            tool_input: { command },
+            session_id: 'sess-001',
+            cwd: harness.projectDir,
+        }, harness);
+        assert.equal(result.status, 2,
+            `expected deny for ${label}: ${command}; stderr=${result.stderr || '(empty)'}`);
+        assert.match(result.stderr, /DELIVERY DISCIPLINE BLOCK \(Bash\)/i);
+    });
+}
+
+test('fixup-14: generic `--output FILE` flag on any tool triggers the policy when target is a deliverable', () => {
+    const harness = createHarness();
+    // Generic output-flag catchall — no need to enumerate the tool.
+    const result = spawnHook('plugin/scripts/pre-tool-use.js', {
+        tool_name: 'Bash',
+        tool_input: { command: 'some-unknown-tool --output=final-report.md src' },
+        session_id: 'sess-001',
+        cwd: harness.projectDir,
+    }, harness);
+    assert.equal(result.status, 2,
+        `generic --output flag to deliverable must be denied: stderr=${result.stderr}`);
+});
+
+test('fixup-14: non-sensitive operations on random paths still pass (sanity)', () => {
+    const harness = createHarness();
+    // Write primitives + non-sensitive paths = should still allow. Note
+    // that any .md substring anywhere in the command triggers the
+    // fixup-12 `commandMentionsMarkdownFile` catchall (deliberate
+    // fail-closed for markdown-adjacent writes) — so these fixtures
+    // avoid .md entirely on purpose.
+    const ops = [
+        "rsync src.txt /tmp/backup.txt",
+        "pandoc /tmp/input.txt -o /tmp/output.html",
+        "echo 'log' >> /tmp/app.log",
+        "awk -i inplace '{print}' /tmp/work.txt",
+    ];
+    for (const command of ops) {
+        const result = spawnHook('plugin/scripts/pre-tool-use.js', {
+            tool_name: 'Bash',
+            tool_input: { command },
+            session_id: 'sess-001',
+            cwd: harness.projectDir,
+        }, harness);
+        assert.equal(result.status, 0,
+            `non-sensitive op should pass: ${command}; stderr=${result.stderr || '(empty)'}`);
+    }
+});
+
+test('fixup-14: documented false-positive — any `.md` substring in command + write primitive is denied', () => {
+    // Intentional: this is the fail-closed stance from fixup-12. A
+    // `pandoc src.md -o /tmp/output.html` that only READS src.md still
+    // denies because the parser cannot tell read from write for .md
+    // mentions. VIBE_SCIENCE_DEV=1 is the escape.
+    const harness = createHarness();
+    const result = spawnHook('plugin/scripts/pre-tool-use.js', {
+        tool_name: 'Bash',
+        tool_input: { command: "pandoc src.md -o /tmp/output.html" },
+        session_id: 'sess-001',
+        cwd: harness.projectDir,
+    }, harness);
+    assert.equal(result.status, 2,
+        'commandMentionsMarkdownFile deliberately fails closed on any .md + write primitive');
+});
+
+test('fixup-14: VIBE_SCIENCE_DEV=1 still unlocks every blocked architectural path', () => {
+    const harness = createHarness();
+    const attacks = [
+        "rsync src.txt plugin/scripts/pre-tool-use.js",
+        "rsync -a src/ plugin/scripts/",
+        "pandoc src.md -o final-report.md",
+        "python -m shutil copyfile src.txt final-report.md",
+    ];
+    for (const command of attacks) {
+        const result = spawnSync(
+            process.execPath,
+            [rel('plugin/scripts/pre-tool-use.js')],
+            {
+                cwd: harness.projectDir,
+                encoding: 'utf-8',
+                input: JSON.stringify({
+                    tool_name: 'Bash',
+                    tool_input: { command },
+                    session_id: 'sess-001',
+                    cwd: harness.projectDir,
+                }),
+                env: {
+                    ...process.env,
+                    HOME: harness.fakeHome,
+                    USERPROFILE: harness.fakeHome,
+                    VIBE_SCIENCE_DEV: '1',
+                },
+            }
+        );
+        assert.equal(result.status, 0,
+            `dev-mode should unlock ${command}; stderr=${result.stderr || '(empty)'}`);
+    }
+});
+
 test('fixup-13: VIBE_SCIENCE_DEV=1 escape still unlocks all blocked Bash write paths', () => {
     const harness = createHarness();
     const attacks = [

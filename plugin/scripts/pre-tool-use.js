@@ -541,11 +541,23 @@ function detectProtectedConfigMutation(toolName, toolInput = {}) {
   }
 
   if (toolName === 'Bash') {
+    // Fixup-14: use the broader `commandHasWritePrimitive` gate instead
+    // of the narrow `bashCommandHasWriteIntent` so rsync/scp/awk-i/ed/
+    // vim/pandoc/output-flag writers cannot bypass guardrail
+    // self-protection. The 13th review demonstrated that
+    // `rsync src plugin/scripts/pre-tool-use.js` returned allow
+    // because rsync was not in the write-intent allowlist.
+    if (isDevModeEnabled()) return null;
     const command = getBashCommand(toolInput);
-    if (!bashCommandHasWriteIntent(command)) return null;
-    const candidate = extractCommandPathCandidates(command).find(path => matchProtectedConfigPath(path));
-    if (!candidate) return null;
-    return { path: candidate, rule: matchProtectedConfigPath(candidate) };
+    if (!command.trim()) return null;
+    const candidates = extractCommandPathCandidates(command);
+    for (const candidate of candidates) {
+      const rule = matchProtectedConfigPath(candidate);
+      if (rule && commandHasWritePrimitive(command)) {
+        return { path: candidate, rule };
+      }
+    }
+    return null;
   }
 
   return null;
@@ -573,6 +585,23 @@ function matchProtectedConfigPath(filePath) {
     for (const rule of GUARDRAIL_PROTECTED_RULES) {
       if (normalized === rule || normalized.endsWith(`/${rule}`)) {
         return rule;
+      }
+    }
+    // Fixup-14 P1 #1 extension: directory-level match. A write that
+    // targets a DIRECTORY containing a guardrail file (e.g. `rsync
+    // -a src/ plugin/scripts/`) must be treated as a guardrail
+    // violation — otherwise bulk-copy tools can overwrite the hook
+    // script by targeting its parent dir. For each guardrail rule,
+    // check if the normalized target equals any parent-directory
+    // prefix of the rule path (at every depth).
+    for (const rule of GUARDRAIL_PROTECTED_RULES) {
+      const parts = rule.split('/');
+      for (let i = 1; i < parts.length; i += 1) {
+        const prefix = parts.slice(0, i).join('/');
+        if (prefix.length === 0) continue;
+        if (normalized === prefix || normalized.endsWith(`/${prefix}`)) {
+          return rule;
+        }
       }
     }
   }
@@ -613,30 +642,99 @@ function looksClaimLike(text) {
  * Skipped when `VIBE_SCIENCE_DEV=1` so plugin developers can generate
  * deliverables programmatically.
  */
+/**
+ * Fixup-14 architectural shift: STOP enumerating writer tools as the
+ * first-class gate. Instead:
+ *   (1) scan the command for ANY path candidates,
+ *   (2) check if any of those candidates is a sensitive path
+ *       (deliverable markdown OR guardrail/protected file),
+ *   (3) if yes, check if the command contains ANY write primitive —
+ *       from narrow (`>` redirect, known cmdlets) to broad (copy/
+ *       render/editor/interpreter tools, output-like flags).
+ *
+ * The 13th review demonstrated that the "enumerate every writer"
+ * approach is bottomless: rsync, scp, awk -i inplace, ed, vim -es,
+ * pandoc -o, python -m shutil copyfile, perl sysopen, Rscript sink
+ * all bypassed the fixup-13 enumeration. Shape change: once a command
+ * refers to a sensitive path AND has any write capability, deny —
+ * rather than relying on the completeness of a tool allowlist.
+ *
+ * Trade-off: more false positives on read-only commands that happen
+ * to mention sensitive paths and use ambiguous flags (e.g. `grep -o
+ * PATTERN CHANGELOG.md`). Users can set VIBE_SCIENCE_DEV=1 or use
+ * the Read tool.
+ */
+function commandHasWritePrimitive(command) {
+  const source = String(command || '');
+  // Narrow/specific signals (already covered by fixup-10..13):
+  if (bashCommandHasWriteIntent(source)) return true;
+  if (hasInterpreterFileWriteApi(source)) return true;
+  if (hasInterpreterScriptWithDeliverableArg(source)) return true;
+  // Broad catchall — copy/sync/transfer tools:
+  if (/\b(?:rsync|scp|sftp|rclone|robocopy|unison|duplicity|borg)\b/i.test(source)) return true;
+  // Transform/render tools:
+  if (/\b(?:pandoc|convert|magick|ffmpeg|sox|gs|imagemagick|inkscape)\b/i.test(source)) return true;
+  // Editors (always write-capable in batch/ex mode):
+  if (/\b(?:ed|vi|vim|nvim|view|emacs|nano|pico|micro|helix|kakoune)\b/i.test(source)) return true;
+  // awk in-place:
+  if (/\b(?:awk|gawk|nawk|mawk)\b[^|;&\n]*\s+-i\b/i.test(source)) return true;
+  // Python / language-level module-write invocations:
+  if (/\bpython[23]?\b[^|;&\n]*\s+-m\s+(?:shutil|pathlib|os|fileinput|zipfile|tarfile|wheel|build)\b/i.test(source)) return true;
+  // Low-level file primitives by name (covers perl sysopen, R sink):
+  if (/\bsysopen\s*\(/i.test(source)) return true;
+  if (/\bsink\s*\(/i.test(source)) return true;
+  // Generic "output-like flag" catchall — any tool that takes -o/--output
+  // pointing at a file. Combined with the path-candidate check, this
+  // closes the long tail of writers without enumerating each one.
+  if (/-{1,2}(?:o|O|out|output(?:[-=\s]?(?:file|document))?|dest|destination|write-out)(?:\s+|=)[^\s;&|]+/i.test(source)) return true;
+  return false;
+}
+
+/**
+ * Fixup-14: detect Bash commands that would mutate a sensitive path
+ * (deliverable markdown OR guardrail-protected file). This replaces
+ * the previous pattern of "check write-intent first, then look at
+ * the target" — which the 13th review broke using writer tools
+ * outside the enumerated list. New shape: check the target first,
+ * then ask "could this command plausibly write?".
+ *
+ * Returns `{ kind: 'protected'|'deliverable', path, rule? }` on hit,
+ * else null.
+ */
+function detectBashMutationOfSensitivePath(toolInput = {}) {
+  if (isDevModeEnabled()) return null;
+  const command = getBashCommand(toolInput);
+  if (!command.trim()) return null;
+
+  const candidates = extractCommandPathCandidates(command);
+  let protectedHit = null;
+  let deliverableHit = null;
+  for (const c of candidates) {
+    if (!protectedHit) {
+      const rule = matchProtectedConfigPath(c);
+      if (rule) protectedHit = { path: c, rule };
+    }
+    if (!deliverableHit && matchesDeliverablePath(c)) {
+      deliverableHit = c;
+    }
+  }
+  if (!protectedHit && !deliverableHit) return null;
+  if (!commandHasWritePrimitive(command)) return null;
+  return protectedHit
+    ? { kind: 'protected', ...protectedHit }
+    : { kind: 'deliverable', path: deliverableHit };
+}
+
 function detectBashDeliverableWrite(toolInput = {}) {
   if (isDevModeEnabled()) return null;
   const command = getBashCommand(toolInput);
   if (!command.trim()) return null;
-  // Fixup-13: the write-intent gate is a UNION of the shell-level
-  // detection (`bashCommandHasWriteIntent`) AND the interpreter-level
-  // detection (`hasInterpreterFileWriteApi`). The 12th review
-  // reproduced a bypass via `php -r "file_put_contents('phase99-closeout.md','x');"`:
-  // the command has no shell redirect and no shell-level write cmdlet,
-  // but the interpreter IS writing a file. Combining both signals here
-  // so short-circuiting on just shell-intent no longer misses
-  // interpreter-internal writes.
-  const shellIntent = bashCommandHasWriteIntent(command);
-  const interpreterIntent = hasInterpreterFileWriteApi(command);
-  // hasInterpreterScriptWithDeliverableArg is also a write-intent
-  // signal: an interpreter invoked on a script file with a deliverable
-  // path as an argument likely opens that path for writing. If none
-  // of the three signals fire, it's truly out of scope.
-  const scriptArgIntent = hasInterpreterScriptWithDeliverableArg(command);
-  if (!shellIntent && !interpreterIntent && !scriptArgIntent) return null;
-  // If the interpreter-API signal fired, we already know the command
-  // will write a file — report it via the dedicated reason so the
-  // deny message can be specific. Interpreter wins over shell-intent
-  // because the command will bypass the shell redirect regex entirely.
+  // Fixup-14: gate now uses `commandHasWritePrimitive` (broad union)
+  // instead of the narrow `bashCommandHasWriteIntent`. This covers
+  // writer tools that don't use `>`/`>>` redirects (rsync, scp, awk
+  // -i, editors, pandoc, etc.) without requiring each to be listed
+  // individually.
+  if (!commandHasWritePrimitive(command)) return null;
   const candidates = extractCommandPathCandidates(command);
   for (const candidate of candidates) {
     if (matchesDeliverablePath(candidate)) {
@@ -649,19 +747,10 @@ function detectBashDeliverableWrite(toolInput = {}) {
   if (hasVariableWriteTarget(command)) {
     return '<computed-write-target>';
   }
-  if (interpreterIntent) {
+  if (hasInterpreterFileWriteApi(command)) {
     return '<interpreter-file-write>';
   }
-  // Fixup-13 residual: an interpreter invoked with a script FILE (not
-  // `-e`/`-c` inline mode) and a deliverable markdown path in the
-  // argument list is highly suspicious — the script likely opens that
-  // path for writing. Pattern catches `deno run --allow-write build.ts
-  // phase99-closeout.md`, `bun run build.ts final-report.md`,
-  // `ts-node script.ts phase99-closeout.md`. Accepted trade-off: this
-  // also denies `node read-readme.js README.md` for read-only use
-  // cases — callers in that scenario should either use the Read tool
-  // or set VIBE_SCIENCE_DEV=1 when they know what they're doing.
-  if (scriptArgIntent) {
+  if (hasInterpreterScriptWithDeliverableArg(command)) {
     return '<interpreter-script-with-deliverable-arg>';
   }
   return null;
