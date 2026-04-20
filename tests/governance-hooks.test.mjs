@@ -426,19 +426,31 @@ test('fixup-10 P1 #1: pre-tool-use ALLOWS Bash writes to deliverables when VIBE_
 });
 
 // ---------------------------------------------------------------------------
-// Fixup-10 P1 #2: guardrail files (the hook scripts, their dual-config
-// registration, the validator) are protected from self-modification so
-// an agent cannot disable enforcement mid-session. VIBE_SCIENCE_DEV=1
-// is the escape hatch for plugin developers working on the hook itself.
+// Fixup-10/11 P1: guardrail files (hook scripts, dual-config registration,
+// CI wiring, local settings, and canonical tests) are protected from
+// self-modification so an agent cannot disable enforcement mid-session.
+// VIBE_SCIENCE_DEV=1 is the escape hatch for plugin developers working
+// on the hook itself.
 // ---------------------------------------------------------------------------
 
-for (const guardrailPath of [
+const GUARDRAIL_SUBSTRATE_PATHS = [
     'plugin/scripts/pre-delivery-discipline.js',
     'plugin/scripts/pre-tool-use.js',
     '.claude/settings.json',
+    '.claude/settings.local.json',
     'hooks/hooks.json',
+    'package.json',
+    'package-lock.json',
+    '.github/workflows/ci.yml',
+    '__test_e2e.mjs',
+    'tests/governance-events.test.mjs',
+    'tests/governance-hooks.test.mjs',
+    'tests/delivery-discipline-skill.test.mjs',
     'tests/validate-delivery-honesty.test.mjs',
-]) {
+    'tests/delivery-discipline-hook.test.mjs',
+];
+
+for (const guardrailPath of GUARDRAIL_SUBSTRATE_PATHS) {
     test(`fixup-10 P1 #2: pre-tool-use blocks Write to guardrail file ${guardrailPath}`, () => {
         const harness = createHarness();
 
@@ -457,6 +469,25 @@ for (const guardrailPath of [
             `expected guardrail-specific deny message for ${guardrailPath}`);
     });
 }
+
+test('fixup-11 P1: .claude/settings.json deny-list includes every guardrail substrate path', () => {
+    const settings = JSON.parse(fs.readFileSync(rel('.claude/settings.json'), 'utf-8'));
+    const deny = settings.permissions?.deny ?? [];
+
+    for (const guardrailPath of GUARDRAIL_SUBSTRATE_PATHS) {
+        const settingRulePath = guardrailPath.startsWith('.')
+            ? `**/${guardrailPath}`
+            : `**/${guardrailPath}`;
+        assert.ok(
+            deny.includes(`Edit(${settingRulePath})`),
+            `.claude/settings.json must deny Edit for ${guardrailPath}`,
+        );
+        assert.ok(
+            deny.includes(`Write(${settingRulePath})`),
+            `.claude/settings.json must deny Write for ${guardrailPath}`,
+        );
+    }
+});
 
 test('fixup-10 P1 #2: VIBE_SCIENCE_DEV=1 unblocks guardrail edits (plugin developer escape)', () => {
     const harness = createHarness();

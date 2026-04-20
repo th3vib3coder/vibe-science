@@ -28,12 +28,20 @@ const PROTECTED_CONFIG_RULES = [
   // (remove hook registration, rewrite the hook script, or edit the
   // boundary allowlist) before producing a dishonest closeout. The
   // list below covers the hook scripts, their dual-config registration,
-  // and the validator implementation (which also contains test-time
-  // mutation of the boundary allowlist).
+  // the validator/test implementations, and the CI/local config substrate
+  // that decides whether the guardrail actually runs.
   'plugin/scripts/pre-delivery-discipline.js',
   'plugin/scripts/pre-tool-use.js',
   '.claude/settings.json',
+  '.claude/settings.local.json',
   'hooks/hooks.json',
+  'package.json',
+  'package-lock.json',
+  '.github/workflows/ci.yml',
+  '__test_e2e.mjs',
+  'tests/governance-events.test.mjs',
+  'tests/governance-hooks.test.mjs',
+  'tests/delivery-discipline-skill.test.mjs',
   'tests/validate-delivery-honesty.test.mjs',
   'tests/delivery-discipline-hook.test.mjs',
 ];
@@ -44,7 +52,15 @@ const GUARDRAIL_PROTECTED_RULES = new Set([
   'plugin/scripts/pre-delivery-discipline.js',
   'plugin/scripts/pre-tool-use.js',
   '.claude/settings.json',
+  '.claude/settings.local.json',
   'hooks/hooks.json',
+  'package.json',
+  'package-lock.json',
+  '.github/workflows/ci.yml',
+  '__test_e2e.mjs',
+  'tests/governance-events.test.mjs',
+  'tests/governance-hooks.test.mjs',
+  'tests/delivery-discipline-skill.test.mjs',
   'tests/validate-delivery-honesty.test.mjs',
   'tests/delivery-discipline-hook.test.mjs',
 ]);
