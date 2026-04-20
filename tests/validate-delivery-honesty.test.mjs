@@ -31,6 +31,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
+import crypto from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -46,29 +47,46 @@ const {
     hasExemptionComment,
 } = hookModule;
 
+// Placeholder for the self-import below (resolved at module eval time).
+let validatorModule;
+let ORIGINAL_SKILL_MD_HASH;
+
 // ---------------------------------------------------------------------------
 // Validator core (exported-shape function, testable)
 // ---------------------------------------------------------------------------
 
-// Pre-Phase-8 baseline: files that existed BEFORE Phase 8 and whose
-// entire current content predates the delivery-discipline contract.
-// Entries are skipped by the validator (reported as 'legacy-allowlist').
-// Adding new paths here requires an explicit code change + reviewer
-// approval — this is intentional. Per-file opt-outs for new files must
-// go through the in-file `<!-- delivery-discipline: exempt -->` comment
-// mechanism, which is logged by Wave 4 as `delivery_discipline_exemption_used`.
-export const LEGACY_ALLOWLIST = new Set([
-    'SKILL.md',                  // vibe-science monolithic meta-skill, pre-Phase-8
-    'skills/vibe/SKILL.md',      // same family, duplicate scientific-truth meta-skill
-    'CHANGELOG.md',              // pre-Phase-8 release-note entries; future entries SHOULD add attestation
-]);
+// Content-addressed legacy allowlist: pre-Phase-8 files whose CURRENT
+// content is known-legacy. Each entry is sha256(file-content). When
+// the file is edited, the hash changes, the allowlist no longer matches,
+// and the validator enforces the discipline on the new state. To
+// re-bless a file after intentional changes, update the hash here in a
+// reviewed commit — that surfaces the change and forces explicit
+// attention. Path-wide allowlisting (the previous approach) silently
+// bypassed future edits; content-hash allowlisting does not.
+export const LEGACY_CONTENT_HASHES = {
+    // Updating these hashes requires a reviewed code change. If the
+    // corresponding file is edited and a new attestation is added per
+    // the skill, the allowlist entry can be dropped entirely.
+    'SKILL.md': '79dff082973bb451db8fc0547b092fabee87b8429958239f7392b743dc73a9f2',
+    'skills/vibe/SKILL.md': '3dc410fa6075e5995040dc8e1ccf1ac3ab9a6e65aabdd7ea82c6464eae4c5a05',
+};
 
 // Directory prefixes whose entire contents are out of scope regardless
-// of allowlist. Historical snapshots + gitignored private planning.
+// of per-file rules. Historical snapshots + gitignored private planning.
+// Unlike content-hash allowlist, these stay path-wide because their
+// whole purpose is "frozen history"; adding new files in them is
+// intentionally unchecked.
 const LEGACY_DIR_PREFIXES = [
     'archive/',
     'blueprints/private/',
 ];
+
+// Boundary marker: files that contain both legacy content (below marker)
+// and new content (above marker) use this marker to partition enforcement.
+// Primary use case: CHANGELOG.md — pre-Phase-8 release notes below the
+// marker are legacy; future release-note entries above the marker must
+// include a Delivery Attestation block per the skill.
+const LEGACY_BOUNDARY_MARKER = /<!--\s*delivery-discipline:\s*legacy-boundary\s*-->/iu;
 
 // Fallback walk only skips system dirs — legacy filtering is done
 // downstream by classifySkip() so the rule is a single source of truth.
@@ -130,12 +148,46 @@ function fallbackWalk(rootDir) {
     return out;
 }
 
-function classifySkip(relPath) {
-    if (LEGACY_ALLOWLIST.has(relPath)) return 'legacy-allowlist';
+/**
+ * Classify a file as legacy (skip) or enforceable. Requires content to
+ * support content-hash allowlisting — pass the full file contents. A
+ * bare path-wide check (directory prefix) is applied first; if that
+ * doesn't match, we compute the sha256 hash and compare against
+ * LEGACY_CONTENT_HASHES. If the hash differs from the allowlist value,
+ * the file is considered edited since legacy-freeze and is enforced
+ * normally (returns null).
+ */
+function classifySkip(relPath, content) {
     for (const prefix of LEGACY_DIR_PREFIXES) {
         if (relPath.startsWith(prefix)) return 'legacy-directory';
     }
+    const expectedHash = LEGACY_CONTENT_HASHES[relPath];
+    if (expectedHash !== undefined && typeof content === 'string') {
+        const actualHash = crypto.createHash('sha256').update(content, 'utf8').digest('hex');
+        if (actualHash === expectedHash) {
+            return 'legacy-content-hash';
+        }
+        // Hash mismatch: file was edited since legacy-freeze. Do NOT skip.
+        // The validator enforces normally; the caller can inspect
+        // report.hashMismatches[] to see which allowlisted files drifted.
+    }
     return null;
+}
+
+/**
+ * Extract the enforceable content of a file. If the file contains the
+ * legacy-boundary marker, return only the content BEFORE the marker
+ * (new entries, subject to discipline). Everything from the marker
+ * onward is legacy content and skipped. Files without the marker are
+ * returned unchanged and enforced whole.
+ */
+function extractEnforceableContent(content) {
+    const match = content.match(LEGACY_BOUNDARY_MARKER);
+    if (!match) return { enforceable: content, hasBoundary: false };
+    return {
+        enforceable: content.slice(0, match.index),
+        hasBoundary: true,
+    };
 }
 
 /**
@@ -155,27 +207,24 @@ function classifySkip(relPath) {
  * them would let new edits to legacy files silently bypass enforcement
  * forever — the P1-B pitfall of the first Wave 3 implementation.
  */
+// Self-import so tests can reach validator-side data (LEGACY_CONTENT_HASHES)
+// by reference. This lets tests mutate the allowlist in tmp fixtures
+// without touching real files. Real consumers never import this back.
+validatorModule = { LEGACY_CONTENT_HASHES };
+ORIGINAL_SKILL_MD_HASH = LEGACY_CONTENT_HASHES['SKILL.md'];
+
 export function validateDeliveryHonesty(rootDir) {
     const scanned = [];
     const violations = [];
     const exempted = [];
     const legacy = [];
+    const hashMismatches = [];
     const notDeliverable = [];
 
     for (const rel of listMarkdownFiles(rootDir)) {
         scanned.push(rel);
 
-        const legacyReason = classifySkip(rel);
-        if (legacyReason !== null) {
-            legacy.push({ file: rel, reason: legacyReason });
-            continue;
-        }
-
-        if (!matchesDeliverablePath(rel)) {
-            notDeliverable.push(rel);
-            continue;
-        }
-
+        // Read early — classifySkip needs content for hash allowlist.
         const filePath = path.join(rootDir, rel);
         let content;
         try {
@@ -185,19 +234,44 @@ export function validateDeliveryHonesty(rootDir) {
             continue;
         }
 
-        if (hasExemptionComment(content)) {
+        const legacyReason = classifySkip(rel, content);
+        if (legacyReason !== null) {
+            legacy.push({ file: rel, reason: legacyReason });
+            continue;
+        }
+
+        // Hash-mismatch diagnostic: if the path is in LEGACY_CONTENT_HASHES
+        // but the hash differs, surface that explicitly so reviewers see
+        // "this was edited since legacy-freeze, now subject to enforcement".
+        if (LEGACY_CONTENT_HASHES[rel] !== undefined) {
+            hashMismatches.push(rel);
+        }
+
+        if (!matchesDeliverablePath(rel)) {
+            notDeliverable.push(rel);
+            continue;
+        }
+
+        // Split content around legacy-boundary marker. Only the
+        // enforceable portion (above the marker) is subject to the
+        // discipline. If no marker, enforceable = full content.
+        const { enforceable, hasBoundary } = extractEnforceableContent(content);
+
+        if (hasExemptionComment(enforceable)) {
             exempted.push(rel);
             continue;
         }
 
-        if (!hasDeclaredClosureClaim(content)) {
-            continue; // file matches path but declares no closure — no enforcement needed
+        if (!hasDeclaredClosureClaim(enforceable)) {
+            continue; // new content has no closure claim → no enforcement
         }
 
-        if (!hasValidAttestation(content)) {
+        if (!hasValidAttestation(enforceable)) {
             violations.push({
                 file: rel,
-                reason: 'closure-claim-without-valid-attestation',
+                reason: hasBoundary
+                    ? 'closure-claim-above-legacy-boundary-without-attestation'
+                    : 'closure-claim-without-valid-attestation',
             });
         }
     }
@@ -207,6 +281,7 @@ export function validateDeliveryHonesty(rootDir) {
         enforcedCount: scanned.length - notDeliverable.length - exempted.length - legacy.length,
         exemptedCount: exempted.length,
         legacyCount: legacy.length,
+        hashMismatches,
         violations,
         exempted,
         legacy,
@@ -359,20 +434,51 @@ describe('validateDeliveryHonesty — synthetic fixtures', () => {
         }
     });
 
-    it('marks LEGACY_ALLOWLIST entries as legacy (not exempted) even without exemption comment', () => {
-        const dir = makeTempDir('vds-legacy-');
+    it('marks a file matching LEGACY_CONTENT_HASHES as legacy (content-hash pin)', () => {
+        const dir = makeTempDir('vds-hash-');
         try {
-            // Simulate a pre-Phase-8 file — it's in the allowlist, so the
-            // validator skips it with reason 'legacy-allowlist' even when
-            // there's no `<!-- delivery-discipline: exempt -->` comment.
-            writeFile(dir, 'SKILL.md',
-                '# Legacy vibe-science meta-skill\n\n**Phase 7 is CLOSED.** No attestation.\n');
+            // Reproduce the exact content whose sha256 is in LEGACY_CONTENT_HASHES.
+            // For the test we override LEGACY_CONTENT_HASHES semantically by
+            // using a custom content whose hash we compute here and assert
+            // against. The canonical hashes in the module are for the real
+            // SKILL.md files; a tmp fixture would need its own hash. We
+            // verify by ensuring a known fixture + known hash → legacy.
+            const content = '# Legacy vibe-science meta-skill\n\n**Phase 7 is CLOSED.** No attestation.\n';
+            const expected = crypto.createHash('sha256').update(content, 'utf8').digest('hex');
+            // Monkey-patch the hash for the test: add this path to the map.
+            // (Real consumers never mutate the map; this is a test affordance.)
+            validatorModule.LEGACY_CONTENT_HASHES['SKILL.md'] = expected;
+
+            writeFile(dir, 'SKILL.md', content);
             const report = validateDeliveryHonesty(dir);
             assert.equal(report.violations.length, 0);
             assert.equal(report.legacyCount, 1);
             assert.equal(report.legacy[0].file, 'SKILL.md');
-            assert.equal(report.legacy[0].reason, 'legacy-allowlist');
+            assert.equal(report.legacy[0].reason, 'legacy-content-hash');
             assert.equal(report.exemptedCount, 0, 'must NOT trigger per-file exemption path');
+            assert.equal(report.hashMismatches.length, 0, 'exact match must not be reported as mismatch');
+        } finally {
+            // Restore original hash so later tests see the real values.
+            validatorModule.LEGACY_CONTENT_HASHES['SKILL.md'] = ORIGINAL_SKILL_MD_HASH;
+            fs.rmSync(dir, { recursive: true, force: true });
+        }
+    });
+
+    it('ENFORCES (does not skip) a hash-allowlisted file whose content has drifted', () => {
+        const dir = makeTempDir('vds-hashdrift-');
+        try {
+            // Path is in LEGACY_CONTENT_HASHES but content differs from the
+            // pinned hash → validator enforces normally and records a
+            // hash-mismatch diagnostic.
+            writeFile(dir, 'SKILL.md',
+                '# Edited vibe-science meta-skill\n\n**Phase 99 is CLOSED.** No attestation.\n');
+            const report = validateDeliveryHonesty(dir);
+            assert.equal(report.violations.length, 1,
+                'hash mismatch means the file was edited since legacy-freeze; must be enforced');
+            assert.match(report.violations[0].file, /SKILL\.md/u);
+            assert.equal(report.legacyCount, 0, 'edited file is no longer legacy');
+            assert.ok(report.hashMismatches.includes('SKILL.md'),
+                'hashMismatches diagnostic must flag the drifted file');
         } finally {
             fs.rmSync(dir, { recursive: true, force: true });
         }
@@ -387,6 +493,40 @@ describe('validateDeliveryHonesty — synthetic fixtures', () => {
             assert.equal(report.violations.length, 0);
             assert.equal(report.legacyCount, 1);
             assert.equal(report.legacy[0].reason, 'legacy-directory');
+        } finally {
+            fs.rmSync(dir, { recursive: true, force: true });
+        }
+    });
+
+    it('legacy-boundary marker: enforces content ABOVE marker, skips content BELOW', () => {
+        const dir = makeTempDir('vds-boundary-');
+        try {
+            // New entry above marker = no closure claim, no attestation needed.
+            // Legacy entries below = skipped entirely.
+            writeFile(dir, 'changelog.md',
+                '# Changelog\n\n## [Unreleased]\n\nPrepping next release.\n\n' +
+                '<!-- delivery-discipline: legacy-boundary -->\n\n' +
+                '## v7.0 — TRACE\n\nPhase 6 is CLOSED. (legacy, no attestation)\n');
+            const report = validateDeliveryHonesty(dir);
+            assert.equal(report.violations.length, 0,
+                'closure claims below the boundary are legacy and ignored');
+        } finally {
+            fs.rmSync(dir, { recursive: true, force: true });
+        }
+    });
+
+    it('legacy-boundary marker: DENIES closure claim ABOVE the marker without attestation', () => {
+        const dir = makeTempDir('vds-boundary-fail-');
+        try {
+            writeFile(dir, 'changelog.md',
+                '# Changelog\n\n## v7.1 SHIPPED\n\n**Result: PASSED**\nNo attestation.\n\n' +
+                '<!-- delivery-discipline: legacy-boundary -->\n\n' +
+                '## v7.0\n\n(legacy below — not scanned)\n');
+            const report = validateDeliveryHonesty(dir);
+            assert.equal(report.violations.length, 1,
+                'closure claim above the boundary must require attestation');
+            assert.equal(report.violations[0].reason,
+                'closure-claim-above-legacy-boundary-without-attestation');
         } finally {
             fs.rmSync(dir, { recursive: true, force: true });
         }
@@ -416,7 +556,7 @@ describe('validateDeliveryHonesty — synthetic fixtures', () => {
         }
     });
 
-    it('treats multiple files correctly in one scan (mix of pass, fail, exempt, legacy, non-deliverable)', () => {
+    it('treats multiple files correctly in one scan (mix of pass, fail, exempt, non-deliverable)', () => {
         const dir = makeTempDir('vds-mixed-');
         try {
             writeFile(dir, 'phase1-closeout.md',
@@ -425,16 +565,13 @@ describe('validateDeliveryHonesty — synthetic fixtures', () => {
                 '# Phase 2\n\n**Phase 2 is CLOSED.**\n\nMissing attestation.\n');
             writeFile(dir, 'phase3-closeout.md',
                 '<!-- delivery-discipline: exempt -->\n\n# Phase 3\n\n**Phase 3 is CLOSED.**\n');
-            writeFile(dir, 'SKILL.md',
-                '# Legacy skill\n\n**Phase 4 is CLOSED.** No attestation, but allowlisted.\n');
             writeFile(dir, 'notes.md', '# Random prose without closure\n');
 
             const report = validateDeliveryHonesty(dir);
             assert.equal(report.violations.length, 1);
             assert.match(report.violations[0].file, /phase2-closeout/u);
             assert.equal(report.exemptedCount, 1, 'phase3 uses per-file exemption');
-            assert.equal(report.legacyCount, 1, 'SKILL.md is allowlisted legacy');
-            assert.equal(report.scannedCount, 5);
+            assert.equal(report.scannedCount, 4);
         } finally {
             fs.rmSync(dir, { recursive: true, force: true });
         }

@@ -2,6 +2,20 @@
 
 All notable changes to Vibe Science are documented here.
 
+<!--
+  New release entries go ABOVE the legacy-boundary marker below and MUST
+  include a `## Delivery Attestation` block per the delivery-discipline
+  skill. Entries below the marker are pre-Phase-8 history and are
+  grandfathered. To move the boundary (blessing more history as "new"),
+  edit this marker position in a reviewed commit.
+-->
+
+<!-- delivery-discipline: legacy-boundary -->
+<!-- ============================================================ -->
+<!-- Everything below this line is pre-Phase-8 legacy history.    -->
+<!-- Do NOT add new entries below; add them above the marker.     -->
+<!-- ============================================================ -->
+
 ## [7.0.0] — 2026-03-24 — TRACE (Runtime Closure Release)
 
 > **Trigger:** v7 implementation from the TRACE spec, followed by repeated adversarial review and paranoid debugging until convergence.
