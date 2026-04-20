@@ -31,6 +31,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 
 // ---------------------------------------------------------------------------
@@ -51,11 +52,19 @@ export function matchesDeliverablePath(filePath) {
   return /(closeout|status|summary|verdict|phase[\d.-]+|wave[\d-]+|sprint[\d-]*|skill|readme|changelog)/u.test(basename);
 }
 
-// Closure vocabulary: positive closure + failure/partial statuses.
-// A declaration of FAILED/BLOCKED/PARTIAL/FALSE-POSITIVE is also a
-// consequential closeout claim and must be auditable, matching the
-// skill's stated scope ("pass/fail status declarations").
-const CLOSURE_WORD = '(?:CLOSED|DONE|PASS(?:ED)?|SHIPPED|COMPLETED?|FINALIZED|READY|FAILED|BLOCKED|PARTIAL|FALSE-POSITIVE)';
+// Closure vocabulary: positive closure + failure/partial statuses +
+// review-verdict statuses. A declaration of FAIL/FAILED/BLOCKED/
+// PARTIAL/FALSE-POSITIVE/REJECTED is also a consequential closeout
+// claim and must be auditable, matching the skill's stated scope
+// ("pass/fail status declarations").
+//
+// fixup-5 P2: `FAIL` added alongside `FAILED` (common short form used
+// in gate tables: `| G1 | FAIL |`). `ACCEPTED`/`REJECTED` added as
+// review-verdict closeouts. `PASS(?:ED)?` and `FAIL(?:ED)?` keep both
+// the imperative and past-participle forms.
+const CLOSURE_WORD =
+  '(?:CLOSED|DONE|PASS(?:ED)?|SHIPPED|COMPLETED?|FINALIZED|READY|' +
+  'FAIL(?:ED)?|BLOCKED|PARTIAL|FALSE-POSITIVE|ACCEPTED|REJECTED)';
 
 // The 5 declarative-context patterns, each returned as a fresh regex
 // with the `g` + `i` + `m`/`u` flags needed by callers that want
@@ -324,25 +333,108 @@ export function hasExemptionComment(text) {
 }
 
 /**
- * Legacy-boundary marker splitting. If `text` contains
- * `<!-- delivery-discipline: legacy-boundary -->`, everything from the
- * marker onward is considered pre-Phase-8 legacy history and is NOT
- * subject to the discipline. Only the portion BEFORE the marker is
- * enforced. Files without the marker are returned unchanged.
+ * Normalize line endings for hash stability. Git's autocrlf translation
+ * means a Windows checkout has CRLF while the committed blob is LF.
+ * Hashing the raw working-copy bytes would produce OS-dependent hashes.
+ * We normalize CRLF and bare CR to LF before hashing so the pinned hash
+ * value is the same everywhere.
+ */
+function normalizeLineEndings(text) {
+  return text.replace(/\r\n/gu, '\n').replace(/\r/gu, '\n');
+}
+
+/**
+ * Compute the canonical below-boundary hash for a given text slice.
+ * Exported for tooling / tests: given the below-marker content, returns
+ * the sha256 hex that must appear in the `hash=` attribute of the
+ * marker for the boundary to validate.
+ */
+export function computeBoundaryHash(belowContent) {
+  const normalized = normalizeLineEndings(typeof belowContent === 'string' ? belowContent : '');
+  return crypto.createHash('sha256').update(normalized, 'utf8').digest('hex');
+}
+
+// Regex that recognizes the legacy-boundary marker in both the
+// deprecated bare form (no hash) and the required hash-pinned form.
+// Bare form is matched only so we can emit a specific diagnostic; it
+// does NOT grant a boundary (callers fall back to full-file enforcement
+// when the hash is absent or mismatches).
+const LEGACY_BOUNDARY_MARKER_RE =
+  /<!--\s*delivery-discipline:\s*legacy-boundary(?:\s+hash=([a-f0-9]{64}))?\s*-->/iu;
+
+/**
+ * Legacy-boundary marker splitting with integrity pin.
+ *
+ * Before fixup-5 the marker was bare: `<!-- delivery-discipline:
+ * legacy-boundary -->`. Anyone could append new closure claims BELOW
+ * the marker and they would be silently grandfathered — a file-wide
+ * bypass scoped to the lower half of the file. An adversarial review
+ * caught this by appending a new `## [8.0.0] SHIPPED` section below
+ * the marker and confirming both hook and validator allowed it.
+ *
+ * Fixup-5 requires the marker to carry a sha256 hash of the content
+ * below it (LF-normalized). Any change to below-marker content makes
+ * the hash mismatch, which DISABLES the boundary and re-subjects the
+ * whole file to the discipline. Re-blessing the legacy content means
+ * updating the hash in a reviewed commit (git diff shows both the
+ * content change and the hash change, so the re-bless is visible).
+ *
+ * Returns:
+ *   {
+ *     enforceable: string,   // the slice to enforce against
+ *     hasBoundary: boolean,  // true only when a VALID marker is present
+ *     hashValid: boolean,    // true when no marker OR hash matches
+ *     reason?: string,       // set when hashValid === false
+ *     expectedHash?: string, // hash declared in the marker (if any)
+ *     actualHash?: string,   // hash computed over below-marker content
+ *   }
+ *
+ * When `hashValid` is false (bare marker OR drift), `enforceable` is
+ * the FULL text — the boundary does not take effect. Callers can pass
+ * `reason` through to diagnostics but do not need to special-case
+ * enforcement: enforcing the full text is the correct fallback.
  *
  * Shared by the hook (evaluateDeliveryDiscipline) and the CI validator
- * (validateDeliveryHonesty) so write-time and CI-time enforcement use
- * identical semantics — no drift possible between them.
+ * (validateDeliveryHonesty) via direct import so write-time and
+ * CI-time enforcement use identical semantics — no drift possible.
  */
 export function extractEnforceableContent(text) {
-  if (typeof text !== 'string') return { enforceable: '', hasBoundary: false };
-  const match = text.match(/<!--\s*delivery-discipline:\s*legacy-boundary\s*-->/iu);
+  if (typeof text !== 'string') {
+    return { enforceable: '', hasBoundary: false, hashValid: true };
+  }
+  const match = text.match(LEGACY_BOUNDARY_MARKER_RE);
   if (!match || match.index === undefined) {
-    return { enforceable: text, hasBoundary: false };
+    return { enforceable: text, hasBoundary: false, hashValid: true };
+  }
+  const expectedHash = match[1] ?? null;
+  const belowContent = text.slice(match.index + match[0].length);
+  if (expectedHash === null) {
+    // Deprecated bare marker. Fall back to full-file enforcement so
+    // a missing hash never silently grandfathers the below portion.
+    return {
+      enforceable: text,
+      hasBoundary: false,
+      hashValid: false,
+      reason: 'legacy-boundary-without-hash',
+    };
+  }
+  const actualHash = computeBoundaryHash(belowContent);
+  if (actualHash !== expectedHash) {
+    return {
+      enforceable: text,
+      hasBoundary: false,
+      hashValid: false,
+      reason: 'legacy-boundary-hash-mismatch',
+      expectedHash,
+      actualHash,
+    };
   }
   return {
     enforceable: text.slice(0, match.index),
     hasBoundary: true,
+    hashValid: true,
+    expectedHash,
+    actualHash,
   };
 }
 
@@ -442,7 +534,20 @@ export function evaluateDeliveryDiscipline(event, options = {}) {
   // content BEFORE the marker is subject to the discipline. The
   // validator (validateDeliveryHonesty) uses the same split, so write-
   // time and CI-time enforcement stay identical.
-  const { enforceable } = extractEnforceableContent(content);
+  //
+  // Fixup-5: the marker must carry a sha256 hash of its below content
+  // (`hash=<64-hex>`). When the hash is missing or mismatches,
+  // extractEnforceableContent falls back to enforcing the FULL file,
+  // so new closure claims below a drifted boundary can no longer be
+  // grandfathered. We also surface the diagnostic so the deny message
+  // points at the real problem (drifted boundary vs missing attestation).
+  const {
+    enforceable,
+    hashValid,
+    reason: boundaryReason,
+    expectedHash,
+    actualHash,
+  } = extractEnforceableContent(content);
 
   // Fast exit 3: no declared closure claim in the enforceable slice →
   // nothing to enforce.
@@ -484,6 +589,23 @@ export function evaluateDeliveryDiscipline(event, options = {}) {
     return { decision: 'allow', reason: 'closure-with-valid-attestation' };
   }
 
+  // Attestation is missing / invalid. If the boundary was bare or
+  // drifted, surface THAT diagnostic first: the user added (or left)
+  // closure claims below a boundary that no longer protects them, and
+  // the right fix is either (a) removing the below-marker claim,
+  // (b) re-blessing the boundary hash explicitly, or
+  // (c) converting a bare marker to the hash-pinned form.
+  if (hashValid === false) {
+    return {
+      decision: 'deny',
+      reason: boundaryReason ?? 'legacy-boundary-invalid',
+      matched: closureExcerpt(enforceable),
+      targetPath: filePath,
+      expectedHash,
+      actualHash,
+    };
+  }
+
   return {
     decision: 'deny',
     reason: 'missing-or-invalid-attestation',
@@ -493,7 +615,11 @@ export function evaluateDeliveryDiscipline(event, options = {}) {
 }
 
 function closureExcerpt(text) {
-  const CLOSURE = /\b(CLOSED|DONE|PASS(?:ED)?|SHIPPED|COMPLETED?|FINALIZED|READY)\b/iu;
+  // Derive from CLOSURE_WORD so an excerpt is shown for every status
+  // in the vocabulary, including negative verdicts like FAIL/REJECTED.
+  // Using the shared constant also prevents future drift between the
+  // detection regex and the diagnostic excerpt.
+  const CLOSURE = new RegExp(`\\b${CLOSURE_WORD}\\b`, 'iu');
   const m = text.match(CLOSURE);
   if (!m) return '<closure>';
   const idx = m.index;
@@ -512,7 +638,7 @@ function writeAllowAndExit() {
   process.exit(0);
 }
 
-function writeDenyAndExit(targetPath, matched, reasonCode) {
+function writeDenyAndExit(targetPath, matched, reasonCode, extra = {}) {
   let reason;
   if (reasonCode === 'strict-mode-audit-unavailable') {
     reason =
@@ -527,6 +653,27 @@ function writeDenyAndExit(targetPath, matched, reasonCode) {
       `DELIVERY DISCIPLINE BLOCK (strict mode): internal error while evaluating ${targetPath}. ` +
       `Strict mode fails closed because the discipline cannot be reliably evaluated. ` +
       `Check hook logs or run with VIBE_SCIENCE_STRICT unset to bypass.`;
+  } else if (reasonCode === 'legacy-boundary-without-hash') {
+    reason =
+      `DELIVERY DISCIPLINE BLOCK: ${targetPath} uses a bare legacy-boundary marker ` +
+      `(\`<!-- delivery-discipline: legacy-boundary -->\`) that does not carry a hash. ` +
+      `Bare markers no longer grandfather below-marker content because they permit ` +
+      `silent bypass by appending new closure claims. Convert the marker to the ` +
+      `hash-pinned form \`<!-- delivery-discipline: legacy-boundary hash=<sha256-hex> -->\`, ` +
+      `where the hash covers the LF-normalized content below the marker. ` +
+      `See .claude/skills/delivery-discipline/SKILL.md.`;
+  } else if (reasonCode === 'legacy-boundary-hash-mismatch') {
+    const expected = extra.expectedHash || '<missing>';
+    const actual = extra.actualHash || '<unknown>';
+    reason =
+      `DELIVERY DISCIPLINE BLOCK: ${targetPath} has a legacy-boundary marker whose ` +
+      `declared hash does NOT match the current below-marker content. ` +
+      `Expected: ${expected}; actual: ${actual}. ` +
+      `This means below-marker content was modified since the boundary was blessed. ` +
+      `Either (a) remove the new closure claim below the marker, ` +
+      `(b) add a valid Delivery Attestation for the full enforceable range, or ` +
+      `(c) re-bless the boundary by updating the hash in a reviewed commit. ` +
+      `See .claude/skills/delivery-discipline/SKILL.md.`;
   } else {
     reason =
       `DELIVERY DISCIPLINE BLOCK: ${targetPath} contains a closure claim ("${matched}") ` +
@@ -647,6 +794,7 @@ if (isDirectRun) {
           result.targetPath || '<unknown>',
           result.matched || '<closure>',
           result.reason,
+          { expectedHash: result.expectedHash, actualHash: result.actualHash },
         );
       } else {
         writeAllowAndExit();

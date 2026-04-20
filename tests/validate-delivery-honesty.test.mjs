@@ -54,7 +54,14 @@ const {
     // the marker while the validator did. Sharing the helper makes
     // that class of drift structurally impossible.
     extractEnforceableContent,
+    // Fixup-5: hashed legacy-boundary markers. Tests compute expected
+    // hashes inline so fixtures stay self-consistent.
+    computeBoundaryHash,
 } = hookModule;
+
+function hashedBoundaryMarker(belowContent) {
+    return `<!-- delivery-discipline: legacy-boundary hash=${computeBoundaryHash(belowContent)} -->`;
+}
 
 // Placeholder for the self-import below (resolved at module eval time).
 let validatorModule;
@@ -253,9 +260,17 @@ export function validateDeliveryHonesty(rootDir) {
         }
 
         // Split content around legacy-boundary marker. Only the
-        // enforceable portion (above the marker) is subject to the
-        // discipline. If no marker, enforceable = full content.
-        const { enforceable, hasBoundary } = extractEnforceableContent(content);
+        // enforceable portion (above a VALID marker) is subject to
+        // the discipline. If no marker or the marker is bare/drifted,
+        // enforceable = full content (fail-closed).
+        const {
+            enforceable,
+            hasBoundary,
+            hashValid,
+            reason: boundaryReason,
+            expectedHash,
+            actualHash,
+        } = extractEnforceableContent(content);
 
         if (hasExemptionComment(enforceable)) {
             exempted.push(rel);
@@ -270,12 +285,24 @@ export function validateDeliveryHonesty(rootDir) {
         // attestation scoped to the text between this claim and the
         // next. Prevents stale/shared attestation bypass.
         if (!everyClosureHasBoundAttestation(enforceable)) {
-            violations.push({
-                file: rel,
-                reason: hasBoundary
-                    ? 'closure-claim-above-legacy-boundary-without-attestation'
-                    : 'closure-claim-without-valid-attestation',
-            });
+            // Surface boundary-integrity diagnostics first: if the
+            // marker was bare or its hash drifted, that IS the root
+            // cause the reviewer needs to see in the CI log, not the
+            // generic "add an attestation" message.
+            let reason;
+            if (hashValid === false && boundaryReason) {
+                reason = boundaryReason; // 'legacy-boundary-without-hash' | 'legacy-boundary-hash-mismatch'
+            } else if (hasBoundary) {
+                reason = 'closure-claim-above-legacy-boundary-without-attestation';
+            } else {
+                reason = 'closure-claim-without-valid-attestation';
+            }
+            const entry = { file: rel, reason };
+            if (reason === 'legacy-boundary-hash-mismatch') {
+                entry.expectedHash = expectedHash;
+                entry.actualHash = actualHash;
+            }
+            violations.push(entry);
         }
     }
 
@@ -501,35 +528,102 @@ describe('validateDeliveryHonesty — synthetic fixtures', () => {
         }
     });
 
-    it('legacy-boundary marker: enforces content ABOVE marker, skips content BELOW', () => {
+    it('legacy-boundary marker (hashed): enforces content ABOVE marker, skips content BELOW', () => {
         const dir = makeTempDir('vds-boundary-');
         try {
             // New entry above marker = no closure claim, no attestation needed.
-            // Legacy entries below = skipped entirely.
+            // Legacy entries below = skipped entirely BECAUSE the hash matches.
+            const below = '\n\n## v7.0 — TRACE\n\nPhase 6 is CLOSED. (legacy, no attestation)\n';
             writeFile(dir, 'changelog.md',
                 '# Changelog\n\n## [Unreleased]\n\nPrepping next release.\n\n' +
-                '<!-- delivery-discipline: legacy-boundary -->\n\n' +
-                '## v7.0 — TRACE\n\nPhase 6 is CLOSED. (legacy, no attestation)\n');
+                `${hashedBoundaryMarker(below)}${below}`);
             const report = validateDeliveryHonesty(dir);
             assert.equal(report.violations.length, 0,
-                'closure claims below the boundary are legacy and ignored');
+                'closure claims below a valid hashed boundary are legacy and ignored');
         } finally {
             fs.rmSync(dir, { recursive: true, force: true });
         }
     });
 
-    it('legacy-boundary marker: DENIES closure claim ABOVE the marker without attestation', () => {
+    it('legacy-boundary marker (hashed): DENIES closure claim ABOVE the marker without attestation', () => {
         const dir = makeTempDir('vds-boundary-fail-');
         try {
+            const below = '\n\n## v7.0\n\n(legacy below — not scanned)\n';
             writeFile(dir, 'changelog.md',
                 '# Changelog\n\n## v7.1 SHIPPED\n\n**Result: PASSED**\nNo attestation.\n\n' +
-                '<!-- delivery-discipline: legacy-boundary -->\n\n' +
-                '## v7.0\n\n(legacy below — not scanned)\n');
+                `${hashedBoundaryMarker(below)}${below}`);
             const report = validateDeliveryHonesty(dir);
             assert.equal(report.violations.length, 1,
                 'closure claim above the boundary must require attestation');
             assert.equal(report.violations[0].reason,
                 'closure-claim-above-legacy-boundary-without-attestation');
+        } finally {
+            fs.rmSync(dir, { recursive: true, force: true });
+        }
+    });
+
+    // Fixup-5 P1: the exact bypass the 5th adversarial review reproduced.
+    // Someone appends a new `## [8.0.0] SHIPPED` section below the
+    // marker. Without the hash pin, both hook and validator would allow
+    // it. With hash pin, the hash mismatches → full file is enforced →
+    // the new closure claim below the (now-invalid) marker needs an
+    // attestation and doesn't have one → violation with a specific
+    // reason that tells the reviewer WHERE the problem is.
+    it('fixup-5 P1: DENIES a CHANGELOG-shaped file with a new closure appended below the marker', () => {
+        const dir = makeTempDir('vds-hash-drift-');
+        try {
+            const originalBelow = '\n\n## v7.0\n\nLegacy, no attestation.\n';
+            const pinnedHash = computeBoundaryHash(originalBelow);
+            // Tampered: appended `## [8.0.0]` + closure without updating pin.
+            const tamperedBelow = originalBelow + '\n## [8.0.0]\n\nStatus: SHIPPED\n\nNo attestation.\n';
+            writeFile(dir, 'changelog.md',
+                '# Changelog\n\n## [Unreleased]\n\nPrep.\n\n' +
+                `<!-- delivery-discipline: legacy-boundary hash=${pinnedHash} -->${tamperedBelow}`);
+            const report = validateDeliveryHonesty(dir);
+            assert.equal(report.violations.length, 1,
+                'appending a closure below the marker must be detected via hash drift');
+            assert.equal(report.violations[0].reason, 'legacy-boundary-hash-mismatch',
+                'reason must pinpoint the boundary integrity issue');
+            assert.equal(report.violations[0].expectedHash, pinnedHash);
+            assert.ok(
+                report.violations[0].actualHash && report.violations[0].actualHash !== pinnedHash,
+                'actualHash must be present and different from expected',
+            );
+        } finally {
+            fs.rmSync(dir, { recursive: true, force: true });
+        }
+    });
+
+    it('fixup-5 P1: DENIES a file with a BARE legacy-boundary marker (no hash) and a closure below', () => {
+        const dir = makeTempDir('vds-bare-marker-');
+        try {
+            writeFile(dir, 'changelog.md',
+                '# Changelog\n\n## [Unreleased]\n\n' +
+                '<!-- delivery-discipline: legacy-boundary -->\n\n' +
+                '## v7.0\n\n**Phase 7 is CLOSED.**\n');
+            const report = validateDeliveryHonesty(dir);
+            assert.equal(report.violations.length, 1,
+                'bare marker must not grandfather below content under fixup-5');
+            assert.equal(report.violations[0].reason, 'legacy-boundary-without-hash',
+                'reason must tell the reviewer to convert the marker to hash-pinned form');
+        } finally {
+            fs.rmSync(dir, { recursive: true, force: true });
+        }
+    });
+
+    it('fixup-5 P1: ALLOWS a bare marker file when there are NO closure claims anywhere', () => {
+        // If no closure claim is declared anywhere, a bare marker is a
+        // cosmetic no-op and the file is fine. Enforcement kicks in
+        // only when there's something to enforce.
+        const dir = makeTempDir('vds-bare-noclaim-');
+        try {
+            writeFile(dir, 'changelog.md',
+                '# Changelog\n\n## [Unreleased]\n\nPrepping.\n\n' +
+                '<!-- delivery-discipline: legacy-boundary -->\n\n' +
+                'Historical context paragraph, no closure verdicts.\n');
+            const report = validateDeliveryHonesty(dir);
+            assert.equal(report.violations.length, 0,
+                'no closure claim means no enforcement, bare marker or not');
         } finally {
             fs.rmSync(dir, { recursive: true, force: true });
         }

@@ -6,11 +6,16 @@ All notable changes to Vibe Science are documented here.
   New release entries go ABOVE the legacy-boundary marker below and MUST
   include a `## Delivery Attestation` block per the delivery-discipline
   skill. Entries below the marker are pre-Phase-8 history and are
-  grandfathered. To move the boundary (blessing more history as "new"),
-  edit this marker position in a reviewed commit.
+  grandfathered ONLY while the sha256 hash in the marker matches the
+  LF-normalized content below it. Adding new content below the marker
+  without updating the hash makes the boundary invalid and re-subjects
+  the whole file to enforcement (this is intentional — it blocks silent
+  bypass via below-marker appends). To re-bless the legacy region, run
+    node -e "import('./plugin/scripts/pre-delivery-discipline.js').then(m=>{const fs=require('node:fs');const t=fs.readFileSync('CHANGELOG.md','utf8');const i=t.search(/<!--\s*delivery-discipline:\s*legacy-boundary/iu);const end=t.indexOf('-->',i)+3;console.log(m.computeBoundaryHash(t.slice(end)))})"
+  and update the hash= value below in a reviewed commit.
 -->
 
-<!-- delivery-discipline: legacy-boundary -->
+<!-- delivery-discipline: legacy-boundary hash=ce6541dbe61d4dabb7ee6ed4f96b091cedd7fea93eee44da59cffd762e2315ee -->
 <!-- ============================================================ -->
 <!-- Everything below this line is pre-Phase-8 legacy history.    -->
 <!-- Do NOT add new entries below; add them above the marker.     -->

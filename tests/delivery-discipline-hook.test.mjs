@@ -34,7 +34,18 @@ const {
     // Shared with validateDeliveryHonesty via import — any drift here
     // would flow into both hook and validator simultaneously, by design.
     extractEnforceableContent,
+    // Fixup-5: hashed legacy-boundary markers require the exact hash
+    // of the below-marker content. Tests compute it inline using the
+    // canonical helper so fixture hashes are always correct.
+    computeBoundaryHash,
 } = hookModule;
+
+// Helper: build a hash-pinned legacy-boundary marker for the given
+// below-marker content. Used by tests that exercise the new fixup-5
+// semantics instead of the deprecated bare marker.
+function hashedBoundaryMarker(belowContent) {
+    return `<!-- delivery-discipline: legacy-boundary hash=${computeBoundaryHash(belowContent)} -->`;
+}
 
 // Valid attestation fixture reused across tests.
 const VALID_ATTESTATION = `## Delivery Attestation
@@ -126,6 +137,36 @@ describe('hasDeclaredClosureClaim', () => {
         assert.equal(hasDeclaredClosureClaim('Phase 7 is FAILED.'), true);
         assert.equal(hasDeclaredClosureClaim('**Sprint 0 is BLOCKED**'), true);
         assert.equal(hasDeclaredClosureClaim('| gate | FALSE-POSITIVE |'), true);
+    });
+
+    // Fixup-5 P2: expand closure vocabulary to cover common status
+    // tokens the previous regex missed: `FAIL` (imperative form of
+    // FAILED, very common in gate tables) and review verdicts
+    // `ACCEPTED`/`REJECTED`. The 5th adversarial review reproduced a
+    // bypass using `Verdict: FAIL` and `| gate | FAIL |`.
+    it('matches FAIL (not just FAILED) in every declarative form', () => {
+        assert.equal(hasDeclaredClosureClaim('Verdict: FAIL'), true);
+        assert.equal(hasDeclaredClosureClaim('| gate | FAIL |'), true);
+        assert.equal(hasDeclaredClosureClaim('**Result: FAIL**'), true);
+        assert.equal(hasDeclaredClosureClaim('Phase 8 is FAIL.'), true);
+        assert.equal(hasDeclaredClosureClaim('FAIL.'), true); // line-start form
+    });
+
+    it('matches review-verdict declarations (ACCEPTED / REJECTED)', () => {
+        assert.equal(hasDeclaredClosureClaim('Verdict: ACCEPTED'), true);
+        assert.equal(hasDeclaredClosureClaim('Verdict: REJECTED'), true);
+        assert.equal(hasDeclaredClosureClaim('| r2-review | ACCEPTED |'), true);
+        assert.equal(hasDeclaredClosureClaim('| r2-review | REJECTED |'), true);
+        assert.equal(hasDeclaredClosureClaim('**Result: REJECTED**'), true);
+        assert.equal(hasDeclaredClosureClaim('Phase 9 is ACCEPTED.'), true);
+    });
+
+    it('rejects FAILURES/FAILING/FAILS as they are not declarative status words', () => {
+        // Closure words in the vocabulary are terminal status tokens.
+        // Conjugations like FAILING / FAILURES that appear in narrative
+        // prose should NOT trigger enforcement.
+        assert.equal(hasDeclaredClosureClaim('The test is FAILING intermittently.'), false);
+        assert.equal(hasDeclaredClosureClaim('Recent FAILURES are documented below.'), false);
     });
 
     // fixup-4 P2-B: former pattern 3 (generic bold-wrapped closure word)
@@ -431,40 +472,139 @@ describe('hasExemptionComment', () => {
 // ---------------------------------------------------------------------------
 
 describe('extractEnforceableContent', () => {
-    it('returns full text with hasBoundary=false when no marker', () => {
+    it('returns full text with hasBoundary=false, hashValid=true when no marker', () => {
         const text = '# Doc\n\nNo marker here.\n';
-        const { enforceable, hasBoundary } = extractEnforceableContent(text);
-        assert.equal(enforceable, text);
-        assert.equal(hasBoundary, false);
+        const result = extractEnforceableContent(text);
+        assert.equal(result.enforceable, text);
+        assert.equal(result.hasBoundary, false);
+        assert.equal(result.hashValid, true);
     });
 
-    it('returns only the portion BEFORE the marker when marker present', () => {
+    it('returns only the portion BEFORE the marker when marker carries a matching hash', () => {
         const above = '# Changelog\n\n## [Unreleased]\nNext release prep.\n\n';
         const below = '\n## v7.0 — legacy content below\n';
-        const text = `${above}<!-- delivery-discipline: legacy-boundary -->${below}`;
-        const { enforceable, hasBoundary } = extractEnforceableContent(text);
-        assert.equal(enforceable, above);
-        assert.equal(hasBoundary, true);
+        const text = `${above}${hashedBoundaryMarker(below)}${below}`;
+        const result = extractEnforceableContent(text);
+        assert.equal(result.enforceable, above);
+        assert.equal(result.hasBoundary, true);
+        assert.equal(result.hashValid, true);
     });
 
-    it('is case-insensitive on the marker (matches IDEs that mangle case)', () => {
-        const text = `Above.\n<!-- Delivery-Discipline: LEGACY-boundary -->\nBelow.`;
-        const { enforceable, hasBoundary } = extractEnforceableContent(text);
-        assert.equal(enforceable, 'Above.\n');
-        assert.equal(hasBoundary, true);
+    it('is case-insensitive on the marker keyword (matches IDEs that mangle case)', () => {
+        const below = '\nBelow.';
+        const hash = computeBoundaryHash(below);
+        const text = `Above.\n<!-- Delivery-Discipline: LEGACY-boundary hash=${hash} -->${below}`;
+        const result = extractEnforceableContent(text);
+        assert.equal(result.enforceable, 'Above.\n');
+        assert.equal(result.hasBoundary, true);
+        assert.equal(result.hashValid, true);
     });
 
     it('gracefully handles non-string input', () => {
-        assert.deepEqual(extractEnforceableContent(null), { enforceable: '', hasBoundary: false });
-        assert.deepEqual(extractEnforceableContent(undefined), { enforceable: '', hasBoundary: false });
-        assert.deepEqual(extractEnforceableContent(42), { enforceable: '', hasBoundary: false });
+        assert.deepEqual(
+            extractEnforceableContent(null),
+            { enforceable: '', hasBoundary: false, hashValid: true },
+        );
+        assert.deepEqual(
+            extractEnforceableContent(undefined),
+            { enforceable: '', hasBoundary: false, hashValid: true },
+        );
+        assert.deepEqual(
+            extractEnforceableContent(42),
+            { enforceable: '', hasBoundary: false, hashValid: true },
+        );
     });
 
-    it('treats a marker at position 0 as "entire file is legacy"', () => {
-        const text = '<!-- delivery-discipline: legacy-boundary -->\nall legacy below\n';
-        const { enforceable, hasBoundary } = extractEnforceableContent(text);
-        assert.equal(enforceable, '');
-        assert.equal(hasBoundary, true);
+    it('treats a hashed marker at position 0 as "entire file is legacy"', () => {
+        const below = '\nall legacy below\n';
+        const text = `${hashedBoundaryMarker(below)}${below}`;
+        const result = extractEnforceableContent(text);
+        assert.equal(result.enforceable, '');
+        assert.equal(result.hasBoundary, true);
+        assert.equal(result.hashValid, true);
+    });
+
+    // Fixup-5 P1: bare marker (no hash) must NOT grant boundary.
+    // Otherwise anyone could append new closure claims below it and
+    // silently bypass the discipline.
+    it('rejects a bare marker (no hash) and falls back to full-file enforcement', () => {
+        const text = '# Changelog\n\n## [Unreleased]\n\n<!-- delivery-discipline: legacy-boundary -->\n\n## v7.0\n\n**Phase 7 is CLOSED.**\n';
+        const result = extractEnforceableContent(text);
+        assert.equal(result.hasBoundary, false,
+            'bare marker must NOT grant boundary under fixup-5 semantics');
+        assert.equal(result.hashValid, false);
+        assert.equal(result.reason, 'legacy-boundary-without-hash');
+        assert.equal(result.enforceable, text,
+            'fall back to enforcing the whole file when the marker is bare');
+    });
+
+    // Fixup-5 P1: the whole point — appending new below-marker content
+    // changes the hash, which invalidates the boundary. The file becomes
+    // fully enforced until the hash is explicitly re-blessed.
+    it('rejects a hash-pinned marker whose hash no longer matches below content (drift)', () => {
+        const originalBelow = '\n## v7.0\n\nLegacy history.\n';
+        const hash = computeBoundaryHash(originalBelow);
+        // Tampered content: someone added `## [8.0.0]` below the marker
+        // without re-blessing the hash. The exact attack the reviewer
+        // reproduced on CHANGELOG.md.
+        const tamperedBelow = '\n## v7.0\n\nLegacy history.\n\n## [8.0.0]\n\nStatus: SHIPPED\n';
+        const text = `# Changelog\n\n<!-- delivery-discipline: legacy-boundary hash=${hash} -->${tamperedBelow}`;
+        const result = extractEnforceableContent(text);
+        assert.equal(result.hasBoundary, false,
+            'drifted boundary must NOT grant bypass');
+        assert.equal(result.hashValid, false);
+        assert.equal(result.reason, 'legacy-boundary-hash-mismatch');
+        assert.equal(result.enforceable, text,
+            'fall back to enforcing the whole file on drift');
+        assert.equal(result.expectedHash, hash);
+        assert.notEqual(result.actualHash, hash);
+    });
+
+    // Line-ending stability: the hash is computed on LF-normalized
+    // content, so a CRLF-formatted file checked out on Windows still
+    // validates against a hash computed on the LF version.
+    it('validates a hashed marker when below content uses CRLF line endings', () => {
+        const belowLf = '\n## v7.0\n\nLegacy history.\n';
+        const hash = computeBoundaryHash(belowLf);
+        const belowCrlf = belowLf.replace(/\n/gu, '\r\n');
+        const text = `# Changelog\n<!-- delivery-discipline: legacy-boundary hash=${hash} -->${belowCrlf}`;
+        const result = extractEnforceableContent(text);
+        assert.equal(result.hasBoundary, true,
+            'CRLF below-marker content must validate against LF-normalized hash');
+        assert.equal(result.hashValid, true);
+    });
+});
+
+describe('computeBoundaryHash', () => {
+    it('returns a stable sha256 hex for identical content', () => {
+        const a = computeBoundaryHash('hello');
+        const b = computeBoundaryHash('hello');
+        assert.equal(a, b);
+        assert.match(a, /^[a-f0-9]{64}$/u);
+    });
+
+    it('is LF-normalized: CRLF and LF variants produce the same hash', () => {
+        const lf = '# Doc\nline 1\nline 2\n';
+        const crlf = lf.replace(/\n/gu, '\r\n');
+        assert.equal(computeBoundaryHash(lf), computeBoundaryHash(crlf));
+    });
+
+    it('treats bare CR as LF (handles old-Mac line endings)', () => {
+        const lf = 'a\nb\nc';
+        const cr = 'a\rb\rc';
+        assert.equal(computeBoundaryHash(lf), computeBoundaryHash(cr));
+    });
+
+    it('returns a stable value for non-string inputs (empty → known hash)', () => {
+        // sha256 of empty string
+        const emptyHash = '0000000000000000000000000000000000000000000000000000000000000000';
+        const real = computeBoundaryHash('');
+        // Just assert it's consistent; the actual value is deterministic.
+        assert.equal(real, computeBoundaryHash(''));
+        assert.notEqual(real, emptyHash); // nothing magical, just a stable hash
+        assert.equal(computeBoundaryHash(null), computeBoundaryHash(''),
+            'non-string input hashes the same as empty string');
+        assert.equal(computeBoundaryHash(undefined), computeBoundaryHash(''));
     });
 });
 
@@ -632,27 +772,28 @@ describe('evaluateDeliveryDiscipline', () => {
     // legacy release notes below the marker (which DO contain closures).
     // Parity with the validator is now guaranteed by shared helper.
 
-    it('ALLOWS a closeout-path file where the only closure claims live BELOW the legacy boundary', () => {
+    it('ALLOWS a closeout-path file where the only closure claims live BELOW a VALID hashed boundary', () => {
         // Above the marker: new content, no closure claim → nothing to enforce.
         // Below the marker: legacy release notes with CLOSED/SHIPPED/PASS
-        // → MUST be ignored because they are legacy.
+        // → MUST be ignored because they are legacy AND the hash matches.
+        const below =
+            '\n\n## v7.0 — TRACE\n\n**Phase 7 is CLOSED.** (legacy, no attestation)\n' +
+            '## v6.0\n\n**Phase 6 is SHIPPED.** (legacy, no attestation)\n';
         const content =
             '# Changelog\n\n## [Unreleased]\n\nNext release prep, no verdicts yet.\n\n' +
-            '<!-- delivery-discipline: legacy-boundary -->\n\n' +
-            '## v7.0 — TRACE\n\n**Phase 7 is CLOSED.** (legacy, no attestation)\n' +
-            '## v6.0\n\n**Phase 6 is SHIPPED.** (legacy, no attestation)\n';
+            `${hashedBoundaryMarker(below)}${below}`;
         const event = buildWriteEvent('CHANGELOG.md', content);
         const result = evaluateDeliveryDiscipline(event);
         assert.equal(result.decision, 'allow',
-            'hook must ignore closure claims below the legacy boundary, matching validator');
+            'hook must ignore closure claims below a valid hashed boundary, matching validator');
         assert.equal(result.reason, 'no-closure-claim');
     });
 
-    it('DENIES a closeout-path file with a closure claim ABOVE the legacy boundary and no attestation', () => {
+    it('DENIES a closeout-path file with a closure claim ABOVE the hashed boundary and no attestation', () => {
+        const below = '\n\n## v7.0\n\n(legacy)\n';
         const content =
             '# Changelog\n\n## v7.1 — fixup-4\n\n**Result: PASSED**\n\nNo attestation here.\n\n' +
-            '<!-- delivery-discipline: legacy-boundary -->\n\n' +
-            '## v7.0\n\n(legacy)\n';
+            `${hashedBoundaryMarker(below)}${below}`;
         const event = buildWriteEvent('CHANGELOG.md', content);
         const result = evaluateDeliveryDiscipline(event);
         assert.equal(result.decision, 'deny',
@@ -660,15 +801,54 @@ describe('evaluateDeliveryDiscipline', () => {
         assert.equal(result.reason, 'missing-or-invalid-attestation');
     });
 
-    it('ALLOWS a closeout-path file with closure + attestation ABOVE boundary and legacy BELOW', () => {
+    it('ALLOWS a closeout-path file with closure + attestation ABOVE hashed boundary and legacy BELOW', () => {
+        const below =
+            '\n\n## v7.0\n\n**Phase 7 is CLOSED.** (legacy, no attestation needed)\n';
         const content =
             `# Changelog\n\n## v7.1 — fixup-4\n\n**Result: PASSED**\n\n${VALID_ATTESTATION}\n\n` +
-            '<!-- delivery-discipline: legacy-boundary -->\n\n' +
-            '## v7.0\n\n**Phase 7 is CLOSED.** (legacy, no attestation needed)\n';
+            `${hashedBoundaryMarker(below)}${below}`;
         const event = buildWriteEvent('CHANGELOG.md', content);
         const result = evaluateDeliveryDiscipline(event);
         assert.equal(result.decision, 'allow');
         assert.equal(result.reason, 'closure-with-valid-attestation');
+    });
+
+    // Fixup-5 P1: reviewer's reproduction. Someone appends a new
+    // release section with a closure declaration below an existing
+    // hashed boundary. The hash no longer matches the expanded below
+    // content, so the file falls back to whole-file enforcement. The
+    // new closure claim has no attestation → deny. This is the exact
+    // scenario the 4th adversarial review proved bypassed fixup-4.
+    it('DENIES a file where a new closure claim was appended below a hashed boundary (drift)', () => {
+        const originalBelow = '\n\n## v7.0\n\nLegacy, no attestation.\n';
+        const hash = computeBoundaryHash(originalBelow);
+        // Bypass attempt: append `## [8.0.0]` with a closure verdict
+        // below the marker WITHOUT re-blessing the hash.
+        const tamperedBelow =
+            originalBelow + '\n## [8.0.0]\n\nStatus: SHIPPED\n\nNo attestation.\n';
+        const content =
+            '# Changelog\n\n## [Unreleased]\n\nPrep.\n\n' +
+            `<!-- delivery-discipline: legacy-boundary hash=${hash} -->${tamperedBelow}`;
+        const event = buildWriteEvent('CHANGELOG.md', content);
+        const result = evaluateDeliveryDiscipline(event);
+        assert.equal(result.decision, 'deny',
+            'appending a new closure below the marker must not silently bypass');
+        assert.equal(result.reason, 'legacy-boundary-hash-mismatch',
+            'the reason must point at the boundary integrity issue, not a generic attestation error');
+        assert.equal(result.expectedHash, hash);
+        assert.ok(result.actualHash && result.actualHash !== hash);
+    });
+
+    it('DENIES a file with a bare legacy-boundary marker (no hash) containing closure claims below', () => {
+        const content =
+            '# Changelog\n\n## [Unreleased]\n\n' +
+            '<!-- delivery-discipline: legacy-boundary -->\n\n' +
+            '## v7.0\n\n**Phase 7 is CLOSED.**\n';
+        const event = buildWriteEvent('CHANGELOG.md', content);
+        const result = evaluateDeliveryDiscipline(event);
+        assert.equal(result.decision, 'deny',
+            'bare marker (no hash) must not grant bypass under fixup-5');
+        assert.equal(result.reason, 'legacy-boundary-without-hash');
     });
 
     // fixup-4 P2-A: full-path table-merge scenario through
@@ -713,27 +893,38 @@ describe('hook/validator parity — identical enforcement semantics', () => {
         return 'deny';
     }
 
+    // Build hashed-marker fixtures inline so each case's `below` slice
+    // matches the hash it pins. Under fixup-5, bare markers no longer
+    // grant a boundary — so parity cases that rely on the boundary must
+    // use the hashed form.
+    const below1 = '\n**Phase 7 is CLOSED.**\n';
+    const below2 = '\n**Phase 7 is CLOSED.**\n';
+    const below3 = '\nwhatever\n';
     const cases = [
         {
-            label: 'no claim above, closure below boundary → allow',
+            label: 'no claim above, closure below VALID hashed boundary → allow',
+            content:
+                '# Changelog\n\n## [Unreleased]\nPrep.\n\n' +
+                `${hashedBoundaryMarker(below1)}${below1}`,
+        },
+        {
+            label: 'claim above hashed boundary with attestation → allow',
+            content:
+                `# Changelog\n\n**Phase 8 is CLOSED.**\n${VALID_ATTESTATION}\n\n` +
+                `${hashedBoundaryMarker(below2)}${below2}`,
+        },
+        {
+            label: 'claim above hashed boundary without attestation → deny',
+            content:
+                '# Changelog\n\n**Phase 8 is CLOSED.**\n\nNo attestation.\n\n' +
+                `${hashedBoundaryMarker(below3)}${below3}`,
+        },
+        {
+            label: 'bare marker (no hash) with closure below → deny (fixup-5)',
             content:
                 '# Changelog\n\n## [Unreleased]\nPrep.\n\n' +
                 '<!-- delivery-discipline: legacy-boundary -->\n\n' +
                 '**Phase 7 is CLOSED.**\n',
-        },
-        {
-            label: 'claim above boundary with attestation → allow',
-            content:
-                `# Changelog\n\n**Phase 8 is CLOSED.**\n${VALID_ATTESTATION}\n\n` +
-                '<!-- delivery-discipline: legacy-boundary -->\n\n' +
-                '**Phase 7 is CLOSED.**\n',
-        },
-        {
-            label: 'claim above boundary without attestation → deny',
-            content:
-                '# Changelog\n\n**Phase 8 is CLOSED.**\n\nNo attestation.\n\n' +
-                '<!-- delivery-discipline: legacy-boundary -->\n\n' +
-                'whatever\n',
         },
         {
             label: 'gate-summary table with one trailing attestation → allow',
