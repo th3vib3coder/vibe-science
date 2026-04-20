@@ -382,7 +382,7 @@ test('fixup-10 P1 #1: pre-tool-use blocks cat-heredoc into a deliverable', () =>
     assert.match(result.stderr, /DELIVERY DISCIPLINE BLOCK \(Bash\)/i);
 });
 
-test('fixup-10 P1 #1: pre-tool-use ALLOWS Bash writes to non-deliverable markdown files', () => {
+test('fixup-12 P1: pre-tool-use blocks Bash writes to any visible markdown path', () => {
     const harness = createHarness();
 
     const result = spawnHook('plugin/scripts/pre-tool-use.js', {
@@ -394,8 +394,47 @@ test('fixup-10 P1 #1: pre-tool-use ALLOWS Bash writes to non-deliverable markdow
         cwd: harness.projectDir,
     }, harness);
 
+    assert.equal(result.status, 2, result.stderr || result.stdout);
+    assert.match(result.stderr, /DELIVERY DISCIPLINE BLOCK \(Bash\)/i);
+});
+
+test('fixup-12 P1: pre-tool-use still ALLOWS Bash writes to non-markdown scratch files', () => {
+    const harness = createHarness();
+
+    const result = spawnHook('plugin/scripts/pre-tool-use.js', {
+        tool_name: 'Bash',
+        tool_input: {
+            command: "echo 'just some notes' > notes.txt",
+        },
+        session_id: 'sess-001',
+        cwd: harness.projectDir,
+    }, harness);
+
     assert.equal(result.status, 0, result.stderr || result.stdout);
 });
+
+for (const [label, command] of [
+    ['bash concatenated variable path', "p=final; q=-report.md; echo 'Status: CLOSED' > $p$q"],
+    ['bash command substitution path', "printf 'Status: CLOSED' > final$(echo -report).md"],
+    ['PowerShell concatenated variable path', "$p='final' + '-report.md'; Set-Content $p 'Status: CLOSED'"],
+    ['node computed writeFileSync path', "node -e \"const p='final'+'-report.md'; require('fs').writeFileSync(p,'Status: CLOSED')\""],
+    ['python computed open-write path', "python -c \"p='final'+'-report.md'; open(p,'w').write('Status: CLOSED')\""],
+    ['opaque variable target with no literal extension', "p=$env:OUT; Set-Content $p 'Status: CLOSED'"],
+]) {
+    test(`fixup-12 P1: pre-tool-use blocks computed Bash markdown write (${label})`, () => {
+        const harness = createHarness();
+
+        const result = spawnHook('plugin/scripts/pre-tool-use.js', {
+            tool_name: 'Bash',
+            tool_input: { command },
+            session_id: 'sess-001',
+            cwd: harness.projectDir,
+        }, harness);
+
+        assert.equal(result.status, 2, result.stderr || result.stdout);
+        assert.match(result.stderr, /DELIVERY DISCIPLINE BLOCK \(Bash\)/i);
+    });
+}
 
 test('fixup-10 P1 #1: pre-tool-use ALLOWS Bash writes to deliverables when VIBE_SCIENCE_DEV=1', () => {
     const harness = createHarness();

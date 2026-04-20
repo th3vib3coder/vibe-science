@@ -601,6 +601,13 @@ function looksClaimLike(text) {
  * basenames outright and instruct the agent to use Write/Edit so the
  * hook can evaluate their attestation.
  *
+ * Fixup-12: static shell analysis cannot prove computed paths. Tighten
+ * the policy in production mode: any Bash command with write intent and
+ * visible markdown extension, variable redirection target, or interpreter
+ * file-write API is denied. This intentionally creates some false
+ * positives for shell-generated markdown; developers can opt into
+ * VIBE_SCIENCE_DEV=1 when generation is intentional.
+ *
  * Returns the candidate path string on match, or null.
  *
  * Skipped when `VIBE_SCIENCE_DEV=1` so plugin developers can generate
@@ -619,7 +626,41 @@ function detectBashDeliverableWrite(toolInput = {}) {
       return candidate;
     }
   }
+  if (commandMentionsMarkdownFile(command)) {
+    return '<markdown-write-intent>';
+  }
+  if (hasVariableWriteTarget(command)) {
+    return '<computed-write-target>';
+  }
+  if (hasInterpreterFileWriteApi(command)) {
+    return '<interpreter-file-write>';
+  }
   return null;
+}
+
+function commandMentionsMarkdownFile(command) {
+  return /(?:^|[^a-z0-9])[\w./\\-]*\.md(?:$|[^a-z0-9])/i.test(String(command || ''));
+}
+
+function hasVariableWriteTarget(command) {
+  const source = String(command || '');
+  const shellVariableTarget =
+    />{1,2}\s*(?:"[^"]*")?\s*(?:\$[A-Za-z_][A-Za-z0-9_]*(?:\$[A-Za-z_][A-Za-z0-9_]*)*|\$\{[^}]+\}|%[A-Za-z_][A-Za-z0-9_]*%)/i.test(source);
+  const powershellVariableTarget =
+    /\b(?:set-content|add-content|out-file|new-item|copy-item|move-item|rename-item|remove-item|sc|ac)\b[^\n;&|]*\s(?:-[A-Za-z]*(?:Path|Destination|Target|LiteralPath)\s+)?\$[A-Za-z_][A-Za-z0-9_]*/i.test(source);
+  return shellVariableTarget || powershellVariableTarget;
+}
+
+function hasInterpreterFileWriteApi(command) {
+  const source = String(command || '');
+  const invokesInterpreter =
+    /\b(?:python(?:3)?|py|node|perl|ruby|pwsh|powershell|bash|sh)\b/i.test(source);
+  if (!invokesInterpreter) return false;
+  return (
+    /\b(?:writeFileSync|writeFile|appendFileSync|appendFile|createWriteStream|copyFileSync|renameSync|openSync)\s*\(/i.test(source) ||
+    /\bopen\s*\([^)]*,\s*['"](?:w|a|x)/i.test(source) ||
+    /\b(?:set-content|add-content|out-file|new-item)\b/i.test(source)
+  );
 }
 
 function detectGovernanceShellWrite(toolInput = {}) {
