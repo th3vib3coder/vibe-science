@@ -584,3 +584,142 @@ test('fixup-10 P1 #2: a look-alike name (foopre-tool-use.js) does NOT count as g
         assert.equal(result.status, 0);
     }
 });
+
+// ---------------------------------------------------------------------------
+// Fixup-13 P0: stdlib Unix tools that write files without using shell
+// redirects. The 12th adversarial review demonstrated that `bashCommand
+// HasWriteIntent` was the gatekeeper and recognized only ~20 tools; 15+
+// mainstream tools (`install`, `ln`, `curl -o`, `wget -O`, `dd`,
+// `truncate`, `sort -o`, `tar -x`, `unzip`, `git checkout|restore|reset`,
+// `mkfifo`, `patch`, `ex`, `exec <fd>`) escaped the policy entirely.
+// Each of these is now recognized as write intent, so the path-candidate
+// scan then matches the deliverable and denies.
+// ---------------------------------------------------------------------------
+
+for (const [label, command] of [
+    ['install -m', "install -m 644 src phase99-closeout.md"],
+    ['install (no mode)', "install src phase99-closeout.md"],
+    ['ln -f', "ln -f src phase99-closeout.md"],
+    ['ln -sf', "ln -sf src phase99-closeout.md"],
+    ['curl -o', "curl -o phase99-closeout.md https://example.test"],
+    ['curl --output', "curl --output phase99-closeout.md https://example.test"],
+    ['wget -O', "wget -O phase99-closeout.md https://example.test"],
+    ['wget --output-document', "wget --output-document=phase99-closeout.md https://example.test"],
+    ['dd of=', "dd if=src of=phase99-closeout.md"],
+    ['truncate', "truncate -s 100 phase99-closeout.md"],
+    ['sort -o', "sort -o phase99-closeout.md src"],
+    ['sort --output', "sort --output=phase99-closeout.md src"],
+    ['git checkout --', "git checkout feature -- phase99-closeout.md"],
+    ['git restore --', "git restore --source=HEAD -- phase99-closeout.md"],
+    ['git reset --', "git reset HEAD -- phase99-closeout.md"],
+    ['tar -xf', "tar -xf archive.tar phase99-closeout.md"],
+    ['tar --extract', "tar --extract -f archive.tar phase99-closeout.md"],
+    ['unzip', "unzip archive.zip phase99-closeout.md"],
+    ['mkfifo', "mkfifo phase99-closeout.md"],
+    ['patch', "patch phase99-closeout.md < diff.patch"],
+    ['ex -c :w', "ex -c \":w phase99-closeout.md\" -c \":q\" src"],
+    ['exec fd redirect', "exec 3> phase99-closeout.md"],
+]) {
+    test(`fixup-13 P0: pre-tool-use blocks Bash ${label} against deliverable markdown`, () => {
+        const harness = createHarness();
+        const result = spawnHook('plugin/scripts/pre-tool-use.js', {
+            tool_name: 'Bash',
+            tool_input: { command },
+            session_id: 'sess-001',
+            cwd: harness.projectDir,
+        }, harness);
+        assert.equal(result.status, 2,
+            `expected block for ${label}: ${command}; got stderr=${result.stderr || '(empty)'}`);
+        assert.match(result.stderr, /DELIVERY DISCIPLINE BLOCK \(Bash\)/i,
+            `expected Bash deliverable deny message for ${label}`);
+    });
+}
+
+// ---------------------------------------------------------------------------
+// Fixup-13 P1: interpreters the 12th review identified as missing from
+// the write-API detection list: php, deno, bun, ts-node, julia, Rscript,
+// lua. Also: interpreter + script file argument + deliverable argument
+// (e.g. `deno run --allow-write script.ts phase99-closeout.md`) — the
+// script is under agent control, so passing a deliverable path to it
+// is treated as write intent.
+// ---------------------------------------------------------------------------
+
+for (const [label, command] of [
+    ['php file_put_contents', "php -r \"file_put_contents('phase99-closeout.md','x');\""],
+    ['deno --allow-write script with deliverable arg', "deno run --allow-write script.ts phase99-closeout.md"],
+    ['bun run with deliverable arg', "bun run build.ts phase99-closeout.md"],
+    ['ts-node with deliverable arg', "ts-node script.ts phase99-closeout.md"],
+    ['env python3 -c open w', "/usr/bin/env python3 -c \"open('phase99-closeout.md','w').write('x')\""],
+    ['ruby File.write', "ruby -e \"File.write('phase99-closeout.md','x')\""],
+    ['node writeFileSync', "node -e \"require('fs').writeFileSync('phase99-closeout.md','x')\""],
+    ['Rscript writeLines', "Rscript -e \"writeLines('x','phase99-closeout.md')\""],
+    ['perl open >', "perl -e \"open(F,'>','phase99-closeout.md'); print F 'x'\""],
+]) {
+    test(`fixup-13 P1: pre-tool-use blocks Bash ${label}`, () => {
+        const harness = createHarness();
+        const result = spawnHook('plugin/scripts/pre-tool-use.js', {
+            tool_name: 'Bash',
+            tool_input: { command },
+            session_id: 'sess-001',
+            cwd: harness.projectDir,
+        }, harness);
+        assert.equal(result.status, 2,
+            `expected block for ${label}: ${command}; got stderr=${result.stderr || '(empty)'}`);
+        assert.match(result.stderr, /DELIVERY DISCIPLINE BLOCK \(Bash\)/i);
+    });
+}
+
+test('fixup-13: non-deliverable Bash operations still pass (sanity guardrail)', () => {
+    const harness = createHarness();
+    const ops = [
+        "echo 'note' > /tmp/notes.txt",
+        "ls -la",
+        "cat src.md",
+        "grep foo bar.md",
+        "echo test",
+    ];
+    for (const command of ops) {
+        const result = spawnHook('plugin/scripts/pre-tool-use.js', {
+            tool_name: 'Bash',
+            tool_input: { command },
+            session_id: 'sess-001',
+            cwd: harness.projectDir,
+        }, harness);
+        assert.equal(result.status, 0,
+            `non-deliverable op should pass but was denied: ${command}; stderr=${result.stderr}`);
+    }
+});
+
+test('fixup-13: VIBE_SCIENCE_DEV=1 escape still unlocks all blocked Bash write paths', () => {
+    const harness = createHarness();
+    const attacks = [
+        "install -m 644 src phase99-closeout.md",
+        "curl -o phase99-closeout.md https://example.test",
+        "php -r \"file_put_contents('phase99-closeout.md','x');\"",
+        "deno run --allow-write script.ts phase99-closeout.md",
+    ];
+    for (const command of attacks) {
+        const result = spawnSync(
+            process.execPath,
+            [rel('plugin/scripts/pre-tool-use.js')],
+            {
+                cwd: harness.projectDir,
+                encoding: 'utf-8',
+                input: JSON.stringify({
+                    tool_name: 'Bash',
+                    tool_input: { command },
+                    session_id: 'sess-001',
+                    cwd: harness.projectDir,
+                }),
+                env: {
+                    ...process.env,
+                    HOME: harness.fakeHome,
+                    USERPROFILE: harness.fakeHome,
+                    VIBE_SCIENCE_DEV: '1',
+                },
+            }
+        );
+        assert.equal(result.status, 0,
+            `dev-mode should unlock ${command}; stderr=${result.stderr || '(empty)'}`);
+    }
+});

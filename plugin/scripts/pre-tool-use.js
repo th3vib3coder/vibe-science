@@ -617,9 +617,26 @@ function detectBashDeliverableWrite(toolInput = {}) {
   if (isDevModeEnabled()) return null;
   const command = getBashCommand(toolInput);
   if (!command.trim()) return null;
-  if (!bashCommandHasWriteIntent(command)) return null;
-  // Use the shared path extractor, then check each candidate against
-  // the delivery-discipline basename whitelist.
+  // Fixup-13: the write-intent gate is a UNION of the shell-level
+  // detection (`bashCommandHasWriteIntent`) AND the interpreter-level
+  // detection (`hasInterpreterFileWriteApi`). The 12th review
+  // reproduced a bypass via `php -r "file_put_contents('phase99-closeout.md','x');"`:
+  // the command has no shell redirect and no shell-level write cmdlet,
+  // but the interpreter IS writing a file. Combining both signals here
+  // so short-circuiting on just shell-intent no longer misses
+  // interpreter-internal writes.
+  const shellIntent = bashCommandHasWriteIntent(command);
+  const interpreterIntent = hasInterpreterFileWriteApi(command);
+  // hasInterpreterScriptWithDeliverableArg is also a write-intent
+  // signal: an interpreter invoked on a script file with a deliverable
+  // path as an argument likely opens that path for writing. If none
+  // of the three signals fire, it's truly out of scope.
+  const scriptArgIntent = hasInterpreterScriptWithDeliverableArg(command);
+  if (!shellIntent && !interpreterIntent && !scriptArgIntent) return null;
+  // If the interpreter-API signal fired, we already know the command
+  // will write a file — report it via the dedicated reason so the
+  // deny message can be specific. Interpreter wins over shell-intent
+  // because the command will bypass the shell redirect regex entirely.
   const candidates = extractCommandPathCandidates(command);
   for (const candidate of candidates) {
     if (matchesDeliverablePath(candidate)) {
@@ -632,10 +649,39 @@ function detectBashDeliverableWrite(toolInput = {}) {
   if (hasVariableWriteTarget(command)) {
     return '<computed-write-target>';
   }
-  if (hasInterpreterFileWriteApi(command)) {
+  if (interpreterIntent) {
     return '<interpreter-file-write>';
   }
+  // Fixup-13 residual: an interpreter invoked with a script FILE (not
+  // `-e`/`-c` inline mode) and a deliverable markdown path in the
+  // argument list is highly suspicious — the script likely opens that
+  // path for writing. Pattern catches `deno run --allow-write build.ts
+  // phase99-closeout.md`, `bun run build.ts final-report.md`,
+  // `ts-node script.ts phase99-closeout.md`. Accepted trade-off: this
+  // also denies `node read-readme.js README.md` for read-only use
+  // cases — callers in that scenario should either use the Read tool
+  // or set VIBE_SCIENCE_DEV=1 when they know what they're doing.
+  if (scriptArgIntent) {
+    return '<interpreter-script-with-deliverable-arg>';
+  }
   return null;
+}
+
+function hasInterpreterScriptWithDeliverableArg(command) {
+  const source = String(command || '');
+  // Pattern: interpreter + optional flags (including `run`, `--allow-*`,
+  // `-X`, `-u`, etc.) + a script file argument (.js/.mjs/.cjs/.ts/.tsx/
+  // .py/.rb/.pl/.php/.sh/.lua/.ps1) + other args.
+  const interpreterPlusScript =
+    /\b(?:python[23]?|py|node|perl|ruby|pwsh|powershell|bash|sh|php|deno|bun|ts-node|tsx|julia|Rscript|lua)\b(?:\s+(?:--?[\w-]+(?:=\S*)?|run|exec))*\s+[\w./-]+\.(?:js|mjs|cjs|ts|tsx|py|rb|pl|php|sh|bash|lua|ps1|r|jl)\b/i;
+  if (!interpreterPlusScript.test(source)) return false;
+  // Skip when `-e`/`-c` inline modes are used — that path is already
+  // handled by hasInterpreterFileWriteApi (which can inspect the
+  // inline code string directly).
+  if (/\s-[ce]\s+['"]/i.test(source)) return false;
+  // Any deliverable markdown argument to the script → suspicious.
+  const candidates = extractCommandPathCandidates(source);
+  return candidates.some((c) => matchesDeliverablePath(c));
 }
 
 function commandMentionsMarkdownFile(command) {
@@ -653,13 +699,42 @@ function hasVariableWriteTarget(command) {
 
 function hasInterpreterFileWriteApi(command) {
   const source = String(command || '');
+  // Fixup-13 P1 (12th adversarial review): broaden the interpreter
+  // name list beyond Python/Node/Perl/Ruby/PowerShell. The reviewer
+  // reproduced bypasses via `php -r "file_put_contents(...)"`,
+  // `deno run`, `bun run`, `ts-node`, and `julia`. Added to the
+  // allowlist. Also recognize `env <interpreter>` wrappers like
+  // `/usr/bin/env python3` so attackers cannot add shebang-style
+  // obfuscation to the invocation.
   const invokesInterpreter =
-    /\b(?:python(?:3)?|py|node|perl|ruby|pwsh|powershell|bash|sh)\b/i.test(source);
+    /\b(?:python[23]?|py|node|perl|ruby|pwsh|powershell|bash|sh|php|deno|bun|ts-node|tsx|julia|Rscript|lua)\b/i.test(source) ||
+    /\benv\s+(?:python[23]?|node|perl|ruby|php|deno|bun|ts-node|julia|Rscript|lua)\b/i.test(source) ||
+    // Explicit absolute/relative path to a known interpreter
+    /\/(?:python[23]?|node|perl|ruby|php|deno|bun|ts-node|julia|Rscript|lua)\b/i.test(source);
   if (!invokesInterpreter) return false;
   return (
-    /\b(?:writeFileSync|writeFile|appendFileSync|appendFile|createWriteStream|copyFileSync|renameSync|openSync)\s*\(/i.test(source) ||
+    // Node.js fs.* family
+    /\b(?:writeFileSync|writeFile|appendFileSync|appendFile|createWriteStream|copyFileSync|copyFile|renameSync|rename|openSync)\s*\(/i.test(source) ||
+    // Python builtin open + Path.write_*
     /\bopen\s*\([^)]*,\s*['"](?:w|a|x)/i.test(source) ||
-    /\b(?:set-content|add-content|out-file|new-item)\b/i.test(source)
+    /\bwrite_(?:text|bytes)\s*\(/i.test(source) ||
+    // PowerShell cmdlets (even when invoked via bash -c / sh -c wrap)
+    /\b(?:set-content|add-content|out-file|new-item|tee-object)\b/i.test(source) ||
+    // PHP file_put_contents / fputs / fwrite
+    /\bfile_put_contents\s*\(/i.test(source) ||
+    /\bfwrite\s*\(/i.test(source) ||
+    /\bfputs\s*\(/i.test(source) ||
+    // Ruby File.write / File.open(..., "w")
+    /\bFile\.(?:write|open|new)\s*\(/i.test(source) ||
+    // Perl: print FH, open(FH,">","path")
+    /\bopen\s*\([^)]*['"]>/.test(source) ||
+    // Generic: any .write(...) / .writeAsync(...) method call after a
+    // `new` or object reference — last-resort catchall for interpreter
+    // code that opens a handle and writes via OO methods.
+    /\.\s*write(?:Async)?\s*\(/i.test(source) ||
+    // Deno / Bun specific
+    /\bDeno\.\s*(?:writeTextFile|writeFile|create)\s*\(/i.test(source) ||
+    /\bBun\.\s*write\s*\(/i.test(source)
   );
 }
 
@@ -713,7 +788,50 @@ function bashCommandHasWriteIntent(command) {
     /\bwritefile|appendfile\b/i.test(normalized) ||
     /\b(?:write|append|copy|move|rename|replace|remove|unlink|delete)\w*\s*\(/i.test(command) ||
     /\bwrite_(?:text|bytes)\s*\(/i.test(command) ||
-    /\bopen\s*\([^)]*,\s*['"](?:w|a|x)/i.test(command)
+    /\bopen\s*\([^)]*,\s*['"](?:w|a|x)/i.test(command) ||
+    // Fixup-13 P0 (12th adversarial review): stdlib Unix tools that
+    // create or overwrite files WITHOUT using `>` / `>>` redirects.
+    // Before this, 14+ common tools (`install`, `ln`, `curl -o`,
+    // `wget -O`, `dd`, `truncate`, `sort -o`, `tar -x`, `unzip`,
+    // `git checkout -- <path>`, `git restore`, `mkfifo`, `patch`,
+    // `ex`, `script`) were invisible to the write-intent gatekeeper,
+    // so the whole Bash deliverable-write policy was "wallpaper over
+    // the redirect path". Adding them here makes the path-candidate /
+    // .md-substring / variable-target / interpreter-API checks
+    // actually run for these tools.
+    /\binstall\b\s+[^|;&\n]*-m\b/i.test(command) ||              // install -m MODE ... DEST
+    /\binstall\b\s+[^|;&\n]+\s+[^-\s]\S*/i.test(command) ||      // install [flags] SRC DEST (no mode, still a copy)
+    /\bln\b\s+[^|;&\n]*-[sf]+/i.test(command) ||                 // ln -s / -f / -sf
+    /\bcurl\b[^|;&\n]*\s+-o\b/i.test(command) ||                 // curl -o FILE
+    /\bcurl\b[^|;&\n]*\s+--output\b/i.test(command) ||
+    /\bwget\b[^|;&\n]*\s+-O\b/i.test(command) ||                 // wget -O FILE
+    /\bwget\b[^|;&\n]*\s+--output-document\b/i.test(command) ||
+    /\bdd\b[^|;&\n]*\s+of=/i.test(command) ||                    // dd of=FILE
+    /\btruncate\b/i.test(command) ||
+    /\bsort\b[^|;&\n]*\s+-o\b/i.test(command) ||                 // sort -o FILE
+    /\bsort\b[^|;&\n]*\s+--output\b/i.test(command) ||
+    /\btar\b[^|;&\n]*\s+-x/i.test(command) ||                    // tar -x (extract)
+    /\btar\b[^|;&\n]*\s+--extract\b/i.test(command) ||
+    /\bunzip\b/i.test(command) ||                                // unzip (implicit extract)
+    /\bunrar\b\s+[ex]\b/i.test(command) ||                       // unrar e / x
+    /\b7z\b\s+[ex]\b/i.test(command) ||                          // 7z e / x
+    /\bgit\b\s+(?:checkout|restore|reset)\b[^|;&\n]*--/i.test(command) || // git checkout|restore|reset -- PATH
+    /\bgit\b\s+worktree\s+add\b/i.test(command) ||
+    /\bmkfifo\b/i.test(command) ||                               // mkfifo FILE
+    /\bmknod\b/i.test(command) ||
+    /\bpatch\b/i.test(command) ||                                // patch FILE < diff
+    /\bex\b\s+-c\b/i.test(command) ||                            // ex -c ":w FILE"
+    /\bscript\b\s+[^|;&\n]*\S+\.md\b/i.test(command) ||          // script typescript-file
+    /\bxxd\b[^|;&\n]*\s+-r\b/i.test(command) ||                  // xxd -r (reverse hex dump -> binary)
+    /\bbase64\b[^|;&\n]*\s+-d\b/i.test(command) ||               // base64 -d (can feed into other redirects too, but flag)
+    /\bgzip\b[^|;&\n]*\s+-d\b/i.test(command) ||                 // gzip -d / -dc (decompress writes file unless stdout)
+    /\bgunzip\b/i.test(command) ||
+    // `exec` with an fd redirect to a file is write-intent.
+    /\bexec\b\s+\d*\s*>{1,2}/i.test(command) ||
+    // PowerShell Out-File variants / Write-Output with redirect already
+    // caught; also catch Invoke-WebRequest -OutFile.
+    /\binvoke-webrequest\b[^|;&\n]*\s+-outfile\b/i.test(command) ||
+    /\binvoke-restmethod\b[^|;&\n]*\s+-outfile\b/i.test(command)
   );
 }
 
