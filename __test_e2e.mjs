@@ -2616,6 +2616,21 @@ describe('B5. Package & Config Tests', () => {
         pass('pkg-scripts');
     });
 
+    it('package.json: test scripts include legacy E2E plus Phase 8 suites', () => {
+        const pkg = JSON.parse(fs.readFileSync(rel('package.json'), 'utf-8'));
+        assert.ok(pkg.scripts, 'package.json should have scripts');
+        assert.ok('test:e2e' in pkg.scripts, 'Missing script: test:e2e');
+        assert.ok('test:phase8' in pkg.scripts, 'Missing script: test:phase8');
+        assert.ok('test' in pkg.scripts, 'Missing script: test');
+        assert.ok('check' in pkg.scripts, 'Missing script: check');
+        assert.match(pkg.scripts['test:e2e'], /__test_e2e\.mjs/u, 'test:e2e must run the legacy E2E suite');
+        assert.match(pkg.scripts['test:phase8'], /validate-delivery-honesty\.test\.mjs/u, 'test:phase8 must run delivery honesty validation');
+        assert.match(pkg.scripts.test, /test:e2e/u, 'npm test must include test:e2e');
+        assert.match(pkg.scripts.test, /test:phase8/u, 'npm test must include test:phase8');
+        assert.equal(pkg.scripts.check, 'npm test', 'npm run check should delegate to npm test');
+        pass('pkg-test-scripts');
+    });
+
     it('hooks.json: declares all required hooks', () => {
         const hooksPath = rel('hooks', 'hooks.json');
         assert.ok(fs.existsSync(hooksPath), 'hooks.json should exist');
@@ -2656,20 +2671,21 @@ describe('B5. Package & Config Tests', () => {
         pass('plugin-json');
     });
 
-    it('all 12 schema JSON files in skills/vibe/assets/schemas/ are valid JSON', () => {
+    it('all 13 schema JSON files in skills/vibe/assets/schemas/ are valid JSON', () => {
         const schemasDir = rel('skills/vibe/assets/schemas');
         assert.ok(fs.existsSync(schemasDir), 'skills/vibe/assets/schemas/ directory should exist');
 
         const schemaFiles = fs.readdirSync(schemasDir).filter(f => f.endsWith('.schema.json'));
         assert.equal(
-            schemaFiles.length, 12,
-            `Expected 12 schema files, found ${schemaFiles.length}: ${schemaFiles.join(', ')}`
+            schemaFiles.length, 13,
+            `Expected 13 schema files, found ${schemaFiles.length}: ${schemaFiles.join(', ')}`
         );
 
         const expectedSchemas = [
             'brainstorm-quality.schema.json',
             'claim-promotion.schema.json',
             'data-quality-gate.schema.json',
+            'delivery-attestation.schema.json',
             'finding-validation.schema.json',
             'review-completeness.schema.json',
             'rq-conclusion.schema.json',

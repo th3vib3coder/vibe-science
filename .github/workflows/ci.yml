@@ -36,10 +36,9 @@ jobs:
         run: node -e "const {default: DB} = await import('better-sqlite3'); const db = new DB(':memory:'); db.pragma('journal_mode=WAL'); db.close(); console.log('better-sqlite3 native binding OK');"
 
       - name: Run plugin test suite
-        # Runs the 5 suites: governance_events, governance hooks,
-        # delivery-discipline skill, delivery-discipline hook,
-        # delivery-honesty CI validator.
-        # The validator scans `git ls-files '*.md'` on this checkout
-        # and asserts zero delivery-discipline violations on the plugin
-        # repo itself (dogfood).
+        # Runs the legacy E2E TRACE suite plus the Phase 8 governance /
+        # delivery-discipline suites. The delivery validator scans
+        # `git ls-files '*.md'` on this checkout and asserts zero
+        # delivery-discipline violations on the plugin repo itself
+        # (dogfood).
         run: npm test

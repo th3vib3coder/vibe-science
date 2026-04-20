@@ -161,6 +161,20 @@ describe('hasDeclaredClosureClaim', () => {
         assert.equal(hasDeclaredClosureClaim('Phase 9 is ACCEPTED.'), true);
     });
 
+    it('does not treat ACCEPTED / REJECTED as bare line-start closure words', () => {
+        // ACCEPTED/REJECTED are verdict tokens only in declarative status
+        // contexts. As bare line-start prose they are ordinary adjectives.
+        assert.equal(hasDeclaredClosureClaim('Accepted manuscripts are indexed after publication.'), false);
+        assert.equal(hasDeclaredClosureClaim('Accepted inputs:'), false);
+        assert.equal(hasDeclaredClosureClaim('Rejected candidates are archived for review.'), false);
+
+        // The intended declarative forms still trigger.
+        assert.equal(hasDeclaredClosureClaim('Verdict: ACCEPTED'), true);
+        assert.equal(hasDeclaredClosureClaim('Result: REJECTED'), true);
+        assert.equal(hasDeclaredClosureClaim('| review | ACCEPTED |'), true);
+        assert.equal(hasDeclaredClosureClaim('| review | REJECTED |'), true);
+    });
+
     it('rejects FAILURES/FAILING/FAILS as they are not declarative status words', () => {
         // Closure words in the vocabulary are terminal status tokens.
         // Conjugations like FAILING / FAILURES that appear in narrative

@@ -3,8 +3,10 @@
 //
 // Blocks Write/Edit/MultiEdit BEFORE they mutate a commit-relevant
 // deliverable when the post-edit content declares closure
-// (CLOSED/DONE/PASS/SHIPPED/COMPLETE/FINALIZED/READY) in declarative
-// context but does NOT contain a valid `## Delivery Attestation` block
+// (CLOSED/DONE/PASS/SHIPPED/COMPLETE/FINALIZED/READY/FAIL/BLOCKED/
+// PARTIAL/FALSE-POSITIVE, plus ACCEPTED/REJECTED in status contexts)
+// in declarative context but does NOT contain a valid
+// `## Delivery Attestation` block
 // with fenced json that has the 4 required fields.
 //
 // Matcher: "Write|Edit|MultiEdit" (regex) — narrower than the existing
@@ -66,6 +68,14 @@ const CLOSURE_WORD =
   '(?:CLOSED|DONE|PASS(?:ED)?|SHIPPED|COMPLETED?|FINALIZED|READY|' +
   'FAIL(?:ED)?|BLOCKED|PARTIAL|FALSE-POSITIVE|ACCEPTED|REJECTED)';
 
+// `ACCEPTED` / `REJECTED` are review verdict tokens, not safe bare
+// line-start closure words. A sentence such as "Accepted manuscripts are..."
+// should not trigger delivery discipline unless it appears in a declarative
+// status context (`Verdict: ACCEPTED`) or a status table.
+const BARE_LINE_CLOSURE_WORD =
+  '(?:CLOSED|DONE|PASS(?:ED)?|SHIPPED|COMPLETED?|FINALIZED|READY|' +
+  'FAIL(?:ED)?|BLOCKED|PARTIAL|FALSE-POSITIVE)';
+
 // The 5 declarative-context patterns, each returned as a fresh regex
 // with the `g` + `i` + `m`/`u` flags needed by callers that want
 // positions (findAllClosureClaimPositions) vs callers that just want
@@ -79,7 +89,7 @@ function closureClaimPatterns(globalFlag = false) {
       `${g}iu`,
     ),
     // Pattern 2: Line starting with CLOSURE (bold/emph stripped)
-    new RegExp(`^[ \\t>*_]*\\**\\s*${CLOSURE_WORD}\\s*[\\s.!:*]`, `${g}imu`),
+    new RegExp(`^[ \\t>*_]*\\**\\s*${BARE_LINE_CLOSURE_WORD}\\s*[\\s.!:*]`, `${g}imu`),
     // (Former Pattern 3 "bold wrapped with CLOSURE inside" removed in
     // fixup-4 — it matched filenames like **blind-first-pass.md** and
     // any prose bolding that happened to contain a closure word.
@@ -98,15 +108,15 @@ function closureClaimPatterns(globalFlag = false) {
 
 /**
  * Closure-claim detection in declarative context. Returns true only when
- * a closure word (positive OR negative, positive=CLOSED/DONE/PASS/SHIPPED/
- * COMPLETE/FINALIZED/READY; negative=FAILED/BLOCKED/PARTIAL/FALSE-POSITIVE)
- * appears in a position that signals "declared status", not casual prose.
- * Five patterns covered:
+ * a closure word appears in a position that signals "declared status",
+ * not casual prose. ACCEPTED/REJECTED are review-verdict tokens and are
+ * intentionally excluded from bare line-start matching, because ordinary
+ * prose often starts with phrases like "Accepted manuscripts...".
+ * Four patterns covered:
  *   1. `Status: CLOSED` / `Verdict: FAILED` / `Phase 8: BLOCKED`
  *   2. Line starting with closure word (`CLOSED.` / `**FAILED**`)
- *   3. Bold wrapped closure (`**Result: PASS**` / `**Wave is PARTIAL**`)
- *   4. Markdown table cell (`| PASS |` / `| FAILED |`)
- *   5. "Phase X is CLOSED" / "Sprint Y is FAILED" sentence form
+ *   3. Markdown table cell (`| PASS |` / `| FAILED |`)
+ *   4. "Phase X is CLOSED" / "Sprint Y is FAILED" sentence form
  */
 export function hasDeclaredClosureClaim(text) {
   if (typeof text !== 'string' || text.length === 0) return false;
