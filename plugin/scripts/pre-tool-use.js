@@ -707,6 +707,11 @@ function commandHasWritePrimitive(command) {
   if (/\b(?:rsync|scp|sftp|rclone|robocopy|unison|duplicity|borg)\b/i.test(source)) return true;
   // Transform/render tools:
   if (/\b(?:pandoc|convert|magick|ffmpeg|sox|gs|imagemagick|inkscape)\b/i.test(source)) return true;
+  // Archive creators with positional output paths (`zip final-report.md ...`,
+  // `jar cf final-report.md ...`, `tar -cf final-report.md ...`). These
+  // create/overwrite the output path even without an `-o` flag.
+  if (/\b(?:zip|jar)\b/i.test(source)) return true;
+  if (/\btar\b[^|;&\n]*(?:\s-[a-z]*c[a-z]*\b|\s--create\b)/i.test(source)) return true;
   // Editors (always write-capable in batch/ex mode):
   if (/\b(?:ed|vi|vim|nvim|view|emacs|nano|pico|micro|helix|kakoune)\b/i.test(source)) return true;
   // awk in-place:
@@ -804,12 +809,19 @@ function detectWholeTreeBashWrite(toolInput = {}) {
   // unrar / 7z extract
   if (/\bunrar\b\s+[ex]\b/i.test(source)) return 'unrar-extract';
   if (/\b7z\b\s+[ex]\b/i.test(source)) return '7z-extract';
+  if (/\bcpio\b[^|;&\n]*(?:\s-[a-z]*i[a-z]*\b|\s--extract\b)/i.test(source)) return 'cpio-extract';
   // git whole-tree restore patterns: `-- .`, bare `.` at end, `--hard`
   if (/\bgit\s+(?:checkout|restore)\b[^|;&\n]*--\s*\.(?:\s|$|[;&|])/i.test(source)) return 'git-whole-tree-restore';
   if (/\bgit\s+restore\b[^|;&\n]*\s+\.\s*(?:$|[;&|])/i.test(source)) return 'git-whole-tree-restore';
   if (/\bgit\s+reset\s+--hard\b/i.test(source)) return 'git-reset-hard';
+  if (/\bgit\s+(?:apply|am|merge|rebase|cherry-pick|pull)\b/i.test(source)) return 'git-worktree-mutation';
+  if (/\bgit\s+clone\b[^|;&\n]*\s+\.\/?(?:\s|$|[;&|])/i.test(source)) return 'git-clone-to-cwd';
   // rsync into cwd or root: last arg is `.`, `./`, or trailing `/`
   if (/\brsync\b[^|;&\n]*\s+\.\/?(?=\s|$|[;&|])/i.test(source)) return 'rsync-to-cwd';
+  // Package-manager operations can rewrite package.json/package-lock.json
+  // or run arbitrary install scripts in the project. In production mode
+  // those belong behind VIBE_SCIENCE_DEV=1.
+  if (/\b(?:npm|pnpm|yarn|bun)\b\s+(?:install|i|ci|add|update|upgrade|remove|uninstall|link)\b/i.test(source)) return 'package-manager-mutation';
   return null;
 }
 

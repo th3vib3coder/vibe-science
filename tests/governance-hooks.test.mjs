@@ -860,9 +860,18 @@ for (const [label, command] of [
     ['unzip payload.zip', 'unzip payload.zip'],
     ['7z x payload.7z', '7z x payload.7z'],
     ['unrar x payload.rar', 'unrar x payload.rar'],
+    ['cpio extract payload', 'cpio -id < payload.cpio'],
     ['git checkout whole-tree', 'git checkout attacker-branch -- .'],
     ['git restore whole-tree', 'git restore --source=attacker-branch .'],
     ['git reset --hard', 'git reset --hard attacker-branch'],
+    ['git apply patch', 'git apply payload.patch'],
+    ['git am patch', 'git am payload.patch'],
+    ['git merge branch', 'git merge attacker-branch'],
+    ['git pull', 'git pull origin main'],
+    ['npm install package', 'npm install left-pad'],
+    ['npm ci', 'npm ci'],
+    ['pnpm install package', 'pnpm install left-pad'],
+    ['yarn add package', 'yarn add left-pad'],
     ['rsync -a to cwd (./)', 'rsync -a src/ ./'],
     ['rsync -a to cwd (.)', 'rsync -a src/ .'],
 ]) {
@@ -886,6 +895,9 @@ for (const [label, command] of [
     ['wget -OFILE attached', 'wget -Ofinal-report.md https://example.test'],
     ['sort -oFILE attached', 'sort -ofinal-report.md src.txt'],
     ['unknown-tool -oFILE attached', 'unknown-tool -ofinal-report.md src.txt'],
+    ['zip positional output', 'zip final-report.md src.txt'],
+    ['jar positional output', 'jar cf final-report.md src.txt'],
+    ['tar create positional output', 'tar -cf final-report.md src.txt'],
 ]) {
     test(`fixup-15 P1 #2: attached output-flag "${label}" is denied`, () => {
         const harness = createHarness();
