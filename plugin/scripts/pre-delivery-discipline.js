@@ -60,7 +60,9 @@ export function matchesDeliverablePath(filePath) {
   //   - `ready` excluded as plain substring (false-positives on `already`
   //     via `ready` — `ready-to-ship` / `ready-to-merge` patterns added
   //     explicitly instead)
-  return /(closeout|status|summary|verdict|phase[\d.-]+|wave[\d-]+|sprint[\d-]*|skill|readme|changelog|release|completion|retrospective|retro-|shipped|ready-to-(?:ship|merge|review)|final(?:ization|ized))/u.test(basename);
+  //   - `final` excluded as plain substring, but `final-report` /
+  //     `final-summary` / `final-review` are explicit deliverables.
+  return /(closeout|status|summary|verdict|phase[\d.-]+|wave[\d-]+|sprint[\d-]*|skill|readme|changelog|release|completion|retrospective|retro-|shipped|ready-to-(?:ship|merge|review)|final(?:ization|ized|-(?:report|summary|review|closeout|status|verdict)))/u.test(basename);
 }
 
 // Closure vocabulary: positive closure + failure/partial statuses +
@@ -193,16 +195,20 @@ export function findAttestationJsonContent(text) {
   // True once we've seen a `## Delivery Attestation` heading at depth 0.
   // A json fence at depth 0 AFTER that heading is the attestation.
   let inAttestationScope = false;
-  // A fence-opener line: N backticks + optional whitespace + optional
-  // info-string tag (non-whitespace, non-backtick) + optional trailing
-  // info-string continuation. Per CommonMark, the info string of a
-  // backtick-fenced block must not contain backticks.
-  const FENCE_OPEN = /^(`{3,})\s*([^\s`]*)(?:\s[^`]*)?$/u;
-  // A fence-closer line: M backticks (where M >= opening N) with only
-  // trailing whitespace; info string must be empty per spec.
-  const FENCE_CLOSE = /^(`{3,})\s*$/u;
-  // Heading that MIGHT be the attestation heading.
-  const HEADING_RE = /^#{2,3}\s+delivery\s+attestation\s*$/iu;
+  // A fence-opener line: 0-3 spaces indentation (CommonMark), N
+  // backticks + optional whitespace + optional info-string tag
+  // (non-whitespace, non-backtick) + optional trailing info-string
+  // continuation. Per CommonMark, the info string of a backtick-fenced
+  // block must not contain backticks. Four spaces is an indented code
+  // block, not a fence.
+  const FENCE_OPEN = /^[ \t]{0,3}(`{3,})[ \t]*([^\s`]*)(?:[ \t][^`]*)?$/u;
+  // A fence-closer line: 0-3 spaces indentation, M backticks (where
+  // M >= opening N) with only trailing whitespace; info string must be
+  // empty per spec.
+  const FENCE_CLOSE = /^[ \t]{0,3}(`{3,})[ \t]*$/u;
+  // Heading that MIGHT be the attestation heading. CommonMark allows
+  // headings to be indented up to 3 spaces; 4+ spaces is a code block.
+  const HEADING_RE = /^[ \t]{0,3}#{2,3}\s+delivery\s+attestation\s*$/iu;
   for (let i = 0; i < lines.length; i += 1) {
     const line = lines[i];
     const openM = line.match(FENCE_OPEN);
@@ -657,6 +663,21 @@ export function evaluateDeliveryDiscipline(event, options = {}) {
     };
   }
 
+  // Boundary integrity is stronger than per-file exemption. If the
+  // marker is bare or the hash drifted, do not allow an exemption
+  // comment to rescue the write — especially not one appended below
+  // the marker as part of the tampered below-boundary content.
+  if (hashValid === false) {
+    return {
+      decision: 'deny',
+      reason: boundaryReason ?? 'legacy-boundary-invalid',
+      matched: closureExcerpt(enforceable),
+      targetPath: filePath,
+      expectedHash,
+      actualHash,
+    };
+  }
+
   // Fast exit 4: explicit exemption (after strict-mode gate so strict
   // mode can still refuse exemptions when no audit trail is available).
   //
@@ -678,23 +699,6 @@ export function evaluateDeliveryDiscipline(event, options = {}) {
   // multiple later claims.
   if (everyClosureHasBoundAttestation(enforceable)) {
     return { decision: 'allow', reason: 'closure-with-valid-attestation' };
-  }
-
-  // Attestation is missing / invalid. If the boundary was bare or
-  // drifted, surface THAT diagnostic first: the user added (or left)
-  // closure claims below a boundary that no longer protects them, and
-  // the right fix is either (a) removing the below-marker claim,
-  // (b) re-blessing the boundary hash explicitly, or
-  // (c) converting a bare marker to the hash-pinned form.
-  if (hashValid === false) {
-    return {
-      decision: 'deny',
-      reason: boundaryReason ?? 'legacy-boundary-invalid',
-      matched: closureExcerpt(enforceable),
-      targetPath: filePath,
-      expectedHash,
-      actualHash,
-    };
   }
 
   return {

@@ -123,6 +123,9 @@ describe('matchesDeliverablePath', () => {
         assert.equal(matchesDeliverablePath('shipped.md'), true);
         assert.equal(matchesDeliverablePath('finalization.md'), true);
         assert.equal(matchesDeliverablePath('finalized.md'), true);
+        assert.equal(matchesDeliverablePath('final-report.md'), true);
+        assert.equal(matchesDeliverablePath('final-summary.md'), true);
+        assert.equal(matchesDeliverablePath('final-review.md'), true);
         assert.equal(matchesDeliverablePath('ready-to-ship.md'), true);
         assert.equal(matchesDeliverablePath('ready-to-merge.md'), true);
     });
@@ -139,6 +142,8 @@ describe('matchesDeliverablePath', () => {
             '`delivery-*` planning docs must not trigger');
         // `ready` is excluded as a bare substring (`already.md` must not match)
         assert.equal(matchesDeliverablePath('already-indexed.md'), false);
+        // `final` is intentionally not a bare substring trigger.
+        assert.equal(matchesDeliverablePath('finally-notes.md'), false);
     });
 });
 
@@ -520,6 +525,31 @@ describe('hasValidAttestation', () => {
             'a json fence nested inside a 4-tick outer fence is documentation, not attestation');
     });
 
+    it('REJECTS an attestation nested inside an INDENTED 4-tick outer fence', () => {
+        const jsonBody = `{
+  "covered": ["item verified directly"],
+  "scope_cuts": [{"item": "Something", "reason": "Deferred because it is complex"}],
+  "self_review_findings": [
+    "A skeptical reviewer would challenge the regex for edge-case prose like quoted CLOSED",
+    "The hook reads file from disk for Edit tools; on Windows read errors degrade silently",
+    "The minLength of 20 chars for self_review_findings could be gamed with padded strings"
+  ],
+  "external_review_status": "pending"
+}`;
+        // CommonMark permits 0-3 spaces before a fence. The previous
+        // fixup-7 parser ignored the indented outer fence, so the inner
+        // ```json was treated as depth-0 and accepted.
+        const wrapped =
+            '## Delivery Attestation\n\n' +
+            ' ````markdown\n' +
+            '```json\n' +
+            jsonBody + '\n' +
+            '```\n' +
+            ' ````\n';
+        assert.equal(hasValidAttestation(wrapped), false,
+            'an indented outer fence is still an outer fence and must hide nested json');
+    });
+
     it('REJECTS an attestation nested inside a 5-tick outer fence', () => {
         // 5+ tick outer with 3-tick json inner — same class of bypass
         // as the 4-tick case.
@@ -556,6 +586,15 @@ describe('hasValidAttestation', () => {
     it('still ACCEPTS a plain 3-tick json fence at depth 0 after a real heading', () => {
         // Regression guard: the ordinary case still works.
         assert.equal(hasValidAttestation(VALID_ATTESTATION), true);
+    });
+
+    it('ACCEPTS a valid heading + json fence indented up to 3 spaces', () => {
+        const indented = VALID_ATTESTATION
+            .split('\n')
+            .map((line) => (line.startsWith('## Delivery Attestation') || line.startsWith('```') ? `   ${line}` : line))
+            .join('\n');
+        assert.equal(hasValidAttestation(indented), true,
+            'CommonMark permits headings and fences indented up to 3 spaces');
     });
 });
 
@@ -607,6 +646,17 @@ describe('findAttestationJsonContent (fence-depth-aware scanner)', () => {
         assert.equal(findAttestationJsonContent(text), null);
     });
 
+    it('returns null when the json fence is nested inside an INDENTED 4-tick outer fence', () => {
+        const text =
+            '## Delivery Attestation\n\n' +
+            ' ````markdown\n' +
+            '```json\n' +
+            '{"a":1}\n' +
+            '```\n' +
+            ' ````\n';
+        assert.equal(findAttestationJsonContent(text), null);
+    });
+
     it('does NOT treat a heading inside a fence as the attestation heading', () => {
         const text =
             '```markdown\n' +
@@ -617,6 +667,17 @@ describe('findAttestationJsonContent (fence-depth-aware scanner)', () => {
             '```\n';
         assert.equal(findAttestationJsonContent(text), null,
             'the ```json appears before any REAL heading, so no attestation scope is active');
+    });
+
+    it('does NOT treat a heading inside an INDENTED fence as the attestation heading', () => {
+        const text =
+            ' ````markdown\n' +
+            '## Delivery Attestation\n' +
+            '```json\n' +
+            '{"a":1}\n' +
+            '```\n' +
+            ' ````\n';
+        assert.equal(findAttestationJsonContent(text), null);
     });
 });
 
@@ -894,6 +955,23 @@ describe('evaluateDeliveryDiscipline', () => {
         assert.equal(result.decision, 'deny');
     });
 
+    it('DENIES closure when the only attestation-looking JSON is nested in an indented outer fence', () => {
+        const innerJson = findAttestationJsonContent(VALID_ATTESTATION);
+        assert.ok(innerJson, 'test fixture must contain valid top-level attestation json');
+        const content =
+            '# Phase\n\nStatus: CLOSED.\n\n' +
+            '## Delivery Attestation\n\n' +
+            ' ````markdown\n' +
+            '```json\n' +
+            innerJson + '\n' +
+            '```\n' +
+            ' ````\n';
+        const event = buildWriteEvent('phase99-closeout.md', content);
+        const result = evaluateDeliveryDiscipline(event);
+        assert.equal(result.decision, 'deny');
+        assert.equal(result.reason, 'missing-or-invalid-attestation');
+    });
+
     it('DENIES writing a closeout with only 2 self_review_findings', () => {
         const weakAttestation = VALID_ATTESTATION.replace(
             /"self_review_findings":\s*\[[\s\S]*?\]/u,
@@ -1013,6 +1091,23 @@ describe('evaluateDeliveryDiscipline', () => {
             'the reason must point at the boundary integrity issue, not a generic attestation error');
         assert.equal(result.expectedHash, hash);
         assert.ok(result.actualHash && result.actualHash !== hash);
+    });
+
+    it('DENIES a drifted boundary even when an exemption comment is appended below it', () => {
+        const originalBelow = '\n\n## v7.0\n\nLegacy, no attestation.\n';
+        const hash = computeBoundaryHash(originalBelow);
+        const tamperedBelow =
+            originalBelow +
+            '\n<!-- delivery-discipline: exempt -->\n\n' +
+            '## [8.0.0]\n\nStatus: SHIPPED\n\nNo attestation.\n';
+        const content =
+            '# Changelog\n\n## [Unreleased]\n\nPrep.\n\n' +
+            `<!-- delivery-discipline: legacy-boundary hash=${hash} -->${tamperedBelow}`;
+        const event = buildWriteEvent('CHANGELOG.md', content);
+        const result = evaluateDeliveryDiscipline(event);
+        assert.equal(result.decision, 'deny',
+            'a boundary-integrity failure must not be rescued by an exemption below the marker');
+        assert.equal(result.reason, 'legacy-boundary-hash-mismatch');
     });
 
     it('DENIES a file with a bare legacy-boundary marker (no hash) containing closure claims below', () => {
