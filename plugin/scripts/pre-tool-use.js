@@ -169,6 +169,19 @@ async function main(event) {
       }
 
       if (toolName === 'Bash') {
+        // Fixup-17 — Opzione B (nuclear). The 15th adversarial review
+        // found 3 P1 classes that enumeration cannot close: external
+        // script invocation, build/dispatcher tools, and delete
+        // primitives. Under the user's escalation rule, these are
+        // now denied unconditionally in production mode. DEV escape
+        // unchanged. Placed BEFORE the other Bash detectors so the
+        // nuclear reason takes precedence — the specific detectors
+        // below still fire as additional coverage.
+        const nuclearHit = detectBashNuclearViolation(toolInput);
+        if (nuclearHit) {
+          denyBashNuclear(nuclearHit);
+          return;
+        }
         const shellGovernanceViolation = detectGovernanceShellWrite(toolInput);
         if (shellGovernanceViolation) {
           denyShellGovernance(shellGovernanceViolation);
@@ -358,6 +371,35 @@ function denyImmutableConfig(toolName, target, context = {}) {
       'These files are IMMUTABLE. Fix the claim/analysis, not the schema.'
     );
   }
+  process.exit(2);
+}
+
+function denyBashNuclear(hit) {
+  const classExplanation = {
+    'external-script-invocation':
+      'invokes an external script file (e.g. `bash payload.sh`, `python3 f.py`, ' +
+      '`./payload.mjs`, `source f.sh`) whose body is opaque to the hook',
+    'build-dispatcher':
+      'invokes a build dispatcher (e.g. `make`, `npm run <x>`, `cmake --build`, ' +
+      '`cargo build`, `go build`, `mvn`, `gradle`, `rake`, `pip install -e .`, ' +
+      '`docker build/run`) that executes agent-authored targets',
+    'delete-primitive':
+      'uses a delete primitive (e.g. `rm`, `rmdir`, `find -delete`, `find -exec`, ' +
+      '`xargs rm`, `git clean`, `shred`) that can erase guardrail files or runtime state',
+  };
+  const result = { hookSpecificOutput: { permissionDecision: 'deny' } };
+  process.stdout.write(JSON.stringify(result));
+  process.stderr.write(
+    `DELIVERY DISCIPLINE BLOCK (Opzione B nuclear): the Bash command ` +
+    `${classExplanation[hit.class] || 'triggered the nuclear write-like policy'}. ` +
+    `After 15 rounds of adversarial review proving that enumeration-based ` +
+    `Bash write-detection is bottomless, production mode now denies the entire ` +
+    `class of commands that can plausibly mutate or destroy files. ` +
+    `Use Write/Edit for file creation, use individual read tools (cat/grep/ls/git status) ` +
+    `for inspection, or launch Claude Code with VIBE_SCIENCE_DEV=1 if you are a ` +
+    `plugin developer intentionally running scripts/builds/deletes. ` +
+    `Command preview: ${String(hit.command).slice(0, 160)}`
+  );
   process.exit(2);
 }
 
@@ -795,6 +837,126 @@ function detectBashMutationOfSensitivePath(toolInput = {}) {
  * VIBE_SCIENCE_DEV=1 (environment of the launching human, not agent-
  * settable). Returns the pattern label or null.
  */
+/**
+ * Fixup-17 — Opzione B (nuclear). The final adversarial review found
+ * 3 P1 classes that enumeration cannot close:
+ *   (1) external-script invocation: `bash payload.sh`, `python3 f.py`,
+ *       `node f.mjs`, `./f.sh`, `source f.sh`, `. f.sh` — the script
+ *       body is opaque to the hook, so any write inside the script
+ *       slides past.
+ *   (2) build dispatchers: `make`, `npm run <x>`, `cmake --build`,
+ *       `cargo build`, `go build`, `mvn`, `gradle`, `rake`, `pip
+ *       install -e .`, `docker build/run` — agent-authored targets
+ *       execute arbitrary writers.
+ *   (3) delete primitives: `rm -rf DIR`, `find -delete`, `find -exec`,
+ *       `xargs rm`, `git clean -fx`, `shred FILE` — destroy the
+ *       guardrail substrate and/or runtime state.
+ *
+ * The user's escalation rule committed to Opzione B: in production
+ * mode, deny every bash command that matches any of these classes.
+ * DEV escape (`VIBE_SCIENCE_DEV=1`) remains for plugin developers.
+ * The intent: agents must use Write/Edit for file mutation, can
+ * still read via cat/grep/ls/git-log/etc., and cannot run opaque
+ * scripts or mass-delete the workspace.
+ */
+
+function hasExternalScriptInvocation(command) {
+  const source = String(command || '');
+  // Interpreter + script-file argument (any extension commonly used
+  // to ship script bodies). The script file is under agent control,
+  // so its body can write anything.
+  const INTERP = '(?:bash|sh|zsh|fish|dash|ksh|csh|tcsh|python(?:3|2)?|py|node|nodejs|perl|ruby|php|deno|bun|ts-node|tsx|julia|Rscript|lua|pwsh|powershell)';
+  const SCRIPT_EXT = '(?:sh|bash|zsh|fish|py|js|mjs|cjs|ts|tsx|pl|rb|php|lua|r|jl|ps1|cmd|bat)';
+  if (new RegExp(`\\b${INTERP}\\b\\s+(?:-[\\w-]+\\s+)*\\S+\\.${SCRIPT_EXT}\\b`, 'i').test(source)) {
+    return true;
+  }
+  // env <interpreter> FILE
+  if (new RegExp(`\\benv\\s+${INTERP}\\s+\\S+\\.${SCRIPT_EXT}\\b`, 'i').test(source)) {
+    return true;
+  }
+  // Direct execution of a script file: ./FILE, /abs/FILE, ~/FILE
+  if (new RegExp(`(?:^|[\\s;&|])[\\./~][\\w./-]*\\.${SCRIPT_EXT}\\b`).test(source)) {
+    return true;
+  }
+  // source / . FILE
+  if (/\b(?:source)\s+\S+/i.test(source)) return true;
+  if (/(?:^|[\s;&|])\.\s+\S+\.(?:sh|bash|zsh|py|mjs|js)\b/.test(source)) return true;
+  // nohup / setsid / timeout wrapping a script invocation — they take
+  // an interpreter + file as their tail.
+  if (new RegExp(`\\b(?:nohup|setsid|timeout(?:\\s+\\S+)?|systemd-run)\\s+${INTERP}\\b`, 'i').test(source)) {
+    return true;
+  }
+  // xargs/parallel/watch wrapping a script
+  if (new RegExp(`\\b(?:xargs|parallel|watch)\\b[^|;&\\n]*\\s+${INTERP}\\b`, 'i').test(source)) {
+    return true;
+  }
+  return false;
+}
+
+function hasBuildDispatcher(command) {
+  const source = String(command || '');
+  // make / gmake / cmake / ninja — any invocation
+  if (/\b(?:make|gmake|cmake|ninja|meson|bazel|buck2|scons|waf)\b/i.test(source)) return true;
+  // npm/pnpm/yarn run|exec — arbitrary script dispatch
+  if (/\b(?:npm|pnpm|yarn)\s+(?:run(?:-script)?|exec|x)\b/i.test(source)) return true;
+  // npx — runs arbitrary packages
+  if (/\bnpx\b/i.test(source)) return true;
+  // yarn <script> without explicit 'run' (yarn auto-detects script names)
+  if (/\byarn\s+\S+(?!\s+--help)/i.test(source) && !/\byarn\s+(?:--version|-v|help|why|info|list|ls|cache|config|audit|run)\b/i.test(source)) return true;
+  // Rust / Go / Java-ecosystem build dispatchers
+  if (/\bcargo\s+(?:build|run|test|install|bench|doc|fix|fmt|clippy)\b/i.test(source)) return true;
+  if (/\bgo\s+(?:build|run|test|install|get|generate|vet)\b/i.test(source)) return true;
+  if (/\b(?:mvn|maven|mvnw|gradle|gradlew|sbt|lein|ant|rake)\b/i.test(source)) return true;
+  // Python build/install
+  if (/\bpip\s+install\b/i.test(source)) return true;
+  if (/\bpip(?:x|3)?\s+install\b/i.test(source)) return true;
+  if (/\bpython[23]?\s+-m\s+(?:pip|build|pytest|unittest|setup)\b/i.test(source)) return true;
+  if (/\bpoetry\s+(?:install|run|add|update|build|publish)\b/i.test(source)) return true;
+  // Container/runtime
+  if (/\b(?:docker|podman)\s+(?:build|run|exec|compose\s+up|compose\s+run)\b/i.test(source)) return true;
+  // Shell runner wrappers like `time FOO` around a build
+  // (covered by the underlying invocation also matching)
+  return false;
+}
+
+function hasDeletePrimitive(command) {
+  const source = String(command || '');
+  // rm with any args (including flags)
+  if (/\brm\s+(?:-[\w-]+\s+)*\S+/i.test(source)) return true;
+  // rmdir FILE
+  if (/\brmdir\s+\S+/i.test(source)) return true;
+  // find -delete / find -exec rm / find -exec cp / etc.
+  if (/\bfind\b[^|;&\n]*\s-delete\b/i.test(source)) return true;
+  if (/\bfind\b[^|;&\n]*\s-exec\b/i.test(source)) return true;
+  if (/\bfind\b[^|;&\n]*\s-execdir\b/i.test(source)) return true;
+  // xargs pipelines targeting a write/delete primitive
+  if (/\bxargs\b[^|;&\n]*\b(?:rm|cp|mv|install|tee|touch|dd|ln)\b/i.test(source)) return true;
+  // git clean (destroys untracked files)
+  if (/\bgit\s+clean\b/i.test(source)) return true;
+  // git stash drop / git stash clear
+  if (/\bgit\s+stash\s+(?:drop|clear)\b/i.test(source)) return true;
+  // Secure-delete tools
+  if (/\b(?:shred|wipe|sdelete|srm)\b/i.test(source)) return true;
+  // Windows equivalents
+  if (/\b(?:del|erase|rd)\b\s+\S+/i.test(source)) return true;
+  return false;
+}
+
+/**
+ * Opzione B nuclear denial. Returns a `{ class, command }` shape on
+ * hit so the deny message can explain which class triggered, or
+ * null if the command is safe in production mode.
+ */
+function detectBashNuclearViolation(toolInput = {}) {
+  if (isDevModeEnabled()) return null;
+  const command = getBashCommand(toolInput);
+  if (!command.trim()) return null;
+  if (hasExternalScriptInvocation(command)) return { class: 'external-script-invocation', command };
+  if (hasBuildDispatcher(command)) return { class: 'build-dispatcher', command };
+  if (hasDeletePrimitive(command)) return { class: 'delete-primitive', command };
+  return null;
+}
+
 function detectWholeTreeBashWrite(toolInput = {}) {
   if (isDevModeEnabled()) return null;
   const source = getBashCommand(toolInput);

@@ -1918,7 +1918,14 @@ describe('B4. Script Integration Tests', () => {
         assert.equal(result.status, 2, 'external interpreter scripts must not operate on governance artifacts through Bash');
         const stdout = JSON.parse(String(result.stdout || '{}'));
         assert.equal(stdout?.hookSpecificOutput?.permissionDecision, 'deny');
-        assert.match(String(result.stderr || ''), /GOVERNANCE WRITE DENIED/i);
+        // Fixup-17 Opzione B: `python script.py ...` now hits the
+        // nuclear external-script-invocation path BEFORE the
+        // governance-specific detector. Either message closes the
+        // bypass; accept both.
+        assert.match(
+            String(result.stderr || ''),
+            /GOVERNANCE WRITE DENIED|Opzione B nuclear/i,
+        );
         pass('pre-tool-use-governance-opaque-script');
     });
 
