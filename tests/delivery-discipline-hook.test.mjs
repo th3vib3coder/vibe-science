@@ -31,6 +31,9 @@ const {
     probeDbAvailability,
     findAllClosureClaimPositions,
     everyClosureHasBoundAttestation,
+    // Shared with validateDeliveryHonesty via import — any drift here
+    // would flow into both hook and validator simultaneously, by design.
+    extractEnforceableContent,
 } = hookModule;
 
 // Valid attestation fixture reused across tests.
@@ -124,6 +127,28 @@ describe('hasDeclaredClosureClaim', () => {
         assert.equal(hasDeclaredClosureClaim('**Sprint 0 is BLOCKED**'), true);
         assert.equal(hasDeclaredClosureClaim('| gate | FALSE-POSITIVE |'), true);
     });
+
+    // fixup-4 P2-B: former pattern 3 (generic bold-wrapped closure word)
+    // was over-matching — it fired on bold filenames and any prose bolding
+    // that happened to contain a closure word. Pattern 1 covers the real
+    // declarative form `**Result: PASS**` via `\*{0,2}` substitutions and
+    // `\b` boundaries. Removing pattern 3 must not reintroduce the bypass.
+    it('does NOT match bold filenames or prose bolding that happens to contain a closure word', () => {
+        // Bold filename reference — the reviewer's exact example.
+        assert.equal(hasDeclaredClosureClaim('See **blind-first-pass.md** for details.'), false);
+        // Bold proper noun that contains SHIPPED as part of a name.
+        assert.equal(hasDeclaredClosureClaim('Project **UnSHIPPEDWare** is still in beta.'), false);
+        // Prose bolding of a closure word inside a sentence (not a declaration).
+        assert.equal(hasDeclaredClosureClaim('The builder **shipped** all containers yesterday.'), false);
+    });
+
+    it('still matches the declarative forms that pattern 3 used to handle (via pattern 1/2/5)', () => {
+        // These MUST still match after pattern-3 removal or we regressed coverage.
+        assert.equal(hasDeclaredClosureClaim('**Result: PASSED**'), true, 'pattern 1 handles bold-wrapped declarative');
+        assert.equal(hasDeclaredClosureClaim('**SHIPPED**'), true, 'pattern 2 handles line-start bold closure');
+        assert.equal(hasDeclaredClosureClaim('**Phase 7 is CLOSED**'), true, 'pattern 5 handles bold Phase-is sentence');
+        assert.equal(hasDeclaredClosureClaim('**Wave 2 is PARTIAL**'), true, 'pattern 5 handles negative closures too');
+    });
 });
 
 // ---------------------------------------------------------------------------
@@ -209,6 +234,61 @@ describe('everyClosureHasBoundAttestation', () => {
             '\n# v7.1\n\n**Phase 8 is SHIPPED.**\n\n' + // no attestation here
             `# v7.0\n\n**Phase 7 is CLOSED.**\n${VALID_ATTESTATION_INLINE}`;
         assert.equal(everyClosureHasBoundAttestation(text), false);
+    });
+
+    // fixup-4 P2-A: contiguous table-row claims (gate-summary tables)
+    // must be merged into a single claim block so one trailing attestation
+    // suffices. Without merging, the positional binding over-corrected and
+    // required an attestation between every row — user-hostile for normal
+    // closeout tables. The merge rule: consecutive hits in `|...|` lines
+    // with only table lines between them collapse into one block.
+
+    it('accepts a multi-row gate-summary table with ONE trailing attestation (table-merge)', () => {
+        const text =
+            `# Phase 99\n\n| Gate | Status |\n|------|--------|\n` +
+            `| G1   | PASS   |\n` +
+            `| G2   | PASS   |\n` +
+            `| G3   | FAILED |\n` +
+            `\n${VALID_ATTESTATION_INLINE}`;
+        assert.equal(everyClosureHasBoundAttestation(text), true,
+            'one attestation after the full gate table must satisfy all table rows');
+    });
+
+    it('still DENIES a table followed by a non-table closure claim without its own attestation', () => {
+        // Table rows merge, but the later "Phase X is CLOSED" claim is NOT
+        // in a table line, so it becomes a separate claim needing its own
+        // attestation.
+        const text =
+            `# Phase 99\n\n| Gate | Status |\n|------|--------|\n` +
+            `| G1   | PASS   |\n` +
+            `| G2   | PASS   |\n` +
+            `\n${VALID_ATTESTATION_INLINE}` +
+            `\n# Later\n\n**Phase 100 is CLOSED.**\n` +
+            `\nNo attestation for this second claim.\n`;
+        assert.equal(everyClosureHasBoundAttestation(text), false,
+            'the non-table claim after the attestation still needs its own attestation');
+    });
+
+    it('does NOT merge non-contiguous table rows separated by prose', () => {
+        // Prose between two table groups = claims do NOT merge.
+        // Each table needs its own attestation.
+        const text =
+            `# Phase 99\n\n| G1 | PASS |\n\n` +
+            `Some prose paragraph breaking the table.\n\n` +
+            `| G2 | PASS |\n\n${VALID_ATTESTATION_INLINE}`;
+        assert.equal(everyClosureHasBoundAttestation(text), false,
+            'two separate tables need two separate attestations');
+    });
+
+    it('does NOT merge a table-row claim with a subsequent bold-heading claim', () => {
+        // A claim inside a `|...|` line followed by a claim inside a
+        // `**...**` heading line — the heading line is NOT a table line,
+        // so they must NOT merge.
+        const text =
+            `| G1 | PASS |\n\n` +
+            `**Phase 8 is CLOSED.**\n\n${VALID_ATTESTATION_INLINE}`;
+        assert.equal(everyClosureHasBoundAttestation(text), false,
+            'table-row and heading claims are distinct groups; each needs its own attestation');
     });
 });
 
@@ -340,6 +420,51 @@ describe('hasExemptionComment', () => {
         const frontmatter = `---\nname: example\ndescription: ${'a'.repeat(2000)}\n---\n`;
         const text = `${frontmatter}\n<!-- delivery-discipline: exempt -->\n\n# Body`;
         assert.equal(hasExemptionComment(text), true);
+    });
+});
+
+// ---------------------------------------------------------------------------
+// fixup-4 P1-A: extractEnforceableContent (shared by hook + validator).
+// Direct tests on the helper. Parity with the validator is covered in
+// evaluateDeliveryDiscipline tests below and in the validator suite which
+// imports this exact function.
+// ---------------------------------------------------------------------------
+
+describe('extractEnforceableContent', () => {
+    it('returns full text with hasBoundary=false when no marker', () => {
+        const text = '# Doc\n\nNo marker here.\n';
+        const { enforceable, hasBoundary } = extractEnforceableContent(text);
+        assert.equal(enforceable, text);
+        assert.equal(hasBoundary, false);
+    });
+
+    it('returns only the portion BEFORE the marker when marker present', () => {
+        const above = '# Changelog\n\n## [Unreleased]\nNext release prep.\n\n';
+        const below = '\n## v7.0 — legacy content below\n';
+        const text = `${above}<!-- delivery-discipline: legacy-boundary -->${below}`;
+        const { enforceable, hasBoundary } = extractEnforceableContent(text);
+        assert.equal(enforceable, above);
+        assert.equal(hasBoundary, true);
+    });
+
+    it('is case-insensitive on the marker (matches IDEs that mangle case)', () => {
+        const text = `Above.\n<!-- Delivery-Discipline: LEGACY-boundary -->\nBelow.`;
+        const { enforceable, hasBoundary } = extractEnforceableContent(text);
+        assert.equal(enforceable, 'Above.\n');
+        assert.equal(hasBoundary, true);
+    });
+
+    it('gracefully handles non-string input', () => {
+        assert.deepEqual(extractEnforceableContent(null), { enforceable: '', hasBoundary: false });
+        assert.deepEqual(extractEnforceableContent(undefined), { enforceable: '', hasBoundary: false });
+        assert.deepEqual(extractEnforceableContent(42), { enforceable: '', hasBoundary: false });
+    });
+
+    it('treats a marker at position 0 as "entire file is legacy"', () => {
+        const text = '<!-- delivery-discipline: legacy-boundary -->\nall legacy below\n';
+        const { enforceable, hasBoundary } = extractEnforceableContent(text);
+        assert.equal(enforceable, '');
+        assert.equal(hasBoundary, true);
     });
 });
 
@@ -499,6 +624,138 @@ describe('evaluateDeliveryDiscipline', () => {
         assert.equal(result.decision, 'allow');
         assert.equal(result.reason, 'tool-out-of-scope');
     });
+
+    // fixup-4 P1-A: the hook MUST honor <!-- delivery-discipline:
+    // legacy-boundary --> the same way the CI validator does. Before
+    // fixup-4 the hook would deny a CHANGELOG.md write whose new entries
+    // above the marker had no closure claim, because it was scanning the
+    // legacy release notes below the marker (which DO contain closures).
+    // Parity with the validator is now guaranteed by shared helper.
+
+    it('ALLOWS a closeout-path file where the only closure claims live BELOW the legacy boundary', () => {
+        // Above the marker: new content, no closure claim → nothing to enforce.
+        // Below the marker: legacy release notes with CLOSED/SHIPPED/PASS
+        // → MUST be ignored because they are legacy.
+        const content =
+            '# Changelog\n\n## [Unreleased]\n\nNext release prep, no verdicts yet.\n\n' +
+            '<!-- delivery-discipline: legacy-boundary -->\n\n' +
+            '## v7.0 — TRACE\n\n**Phase 7 is CLOSED.** (legacy, no attestation)\n' +
+            '## v6.0\n\n**Phase 6 is SHIPPED.** (legacy, no attestation)\n';
+        const event = buildWriteEvent('CHANGELOG.md', content);
+        const result = evaluateDeliveryDiscipline(event);
+        assert.equal(result.decision, 'allow',
+            'hook must ignore closure claims below the legacy boundary, matching validator');
+        assert.equal(result.reason, 'no-closure-claim');
+    });
+
+    it('DENIES a closeout-path file with a closure claim ABOVE the legacy boundary and no attestation', () => {
+        const content =
+            '# Changelog\n\n## v7.1 — fixup-4\n\n**Result: PASSED**\n\nNo attestation here.\n\n' +
+            '<!-- delivery-discipline: legacy-boundary -->\n\n' +
+            '## v7.0\n\n(legacy)\n';
+        const event = buildWriteEvent('CHANGELOG.md', content);
+        const result = evaluateDeliveryDiscipline(event);
+        assert.equal(result.decision, 'deny',
+            'closure claim above the boundary still requires attestation');
+        assert.equal(result.reason, 'missing-or-invalid-attestation');
+    });
+
+    it('ALLOWS a closeout-path file with closure + attestation ABOVE boundary and legacy BELOW', () => {
+        const content =
+            `# Changelog\n\n## v7.1 — fixup-4\n\n**Result: PASSED**\n\n${VALID_ATTESTATION}\n\n` +
+            '<!-- delivery-discipline: legacy-boundary -->\n\n' +
+            '## v7.0\n\n**Phase 7 is CLOSED.** (legacy, no attestation needed)\n';
+        const event = buildWriteEvent('CHANGELOG.md', content);
+        const result = evaluateDeliveryDiscipline(event);
+        assert.equal(result.decision, 'allow');
+        assert.equal(result.reason, 'closure-with-valid-attestation');
+    });
+
+    // fixup-4 P2-A: full-path table-merge scenario through
+    // evaluateDeliveryDiscipline (not just the inner helper).
+    it('ALLOWS a gate-summary table closeout with ONE trailing attestation', () => {
+        const content =
+            `# Phase 99 Closeout\n\n## Gate Summary\n\n` +
+            `| Gate | Status |\n|------|--------|\n` +
+            `| G1   | PASS   |\n` +
+            `| G2   | PASS   |\n` +
+            `| G3   | FAILED |\n` +
+            `\n${VALID_ATTESTATION}\n`;
+        const event = buildWriteEvent('phase99-closeout.md', content);
+        const result = evaluateDeliveryDiscipline(event);
+        assert.equal(result.decision, 'allow',
+            'a single attestation after the gate-summary table must satisfy every row');
+        assert.equal(result.reason, 'closure-with-valid-attestation');
+    });
+});
+
+// ---------------------------------------------------------------------------
+// fixup-4 parity: hook and validator must give IDENTICAL verdicts on the
+// same text. Since the validator imports the same helpers (and the shared
+// extractEnforceableContent), this is structural — but a direct parity
+// assertion catches accidental divergence if someone reintroduces a local
+// helper in the validator later.
+// ---------------------------------------------------------------------------
+
+describe('hook/validator parity — identical enforcement semantics', () => {
+    // Helper: both paths reach the same everyClosureHasBoundAttestation
+    // decision when given the same enforceable slice.
+    function hookDecision(content) {
+        return evaluateDeliveryDiscipline(
+            { tool_name: 'Write', tool_input: { file_path: 'phase99-closeout.md', content } },
+        ).decision;
+    }
+    function validatorDecision(content) {
+        const { enforceable } = extractEnforceableContent(content);
+        if (!hasDeclaredClosureClaim(enforceable)) return 'allow';
+        if (hasExemptionComment(enforceable)) return 'allow';
+        if (everyClosureHasBoundAttestation(enforceable)) return 'allow';
+        return 'deny';
+    }
+
+    const cases = [
+        {
+            label: 'no claim above, closure below boundary → allow',
+            content:
+                '# Changelog\n\n## [Unreleased]\nPrep.\n\n' +
+                '<!-- delivery-discipline: legacy-boundary -->\n\n' +
+                '**Phase 7 is CLOSED.**\n',
+        },
+        {
+            label: 'claim above boundary with attestation → allow',
+            content:
+                `# Changelog\n\n**Phase 8 is CLOSED.**\n${VALID_ATTESTATION}\n\n` +
+                '<!-- delivery-discipline: legacy-boundary -->\n\n' +
+                '**Phase 7 is CLOSED.**\n',
+        },
+        {
+            label: 'claim above boundary without attestation → deny',
+            content:
+                '# Changelog\n\n**Phase 8 is CLOSED.**\n\nNo attestation.\n\n' +
+                '<!-- delivery-discipline: legacy-boundary -->\n\n' +
+                'whatever\n',
+        },
+        {
+            label: 'gate-summary table with one trailing attestation → allow',
+            content:
+                `# Close\n\n| G1 | PASS |\n| G2 | PASS |\n\n${VALID_ATTESTATION}\n`,
+        },
+        {
+            label: 'gate-summary table without any attestation → deny',
+            content:
+                '# Close\n\n| G1 | PASS |\n| G2 | PASS |\n\nNo attestation block.\n',
+        },
+    ];
+
+    for (const c of cases) {
+        it(`agrees on: ${c.label}`, () => {
+            assert.equal(
+                hookDecision(c.content),
+                validatorDecision(c.content),
+                `hook and validator disagree on "${c.label}"`,
+            );
+        });
+    }
 });
 
 // ---------------------------------------------------------------------------

@@ -71,9 +71,13 @@ function closureClaimPatterns(globalFlag = false) {
     ),
     // Pattern 2: Line starting with CLOSURE (bold/emph stripped)
     new RegExp(`^[ \\t>*_]*\\**\\s*${CLOSURE_WORD}\\s*[\\s.!:*]`, `${g}imu`),
-    // Pattern 3: Bold wrapped with CLOSURE inside
-    new RegExp(`\\*\\*[^*\\n]{0,80}\\b${CLOSURE_WORD}\\b[^*\\n]{0,80}\\*\\*`, `${g}iu`),
-    // Pattern 4: Table cell
+    // (Former Pattern 3 "bold wrapped with CLOSURE inside" removed in
+    // fixup-4 — it matched filenames like **blind-first-pass.md** and
+    // any prose bolding that happened to contain a closure word.
+    // Pattern 1 already handles bold-wrapped declarative forms like
+    // `**Result: PASS**` via its `\*{0,2}` substitutions and `\b`
+    // boundary matching.)
+    // Pattern 4 (now 3): Table cell
     new RegExp(`\\|\\s*${CLOSURE_WORD}\\s*\\|`, `${g}iu`),
     // Pattern 5: "Phase X is CLOSURE" / "Sprint Y is BLOCKED" sentence form
     new RegExp(
@@ -205,27 +209,90 @@ export function hasValidAttestation(text) {
 }
 
 /**
+ * Group contiguous table-row closure hits into a single claim block.
+ * A multi-row gate-summary table like
+ *   | G1 | PASS |
+ *   | G2 | PASS |
+ *   | G3 | FAILED |
+ * would otherwise require 3 separate attestations (one between each
+ * row). That's user-hostile for normal closeout tables. Contract: two
+ * consecutive hits are merged if both are inside lines starting with
+ * `|` AND every non-blank line between them also starts with `|`
+ * (i.e. they live in the same markdown table).
+ *
+ * Merging collapses the group into the FIRST hit's index but extends
+ * its `length` to cover the last hit. The binding check then treats
+ * the whole table as a single closure that needs ONE attestation after
+ * it.
+ */
+function mergeContiguousTableClaims(positions, text) {
+  if (positions.length === 0) return positions;
+  const getLine = (idx) => {
+    const start = text.lastIndexOf('\n', idx - 1) + 1;
+    const endIdx = text.indexOf('\n', idx);
+    return text.slice(start, endIdx === -1 ? text.length : endIdx);
+  };
+  const isTableLine = (line) => line.trim().startsWith('|');
+  const betweenIsAllTable = (aEnd, bStart) => {
+    const gap = text.slice(aEnd, bStart);
+    return gap.split('\n').every((line) => {
+      const trimmed = line.trim();
+      if (trimmed.length === 0) return true;
+      return trimmed.startsWith('|');
+    });
+  };
+
+  const merged = [{ ...positions[0] }];
+  for (let i = 1; i < positions.length; i += 1) {
+    const hit = positions[i];
+    const prev = merged[merged.length - 1];
+    const prevLine = getLine(prev.index);
+    const hitLine = getLine(hit.index);
+    const bothTable = isTableLine(prevLine) && isTableLine(hitLine);
+    const gapAllTable = betweenIsAllTable(prev.index + prev.length, hit.index);
+    if (bothTable && gapAllTable) {
+      const newEnd = hit.index + hit.length;
+      prev.length = newEnd - prev.index;
+      prev.match = `${prev.match} … ${hit.match}`;
+      continue;
+    }
+    merged.push({ ...hit });
+  }
+  return merged;
+}
+
+/**
  * Positional binding: each closure claim in `text` must be followed by
  * its own valid attestation block BEFORE the next closure claim (or
  * end of text). This prevents a single stale attestation from
  * satisfying multiple later claims in the same file.
  *
- * Example that now FAILS (previously passed):
+ * Contiguous table-row claims (e.g. a gate-summary table) are merged
+ * into a single claim block so a closeout table plus one trailing
+ * attestation is a valid shape — the reviewer's P2-A usability concern.
+ *
+ * Example that FAILS (positional binding violated):
  *   # v7.1 SHIPPED  ← closure claim 1
  *   <no attestation>
  *   # v7.0 SHIPPED  ← closure claim 2
- *   ## Delivery Attestation   ← only here, orphaned
+ *   ## Delivery Attestation   ← only here, orphaned for v7.1
  *   ```json {...} ```
  *
- * The first closure (v7.1) has no attestation in its scope (before
- * v7.0 claim), so the file is rejected.
+ * Example that PASSES (table merge):
+ *   | Gate | Status |
+ *   | G1   | PASS   |
+ *   | G2   | PASS   |
+ *   | G3   | FAILED |
+ *   ## Delivery Attestation
+ *   ```json {...} ```
  *
- * Returns true when every claim is bound, or when there are no claims.
+ * Returns true when every claim block is bound, or no claims exist.
  */
 export function everyClosureHasBoundAttestation(text) {
   if (typeof text !== 'string' || text.length === 0) return true;
-  const claims = findAllClosureClaimPositions(text);
-  if (claims.length === 0) return true;
+  const rawClaims = findAllClosureClaimPositions(text);
+  if (rawClaims.length === 0) return true;
+  const claims = mergeContiguousTableClaims(rawClaims, text);
 
   for (let i = 0; i < claims.length; i += 1) {
     const start = claims[i].index;
@@ -254,6 +321,29 @@ export function hasExemptionComment(text) {
   // the comment sits.
   const head = text.slice(0, 5000);
   return /<!--\s*delivery-discipline:\s*exempt\s*-->/iu.test(head);
+}
+
+/**
+ * Legacy-boundary marker splitting. If `text` contains
+ * `<!-- delivery-discipline: legacy-boundary -->`, everything from the
+ * marker onward is considered pre-Phase-8 legacy history and is NOT
+ * subject to the discipline. Only the portion BEFORE the marker is
+ * enforced. Files without the marker are returned unchanged.
+ *
+ * Shared by the hook (evaluateDeliveryDiscipline) and the CI validator
+ * (validateDeliveryHonesty) so write-time and CI-time enforcement use
+ * identical semantics — no drift possible between them.
+ */
+export function extractEnforceableContent(text) {
+  if (typeof text !== 'string') return { enforceable: '', hasBoundary: false };
+  const match = text.match(/<!--\s*delivery-discipline:\s*legacy-boundary\s*-->/iu);
+  if (!match || match.index === undefined) {
+    return { enforceable: text, hasBoundary: false };
+  }
+  return {
+    enforceable: text.slice(0, match.index),
+    hasBoundary: true,
+  };
 }
 
 /**
@@ -348,10 +438,17 @@ export function evaluateDeliveryDiscipline(event, options = {}) {
     return { decision: 'allow', reason: 'empty-content' };
   }
 
-  // Fast exit 3: no declared closure claim → nothing to enforce.
+  // Legacy-boundary: if the file carries the boundary marker, only the
+  // content BEFORE the marker is subject to the discipline. The
+  // validator (validateDeliveryHonesty) uses the same split, so write-
+  // time and CI-time enforcement stay identical.
+  const { enforceable } = extractEnforceableContent(content);
+
+  // Fast exit 3: no declared closure claim in the enforceable slice →
+  // nothing to enforce.
   // (Checked before exemption so strict-mode only fires when the
   // discipline would actually apply.)
-  if (!hasDeclaredClosureClaim(content)) {
+  if (!hasDeclaredClosureClaim(enforceable)) {
     return { decision: 'allow', reason: 'no-closure-claim' };
   }
 
@@ -372,22 +469,25 @@ export function evaluateDeliveryDiscipline(event, options = {}) {
 
   // Fast exit 4: explicit exemption (after strict-mode gate so strict
   // mode can still refuse exemptions when no audit trail is available).
+  // Exemption is checked against the full content because the comment
+  // itself may be before the legacy boundary.
   if (hasExemptionComment(content)) {
     return { decision: 'allow', reason: 'exemption-comment' };
   }
 
-  // At this point: the file is a deliverable that declares closure.
-  // Every closure claim must have its OWN attestation block positioned
-  // after it (and before the next claim). A single stale attestation
-  // no longer satisfies multiple later claims.
-  if (everyClosureHasBoundAttestation(content)) {
+  // At this point: the file is a deliverable that declares closure in
+  // its enforceable portion. Every closure claim in that portion must
+  // have its OWN attestation block positioned after it (and before the
+  // next claim). A single stale attestation no longer satisfies
+  // multiple later claims.
+  if (everyClosureHasBoundAttestation(enforceable)) {
     return { decision: 'allow', reason: 'closure-with-valid-attestation' };
   }
 
   return {
     decision: 'deny',
     reason: 'missing-or-invalid-attestation',
-    matched: closureExcerpt(content),
+    matched: closureExcerpt(enforceable),
     targetPath: filePath,
   };
 }

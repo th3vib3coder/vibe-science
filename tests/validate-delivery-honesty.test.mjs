@@ -46,6 +46,14 @@ const {
     hasValidAttestation,
     hasExemptionComment,
     everyClosureHasBoundAttestation,
+    // Shared boundary-extraction helper. The validator MUST import the
+    // hook's version (not keep its own copy) so write-time enforcement
+    // (hook) and CI-time enforcement (validator) cannot drift on how
+    // they treat `<!-- delivery-discipline: legacy-boundary -->`. The
+    // fixup-4 review identified a drift risk: the hook did not honor
+    // the marker while the validator did. Sharing the helper makes
+    // that class of drift structurally impossible.
+    extractEnforceableContent,
 } = hookModule;
 
 // Placeholder for the self-import below (resolved at module eval time).
@@ -87,7 +95,9 @@ const LEGACY_DIR_PREFIXES = [
 // Primary use case: CHANGELOG.md — pre-Phase-8 release notes below the
 // marker are legacy; future release-note entries above the marker must
 // include a Delivery Attestation block per the skill.
-const LEGACY_BOUNDARY_MARKER = /<!--\s*delivery-discipline:\s*legacy-boundary\s*-->/iu;
+// The marker regex + extraction semantics live in the hook module
+// (extractEnforceableContent, imported above) so hook and validator use
+// the same definition by construction.
 
 // Fallback walk only skips system dirs — legacy filtering is done
 // downstream by classifySkip() so the rule is a single source of truth.
@@ -175,21 +185,10 @@ function classifySkip(relPath, content) {
     return null;
 }
 
-/**
- * Extract the enforceable content of a file. If the file contains the
- * legacy-boundary marker, return only the content BEFORE the marker
- * (new entries, subject to discipline). Everything from the marker
- * onward is legacy content and skipped. Files without the marker are
- * returned unchanged and enforced whole.
- */
-function extractEnforceableContent(content) {
-    const match = content.match(LEGACY_BOUNDARY_MARKER);
-    if (!match) return { enforceable: content, hasBoundary: false };
-    return {
-        enforceable: content.slice(0, match.index),
-        hasBoundary: true,
-    };
-}
+// `extractEnforceableContent` used below is imported from the hook
+// module (top of this file) so write-time and CI-time enforcement
+// share a single definition. The previous local copy was removed in
+// fixup-4 to eliminate the drift risk surfaced by adversarial review.
 
 /**
  * Validate delivery honesty across a repo root. Returns a structured
