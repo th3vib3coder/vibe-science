@@ -41,6 +41,11 @@ const {
     // Fixup-7: fence-depth-aware attestation scanner. Exported so the
     // P1 #1 nested-fence test can exercise it directly.
     findAttestationJsonContent,
+    // Fixup-9: path+hash boundary allowlist. Mutated by tests to bless
+    // synthetic fixtures; restored after each test in the try/finally
+    // wrapper `withBoundaryApproved`.
+    LEGACY_BOUNDARY_HASHES,
+    isApprovedBoundaryFile,
 } = hookModule;
 
 // Helper: build a hash-pinned legacy-boundary marker for the given
@@ -48,6 +53,21 @@ const {
 // semantics instead of the deprecated bare marker.
 function hashedBoundaryMarker(belowContent) {
     return `<!-- delivery-discipline: legacy-boundary hash=${computeBoundaryHash(belowContent)} -->`;
+}
+
+// Fixup-9: temporarily bless (relPath, hash) in the boundary allowlist
+// for the duration of a test callback. Used to exercise boundary
+// semantics on synthetic fixtures without hardcoding the real
+// CHANGELOG below-content. Restores previous state even on throw.
+function withBoundaryApproved(relPath, hash, callback) {
+    const previous = LEGACY_BOUNDARY_HASHES[relPath];
+    LEGACY_BOUNDARY_HASHES[relPath] = hash;
+    try {
+        return callback();
+    } finally {
+        if (previous === undefined) delete LEGACY_BOUNDARY_HASHES[relPath];
+        else LEGACY_BOUNDARY_HASHES[relPath] = previous;
+    }
 }
 
 // Valid attestation fixture reused across tests.
@@ -567,6 +587,66 @@ describe('hasValidAttestation', () => {
         assert.equal(hasValidAttestation(wrapped), false);
     });
 
+    // Fixup-9 P1 #2: tab indentation must NOT produce a valid attestation.
+    // Per CommonMark, a leading tab equals 4 columns of indentation,
+    // i.e. into an indented code block — not into a heading/fence. The
+    // 9th review reproduced a bypass where `\t## Delivery Attestation`
+    // + `\t```json` passed as a valid attestation.
+
+    it('REJECTS an attestation where heading and fence are tab-indented (CommonMark code-block indent)', () => {
+        const tabbed = [
+            '# Phase 99 CLOSED', '',
+            'Status: CLOSED', '',
+            '\t## Delivery Attestation', '',
+            '\t```json',
+            '\t{"covered":["x verified directly"],"scope_cuts":[],"self_review_findings":[',
+            '\t"attack one with enough text to clear the 20-char minimum please..........",',
+            '\t"attack two with enough text to clear the 20-char minimum please..........",',
+            '\t"attack three with enough text to clear the 20-char minimum please........"',
+            '\t],"external_review_status":"pending"}',
+            '\t```',
+        ].join('\n');
+        assert.equal(hasValidAttestation(tabbed), false,
+            'tab-indented heading and fence must not be treated as real attestation');
+    });
+
+    it('REJECTS an attestation with a heading that starts with a tab', () => {
+        const tabbedHeading = [
+            'Status: CLOSED', '',
+            '\t## Delivery Attestation', '',  // tab-indent heading
+            '```json',                         // fence at column 0
+            '{"covered":["x verified directly"],"scope_cuts":[],"self_review_findings":[',
+            '"attack one with enough text to clear the 20-char minimum please..........",',
+            '"attack two with enough text to clear the 20-char minimum please..........",',
+            '"attack three with enough text to clear the 20-char minimum please........"',
+            '],"external_review_status":"pending"}',
+            '```',
+        ].join('\n');
+        assert.equal(hasValidAttestation(tabbedHeading), false,
+            'tab-indented heading is a code-block indent and does not count as a real heading');
+    });
+
+    it('ACCEPTS an attestation with heading and fence at column 0 (the canonical form)', () => {
+        // Regression guard after fixup-9 tightening: the ordinary case
+        // must still work.
+        assert.equal(hasValidAttestation(VALID_ATTESTATION), true);
+    });
+
+    it('ACCEPTS a CRLF-formatted attestation (fixup-9 P3)', () => {
+        // CRLF line endings are typical on Windows. The parser now
+        // normalizes them so a legitimate Windows-authored attestation
+        // is no longer false-negatived.
+        const crlfContent = VALID_ATTESTATION.replace(/\n/gu, '\r\n');
+        assert.equal(hasValidAttestation(crlfContent), true,
+            'CRLF attestation must parse successfully after line-ending normalization');
+    });
+
+    it('ACCEPTS an attestation preceded by a UTF-8 BOM (fixup-9 P3)', () => {
+        const bomContent = '\uFEFF' + VALID_ATTESTATION;
+        assert.equal(hasValidAttestation(bomContent), true,
+            'a leading BOM must be stripped before parsing so the heading regex still anchors');
+    });
+
     it('REJECTS a `## Delivery Attestation` heading that appears INSIDE a code fence', () => {
         // A fake heading buried in a code fence must not activate the
         // attestation scope. Only a heading at fence-depth zero counts.
@@ -717,24 +797,29 @@ describe('extractEnforceableContent', () => {
         assert.equal(result.hashValid, true);
     });
 
-    it('returns only the portion BEFORE the marker when marker carries a matching hash', () => {
+    it('returns only the portion BEFORE the marker when marker carries a matching hash (and path is approved)', () => {
         const above = '# Changelog\n\n## [Unreleased]\nNext release prep.\n\n';
         const below = '\n## v7.0 — legacy content below\n';
-        const text = `${above}${hashedBoundaryMarker(below)}${below}`;
-        const result = extractEnforceableContent(text);
-        assert.equal(result.enforceable, above);
-        assert.equal(result.hasBoundary, true);
-        assert.equal(result.hashValid, true);
+        const hash = computeBoundaryHash(below);
+        const text = `${above}<!-- delivery-discipline: legacy-boundary hash=${hash} -->${below}`;
+        withBoundaryApproved('CHANGELOG.md', hash, () => {
+            const result = extractEnforceableContent(text, 'CHANGELOG.md');
+            assert.equal(result.enforceable, above);
+            assert.equal(result.hasBoundary, true);
+            assert.equal(result.hashValid, true);
+        });
     });
 
     it('is case-insensitive on the marker keyword (matches IDEs that mangle case)', () => {
         const below = '\nBelow.';
         const hash = computeBoundaryHash(below);
         const text = `Above.\n<!-- Delivery-Discipline: LEGACY-boundary hash=${hash} -->${below}`;
-        const result = extractEnforceableContent(text);
-        assert.equal(result.enforceable, 'Above.\n');
-        assert.equal(result.hasBoundary, true);
-        assert.equal(result.hashValid, true);
+        withBoundaryApproved('CHANGELOG.md', hash, () => {
+            const result = extractEnforceableContent(text, 'CHANGELOG.md');
+            assert.equal(result.enforceable, 'Above.\n');
+            assert.equal(result.hasBoundary, true);
+            assert.equal(result.hashValid, true);
+        });
     });
 
     it('gracefully handles non-string input', () => {
@@ -752,13 +837,16 @@ describe('extractEnforceableContent', () => {
         );
     });
 
-    it('treats a hashed marker at position 0 as "entire file is legacy"', () => {
+    it('treats a hashed marker at position 0 as "entire file is legacy" (approved path only)', () => {
         const below = '\nall legacy below\n';
-        const text = `${hashedBoundaryMarker(below)}${below}`;
-        const result = extractEnforceableContent(text);
-        assert.equal(result.enforceable, '');
-        assert.equal(result.hasBoundary, true);
-        assert.equal(result.hashValid, true);
+        const hash = computeBoundaryHash(below);
+        const text = `<!-- delivery-discipline: legacy-boundary hash=${hash} -->${below}`;
+        withBoundaryApproved('CHANGELOG.md', hash, () => {
+            const result = extractEnforceableContent(text, 'CHANGELOG.md');
+            assert.equal(result.enforceable, '');
+            assert.equal(result.hasBoundary, true);
+            assert.equal(result.hashValid, true);
+        });
     });
 
     // Fixup-5 P1: bare marker (no hash) must NOT grant boundary.
@@ -800,15 +888,73 @@ describe('extractEnforceableContent', () => {
     // Line-ending stability: the hash is computed on LF-normalized
     // content, so a CRLF-formatted file checked out on Windows still
     // validates against a hash computed on the LF version.
-    it('validates a hashed marker when below content uses CRLF line endings', () => {
+    it('validates a hashed marker when below content uses CRLF line endings (approved path)', () => {
         const belowLf = '\n## v7.0\n\nLegacy history.\n';
         const hash = computeBoundaryHash(belowLf);
         const belowCrlf = belowLf.replace(/\n/gu, '\r\n');
         const text = `# Changelog\n<!-- delivery-discipline: legacy-boundary hash=${hash} -->${belowCrlf}`;
-        const result = extractEnforceableContent(text);
-        assert.equal(result.hasBoundary, true,
-            'CRLF below-marker content must validate against LF-normalized hash');
-        assert.equal(result.hashValid, true);
+        withBoundaryApproved('CHANGELOG.md', hash, () => {
+            const result = extractEnforceableContent(text, 'CHANGELOG.md');
+            assert.equal(result.hasBoundary, true,
+                'CRLF below-marker content must validate against LF-normalized hash');
+            assert.equal(result.hashValid, true);
+        });
+    });
+
+    // Fixup-9 P1 #1: boundary mint rejection — a file not in the
+    // LEGACY_BOUNDARY_HASHES allowlist must NOT receive a boundary
+    // even if its hashed marker is self-consistent.
+    it('REJECTS a self-consistent hashed boundary when the path is not in the allowlist', () => {
+        const below = '\n## v7.0\n\nFresh attack content.\n';
+        const hash = computeBoundaryHash(below);
+        const text = `# Fresh\n<!-- delivery-discipline: legacy-boundary hash=${hash} -->${below}`;
+        // filePath is a brand-new deliverable, not in LEGACY_BOUNDARY_HASHES.
+        const result = extractEnforceableContent(text, 'phase99-closeout.md');
+        assert.equal(result.hasBoundary, false,
+            'unapproved path must not be granted a boundary even with consistent hash');
+        assert.equal(result.hashValid, false);
+        assert.equal(result.reason, 'legacy-boundary-not-approved-for-this-path');
+        assert.equal(result.enforceable, text,
+            'enforceable must fall back to full text on boundary rejection');
+    });
+
+    it('REJECTS a boundary when filePath is missing (null) — fail-closed on unknown path', () => {
+        const below = '\nlegacy\n';
+        const hash = computeBoundaryHash(below);
+        const text = `# Doc\n<!-- delivery-discipline: legacy-boundary hash=${hash} -->${below}`;
+        const result = extractEnforceableContent(text /* no filePath */);
+        assert.equal(result.hasBoundary, false);
+        assert.equal(result.hashValid, false);
+        assert.equal(result.reason, 'legacy-boundary-not-approved-for-this-path',
+            'null filePath cannot match the allowlist → reject');
+    });
+
+    it('REJECTS a boundary when the file path is approved but the hash does not match the allowlisted one', () => {
+        // filePath IS in allowlist, but the marker uses a different hash.
+        const below = '\nnot the real CHANGELOG below\n';
+        const hash = computeBoundaryHash(below);
+        const text = `# Fake\n<!-- delivery-discipline: legacy-boundary hash=${hash} -->${below}`;
+        // Use the real allowlist value, not a blessed fixture.
+        const result = extractEnforceableContent(text, 'CHANGELOG.md');
+        assert.equal(result.hasBoundary, false);
+        assert.equal(result.hashValid, false);
+        assert.equal(result.reason, 'legacy-boundary-not-approved-for-this-path',
+            'hash must match the specific value in the allowlist for this path');
+    });
+
+    // Fixup-9 P3: BOM + CRLF normalization.
+    it('strips a leading UTF-8 BOM before parsing', () => {
+        const below = '\nlegacy\n';
+        const hash = computeBoundaryHash(below);
+        const bodyWithoutBom = `# Doc\n<!-- delivery-discipline: legacy-boundary hash=${hash} -->${below}`;
+        const bodyWithBom = '\uFEFF' + bodyWithoutBom;
+        withBoundaryApproved('CHANGELOG.md', hash, () => {
+            const resultWith = extractEnforceableContent(bodyWithBom, 'CHANGELOG.md');
+            const resultWithout = extractEnforceableContent(bodyWithoutBom, 'CHANGELOG.md');
+            assert.equal(resultWith.hasBoundary, true, 'BOM must not prevent boundary recognition');
+            assert.equal(resultWithout.hasBoundary, true);
+            assert.equal(resultWith.hashValid, resultWithout.hashValid);
+        });
     });
 });
 
@@ -1029,42 +1175,70 @@ describe('evaluateDeliveryDiscipline', () => {
     it('ALLOWS a closeout-path file where the only closure claims live BELOW a VALID hashed boundary', () => {
         // Above the marker: new content, no closure claim → nothing to enforce.
         // Below the marker: legacy release notes with CLOSED/SHIPPED/PASS
-        // → MUST be ignored because they are legacy AND the hash matches.
+        // → MUST be ignored because they are legacy AND the hash matches
+        // AND the path is in the boundary allowlist.
         const below =
             '\n\n## v7.0 — TRACE\n\n**Phase 7 is CLOSED.** (legacy, no attestation)\n' +
             '## v6.0\n\n**Phase 6 is SHIPPED.** (legacy, no attestation)\n';
+        const hash = computeBoundaryHash(below);
         const content =
             '# Changelog\n\n## [Unreleased]\n\nNext release prep, no verdicts yet.\n\n' +
-            `${hashedBoundaryMarker(below)}${below}`;
-        const event = buildWriteEvent('CHANGELOG.md', content);
-        const result = evaluateDeliveryDiscipline(event);
-        assert.equal(result.decision, 'allow',
-            'hook must ignore closure claims below a valid hashed boundary, matching validator');
-        assert.equal(result.reason, 'no-closure-claim');
+            `<!-- delivery-discipline: legacy-boundary hash=${hash} -->${below}`;
+        withBoundaryApproved('CHANGELOG.md', hash, () => {
+            const event = buildWriteEvent('CHANGELOG.md', content);
+            const result = evaluateDeliveryDiscipline(event);
+            assert.equal(result.decision, 'allow',
+                'hook must ignore closure claims below a valid hashed boundary, matching validator');
+            assert.equal(result.reason, 'no-closure-claim');
+        });
     });
 
     it('DENIES a closeout-path file with a closure claim ABOVE the hashed boundary and no attestation', () => {
         const below = '\n\n## v7.0\n\n(legacy)\n';
+        const hash = computeBoundaryHash(below);
         const content =
             '# Changelog\n\n## v7.1 — fixup-4\n\n**Result: PASSED**\n\nNo attestation here.\n\n' +
-            `${hashedBoundaryMarker(below)}${below}`;
-        const event = buildWriteEvent('CHANGELOG.md', content);
-        const result = evaluateDeliveryDiscipline(event);
-        assert.equal(result.decision, 'deny',
-            'closure claim above the boundary still requires attestation');
-        assert.equal(result.reason, 'missing-or-invalid-attestation');
+            `<!-- delivery-discipline: legacy-boundary hash=${hash} -->${below}`;
+        withBoundaryApproved('CHANGELOG.md', hash, () => {
+            const event = buildWriteEvent('CHANGELOG.md', content);
+            const result = evaluateDeliveryDiscipline(event);
+            assert.equal(result.decision, 'deny',
+                'closure claim above the boundary still requires attestation');
+            assert.equal(result.reason, 'missing-or-invalid-attestation');
+        });
     });
 
     it('ALLOWS a closeout-path file with closure + attestation ABOVE hashed boundary and legacy BELOW', () => {
         const below =
             '\n\n## v7.0\n\n**Phase 7 is CLOSED.** (legacy, no attestation needed)\n';
+        const hash = computeBoundaryHash(below);
         const content =
             `# Changelog\n\n## v7.1 — fixup-4\n\n**Result: PASSED**\n\n${VALID_ATTESTATION}\n\n` +
-            `${hashedBoundaryMarker(below)}${below}`;
-        const event = buildWriteEvent('CHANGELOG.md', content);
+            `<!-- delivery-discipline: legacy-boundary hash=${hash} -->${below}`;
+        withBoundaryApproved('CHANGELOG.md', hash, () => {
+            const event = buildWriteEvent('CHANGELOG.md', content);
+            const result = evaluateDeliveryDiscipline(event);
+            assert.equal(result.decision, 'allow');
+            assert.equal(result.reason, 'closure-with-valid-attestation');
+        });
+    });
+
+    // Fixup-9 P1 #1: the boundary-mint repro from the 9th review.
+    // Fresh phase99-closeout.md with a valid-looking hashed marker at
+    // the top must NOT grandfather the rest of the file just because
+    // the hash is self-consistent.
+    it('DENIES a fresh deliverable that mints its own valid-looking hashed boundary', () => {
+        const below = '\nStatus: CLOSED\n\nDeclaration without any attestation proof.\n';
+        const hash = computeBoundaryHash(below);
+        const content =
+            `<!-- delivery-discipline: legacy-boundary hash=${hash} -->` + below;
+        // Do NOT bless this path in the allowlist — that is the attack.
+        const event = buildWriteEvent('phase99-closeout.md', content);
         const result = evaluateDeliveryDiscipline(event);
-        assert.equal(result.decision, 'allow');
-        assert.equal(result.reason, 'closure-with-valid-attestation');
+        assert.equal(result.decision, 'deny',
+            'freshly-minted boundary on an unapproved path must not bypass enforcement');
+        assert.equal(result.reason, 'legacy-boundary-not-approved-for-this-path',
+            'reason must pinpoint the allowlist violation, not something generic');
     });
 
     // Fixup-5 P1: reviewer's reproduction. Someone appends a new
@@ -1131,21 +1305,27 @@ describe('evaluateDeliveryDiscipline', () => {
     // hook's exemption check to `enforceable` as well.
 
     it('DENIES (does NOT exempt) when an exemption comment is hidden BELOW a valid hashed boundary', () => {
+        // Fixup-9: use CHANGELOG.md (approved path) + temporary bless so
+        // the boundary genuinely grants (enforceable = above-marker).
+        // The exemption comment is BELOW the marker and should be
+        // invisible to the hook.
         const below =
             '\nGenuine-looking historical content.\n\n' +
             '<!-- delivery-discipline: exempt -->\n\n' +
             'More historical text.\n';
         const hash = computeBoundaryHash(below);
         const content =
-            '# Phase 99 SHIPPED\n\nStatus: CLOSED.\n\n' +
+            '# Changelog\n\nStatus: CLOSED.\n\n' +
             `<!-- delivery-discipline: legacy-boundary hash=${hash} -->` +
             below;
-        const event = buildWriteEvent('phase99-closeout.md', content);
-        const result = evaluateDeliveryDiscipline(event);
-        assert.equal(result.decision, 'deny',
-            'exemption hidden below a valid boundary must not grant bypass — must match validator');
-        assert.equal(result.reason, 'missing-or-invalid-attestation',
-            'reason must point at missing attestation, not at the hidden exemption');
+        withBoundaryApproved('CHANGELOG.md', hash, () => {
+            const event = buildWriteEvent('CHANGELOG.md', content);
+            const result = evaluateDeliveryDiscipline(event);
+            assert.equal(result.decision, 'deny',
+                'exemption hidden below a valid boundary must not grant bypass — must match validator');
+            assert.equal(result.reason, 'missing-or-invalid-attestation',
+                'reason must point at missing attestation, not at the hidden exemption');
+        });
     });
 
     it('still ALLOWS exemption when it is placed at the top of the file (valid location)', () => {

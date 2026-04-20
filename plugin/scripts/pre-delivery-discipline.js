@@ -189,26 +189,31 @@ export function findAllClosureClaimPositions(text) {
  */
 export function findAttestationJsonContent(text) {
   if (typeof text !== 'string' || text.length === 0) return null;
-  const lines = text.split('\n');
+  // Fixup-9 P3: strip an optional UTF-8 BOM and tolerate CRLF and bare
+  // CR line endings by splitting on any newline variant. Windows-
+  // authored files (CRLF, BOM) no longer cause the parser to fail
+  // closed on otherwise-legitimate attestations.
+  if (text.charCodeAt(0) === 0xFEFF) {
+    text = text.slice(1);
+  }
+  const lines = text.split(/\r\n|\r|\n/u);
   // Tick count of the currently-open outer fence; null when at depth 0.
   let openTicks = null;
   // True once we've seen a `## Delivery Attestation` heading at depth 0.
   // A json fence at depth 0 AFTER that heading is the attestation.
   let inAttestationScope = false;
-  // A fence-opener line: 0-3 spaces indentation (CommonMark), N
-  // backticks + optional whitespace + optional info-string tag
-  // (non-whitespace, non-backtick) + optional trailing info-string
-  // continuation. Per CommonMark, the info string of a backtick-fenced
-  // block must not contain backticks. Four spaces is an indented code
-  // block, not a fence.
-  const FENCE_OPEN = /^[ \t]{0,3}(`{3,})[ \t]*([^\s`]*)(?:[ \t][^`]*)?$/u;
-  // A fence-closer line: 0-3 spaces indentation, M backticks (where
-  // M >= opening N) with only trailing whitespace; info string must be
-  // empty per spec.
-  const FENCE_CLOSE = /^[ \t]{0,3}(`{3,})[ \t]*$/u;
-  // Heading that MIGHT be the attestation heading. CommonMark allows
-  // headings to be indented up to 3 spaces; 4+ spaces is a code block.
-  const HEADING_RE = /^[ \t]{0,3}#{2,3}\s+delivery\s+attestation\s*$/iu;
+  // Fixup-9 P1 #2: CommonMark treats a leading tab as 4 columns of
+  // indentation, i.e. into an INDENTED CODE BLOCK, not as a fence or
+  // heading. Permitting `[ \t]{0,3}` let a tab-indented attestation
+  // pass as a real one. The 9th adversarial review reproduced a
+  // `Status: CLOSED` closeout whose only attestation was tab-indented:
+  // `hasValidAttestation` returned true, the hook allowed the write.
+  // Restrict indentation to literal spaces (0-3); tabs are rejected
+  // as fences/headings and the line is treated as prose (or, inside
+  // an open fence, as fence content).
+  const FENCE_OPEN = /^ {0,3}(`{3,})[ \t]*([^\s`]*)(?:[ \t][^`]*)?$/u;
+  const FENCE_CLOSE = /^ {0,3}(`{3,})[ \t]*$/u;
+  const HEADING_RE = /^ {0,3}#{2,3}[ \t]+delivery[ \t]+attestation[ \t]*$/iu;
   for (let i = 0; i < lines.length; i += 1) {
     const line = lines[i];
     const openM = line.match(FENCE_OPEN);
@@ -454,6 +459,49 @@ const LEGACY_BOUNDARY_MARKER_RE =
   /<!--\s*delivery-discipline:\s*legacy-boundary(?:\s+hash=([a-f0-9]{64}))?\s*-->/iu;
 
 /**
+ * Fixup-9 P1 #1: path+hash allowlist for legacy-boundary markers.
+ *
+ * A hashed boundary marker proves that below-marker content has not
+ * drifted (hash pin from fixup-5), but the hash alone does NOT prove
+ * that the file is actually a legacy file allowed to use the boundary
+ * mechanism. An agent could mint a BRAND-NEW deliverable containing
+ * only `<!-- delivery-discipline: legacy-boundary hash=<computed> -->`
+ * at position 0 — `enforceable` becomes empty, no closure is found
+ * anywhere, and the write silently passes. The 9th adversarial review
+ * reproduced this on a new `phase99-closeout.md`.
+ *
+ * Defense: only an explicit list of (path, hash) pairs can successfully
+ * claim a boundary. Any other file using the marker is treated as
+ * "unapproved boundary" — fall back to full-file enforcement. Updating
+ * the allowlist requires a reviewed code change, which surfaces any
+ * attempt to bless a new boundary location.
+ *
+ * Keys are forward-slash relative paths from the project root. Values
+ * are sha256 hex of the LF-normalized below-marker content.
+ */
+export const LEGACY_BOUNDARY_HASHES = {
+  'CHANGELOG.md': 'ce6541dbe61d4dabb7ee6ed4f96b091cedd7fea93eee44da59cffd762e2315ee',
+};
+
+/**
+ * Check whether the given (filePath, expectedHash) pair is in the
+ * boundary allowlist. Accepts absolute Windows paths (back-slashes are
+ * normalized) and relative POSIX paths. Matches on basename path-suffix
+ * anchored by `/` to prevent `fooCHANGELOG.md` from masquerading as an
+ * approved `CHANGELOG.md`.
+ */
+export function isApprovedBoundaryFile(filePath, expectedHash) {
+  if (typeof filePath !== 'string' || typeof expectedHash !== 'string') return false;
+  const normalized = filePath.replace(/\\/gu, '/');
+  for (const allowedPath of Object.keys(LEGACY_BOUNDARY_HASHES)) {
+    if (normalized === allowedPath || normalized.endsWith(`/${allowedPath}`)) {
+      return LEGACY_BOUNDARY_HASHES[allowedPath] === expectedHash;
+    }
+  }
+  return false;
+}
+
+/**
  * Legacy-boundary marker splitting with integrity pin.
  *
  * Before fixup-5 the marker was bare: `<!-- delivery-discipline:
@@ -489,9 +537,14 @@ const LEGACY_BOUNDARY_MARKER_RE =
  * (validateDeliveryHonesty) via direct import so write-time and
  * CI-time enforcement use identical semantics — no drift possible.
  */
-export function extractEnforceableContent(text) {
+export function extractEnforceableContent(text, filePath = null) {
   if (typeof text !== 'string') {
     return { enforceable: '', hasBoundary: false, hashValid: true };
+  }
+  // Fixup-9 P3: strip an optional UTF-8 BOM at start so downstream
+  // regex anchors don't break on Windows-authored files.
+  if (text.charCodeAt(0) === 0xFEFF) {
+    text = text.slice(1);
   }
   const match = text.match(LEGACY_BOUNDARY_MARKER_RE);
   if (!match || match.index === undefined) {
@@ -516,6 +569,21 @@ export function extractEnforceableContent(text) {
       hasBoundary: false,
       hashValid: false,
       reason: 'legacy-boundary-hash-mismatch',
+      expectedHash,
+      actualHash,
+    };
+  }
+  // Fixup-9 P1 #1: hash is self-consistent, but boundary granting ALSO
+  // requires the (filePath, hash) pair to be in the allowlist. Any
+  // other file using a boundary marker is treated as "unapproved
+  // boundary" — fall back to full-file enforcement so a fresh
+  // deliverable cannot mint its own grandfathered region.
+  if (!isApprovedBoundaryFile(filePath, expectedHash)) {
+    return {
+      enforceable: text,
+      hasBoundary: false,
+      hashValid: false,
+      reason: 'legacy-boundary-not-approved-for-this-path',
       expectedHash,
       actualHash,
     };
@@ -638,7 +706,7 @@ export function evaluateDeliveryDiscipline(event, options = {}) {
     reason: boundaryReason,
     expectedHash,
     actualHash,
-  } = extractEnforceableContent(content);
+  } = extractEnforceableContent(content, filePath);
 
   // Fast exit 3: no declared closure claim in the enforceable slice →
   // nothing to enforce.
@@ -768,6 +836,16 @@ function writeDenyAndExit(targetPath, matched, reasonCode, extra = {}) {
       `Either (a) remove the new closure claim below the marker, ` +
       `(b) add a valid Delivery Attestation for the full enforceable range, or ` +
       `(c) re-bless the boundary by updating the hash in a reviewed commit. ` +
+      `See .claude/skills/delivery-discipline/SKILL.md.`;
+  } else if (reasonCode === 'legacy-boundary-not-approved-for-this-path') {
+    reason =
+      `DELIVERY DISCIPLINE BLOCK: ${targetPath} uses a legacy-boundary marker but ` +
+      `this path is not in the boundary allowlist (LEGACY_BOUNDARY_HASHES). ` +
+      `The boundary mechanism grandfathers pre-Phase-8 content only for an explicit, ` +
+      `reviewed set of files; freshly-minted deliverables cannot claim a boundary ` +
+      `to bypass attestation. Either add the file to LEGACY_BOUNDARY_HASHES in a ` +
+      `reviewed code change (if this is genuinely legacy) or remove the marker and ` +
+      `add a proper Delivery Attestation block. ` +
       `See .claude/skills/delivery-discipline/SKILL.md.`;
   } else {
     reason =

@@ -57,10 +57,28 @@ const {
     // Fixup-5: hashed legacy-boundary markers. Tests compute expected
     // hashes inline so fixtures stay self-consistent.
     computeBoundaryHash,
+    // Fixup-9: path+hash boundary allowlist. Tests mutate this via
+    // withBoundaryApproved() to bless synthetic fixture paths.
+    LEGACY_BOUNDARY_HASHES,
 } = hookModule;
 
 function hashedBoundaryMarker(belowContent) {
     return `<!-- delivery-discipline: legacy-boundary hash=${computeBoundaryHash(belowContent)} -->`;
+}
+
+// Fixup-9: temporarily bless (relPath, hash) in the boundary allowlist
+// for a test callback. Mirrors the helper in delivery-discipline-hook.test.mjs
+// so validator-side boundary tests can exercise the same semantics on
+// synthetic fixture paths without shipping them to the real allowlist.
+function withBoundaryApproved(relPath, hash, callback) {
+    const previous = LEGACY_BOUNDARY_HASHES[relPath];
+    LEGACY_BOUNDARY_HASHES[relPath] = hash;
+    try {
+        return callback();
+    } finally {
+        if (previous === undefined) delete LEGACY_BOUNDARY_HASHES[relPath];
+        else LEGACY_BOUNDARY_HASHES[relPath] = previous;
+    }
 }
 
 // Placeholder for the self-import below (resolved at module eval time).
@@ -261,7 +279,8 @@ export function validateDeliveryHonesty(rootDir) {
 
         // Split content around legacy-boundary marker. Only the
         // enforceable portion (above a VALID marker) is subject to
-        // the discipline. If no marker or the marker is bare/drifted,
+        // the discipline. If no marker or the marker is bare/drifted
+        // or the path is not in the boundary allowlist (fixup-9 P1 #1),
         // enforceable = full content (fail-closed).
         const {
             enforceable,
@@ -270,7 +289,7 @@ export function validateDeliveryHonesty(rootDir) {
             reason: boundaryReason,
             expectedHash,
             actualHash,
-        } = extractEnforceableContent(content);
+        } = extractEnforceableContent(content, rel);
 
         if (!hasDeclaredClosureClaim(enforceable)) {
             continue; // new content has no closure claim → no enforcement
@@ -282,7 +301,8 @@ export function validateDeliveryHonesty(rootDir) {
         // that might have been appended below the boundary.
         if (hashValid === false && boundaryReason) {
             const entry = { file: rel, reason: boundaryReason };
-            if (boundaryReason === 'legacy-boundary-hash-mismatch') {
+            if (boundaryReason === 'legacy-boundary-hash-mismatch'
+                || boundaryReason === 'legacy-boundary-not-approved-for-this-path') {
                 entry.expectedHash = expectedHash;
                 entry.actualHash = actualHash;
             }
@@ -557,35 +577,65 @@ describe('validateDeliveryHonesty — synthetic fixtures', () => {
         }
     });
 
-    it('legacy-boundary marker (hashed): enforces content ABOVE marker, skips content BELOW', () => {
+    it('legacy-boundary marker (hashed+allowlisted): enforces content ABOVE marker, skips content BELOW', () => {
         const dir = makeTempDir('vds-boundary-');
         try {
-            // New entry above marker = no closure claim, no attestation needed.
-            // Legacy entries below = skipped entirely BECAUSE the hash matches.
+            // Fixup-9: the path must be in LEGACY_BOUNDARY_HASHES with a
+            // matching hash for the boundary to grant. We bless a
+            // synthetic path for the test duration.
             const below = '\n\n## v7.0 — TRACE\n\nPhase 6 is CLOSED. (legacy, no attestation)\n';
+            const hash = computeBoundaryHash(below);
             writeFile(dir, 'changelog.md',
                 '# Changelog\n\n## [Unreleased]\n\nPrepping next release.\n\n' +
-                `${hashedBoundaryMarker(below)}${below}`);
-            const report = validateDeliveryHonesty(dir);
-            assert.equal(report.violations.length, 0,
-                'closure claims below a valid hashed boundary are legacy and ignored');
+                `<!-- delivery-discipline: legacy-boundary hash=${hash} -->${below}`);
+            withBoundaryApproved('changelog.md', hash, () => {
+                const report = validateDeliveryHonesty(dir);
+                assert.equal(report.violations.length, 0,
+                    'closure claims below a valid hashed boundary on an approved path are legacy and ignored');
+            });
         } finally {
             fs.rmSync(dir, { recursive: true, force: true });
         }
     });
 
-    it('legacy-boundary marker (hashed): DENIES closure claim ABOVE the marker without attestation', () => {
+    it('legacy-boundary marker (hashed+allowlisted): DENIES closure claim ABOVE the marker without attestation', () => {
         const dir = makeTempDir('vds-boundary-fail-');
         try {
             const below = '\n\n## v7.0\n\n(legacy below — not scanned)\n';
+            const hash = computeBoundaryHash(below);
             writeFile(dir, 'changelog.md',
                 '# Changelog\n\n## v7.1 SHIPPED\n\n**Result: PASSED**\nNo attestation.\n\n' +
-                `${hashedBoundaryMarker(below)}${below}`);
+                `<!-- delivery-discipline: legacy-boundary hash=${hash} -->${below}`);
+            withBoundaryApproved('changelog.md', hash, () => {
+                const report = validateDeliveryHonesty(dir);
+                assert.equal(report.violations.length, 1,
+                    'closure claim above the boundary must require attestation');
+                assert.equal(report.violations[0].reason,
+                    'closure-claim-above-legacy-boundary-without-attestation');
+            });
+        } finally {
+            fs.rmSync(dir, { recursive: true, force: true });
+        }
+    });
+
+    // Fixup-9 P1 #1: validator-side equivalent of the hook's minting
+    // test. A synthetic closeout whose only boundary marker is in a
+    // non-allowlisted path must NOT be treated as legacy — enforcement
+    // fires on the full file and the closure claim below the marker
+    // surfaces as a violation with the specific boundary-not-approved
+    // reason.
+    it('DENIES a new file using a boundary marker on a path NOT in the allowlist', () => {
+        const dir = makeTempDir('vds-boundary-mint-');
+        try {
+            const below = '\nStatus: CLOSED\n\nFresh attack closure with no attestation.\n';
+            const hash = computeBoundaryHash(below);
+            writeFile(dir, 'phase99-closeout.md',
+                `<!-- delivery-discipline: legacy-boundary hash=${hash} -->${below}`);
             const report = validateDeliveryHonesty(dir);
             assert.equal(report.violations.length, 1,
-                'closure claim above the boundary must require attestation');
+                'an unapproved path cannot mint its own legacy boundary');
             assert.equal(report.violations[0].reason,
-                'closure-claim-above-legacy-boundary-without-attestation');
+                'legacy-boundary-not-approved-for-this-path');
         } finally {
             fs.rmSync(dir, { recursive: true, force: true });
         }
