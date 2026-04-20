@@ -10,6 +10,10 @@
 // Output (stdout JSON): { hookSpecificOutput: { permissionDecision: "allow"|"deny" } }
 
 import { existsSync, readFileSync } from 'node:fs';
+// Fixup-10 P1 #1: need to share the deliverable-path matcher so Bash
+// writes to .md deliverables are blocked with the same basename rule
+// the delivery-discipline hook uses on Write/Edit/MultiEdit.
+import { matchesDeliverablePath } from './pre-delivery-discipline.js';
 
 const PROTECTED_CONFIG_RULES = [
   'skills/vibe/assets/schemas/*.schema.json',
@@ -19,7 +23,44 @@ const PROTECTED_CONFIG_RULES = [
   // contract for the Phase 8 attestation block. Same immutability as the
   // existing 12 scientific-claim schemas.
   'skills/vibe/assets/schemas/delivery-attestation.schema.json',
+  // Fixup-10 P1 #2: the guardrail itself must not be editable by an
+  // agent mid-session. Without this, an agent can disable enforcement
+  // (remove hook registration, rewrite the hook script, or edit the
+  // boundary allowlist) before producing a dishonest closeout. The
+  // list below covers the hook scripts, their dual-config registration,
+  // and the validator implementation (which also contains test-time
+  // mutation of the boundary allowlist).
+  'plugin/scripts/pre-delivery-discipline.js',
+  'plugin/scripts/pre-tool-use.js',
+  '.claude/settings.json',
+  'hooks/hooks.json',
+  'tests/validate-delivery-honesty.test.mjs',
+  'tests/delivery-discipline-hook.test.mjs',
 ];
+
+// Guardrail rules added by fixup-10 — used to route the deny message
+// through a guardrail-specific branch that explains the escape hatch.
+const GUARDRAIL_PROTECTED_RULES = new Set([
+  'plugin/scripts/pre-delivery-discipline.js',
+  'plugin/scripts/pre-tool-use.js',
+  '.claude/settings.json',
+  'hooks/hooks.json',
+  'tests/validate-delivery-honesty.test.mjs',
+  'tests/delivery-discipline-hook.test.mjs',
+]);
+
+/**
+ * Fixup-10 escape hatch. When `VIBE_SCIENCE_DEV=1` is set in the
+ * environment that launches Claude Code, the guardrail-self-protection
+ * rules (and the Bash deliverable-write block) are skipped so the
+ * developers of this plugin can edit the hook scripts and generate
+ * deliverables via shell tools. Agents cannot set environment variables
+ * in the hook subprocess — only the human operator who launches the
+ * session can. Missing / blank / anything-other-than-"1" = production.
+ */
+function isDevModeEnabled() {
+  return process.env.VIBE_SCIENCE_DEV === '1';
+}
 
 let openDB, initDB, closeDB, getLatestPromptRole, applyMigrations, logGovernanceEvent, checkPermission, parseStructuredBlocks, previewClaimEvents, validateClaimLifecycleTransitions;
 try {
@@ -115,6 +156,14 @@ async function main(event) {
         const shellGovernanceViolation = detectGovernanceShellWrite(toolInput);
         if (shellGovernanceViolation) {
           denyShellGovernance(shellGovernanceViolation);
+          return;
+        }
+        // Fixup-10 P1 #1: also block Bash writes to markdown deliverables
+        // so the delivery-discipline attestation barrier cannot be
+        // bypassed by redirecting to a .md file from a shell.
+        const deliverableTarget = detectBashDeliverableWrite(toolInput);
+        if (deliverableTarget) {
+          denyBashDeliverableWrite(deliverableTarget);
           return;
         }
       }
@@ -250,9 +299,10 @@ function deny(toolName, reason, context = {}) {
 }
 
 function denyImmutableConfig(toolName, target, context = {}) {
+  const isGuardrail = GUARDRAIL_PROTECTED_RULES.has(target.rule);
   recordGovernanceEvent(context.db, {
     session_id: context.sessionId ?? null,
-    event_type: 'schema_modification_attempt',
+    event_type: isGuardrail ? 'guardrail_self_modification_attempt' : 'schema_modification_attempt',
     tool_name: toolName,
     severity: 'critical',
     details: {
@@ -267,9 +317,41 @@ function denyImmutableConfig(toolName, target, context = {}) {
     }
   };
   process.stdout.write(JSON.stringify(result));
+  if (isGuardrail) {
+    process.stderr.write(
+      `GUARDRAIL SELF-MODIFICATION BLOCKED: ${target.path} is part of the delivery-discipline ` +
+      `enforcement substrate and cannot be edited by an agent mid-session — otherwise the ` +
+      `guardrail could be silently disabled before producing a dishonest closeout. ` +
+      `If you are a plugin developer working on the hook itself, launch Claude Code with ` +
+      `VIBE_SCIENCE_DEV=1 in the environment to unlock these files. ` +
+      `See .claude/skills/delivery-discipline/SKILL.md.`
+    );
+  } else {
+    process.stderr.write(
+      `IMMUTABLE FILE BLOCKED: ${target.path} is protected by ${target.rule}. ` +
+      'These files are IMMUTABLE. Fix the claim/analysis, not the schema.'
+    );
+  }
+  process.exit(2);
+}
+
+function denyBashDeliverableWrite(targetPath) {
+  const result = {
+    hookSpecificOutput: {
+      permissionDecision: 'deny',
+    },
+  };
+  process.stdout.write(JSON.stringify(result));
   process.stderr.write(
-    `IMMUTABLE FILE BLOCKED: ${target.path} is protected by ${target.rule}. ` +
-    'These files are IMMUTABLE. Fix the claim/analysis, not the schema.'
+    `DELIVERY DISCIPLINE BLOCK (Bash): the shell command would write to the markdown ` +
+    `deliverable "${targetPath}". The delivery-discipline hook is wired to ` +
+    `Write|Edit|MultiEdit so it can evaluate the attestation block before a write lands; ` +
+    `Bash redirects, PowerShell cmdlets (Set-Content / Out-File / Add-Content), and ` +
+    `similar shell ops bypass that evaluation. Use the Write or Edit tool with explicit ` +
+    `content so the hook can verify the Delivery Attestation block. ` +
+    `If you are a plugin developer intentionally generating deliverables via shell ` +
+    `tooling, launch Claude Code with VIBE_SCIENCE_DEV=1 to unlock this path. ` +
+    `See .claude/skills/delivery-discipline/SKILL.md.`
   );
   process.exit(2);
 }
@@ -467,6 +549,18 @@ function matchProtectedConfigPath(filePath) {
     return PROTECTED_CONFIG_RULES[2];
   }
 
+  // Fixup-10 P1 #2: guardrail files. Exact path or suffixed by `/` to
+  // prevent basename-collision masquerades (`foopre-tool-use.js` must
+  // NOT match `pre-tool-use.js`). Skipped when `VIBE_SCIENCE_DEV=1`
+  // so plugin developers can edit their own source.
+  if (!isDevModeEnabled()) {
+    for (const rule of GUARDRAIL_PROTECTED_RULES) {
+      if (normalized === rule || normalized.endsWith(`/${rule}`)) {
+        return rule;
+      }
+    }
+  }
+
   return null;
 }
 
@@ -476,6 +570,40 @@ function looksClaimLike(text) {
   // Detect claim-like content: structured blocks or claim IDs at line start.
   // NOTE: event_type alone is NOT sufficient — it appears in generic YAML/JSON configs.
   return /```(?:vibe-)?claim\b|(?:^|\n)\s*(?:[-*]\s*)?(?:id\s*:\s*)?(?:C-?\d+|CLAIM-\d+)\b/i.test(source);
+}
+
+/**
+ * Fixup-10 P1 #1: detect a Bash command that would land content in a
+ * markdown deliverable (closeout, status, summary, README, CHANGELOG,
+ * release, skill, final-report, etc.). The delivery-discipline hook
+ * is wired to Write|Edit|MultiEdit only — without this detection, an
+ * agent can bypass the whole attestation barrier via shell redirects
+ * (`echo ... >`, `cat > ... <<EOF`), PowerShell cmdlets (Set-Content,
+ * Out-File, Add-Content), or generic file ops (cp, mv into place).
+ * Rather than try to reconstruct the post-write content from the
+ * shell command (brittle), we deny Bash writes to deliverable
+ * basenames outright and instruct the agent to use Write/Edit so the
+ * hook can evaluate their attestation.
+ *
+ * Returns the candidate path string on match, or null.
+ *
+ * Skipped when `VIBE_SCIENCE_DEV=1` so plugin developers can generate
+ * deliverables programmatically.
+ */
+function detectBashDeliverableWrite(toolInput = {}) {
+  if (isDevModeEnabled()) return null;
+  const command = getBashCommand(toolInput);
+  if (!command.trim()) return null;
+  if (!bashCommandHasWriteIntent(command)) return null;
+  // Use the shared path extractor, then check each candidate against
+  // the delivery-discipline basename whitelist.
+  const candidates = extractCommandPathCandidates(command);
+  for (const candidate of candidates) {
+    if (matchesDeliverablePath(candidate)) {
+      return candidate;
+    }
+  }
+  return null;
 }
 
 function detectGovernanceShellWrite(toolInput = {}) {

@@ -46,6 +46,9 @@ const {
     // wrapper `withBoundaryApproved`.
     LEGACY_BOUNDARY_HASHES,
     isApprovedBoundaryFile,
+    // Fixup-10 P2: fence-aware masking helper so closure tokens inside
+    // code examples don't false-positive.
+    maskFencedRegions,
 } = hookModule;
 
 // Helper: build a hash-pinned legacy-boundary marker for the given
@@ -188,6 +191,42 @@ describe('hasDeclaredClosureClaim', () => {
         assert.equal(hasDeclaredClosureClaim(''), false);
     });
 
+    // Fixup-10 P2: closure words inside fenced code blocks (example
+    // snippets) must NOT trigger enforcement. The 10th adversarial
+    // review flagged this as a false-positive fail-closed issue on
+    // README/SKILL/status docs that contain examples.
+    it('does NOT match closure tokens inside a ```text fenced example block', () => {
+        const fenced = '# README\n\n## Example\n\n```text\nStatus: CLOSED\n```\n\nThat is the expected output.\n';
+        assert.equal(hasDeclaredClosureClaim(fenced), false,
+            'a Status: CLOSED inside a fenced example must not be treated as a real declaration');
+    });
+
+    it('does NOT match closure tokens inside a ```json fenced example', () => {
+        const fenced = '# Example\n\n```json\n{"status":"PASSED"}\n```\n';
+        assert.equal(hasDeclaredClosureClaim(fenced), false);
+    });
+
+    it('does NOT match closure tokens inside a 4-tick outer fence containing prose', () => {
+        const fenced = '# Example\n\n````markdown\n```text\nStatus: CLOSED\n```\n````\n';
+        assert.equal(hasDeclaredClosureClaim(fenced), false,
+            'nested fence content is still fence content — never a real declaration');
+    });
+
+    it('does NOT match closure tokens inside a ~~~ fence (tilde fences)', () => {
+        const fenced = '# Example\n\n~~~text\nStatus: CLOSED\n~~~\n';
+        assert.equal(hasDeclaredClosureClaim(fenced), false);
+    });
+
+    it('STILL matches a real closure declaration that sits OUTSIDE code fences', () => {
+        const mixed =
+            '# Phase 99\n\n' +
+            '## Example: do not do this\n\n' +
+            '```text\nBAD: Status: CLOSED without attestation\n```\n\n' +
+            'Status: CLOSED\n'; // real declaration outside the fence
+        assert.equal(hasDeclaredClosureClaim(mixed), true,
+            'the real declaration outside the fence must still fire');
+    });
+
     // P2-B (review): failure/partial statuses are also closure declarations
     it('matches negative closure declarations (FAILED / BLOCKED / PARTIAL / FALSE-POSITIVE)', () => {
         assert.equal(hasDeclaredClosureClaim('Verdict: FAILED'), true);
@@ -240,6 +279,67 @@ describe('hasDeclaredClosureClaim', () => {
         // prose should NOT trigger enforcement.
         assert.equal(hasDeclaredClosureClaim('The test is FAILING intermittently.'), false);
         assert.equal(hasDeclaredClosureClaim('Recent FAILURES are documented below.'), false);
+    });
+});
+
+// ---------------------------------------------------------------------------
+// fixup-10 P2: direct tests on the maskFencedRegions helper.
+// ---------------------------------------------------------------------------
+
+describe('maskFencedRegions', () => {
+    it('returns text unchanged when there are no fenced blocks', () => {
+        const plain = '# Doc\n\nStatus: CLOSED.\n';
+        assert.equal(maskFencedRegions(plain), plain);
+    });
+
+    it('masks the opener, content, and closer of a ```json fence', () => {
+        const text = '# Doc\n\n```json\n{"a":1}\n```\n\nAfter.\n';
+        const masked = maskFencedRegions(text);
+        // Lines outside the fence are preserved.
+        assert.ok(masked.includes('# Doc'));
+        assert.ok(masked.includes('After.'));
+        // Fence content is replaced (spaces of the same length).
+        assert.ok(!masked.includes('{"a":1}'));
+        assert.ok(!masked.includes('```json'));
+        // Length preservation: offsets in masked must match offsets in text.
+        assert.equal(masked.length, text.length);
+    });
+
+    it('preserves character offsets (space padding, not deletion)', () => {
+        const text = '# Doc\n```text\nStatus: CLOSED\n```\nX';
+        const masked = maskFencedRegions(text);
+        assert.equal(masked.length, text.length);
+        // The final "X" stays at the same offset.
+        assert.equal(masked[masked.length - 1], 'X');
+        assert.equal(text[text.length - 1], 'X');
+    });
+
+    it('masks nested fences at whatever depth (outer + inner both go)', () => {
+        const text = '````markdown\n```json\n{"status":"CLOSED"}\n```\n````\n';
+        const masked = maskFencedRegions(text);
+        assert.ok(!masked.includes('CLOSED'));
+    });
+
+    it('handles tilde (~~~) fences too', () => {
+        const text = '~~~text\nStatus: CLOSED\n~~~\n';
+        const masked = maskFencedRegions(text);
+        assert.ok(!masked.includes('CLOSED'));
+    });
+
+    it('does NOT cross-close a ``` fence with a ~~~ closer (different char)', () => {
+        const text = '```text\nStatus: CLOSED\n~~~\nMore content\n```\n';
+        // ~~~ should not close a ``` fence. The CLOSED between ``` and ```
+        // is all inside the fence and stays masked.
+        const masked = maskFencedRegions(text);
+        assert.ok(!masked.includes('CLOSED'));
+        assert.ok(!masked.includes('More content'));
+    });
+
+    it('returns non-string input unchanged', () => {
+        assert.equal(maskFencedRegions(null), null);
+        assert.equal(maskFencedRegions(undefined), undefined);
+        assert.equal(maskFencedRegions(42), 42);
+        assert.equal(maskFencedRegions(''), '');
     });
 
     // fixup-4 P2-B: former pattern 3 (generic bold-wrapped closure word)

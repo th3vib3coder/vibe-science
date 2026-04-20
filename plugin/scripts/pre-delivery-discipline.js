@@ -118,11 +118,76 @@ function closureClaimPatterns(globalFlag = false) {
 }
 
 /**
+ * Mask fenced code blocks so closure-word patterns don't fire on
+ * example snippets inside a README / SKILL / status doc. Replaces
+ * every character inside (and including) a fenced block with a space,
+ * preserving overall length and newline positions so offsets returned
+ * by findAllClosureClaimPositions remain valid against the original
+ * text.
+ *
+ * Fixup-10 P2: the closure detector previously scanned raw text. A
+ * `final-report.md` containing a code example `Status: CLOSED` inside
+ * a fenced block would false-positive (fail-closed deny). We now only
+ * count closure declarations that live outside fenced code regions.
+ *
+ * Exported for testing.
+ */
+export function maskFencedRegions(text) {
+  if (typeof text !== 'string' || text.length === 0) return text;
+  // Split on \n, preserving any trailing \r on lines (CRLF input).
+  const lines = text.split('\n');
+  // A backtick fence opener: 0-3 spaces of indent, N backticks, then
+  // any info string that does not contain backticks (per CommonMark).
+  // A tilde fence opener: 0-3 spaces of indent, N tildes, any info string.
+  // The closer has the same indent, same fence char, >= opening count,
+  // and an EMPTY info string (only whitespace allowed).
+  const BACKTICK_OPEN = /^ {0,3}(`{3,})[^`]*$/u;
+  const BACKTICK_CLOSE = /^ {0,3}(`{3,})\s*$/u;
+  const TILDE_OPEN = /^ {0,3}(~{3,}).*$/u;
+  const TILDE_CLOSE = /^ {0,3}(~{3,})\s*$/u;
+  let openTicks = null;
+  let openChar = null; // '`' or '~' — open/close must match char
+  const masked = [];
+  for (const line of lines) {
+    const clean = line.replace(/\r$/u, '');
+    let shouldMask = openTicks !== null;
+    if (openTicks === null) {
+      const btOpen = clean.match(BACKTICK_OPEN);
+      const tilOpen = clean.match(TILDE_OPEN);
+      if (btOpen) {
+        openTicks = btOpen[1].length;
+        openChar = '`';
+        shouldMask = true;
+      } else if (tilOpen) {
+        openTicks = tilOpen[1].length;
+        openChar = '~';
+        shouldMask = true;
+      }
+    } else {
+      const closeRe = openChar === '`' ? BACKTICK_CLOSE : TILDE_CLOSE;
+      const closeM = clean.match(closeRe);
+      if (closeM && closeM[1].length >= openTicks) {
+        openTicks = null;
+        openChar = null;
+        shouldMask = true; // mask the closer line itself
+      }
+    }
+    masked.push(shouldMask ? ' '.repeat(line.length) : line);
+  }
+  return masked.join('\n');
+}
+
+/**
  * Closure-claim detection in declarative context. Returns true only when
  * a closure word appears in a position that signals "declared status",
  * not casual prose. ACCEPTED/REJECTED are review-verdict tokens and are
  * intentionally excluded from bare line-start matching, because ordinary
  * prose often starts with phrases like "Accepted manuscripts...".
+ *
+ * Fixup-10 P2: closure words appearing inside fenced code blocks
+ * (example snippets) are NOT counted — such usages are documentation
+ * and should not trigger enforcement.
+ *
  * Four patterns covered:
  *   1. `Status: CLOSED` / `Verdict: FAILED` / `Phase 8: BLOCKED`
  *   2. Line starting with closure word (`CLOSED.` / `**FAILED**`)
@@ -131,8 +196,9 @@ function closureClaimPatterns(globalFlag = false) {
  */
 export function hasDeclaredClosureClaim(text) {
   if (typeof text !== 'string' || text.length === 0) return false;
+  const scanTarget = maskFencedRegions(text);
   for (const pattern of closureClaimPatterns(false)) {
-    if (pattern.test(text)) return true;
+    if (pattern.test(scanTarget)) return true;
   }
   return false;
 }
@@ -148,9 +214,15 @@ export function hasDeclaredClosureClaim(text) {
  */
 export function findAllClosureClaimPositions(text) {
   if (typeof text !== 'string' || text.length === 0) return [];
+  // Fixup-10 P2: run the position search against a fence-masked
+  // version of the text so closure-word tokens inside code blocks
+  // don't produce false positions. maskFencedRegions preserves
+  // character offsets (replaces with spaces) so indices are still
+  // valid against the original text for later scoping.
+  const scanTarget = maskFencedRegions(text);
   const raw = [];
   for (const pattern of closureClaimPatterns(true)) {
-    for (const m of text.matchAll(pattern)) {
+    for (const m of scanTarget.matchAll(pattern)) {
       if (m.index === undefined) continue;
       raw.push({ index: m.index, length: m[0].length, match: m[0] });
     }

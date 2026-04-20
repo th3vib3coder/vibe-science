@@ -324,3 +324,193 @@ test('post-tool-use blocks DELETE/UPDATE targeting governance_events and logs la
         dbMod.closeDB(db);
     }
 });
+
+// ---------------------------------------------------------------------------
+// Fixup-10 P1 #1: Bash writes to markdown deliverables are blocked because
+// the delivery-discipline hook is wired to Write|Edit|MultiEdit only.
+// Without this, an agent can redirect into a closeout file via shell and
+// bypass the attestation barrier entirely.
+// ---------------------------------------------------------------------------
+
+test('fixup-10 P1 #1: pre-tool-use blocks Bash redirect-writes to deliverable markdown paths', () => {
+    const harness = createHarness();
+
+    const result = spawnHook('plugin/scripts/pre-tool-use.js', {
+        tool_name: 'Bash',
+        tool_input: {
+            command: "echo 'Status: CLOSED' > phase99-closeout.md",
+        },
+        session_id: 'sess-001',
+        cwd: harness.projectDir,
+    }, harness);
+
+    assert.equal(result.status, 2, result.stderr || result.stdout);
+    assert.equal(JSON.parse(result.stdout).hookSpecificOutput.permissionDecision, 'deny');
+    assert.match(result.stderr, /DELIVERY DISCIPLINE BLOCK \(Bash\)/i);
+    assert.match(result.stderr, /phase99-closeout\.md/u);
+});
+
+test('fixup-10 P1 #1: pre-tool-use blocks PowerShell Set-Content into a deliverable', () => {
+    const harness = createHarness();
+
+    const result = spawnHook('plugin/scripts/pre-tool-use.js', {
+        tool_name: 'Bash',
+        tool_input: {
+            command: "pwsh -c \"Set-Content final-report.md 'Status: CLOSED'\"",
+        },
+        session_id: 'sess-001',
+        cwd: harness.projectDir,
+    }, harness);
+
+    assert.equal(result.status, 2, result.stderr || result.stdout);
+    assert.match(result.stderr, /DELIVERY DISCIPLINE BLOCK \(Bash\)/i);
+});
+
+test('fixup-10 P1 #1: pre-tool-use blocks cat-heredoc into a deliverable', () => {
+    const harness = createHarness();
+
+    const result = spawnHook('plugin/scripts/pre-tool-use.js', {
+        tool_name: 'Bash',
+        tool_input: {
+            command: "cat > phase99-closeout.md <<EOF\nStatus: CLOSED\nEOF",
+        },
+        session_id: 'sess-001',
+        cwd: harness.projectDir,
+    }, harness);
+
+    assert.equal(result.status, 2, result.stderr || result.stdout);
+    assert.match(result.stderr, /DELIVERY DISCIPLINE BLOCK \(Bash\)/i);
+});
+
+test('fixup-10 P1 #1: pre-tool-use ALLOWS Bash writes to non-deliverable markdown files', () => {
+    const harness = createHarness();
+
+    const result = spawnHook('plugin/scripts/pre-tool-use.js', {
+        tool_name: 'Bash',
+        tool_input: {
+            command: "echo 'just some notes' > notes.md",
+        },
+        session_id: 'sess-001',
+        cwd: harness.projectDir,
+    }, harness);
+
+    assert.equal(result.status, 0, result.stderr || result.stdout);
+});
+
+test('fixup-10 P1 #1: pre-tool-use ALLOWS Bash writes to deliverables when VIBE_SCIENCE_DEV=1', () => {
+    const harness = createHarness();
+
+    const result = spawnSync(
+        process.execPath,
+        [rel('plugin/scripts/pre-tool-use.js')],
+        {
+            cwd: harness.projectDir,
+            encoding: 'utf-8',
+            input: JSON.stringify({
+                tool_name: 'Bash',
+                tool_input: { command: "echo 'Status: CLOSED' > phase99-closeout.md" },
+                session_id: 'sess-001',
+                cwd: harness.projectDir,
+            }),
+            env: {
+                ...process.env,
+                HOME: harness.fakeHome,
+                USERPROFILE: harness.fakeHome,
+                VIBE_SCIENCE_DEV: '1',
+            },
+        }
+    );
+
+    assert.equal(result.status, 0,
+        `dev-mode env should bypass Bash deliverable block but got: ${result.stderr || result.stdout}`);
+});
+
+// ---------------------------------------------------------------------------
+// Fixup-10 P1 #2: guardrail files (the hook scripts, their dual-config
+// registration, the validator) are protected from self-modification so
+// an agent cannot disable enforcement mid-session. VIBE_SCIENCE_DEV=1
+// is the escape hatch for plugin developers working on the hook itself.
+// ---------------------------------------------------------------------------
+
+for (const guardrailPath of [
+    'plugin/scripts/pre-delivery-discipline.js',
+    'plugin/scripts/pre-tool-use.js',
+    '.claude/settings.json',
+    'hooks/hooks.json',
+    'tests/validate-delivery-honesty.test.mjs',
+]) {
+    test(`fixup-10 P1 #2: pre-tool-use blocks Write to guardrail file ${guardrailPath}`, () => {
+        const harness = createHarness();
+
+        const result = spawnHook('plugin/scripts/pre-tool-use.js', {
+            tool_name: 'Write',
+            tool_input: {
+                file_path: guardrailPath,
+                content: '// disabled\n',
+            },
+            session_id: 'sess-001',
+            cwd: harness.projectDir,
+        }, harness);
+
+        assert.equal(result.status, 2, result.stderr || result.stdout);
+        assert.match(result.stderr, /GUARDRAIL SELF-MODIFICATION BLOCKED/i,
+            `expected guardrail-specific deny message for ${guardrailPath}`);
+    });
+}
+
+test('fixup-10 P1 #2: VIBE_SCIENCE_DEV=1 unblocks guardrail edits (plugin developer escape)', () => {
+    const harness = createHarness();
+
+    const result = spawnSync(
+        process.execPath,
+        [rel('plugin/scripts/pre-tool-use.js')],
+        {
+            cwd: harness.projectDir,
+            encoding: 'utf-8',
+            input: JSON.stringify({
+                tool_name: 'Write',
+                tool_input: {
+                    file_path: 'plugin/scripts/pre-delivery-discipline.js',
+                    content: '// dev-mode edit\n',
+                },
+                session_id: 'sess-001',
+                cwd: harness.projectDir,
+            }),
+            env: {
+                ...process.env,
+                HOME: harness.fakeHome,
+                USERPROFILE: harness.fakeHome,
+                VIBE_SCIENCE_DEV: '1',
+            },
+        }
+    );
+
+    assert.equal(result.status, 0,
+        `dev-mode env should bypass guardrail self-modification block but got: ${result.stderr || result.stdout}`);
+});
+
+test('fixup-10 P1 #2: a look-alike name (foopre-tool-use.js) does NOT count as guardrail protection', () => {
+    // Basename suffix match must be anchored by `/` so attackers cannot
+    // smuggle dangerous edits under a similar name.
+    const harness = createHarness();
+
+    const result = spawnHook('plugin/scripts/pre-tool-use.js', {
+        tool_name: 'Write',
+        tool_input: {
+            file_path: 'foopre-tool-use.js',
+            content: '// harmless\n',
+        },
+        session_id: 'sess-001',
+        cwd: harness.projectDir,
+    }, harness);
+
+    // Not a guardrail path → no guardrail-specific deny. (Whether it's
+    // allowed or blocked for some other reason is out of scope here;
+    // the assertion is only that it does NOT hit the guardrail branch.)
+    if (result.status === 2) {
+        // If any deny happens, it must NOT be the guardrail message.
+        assert.doesNotMatch(result.stderr, /GUARDRAIL SELF-MODIFICATION BLOCKED/i);
+    } else {
+        assert.equal(result.status, 0);
+    }
+});
