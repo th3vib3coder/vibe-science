@@ -38,6 +38,9 @@ const {
     // of the below-marker content. Tests compute it inline using the
     // canonical helper so fixture hashes are always correct.
     computeBoundaryHash,
+    // Fixup-7: fence-depth-aware attestation scanner. Exported so the
+    // P1 #1 nested-fence test can exercise it directly.
+    findAttestationJsonContent,
 } = hookModule;
 
 // Helper: build a hash-pinned legacy-boundary marker for the given
@@ -105,6 +108,37 @@ describe('matchesDeliverablePath', () => {
         assert.equal(matchesDeliverablePath('settings.json'), false);
         assert.equal(matchesDeliverablePath(''), false);
         assert.equal(matchesDeliverablePath(null), false);
+    });
+
+    // Fixup-7 P2 #3: whitelist expansion for common closeout basenames
+    // the 7th adversarial review surfaced as gaps.
+    it('matches release / completion / retro / shipped / finalization basenames', () => {
+        assert.equal(matchesDeliverablePath('RELEASE.md'), true);
+        assert.equal(matchesDeliverablePath('release-notes.md'), true);
+        assert.equal(matchesDeliverablePath('v7.0-release.md'), true);
+        assert.equal(matchesDeliverablePath('completion-report.md'), true);
+        assert.equal(matchesDeliverablePath('completion.md'), true);
+        assert.equal(matchesDeliverablePath('retrospective.md'), true);
+        assert.equal(matchesDeliverablePath('retro-q2.md'), true);
+        assert.equal(matchesDeliverablePath('shipped.md'), true);
+        assert.equal(matchesDeliverablePath('finalization.md'), true);
+        assert.equal(matchesDeliverablePath('finalized.md'), true);
+        assert.equal(matchesDeliverablePath('ready-to-ship.md'), true);
+        assert.equal(matchesDeliverablePath('ready-to-merge.md'), true);
+    });
+
+    it('does NOT match conservative-exclusion patterns that would false-positive', () => {
+        // `done` is intentionally excluded because it substring-matches
+        // common prose like `abandoned`, `undone`.
+        assert.equal(matchesDeliverablePath('abandoned.md'), false,
+            '`done` must not be a substring trigger');
+        assert.equal(matchesDeliverablePath('undone-items.md'), false);
+        // `delivery` is excluded to avoid false-positives on planning
+        // docs like `delivery-roadmap.md`.
+        assert.equal(matchesDeliverablePath('04-delivery-roadmap.md'), false,
+            '`delivery-*` planning docs must not trigger');
+        // `ready` is excluded as a bare substring (`already.md` must not match)
+        assert.equal(matchesDeliverablePath('already-indexed.md'), false);
     });
 });
 
@@ -455,6 +489,134 @@ describe('hasValidAttestation', () => {
         );
         assert.equal(hasValidAttestation(empty), true,
             'empty scope_cuts is schema-legal (minItems: 0)');
+    });
+
+    // Fixup-7 P1 #1: the 7th adversarial review reproduced a bypass where
+    // an agent copies the SKILL.md docs example verbatim INCLUDING the
+    // outer 4-tick ````markdown wrapper. The inner 3-tick ```json block
+    // would then pass the old nesting-blind regex. Under the new
+    // fence-depth-aware parser, that nested json is correctly ignored.
+
+    it('REJECTS an attestation nested inside a 4-tick ````markdown outer fence', () => {
+        const jsonBody = `{
+  "covered": ["item verified directly"],
+  "scope_cuts": [{"item": "Something", "reason": "Deferred because it is complex"}],
+  "self_review_findings": [
+    "A skeptical reviewer would challenge the regex for edge-case prose like quoted CLOSED",
+    "The hook reads file from disk for Edit tools; on Windows read errors degrade silently",
+    "The minLength of 20 chars for self_review_findings could be gamed with padded strings"
+  ],
+  "external_review_status": "pending"
+}`;
+        // Agent copy-pastes the skill's docs-in-docs example:
+        const wrapped =
+            '## Delivery Attestation\n\n' +
+            '````markdown\n' +
+            '```json\n' +
+            jsonBody + '\n' +
+            '```\n' +
+            '````\n';
+        assert.equal(hasValidAttestation(wrapped), false,
+            'a json fence nested inside a 4-tick outer fence is documentation, not attestation');
+    });
+
+    it('REJECTS an attestation nested inside a 5-tick outer fence', () => {
+        // 5+ tick outer with 3-tick json inner — same class of bypass
+        // as the 4-tick case.
+        const wrapped =
+            '## Delivery Attestation\n\n' +
+            '`````markdown\n' +
+            '```json\n' +
+            '{"covered":["x verified"],"scope_cuts":[],"self_review_findings":[' +
+            '"reviewer would attack the regex edge-case prose handling here..............",' +
+            '"reviewer would attack the boundary hash pin strategy in detail...............",' +
+            '"reviewer would attack the stopping condition of positional binding..........",' +
+            '],"external_review_status":"pending"}\n' +
+            '```\n' +
+            '`````\n';
+        assert.equal(hasValidAttestation(wrapped), false);
+    });
+
+    it('REJECTS a `## Delivery Attestation` heading that appears INSIDE a code fence', () => {
+        // A fake heading buried in a code fence must not activate the
+        // attestation scope. Only a heading at fence-depth zero counts.
+        const fakeInsideFence =
+            '# Phase 99 CLOSED\n\n' +
+            'Status: CLOSED.\n\n' +
+            '```markdown\n' +
+            '## Delivery Attestation\n\n' +
+            '```json\n' +
+            '{"covered":["x"],"scope_cuts":[],"self_review_findings":["a","b","c"],"external_review_status":"pending"}\n' +
+            '```\n' +
+            '```\n';
+        // No real heading at depth 0, so no attestation is found.
+        assert.equal(hasValidAttestation(fakeInsideFence), false);
+    });
+
+    it('still ACCEPTS a plain 3-tick json fence at depth 0 after a real heading', () => {
+        // Regression guard: the ordinary case still works.
+        assert.equal(hasValidAttestation(VALID_ATTESTATION), true);
+    });
+});
+
+// ---------------------------------------------------------------------------
+// fixup-7 P1 #1: direct tests on the fence-depth-aware scanner helper.
+// ---------------------------------------------------------------------------
+
+describe('findAttestationJsonContent (fence-depth-aware scanner)', () => {
+    it('returns null when there is no attestation heading', () => {
+        assert.equal(findAttestationJsonContent('# A doc\n\nPlain text.'), null);
+    });
+
+    it('returns null for non-string input', () => {
+        assert.equal(findAttestationJsonContent(null), null);
+        assert.equal(findAttestationJsonContent(undefined), null);
+        assert.equal(findAttestationJsonContent(42), null);
+    });
+
+    it('returns the inner JSON when the fence is at depth 0 after the heading', () => {
+        const text =
+            '## Delivery Attestation\n\n' +
+            '```json\n' +
+            '{"a":1}\n' +
+            '```\n';
+        assert.equal(findAttestationJsonContent(text), '{"a":1}');
+    });
+
+    it('returns null when the json fence is nested inside a 4-tick outer fence', () => {
+        const text =
+            '## Delivery Attestation\n\n' +
+            '````markdown\n' +
+            '```json\n' +
+            '{"a":1}\n' +
+            '```\n' +
+            '````\n';
+        assert.equal(findAttestationJsonContent(text), null,
+            'a nested 3-tick json fence must not be treated as the attestation');
+    });
+
+    it('returns null when there is an outer fence but no json at depth 0 after the heading', () => {
+        const text =
+            '```text\nno heading here\n```\n' +
+            '## Delivery Attestation\n\n' +
+            '````markdown\n' +
+            '```json\n' +
+            '{"a":1}\n' +
+            '```\n' +
+            '````\n';
+        assert.equal(findAttestationJsonContent(text), null);
+    });
+
+    it('does NOT treat a heading inside a fence as the attestation heading', () => {
+        const text =
+            '```markdown\n' +
+            '## Delivery Attestation\n' +
+            '```\n' +
+            '```json\n' +
+            '{"a":1}\n' +
+            '```\n';
+        assert.equal(findAttestationJsonContent(text), null,
+            'the ```json appears before any REAL heading, so no attestation scope is active');
     });
 });
 
@@ -863,6 +1025,42 @@ describe('evaluateDeliveryDiscipline', () => {
         assert.equal(result.decision, 'deny',
             'bare marker (no hash) must not grant bypass under fixup-5');
         assert.equal(result.reason, 'legacy-boundary-without-hash');
+    });
+
+    // Fixup-7 P1 #2: the 7th adversarial review reproduced a drift.
+    // Hook was scanning FULL content for the exemption comment, while
+    // the validator scanned only the ENFORCEABLE (above-marker) slice.
+    // An agent could hide an exemption comment BELOW a valid hashed
+    // boundary and the hook would allow the write while the validator
+    // (CI) would deny it. Parity is now enforced by anchoring the
+    // hook's exemption check to `enforceable` as well.
+
+    it('DENIES (does NOT exempt) when an exemption comment is hidden BELOW a valid hashed boundary', () => {
+        const below =
+            '\nGenuine-looking historical content.\n\n' +
+            '<!-- delivery-discipline: exempt -->\n\n' +
+            'More historical text.\n';
+        const hash = computeBoundaryHash(below);
+        const content =
+            '# Phase 99 SHIPPED\n\nStatus: CLOSED.\n\n' +
+            `<!-- delivery-discipline: legacy-boundary hash=${hash} -->` +
+            below;
+        const event = buildWriteEvent('phase99-closeout.md', content);
+        const result = evaluateDeliveryDiscipline(event);
+        assert.equal(result.decision, 'deny',
+            'exemption hidden below a valid boundary must not grant bypass — must match validator');
+        assert.equal(result.reason, 'missing-or-invalid-attestation',
+            'reason must point at missing attestation, not at the hidden exemption');
+    });
+
+    it('still ALLOWS exemption when it is placed at the top of the file (valid location)', () => {
+        const content =
+            '<!-- delivery-discipline: exempt -->\n\n' +
+            '# Phase 99\n\nStatus: CLOSED.\n';
+        const event = buildWriteEvent('phase99-closeout.md', content);
+        const result = evaluateDeliveryDiscipline(event);
+        assert.equal(result.decision, 'allow');
+        assert.equal(result.reason, 'exemption-comment');
     });
 
     // fixup-4 P2-A: full-path table-merge scenario through

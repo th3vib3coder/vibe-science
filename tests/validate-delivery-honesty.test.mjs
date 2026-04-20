@@ -370,11 +370,36 @@ describe('delivery-attestation.schema.json', () => {
 // ---------------------------------------------------------------------------
 
 describe('SKILL.md embedded attestation example vs hook validator', () => {
-    it('the attestation block the skill teaches passes hasValidAttestation', () => {
+    // Fixup-7 P1 #1: the skill file wraps its attestation example in a
+    // 4-tick ````markdown outer fence so the inner 3-tick ```json block
+    // renders literally in markdown viewers (docs-in-docs). Under the
+    // new fence-depth-aware parser, that 4-tick-wrapped example is
+    // NOT treated as a real attestation — which is the correct behavior,
+    // because an agent who pastes the skill example verbatim (INCLUDING
+    // the outer wrapper) would otherwise bypass enforcement.
+    //
+    // The docs-code parity we actually want to assert is: the INNER json
+    // shape that an agent is SUPPOSED to write (without the 4-tick
+    // wrapper) passes hasValidAttestation. That's what this pair of
+    // tests checks.
+
+    it('the SKILL.md RAW text (4-tick docs wrapper) does NOT pass hasValidAttestation', () => {
         const skillPath = path.join(ROOT, '.claude', 'skills', 'delivery-discipline', 'SKILL.md');
         const skillSource = fs.readFileSync(skillPath, 'utf8');
-        assert.ok(hasValidAttestation(skillSource),
-            'the skill file contains a Delivery Attestation example; hasValidAttestation must accept it');
+        assert.equal(hasValidAttestation(skillSource), false,
+            'the 4-tick-wrapped example is documentation, not a real attestation — the parser must not accept it');
+    });
+
+    it('the INNER shape that an agent is supposed to write DOES pass hasValidAttestation', () => {
+        const skillPath = path.join(ROOT, '.claude', 'skills', 'delivery-discipline', 'SKILL.md');
+        const skillSource = fs.readFileSync(skillPath, 'utf8');
+        // Extract the inner ```json block from the skill docs and
+        // present it as if an agent had written it (depth 0).
+        const innerJsonMatch = skillSource.match(/```json\s*\n([\s\S]*?)\n```/u);
+        assert.ok(innerJsonMatch, 'SKILL.md must contain a ```json example block');
+        const agentWouldWrite = `## Delivery Attestation\n\n\`\`\`json\n${innerJsonMatch[1]}\n\`\`\`\n`;
+        assert.ok(hasValidAttestation(agentWouldWrite),
+            'the inner json shape an agent is expected to copy must pass hasValidAttestation');
     });
 });
 

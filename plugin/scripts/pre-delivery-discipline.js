@@ -51,7 +51,16 @@ export function matchesDeliverablePath(filePath) {
     return false;
   }
   const basename = path.basename(filePath).toLowerCase();
-  return /(closeout|status|summary|verdict|phase[\d.-]+|wave[\d-]+|sprint[\d-]*|skill|readme|changelog)/u.test(basename);
+  // Fixup-7 P2 #3: expand whitelist to cover common closeout basenames
+  // the 7th review surfaced: release notes, completion reports,
+  // retrospectives, shipped.md. Deliberately conservative:
+  //   - `done` excluded (false-positives on `abandoned`, `undone`)
+  //   - `delivery` excluded (false-positives on `delivery-roadmap.md`
+  //     which is a planning doc, not a closeout)
+  //   - `ready` excluded as plain substring (false-positives on `already`
+  //     via `ready` — `ready-to-ship` / `ready-to-merge` patterns added
+  //     explicitly instead)
+  return /(closeout|status|summary|verdict|phase[\d.-]+|wave[\d-]+|sprint[\d-]*|skill|readme|changelog|release|completion|retrospective|retro-|shipped|ready-to-(?:ship|merge|review)|final(?:ization|ized))/u.test(basename);
 }
 
 // Closure vocabulary: positive closure + failure/partial statuses +
@@ -157,34 +166,100 @@ export function findAllClosureClaimPositions(text) {
 }
 
 /**
+ * Fence-depth-aware scan for the attestation JSON block. Returns the
+ * JSON string content (between the opening and closing ```json fence
+ * lines) or null if none exists at fence-depth zero.
+ *
+ * Fixup-7 P1 #1: the previous regex `/`{3,4}json.../` was nesting-blind.
+ * An agent copying the SKILL.md docs example verbatim — which wraps the
+ * attestation json in a 4-tick ````markdown outer fence — produced a
+ * file where the inner 3-tick json block passed the regex and was
+ * accepted as a real attestation. Tracking fence depth properly means
+ * only a TOP-LEVEL 3-tick ```json block counts; any json fence nested
+ * inside a `````markdown`, `````html`, or 4+ tick outer fence is
+ * rightfully treated as documentation.
+ *
+ * Additionally, this scanner skips `## Delivery Attestation` headings
+ * that appear inside code fences — those are documentation text, not
+ * real headings.
+ *
+ * Exported for testing. Not part of the public skill contract.
+ */
+export function findAttestationJsonContent(text) {
+  if (typeof text !== 'string' || text.length === 0) return null;
+  const lines = text.split('\n');
+  // Tick count of the currently-open outer fence; null when at depth 0.
+  let openTicks = null;
+  // True once we've seen a `## Delivery Attestation` heading at depth 0.
+  // A json fence at depth 0 AFTER that heading is the attestation.
+  let inAttestationScope = false;
+  // A fence-opener line: N backticks + optional whitespace + optional
+  // info-string tag (non-whitespace, non-backtick) + optional trailing
+  // info-string continuation. Per CommonMark, the info string of a
+  // backtick-fenced block must not contain backticks.
+  const FENCE_OPEN = /^(`{3,})\s*([^\s`]*)(?:\s[^`]*)?$/u;
+  // A fence-closer line: M backticks (where M >= opening N) with only
+  // trailing whitespace; info string must be empty per spec.
+  const FENCE_CLOSE = /^(`{3,})\s*$/u;
+  // Heading that MIGHT be the attestation heading.
+  const HEADING_RE = /^#{2,3}\s+delivery\s+attestation\s*$/iu;
+  for (let i = 0; i < lines.length; i += 1) {
+    const line = lines[i];
+    const openM = line.match(FENCE_OPEN);
+    if (openM) {
+      const tickCount = openM[1].length;
+      const tag = openM[2];
+      if (openTicks === null) {
+        // Opening a new fence at depth 0.
+        if (inAttestationScope && tickCount === 3 && tag.toLowerCase() === 'json') {
+          // Candidate attestation. Collect until matching close.
+          for (let j = i + 1; j < lines.length; j += 1) {
+            const cm = lines[j].match(FENCE_CLOSE);
+            if (cm && cm[1].length >= tickCount) {
+              return lines.slice(i + 1, j).join('\n');
+            }
+          }
+          return null; // unclosed fence → not a valid attestation
+        }
+        // Any other opening fence (4+ tick, non-json tag, etc.) becomes
+        // an outer fence that hides nested fences from our scan.
+        openTicks = tickCount;
+      } else {
+        // Inside a fence — only a close with ticks >= open closes it.
+        const closeM = line.match(FENCE_CLOSE);
+        if (closeM && closeM[1].length >= openTicks) {
+          openTicks = null;
+        }
+      }
+      continue;
+    }
+    // Non-fence line. Only count headings at depth 0.
+    if (openTicks === null && HEADING_RE.test(line)) {
+      inAttestationScope = true;
+    }
+  }
+  return null;
+}
+
+/**
  * Attestation block detection + structural validation.
  * Returns true when the text contains:
- *   - A heading `##` or `###` followed by `Delivery Attestation` (case-insensitive)
- *   - A fenced ```json block (3 or 4 backticks) after the heading
+ *   - A heading `##` or `###` followed by `Delivery Attestation`
+ *     (case-insensitive) at fence-depth zero
+ *   - A 3-tick ```json block at fence-depth zero AFTER that heading
  *   - Parsed JSON with the 4 required fields and basic shape checks
  *
- * Schema-shape enforcement (minLength, minItems) is delegated here to
+ * Schema-shape enforcement (minLength, minItems) is inlined here to
  * catch trivially-bypassed attestations. Full Ajv validation lives in
  * Wave 3 CI validator.
  */
 export function hasValidAttestation(text) {
-  if (typeof text !== 'string' || text.length === 0) return false;
-
-  const headingMatch = text.match(/^#{2,3}\s+delivery\s+attestation\s*$/imu);
-  if (!headingMatch) return false;
-
-  const afterHeading = text.slice(headingMatch.index + headingMatch[0].length);
-  // The Wave 0 contract requires the attestation to live in a fenced
-  // `json` block — the tag is mandatory so the CI validator in Wave 3
-  // can key off the same marker. Accept 3-tick or 4-tick outer fences
-  // (a skill file demonstrating the pattern wraps its example in 4
-  // ticks so the inner 3-tick fence renders literally).
-  const fenceMatch = afterHeading.match(/`{3,4}json\s*\n([\s\S]*?)\n`{3,4}/u);
-  if (!fenceMatch) return false;
+  const jsonContent = findAttestationJsonContent(text);
+  if (jsonContent === null) return false;
 
   let parsed;
   try {
-    parsed = JSON.parse(fenceMatch[1]);
+    parsed = JSON.parse(jsonContent);
   } catch {
     return false;
   }
@@ -584,9 +659,15 @@ export function evaluateDeliveryDiscipline(event, options = {}) {
 
   // Fast exit 4: explicit exemption (after strict-mode gate so strict
   // mode can still refuse exemptions when no audit trail is available).
-  // Exemption is checked against the full content because the comment
-  // itself may be before the legacy boundary.
-  if (hasExemptionComment(content)) {
+  //
+  // Fixup-7 P1 #2: exemption is checked against the ENFORCEABLE slice,
+  // not the full content. Previously the hook scanned full content while
+  // the CI validator scanned only the enforceable portion — an agent
+  // could hide an exemption comment BELOW a valid hashed boundary (as
+  // part of legacy content) and the hook would allow while the validator
+  // would deny. Anchoring exemption scope to `enforceable` is the same
+  // semantics the validator already uses, eliminating the drift.
+  if (hasExemptionComment(enforceable)) {
     return { decision: 'allow', reason: 'exemption-comment' };
   }
 
