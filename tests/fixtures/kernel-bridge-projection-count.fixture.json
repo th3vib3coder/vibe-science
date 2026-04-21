@@ -1,0 +1,14 @@
+{
+  "declaredCount": 8,
+  "projectionNames": [
+    "listClaimHeads",
+    "listUnresolvedClaims",
+    "listCitationChecks",
+    "getProjectOverview",
+    "listLiteratureSearches",
+    "listObserverAlerts",
+    "listGateChecks",
+    "getStateSnapshot"
+  ],
+  "vreBridgeComment": "The eight projections frozen in WP-150's typed-duck contract."
+}
