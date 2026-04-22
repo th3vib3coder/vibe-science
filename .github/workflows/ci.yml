@@ -33,7 +33,15 @@ jobs:
 
       - name: Verify native better-sqlite3 binding is available
         # Fail fast if the install quietly degraded to null-mode.
-        run: node -e "const {default: DB} = await import('better-sqlite3'); const db = new DB(':memory:'); db.pragma('journal_mode=WAL'); db.close(); console.log('better-sqlite3 native binding OK');"
+        # Use a block scalar so the inline Node script (which contains
+        # `{default: DB}` and other colon-separated tokens) is not parsed
+        # as a YAML map. A plain-scalar form here caused GitHub Actions
+        # to reject the whole workflow with "This run likely failed
+        # because of a workflow file issue" on every push since Phase 9
+        # began, so `npm test` has never actually run on the remote
+        # runner for the plugin repo until this fix.
+        run: |
+          node -e "const {default: DB} = await import('better-sqlite3'); const db = new DB(':memory:'); db.pragma('journal_mode=WAL'); db.close(); console.log('better-sqlite3 native binding OK');"
 
       - name: Run plugin test suite
         # Runs the legacy E2E TRACE suite plus the Phase 8 governance /
