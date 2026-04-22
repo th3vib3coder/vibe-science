@@ -31,6 +31,14 @@ jobs:
         # so the binding must be available before `npm test`.
         run: npm ci
 
+      - name: Checkout sibling VRE repo for Phase 9 cross-repo tests
+        # The Phase 9 plugin tests intentionally exercise the real sibling
+        # VRE contract (`../vibe-research-environment`) instead of a mocked
+        # in-process copy. Provision that repo here so GitHub Actions
+        # executes the same cross-repo path shape that local development
+        # and the frozen Wave 1 plan assume.
+        run: git clone --depth 1 "https://github.com/${{ github.repository_owner }}/vibe-research-environment" ../vibe-research-environment
+
       - name: Verify native better-sqlite3 binding is available
         # Fail fast if the install quietly degraded to null-mode.
         # Use a block scalar so the inline Node script (which contains
