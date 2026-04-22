@@ -44,6 +44,14 @@ const PROTECTED_CONFIG_RULES = [
   'tests/delivery-discipline-skill.test.mjs',
   'tests/validate-delivery-honesty.test.mjs',
   'tests/delivery-discipline-hook.test.mjs',
+  // Wave 0 T0.6: pre-register canonical future Phase 9 guardrail paths so
+  // agents cannot edit them the moment they appear. These paths are pinned
+  // by file 15 and must stay immutable from the agent side.
+  'plugin/scripts/handshake-inject.js',
+  'plugin/scripts/objective-loader.js',
+  'plugin/scripts/loop-wake.js',
+  'plugin/scripts/r2-bridge-writer.js',
+  'vibe-research-environment/environment/orchestrator/autonomy-runtime.js',
 ];
 
 // Guardrail rules added by fixup-10 — used to route the deny message
@@ -63,6 +71,11 @@ const GUARDRAIL_PROTECTED_RULES = new Set([
   'tests/delivery-discipline-skill.test.mjs',
   'tests/validate-delivery-honesty.test.mjs',
   'tests/delivery-discipline-hook.test.mjs',
+  'plugin/scripts/handshake-inject.js',
+  'plugin/scripts/objective-loader.js',
+  'plugin/scripts/loop-wake.js',
+  'plugin/scripts/r2-bridge-writer.js',
+  'vibe-research-environment/environment/orchestrator/autonomy-runtime.js',
 ]);
 
 /**

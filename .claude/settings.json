@@ -49,7 +49,17 @@
       "Edit(**/tests/validate-delivery-honesty.test.mjs)",
       "Write(**/tests/validate-delivery-honesty.test.mjs)",
       "Edit(**/tests/delivery-discipline-hook.test.mjs)",
-      "Write(**/tests/delivery-discipline-hook.test.mjs)"
+      "Write(**/tests/delivery-discipline-hook.test.mjs)",
+      "Edit(**/plugin/scripts/handshake-inject.js)",
+      "Write(**/plugin/scripts/handshake-inject.js)",
+      "Edit(**/plugin/scripts/objective-loader.js)",
+      "Write(**/plugin/scripts/objective-loader.js)",
+      "Edit(**/plugin/scripts/loop-wake.js)",
+      "Write(**/plugin/scripts/loop-wake.js)",
+      "Edit(**/plugin/scripts/r2-bridge-writer.js)",
+      "Write(**/plugin/scripts/r2-bridge-writer.js)",
+      "Edit(**/vibe-research-environment/environment/orchestrator/autonomy-runtime.js)",
+      "Write(**/vibe-research-environment/environment/orchestrator/autonomy-runtime.js)"
     ]
   },
   "hooks": {

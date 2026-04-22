@@ -487,6 +487,11 @@ const GUARDRAIL_SUBSTRATE_PATHS = [
     'tests/delivery-discipline-skill.test.mjs',
     'tests/validate-delivery-honesty.test.mjs',
     'tests/delivery-discipline-hook.test.mjs',
+    'plugin/scripts/handshake-inject.js',
+    'plugin/scripts/objective-loader.js',
+    'plugin/scripts/loop-wake.js',
+    'plugin/scripts/r2-bridge-writer.js',
+    'vibe-research-environment/environment/orchestrator/autonomy-runtime.js',
 ];
 
 for (const guardrailPath of GUARDRAIL_SUBSTRATE_PATHS) {
@@ -526,6 +531,41 @@ test('fixup-11 P1: .claude/settings.json deny-list includes every guardrail subs
             `.claude/settings.json must deny Write for ${guardrailPath}`,
         );
     }
+});
+
+test('T0.6: pre-tool-use blocks sibling-style relative writes to the canonical VRE autonomy runtime path', () => {
+    const harness = createHarness();
+
+    const result = spawnHook('plugin/scripts/pre-tool-use.js', {
+        tool_name: 'Write',
+        tool_input: {
+            file_path: '../vibe-research-environment/environment/orchestrator/autonomy-runtime.js',
+            content: '// disabled by agent\n',
+        },
+        session_id: 'sess-001',
+        cwd: harness.projectDir,
+    }, harness);
+
+    assert.equal(result.status, 2, result.stderr || result.stdout);
+    assert.match(result.stderr, /GUARDRAIL SELF-MODIFICATION BLOCKED/i);
+    assert.match(result.stderr, /autonomy-runtime\.js/i);
+});
+
+test('T0.6: pre-tool-use blocks Bash writes to the canonical VRE autonomy runtime path', () => {
+    const harness = createHarness();
+
+    const result = spawnHook('plugin/scripts/pre-tool-use.js', {
+        tool_name: 'Bash',
+        tool_input: {
+            command: 'rsync src.txt ../vibe-research-environment/environment/orchestrator/autonomy-runtime.js',
+        },
+        session_id: 'sess-001',
+        cwd: harness.projectDir,
+    }, harness);
+
+    assert.equal(result.status, 2, result.stderr || result.stdout);
+    assert.match(result.stderr, /GUARDRAIL SELF-MODIFICATION BLOCKED/i);
+    assert.match(result.stderr, /autonomy-runtime\.js/i);
 });
 
 test('fixup-10 P1 #2: VIBE_SCIENCE_DEV=1 unblocks guardrail edits (plugin developer escape)', () => {
