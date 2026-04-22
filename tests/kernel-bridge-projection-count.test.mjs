@@ -4,6 +4,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
+await import('./phase9-handshake-injection.test.mjs');
+
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const VRE_ROOT = path.resolve(ROOT, '..', 'vibe-research-environment');
 const FIXTURE_PATH = path.join(ROOT, 'tests', 'fixtures', 'kernel-bridge-projection-count.fixture.json');

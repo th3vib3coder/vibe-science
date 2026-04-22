@@ -21,6 +21,7 @@ import { createHash } from 'node:crypto';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { canonicalizeProjectPath } from '../lib/path-utils.js';
+import { buildPhase9HandshakeInjection } from './handshake-inject.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -211,6 +212,27 @@ async function main(event) {
         result.additionalContext = formatMemories(relevantMemories);
     }
 
+    let phase9Context = '';
+    try {
+        const phase9Injection = buildPhase9HandshakeInjection({
+            mode: 'prompt-submit',
+            prompt,
+            env: process.env,
+        });
+        if (phase9Injection.injected && phase9Injection.context) {
+            phase9Context = phase9Injection.context;
+        }
+        if (phase9Injection.warning) {
+            warnings.push(`Phase 9 handshake degraded: ${phase9Injection.warning}`);
+        }
+    } catch (err) {
+        warnings.push(`Phase 9 handshake injection failed: ${err.message}`);
+    }
+
+    if (phase9Context) {
+        result.phase9Context = phase9Context;
+    }
+
     if (warnings.length > 0) {
         result.warnings = warnings;
     }
@@ -239,6 +261,9 @@ process.stdin.on('end', () => {
             // hookSpecificOutput.additionalContext → added to context
             const contextParts = [];
             contextParts.push(`[AGENT ROLE] ${result.agentRole || 'researcher'}`);
+            if (result.phase9Context) {
+                contextParts.push(result.phase9Context);
+            }
             if (result.additionalContext) {
                 contextParts.push(result.additionalContext);
             }

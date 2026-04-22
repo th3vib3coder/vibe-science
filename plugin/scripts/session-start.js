@@ -24,6 +24,10 @@ import { join, basename, dirname } from 'node:path';
 import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { canonicalizeProjectPath } from '../lib/path-utils.js';
+import {
+    buildPhase9HandshakeInjection,
+    insertSectionBeforeEndMarker,
+} from './handshake-inject.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -507,6 +511,21 @@ async function main(event) {
     // Append domain info if available
     if (domainConfig && domainConfig.domain) {
         contextString += `\n[DOMAIN] ${domainConfig.display_name || domainConfig.domain}`;
+    }
+
+    try {
+        const phase9Injection = buildPhase9HandshakeInjection({
+            mode: 'session-start',
+            env: process.env,
+        });
+        if (phase9Injection.injected && phase9Injection.context) {
+            contextString = insertSectionBeforeEndMarker(contextString, phase9Injection.context);
+        }
+        if (phase9Injection.warning) {
+            warnings.push(`Phase 9 handshake degraded: ${phase9Injection.warning}`);
+        }
+    } catch (err) {
+        warnings.push(`Phase 9 handshake injection failed: ${err.message}`);
     }
 
     // ---- 7. Close DB --------------------------------------------------------
