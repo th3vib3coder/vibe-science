@@ -35,15 +35,16 @@ function readSkill() {
 }
 
 function extractFrontmatter(source) {
-    const match = source.match(/^---\n([\s\S]*?)\n---\n/u);
+    const match = source.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n/u);
     if (!match) return null;
     const block = match[1];
     const pairs = {};
     for (const rawLine of block.split('\n')) {
-        if (rawLine.trim() === '') continue;
-        const pairMatch = rawLine.match(/^\s*([a-zA-Z0-9_-]+):\s*(.*)$/u);
+        const line = rawLine.replace(/\r$/u, '');
+        if (line.trim() === '') continue;
+        const pairMatch = line.match(/^\s*([a-zA-Z0-9_-]+):\s*(.*)$/u);
         if (!pairMatch) {
-            throw new Error(`Unsupported frontmatter line: ${rawLine}`);
+            throw new Error(`Unsupported frontmatter line: ${line}`);
         }
         const [, key, rawValue] = pairMatch;
         pairs[key] = rawValue;
