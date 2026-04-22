@@ -39,6 +39,24 @@ jobs:
         # and the frozen Wave 1 plan assume.
         run: git clone --depth 1 "https://github.com/${{ github.repository_owner }}/vibe-research-environment" ../vibe-research-environment
 
+      - name: Install sibling VRE dependencies for live Phase 9 tests
+        # The live T1.3 injection tests call the real sibling
+        # `node bin/vre capabilities --json` path. The cloned repo needs
+        # its own dependencies installed or the CLI truthfulness branch
+        # silently degrades for runner-only reasons instead of contract
+        # reasons.
+        run: |
+          cd ../vibe-research-environment
+          npm ci
+
+      - name: Prime sibling handshake artifact for active-objective tests
+        # One T1.3 regression test reads the sibling artifact file directly
+        # after mutating it. Generate the canonical artifact once so the
+        # test starts from the same reviewed baseline as local runs.
+        run: |
+          cd ../vibe-research-environment
+          node bin/vre capabilities --json >/dev/null
+
       - name: Verify native better-sqlite3 binding is available
         # Fail fast if the install quietly degraded to null-mode.
         # Use a block scalar so the inline Node script (which contains
