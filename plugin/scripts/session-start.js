@@ -28,6 +28,7 @@ import {
     buildPhase9HandshakeInjection,
     insertSectionBeforeEndMarker,
 } from './handshake-inject.js';
+import { buildPhase9ObjectiveInjection } from './objective-loader.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -526,6 +527,20 @@ async function main(event) {
         }
     } catch (err) {
         warnings.push(`Phase 9 handshake injection failed: ${err.message}`);
+    }
+
+    try {
+        const objectiveInjection = buildPhase9ObjectiveInjection({
+            env: process.env,
+        });
+        if (objectiveInjection.injected && objectiveInjection.context) {
+            contextString = insertSectionBeforeEndMarker(contextString, objectiveInjection.context);
+        }
+        if (objectiveInjection.warning) {
+            warnings.push(`Phase 9 objective loader degraded: ${objectiveInjection.warning}`);
+        }
+    } catch (err) {
+        warnings.push(`Phase 9 objective loader failed: ${err.message}`);
     }
 
     // ---- 7. Close DB --------------------------------------------------------

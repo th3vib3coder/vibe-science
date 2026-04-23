@@ -12,6 +12,7 @@ const relUrl = (...segments) => pathToFileURL(path.join(ROOT, ...segments)).href
 const rel = (...segments) => path.join(ROOT, ...segments);
 
 const handshakeMod = await import(relUrl('plugin', 'scripts', 'handshake-inject.js'));
+const objectiveLoaderMod = await import(relUrl('plugin', 'scripts', 'objective-loader.js'));
 
 const FULL_FIXTURE_PATH = path.join(
     VRE_ROOT,
@@ -22,8 +23,44 @@ const FULL_FIXTURE_PATH = path.join(
     'capability-handshake',
     'valid-full.json',
 );
+const OBJECTIVE_FIXTURE_PATH = path.join(
+    VRE_ROOT,
+    'environment',
+    'tests',
+    'fixtures',
+    'phase9',
+    'objective',
+    'valid-active.json',
+);
+const POINTER_FIXTURE_PATH = path.join(
+    VRE_ROOT,
+    'environment',
+    'tests',
+    'fixtures',
+    'phase9',
+    'active-objective-pointer',
+    'valid-active.json',
+);
+const SNAPSHOT_FIXTURE_PATH = path.join(
+    VRE_ROOT,
+    'environment',
+    'tests',
+    'fixtures',
+    'phase9',
+    'resume-snapshot',
+    'valid-mid-loop.json',
+);
+const HANDSHAKE_ARTIFACT_PATH = path.join(
+    VRE_ROOT,
+    '.vibe-science-environment',
+    'control',
+    'capability-handshake.json',
+);
 
 const fullFixture = JSON.parse(fs.readFileSync(FULL_FIXTURE_PATH, 'utf8'));
+const objectiveFixture = JSON.parse(fs.readFileSync(OBJECTIVE_FIXTURE_PATH, 'utf8'));
+const pointerFixture = JSON.parse(fs.readFileSync(POINTER_FIXTURE_PATH, 'utf8'));
+const snapshotFixture = JSON.parse(fs.readFileSync(SNAPSHOT_FIXTURE_PATH, 'utf8'));
 
 let tempRoot = null;
 const pendingCleanup = [];
@@ -51,7 +88,14 @@ function removeWithRetry(targetPath) {
 
 afterEach(() => {
     while (pendingCleanup.length > 0) {
-        removeWithRetry(pendingCleanup.pop());
+        const entry = pendingCleanup.pop();
+        if (typeof entry === 'string') {
+            removeWithRetry(entry);
+            continue;
+        }
+        if (entry && typeof entry.restore === 'function') {
+            entry.restore();
+        }
     }
     if (tempRoot) {
         removeWithRetry(tempRoot);
@@ -114,6 +158,106 @@ function freshFixture(nowMs, overrides = {}) {
 
 function staleFixture(nowMs, overrides = {}) {
     return freshFixture(nowMs - (handshakeMod.HANDSHAKE_TTL_MS.startup + 60_000), overrides);
+}
+
+function writeJson(targetPath, payload) {
+    fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+    fs.writeFileSync(targetPath, JSON.stringify(payload, null, 2), 'utf8');
+}
+
+function writeFakeObjectiveState(vreRoot, {
+    objectiveId = objectiveFixture.objectiveId,
+    status = objectiveFixture.status,
+    runtimeMode = objectiveFixture.runtimeMode,
+    reasoningMode = objectiveFixture.reasoningMode,
+    title = objectiveFixture.title,
+    question = objectiveFixture.question,
+    snapshotReasoningMode = reasoningMode,
+    snapshotRuntimeMode = runtimeMode,
+    snapshotObjectiveId = objectiveId,
+    pointerObjectiveId = objectiveId,
+    objectiveRecordOverride = {},
+    pointerOverride = {},
+    snapshotOverride = {},
+} = {}) {
+    const objectiveDir = path.join(vreRoot, '.vibe-science-environment', 'objectives', objectiveId);
+    const objectiveRecordPath = path.join(objectiveDir, 'objective.json');
+    const relativeObjectiveRecordPath = path.relative(vreRoot, objectiveRecordPath).split(path.sep).join('/');
+    const pointerPath = path.join(vreRoot, objectiveLoaderMod.ACTIVE_OBJECTIVE_POINTER_RELATIVE_PATH);
+    const snapshotPath = path.join(objectiveDir, objectiveLoaderMod.RESUME_SNAPSHOT_FILE);
+
+    const objectiveRecord = {
+        ...structuredClone(objectiveFixture),
+        objectiveId,
+        status,
+        runtimeMode,
+        reasoningMode,
+        title,
+        question,
+        ...objectiveRecordOverride,
+    };
+    const pointer = {
+        ...structuredClone(pointerFixture),
+        objectiveId: pointerObjectiveId,
+        objectiveRecordPath: relativeObjectiveRecordPath,
+        ...pointerOverride,
+    };
+    const snapshot = {
+        ...structuredClone(snapshotFixture),
+        objectiveId: snapshotObjectiveId,
+        objectiveStatusAtSnapshot: status,
+        runtimeMode: snapshotRuntimeMode,
+        reasoningMode: snapshotReasoningMode,
+        writtenReason: snapshotOverride.writtenReason ?? snapshotFixture.writtenReason,
+        ...snapshotOverride,
+    };
+
+    writeJson(objectiveRecordPath, objectiveRecord);
+    writeJson(pointerPath, pointer);
+    writeJson(snapshotPath, snapshot);
+
+    return {
+        objectiveRecordPath,
+        pointerPath,
+        snapshotPath,
+        objectiveRecord,
+        pointer,
+        snapshot,
+    };
+}
+
+function backupFile(targetPath) {
+    const existed = fs.existsSync(targetPath);
+    const original = existed ? fs.readFileSync(targetPath) : null;
+    return {
+        restore() {
+            if (existed) {
+                fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+                fs.writeFileSync(targetPath, original);
+            } else {
+                removeWithRetry(targetPath);
+            }
+        },
+    };
+}
+
+function backupDirectory(targetPath) {
+    const existed = fs.existsSync(targetPath);
+    const backupRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'vibe-phase9-backup-'));
+    const backupPath = path.join(backupRoot, path.basename(targetPath) || 'backup');
+    if (existed) {
+        fs.cpSync(targetPath, backupPath, { recursive: true });
+    }
+    pendingCleanup.push(backupRoot);
+    return {
+        restore() {
+            removeWithRetry(targetPath);
+            if (existed) {
+                fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+                fs.cpSync(backupPath, targetPath, { recursive: true });
+            }
+        },
+    };
 }
 
 function spawnHook(scriptRelativePath, event, envOverrides = {}) {
@@ -256,6 +400,124 @@ test('stale artifacts are degraded instead of being presented as current awarene
     assert.ok(injection.handshake.degradedReasons.some((reason) => reason.startsWith('VRE_HANDSHAKE_ARTIFACT_STALE:')));
 });
 
+test('objective loader reports no-objective explicitly at startup', () => {
+    const sandbox = createFakePluginRepo();
+    createFakeVreRepo(sandbox.root, {
+        cliSource: [
+            '#!/usr/bin/env node',
+            'process.stdout.write(JSON.stringify({ ok: true }));',
+            'process.exit(0);',
+            '',
+        ].join('\n'),
+    });
+
+    const injection = objectiveLoaderMod.buildPhase9ObjectiveInjection({
+        pluginRepoRoot: sandbox.pluginRoot,
+        env: {
+            ...process.env,
+            VIBE_PHASE9_HANDSHAKE_ONLY: '1',
+        },
+    });
+
+    assert.equal(injection.enabled, true);
+    assert.equal(injection.injected, true);
+    assert.equal(injection.source, 'no-objective');
+    assert.equal(injection.state.loaderState, 'no-objective');
+    assert.match(injection.context, /\[PHASE9 OBJECTIVE DIGEST\]/u);
+    assert.match(injection.context, /objectiveId: none/u);
+    assert.match(injection.context, /humanInputRequired: yes/u);
+});
+
+test('objective loader reports the active objective and resume state at startup', () => {
+    const sandbox = createFakePluginRepo();
+    const fakeVreRoot = createFakeVreRepo(sandbox.root, {
+        cliSource: [
+            '#!/usr/bin/env node',
+            'process.stdout.write(JSON.stringify({ ok: true }));',
+            'process.exit(0);',
+            '',
+        ].join('\n'),
+    });
+    writeFakeObjectiveState(fakeVreRoot);
+
+    const injection = objectiveLoaderMod.buildPhase9ObjectiveInjection({
+        pluginRepoRoot: sandbox.pluginRoot,
+        env: {
+            ...process.env,
+            VIBE_PHASE9_HANDSHAKE_ONLY: '1',
+        },
+    });
+
+    assert.equal(injection.source, 'ready');
+    assert.equal(injection.state.loaderState, 'ready');
+    assert.equal(injection.state.objectiveId, objectiveFixture.objectiveId);
+    assert.match(injection.context, /objectiveStatus: active/u);
+    assert.match(injection.context, /runtimeMode: unattended-batch/u);
+    assert.match(injection.context, /reasoningMode: rule-only/u);
+    assert.match(injection.context, /resumeWrittenReason: loop-iteration/u);
+});
+
+test('objective loader injects a blocker when the active pointer is broken', () => {
+    const sandbox = createFakePluginRepo();
+    const fakeVreRoot = createFakeVreRepo(sandbox.root, {
+        cliSource: [
+            '#!/usr/bin/env node',
+            'process.stdout.write(JSON.stringify({ ok: true }));',
+            'process.exit(0);',
+            '',
+        ].join('\n'),
+    });
+    const objectiveId = objectiveFixture.objectiveId;
+    const pointerPath = path.join(fakeVreRoot, objectiveLoaderMod.ACTIVE_OBJECTIVE_POINTER_RELATIVE_PATH);
+    writeJson(pointerPath, {
+        ...structuredClone(pointerFixture),
+        objectiveId,
+        objectiveRecordPath: '.vibe-science-environment/objectives/OBJ-broken/objective.json',
+    });
+
+    const injection = objectiveLoaderMod.buildPhase9ObjectiveInjection({
+        pluginRepoRoot: sandbox.pluginRoot,
+        env: {
+            ...process.env,
+            VIBE_PHASE9_HANDSHAKE_ONLY: '1',
+        },
+    });
+
+    assert.equal(injection.source, 'blocker');
+    assert.equal(injection.state.loaderState, 'blocker');
+    assert.equal(injection.state.blocker.code, 'E_ACTIVE_POINTER_ORPHANED');
+    assert.match(injection.context, /blockerCode: E_ACTIVE_POINTER_ORPHANED/u);
+    assert.match(injection.context, /humanInputRequired: yes/u);
+});
+
+test('objective loader injects a blocker when the resume snapshot is stale against immutable reasoning mode', () => {
+    const sandbox = createFakePluginRepo();
+    const fakeVreRoot = createFakeVreRepo(sandbox.root, {
+        cliSource: [
+            '#!/usr/bin/env node',
+            'process.stdout.write(JSON.stringify({ ok: true }));',
+            'process.exit(0);',
+            '',
+        ].join('\n'),
+    });
+    writeFakeObjectiveState(fakeVreRoot, {
+        snapshotReasoningMode: 'reviewed-api',
+    });
+
+    const injection = objectiveLoaderMod.buildPhase9ObjectiveInjection({
+        pluginRepoRoot: sandbox.pluginRoot,
+        env: {
+            ...process.env,
+            VIBE_PHASE9_HANDSHAKE_ONLY: '1',
+        },
+    });
+
+    assert.equal(injection.source, 'blocker');
+    assert.equal(injection.state.blocker.code, 'E_REASONING_MODE_DIVERGED');
+    assert.match(injection.context, /blockerCode: E_REASONING_MODE_DIVERGED/u);
+    assert.match(injection.context, /repair-snapshot/u);
+});
+
 test('session-start injects a visible Phase 9 handshake digest when handshake mode is enabled', () => {
     const text = assertHookContextIncludes(
         spawnHook(
@@ -314,7 +576,7 @@ test('prompt-submit injects the handshake for non-research prompts when a fresh 
     const payload = freshFixture(Date.now(), {
         vrePath: VRE_ROOT,
         objective: {
-            activePointer: '.vibe-science-environment/objectives/OBJ-123/resume-snapshot.json',
+            activePointer: '.vibe-science-environment/objectives/active-objective.json',
             activeObjectiveId: 'OBJ-123',
             status: 'active',
         },
@@ -340,6 +602,67 @@ test('prompt-submit injects the handshake for non-research prompts when a fresh 
     }
 });
 
+test('session-start injects the objective digest when a real active objective exists in the sibling VRE', () => {
+    const objectiveId = 'OBJ-T25-SESSION-001';
+    const objectiveDir = path.join(
+        VRE_ROOT,
+        '.vibe-science-environment',
+        'objectives',
+        objectiveId,
+    );
+    const pointerPath = path.join(
+        VRE_ROOT,
+        objectiveLoaderMod.ACTIVE_OBJECTIVE_POINTER_RELATIVE_PATH,
+    );
+    pendingCleanup.push(backupFile(HANDSHAKE_ARTIFACT_PATH));
+    pendingCleanup.push(backupFile(pointerPath));
+    pendingCleanup.push(backupDirectory(objectiveDir));
+
+    writeJson(HANDSHAKE_ARTIFACT_PATH, freshFixture(Date.now(), {
+        vrePath: VRE_ROOT,
+        objective: {
+            activePointer: '.vibe-science-environment/objectives/active-objective.json',
+            activeObjectiveId: objectiveId,
+            status: 'active',
+        },
+    }));
+
+    writeFakeObjectiveState(VRE_ROOT, {
+        objectiveId,
+        title: 'T2.5 startup objective',
+        question: 'Does startup see the active objective state?',
+        snapshotOverride: {
+            writtenReason: 'manual',
+            nextAction: {
+                kind: 'await-operator',
+                params: {
+                    reason: 'manual-review',
+                },
+            },
+            openBlockers: [
+                {
+                    code: 'BLOCKER_PENDING_INPUT',
+                    message: 'Awaiting operator confirmation.',
+                },
+            ],
+        },
+    });
+
+    const text = assertHookContextIncludes(
+        spawnHook(
+            'plugin/scripts/session-start.js',
+            { project_path: ROOT, cwd: ROOT },
+            { VIBE_PHASE9_HANDSHAKE_ONLY: '1' },
+        ),
+        /\[PHASE9 OBJECTIVE DIGEST\]/u,
+    );
+
+    assert.match(text, new RegExp(`objectiveId: ${objectiveId}`, 'u'));
+    assert.match(text, /resumeWrittenReason: manual/u);
+    assert.match(text, /nextAction: await-operator/u);
+    assert.match(text, /humanInputRequired: yes/u);
+});
+
 test('phase9-disabled mode leaves SessionStart and research prompts without handshake injection', () => {
     const sessionStartText = assertHookContextIncludes(
         spawnHook(
@@ -353,6 +676,7 @@ test('phase9-disabled mode leaves SessionStart and research prompts without hand
         /VIBE SCIENCE CONTEXT/u,
     );
     assert.doesNotMatch(sessionStartText, /\[PHASE9 HANDSHAKE DIGEST\]/u);
+    assert.doesNotMatch(sessionStartText, /\[PHASE9 OBJECTIVE DIGEST\]/u);
 
     const promptResult = spawnHook(
         'plugin/scripts/prompt-submit.js',
