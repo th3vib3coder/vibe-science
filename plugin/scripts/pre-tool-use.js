@@ -9,11 +9,18 @@
 // Input (stdin JSON): { tool_name, tool_input, session_id, cwd, hook_event_name, agent_role? }
 // Output (stdout JSON): { hookSpecificOutput: { permissionDecision: "allow"|"deny" } }
 
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { existsSync, readFileSync } from 'node:fs';
 // Fixup-10 P1 #1: need to share the deliverable-path matcher so Bash
 // writes to .md deliverables are blocked with the same basename rule
 // the delivery-discipline hook uses on Write/Edit/MultiEdit.
 import { matchesDeliverablePath } from './pre-delivery-discipline.js';
+import {
+  isPhase9HandshakeEnabled,
+  resolvePluginRepoRoot,
+  resolveSiblingVreRoot,
+} from './handshake-inject.js';
 
 const PROTECTED_CONFIG_RULES = [
   'skills/vibe/assets/schemas/*.schema.json',
@@ -182,6 +189,15 @@ async function main(event) {
       }
 
       if (toolName === 'Bash') {
+        const sanctionedPhase9Decision = await evaluatePhase9SanctionedVreCommand(event, toolInput);
+        if (sanctionedPhase9Decision?.decision === 'allow') {
+          allow();
+          return;
+        }
+        if (sanctionedPhase9Decision?.decision === 'deny') {
+          denyPhase9SanctionedVreCommand(sanctionedPhase9Decision.reason);
+          return;
+        }
         // Fixup-17 — Opzione B (nuclear). The 15th adversarial review
         // found 3 P1 classes that enumeration cannot close: external
         // script invocation, build/dispatcher tools, and delete
@@ -456,6 +472,23 @@ function denyBashDeliverableWrite(targetPath) {
     `If you are a plugin developer intentionally generating deliverables via shell ` +
     `tooling, launch Claude Code with VIBE_SCIENCE_DEV=1 to unlock this path. ` +
     `See .claude/skills/delivery-discipline/SKILL.md.`
+  );
+  process.exit(2);
+}
+
+function denyPhase9SanctionedVreCommand(reason) {
+  const result = {
+    hookSpecificOutput: {
+      permissionDecision: 'deny',
+    },
+  };
+  process.stdout.write(JSON.stringify(result));
+  process.stderr.write(
+    `SANCTIONED VRE COMMAND GATE BLOCK: ${reason} ` +
+    `Production Bash execution is allowed only through the reviewed sibling VRE entrypoint ` +
+    '`node <sibling-vre>/bin/vre run-analysis --manifest <literal-path>` ' +
+    `with a pre-existing, valid analysis manifest. Create or fix the manifest instead of ` +
+    `running a direct interpreter or opaque script.`
   );
   process.exit(2);
 }
@@ -1202,6 +1235,221 @@ function bashCommandHasWriteIntent(command) {
 function detectDirectionShellTarget(normalizedCommand) {
   const source = String(normalizedCommand || '');
   return /(?:^|[\/\s])\d{0,2}-?directions?(?:[\/\s]|$)|\bdirection[^\/\s]*\.(?:md|json)\b|\brq\.md\b/.test(source);
+}
+
+function tokenizeBashCommand(command) {
+  const source = String(command || '');
+  const tokens = [];
+  let current = '';
+  let rawCurrent = '';
+  let quote = null;
+
+  for (let index = 0; index < source.length; index += 1) {
+    const char = source[index];
+
+    if (quote) {
+      rawCurrent += char;
+      if (char === quote) {
+        quote = null;
+        continue;
+      }
+      if (quote === '"' && char === '\\' && index + 1 < source.length) {
+        index += 1;
+        rawCurrent += source[index];
+        current += source[index];
+        continue;
+      }
+      current += char;
+      continue;
+    }
+
+    if (char === '"' || char === '\'') {
+      quote = char;
+      rawCurrent += char;
+      continue;
+    }
+
+    if (/\s/u.test(char)) {
+      if (rawCurrent) {
+        tokens.push({ value: current, raw: rawCurrent });
+        current = '';
+        rawCurrent = '';
+      }
+      continue;
+    }
+
+    if (';&|<>'.includes(char)) {
+      return { ok: false, reason: `unsupported shell metacharacter ${char}` };
+    }
+
+    if (char === '\\' && index + 1 < source.length) {
+      rawCurrent += char + source[index + 1];
+      current += source[index + 1];
+      index += 1;
+      continue;
+    }
+
+    rawCurrent += char;
+    current += char;
+  }
+
+  if (quote) {
+    return { ok: false, reason: 'unterminated quote in command' };
+  }
+
+  if (rawCurrent) {
+    tokens.push({ value: current, raw: rawCurrent });
+  }
+
+  return { ok: true, tokens };
+}
+
+function normalizeComparablePath(targetPath) {
+  const resolved = path.resolve(String(targetPath || '')).replace(/\\/g, '/');
+  return process.platform === 'win32' ? resolved.toLowerCase() : resolved;
+}
+
+function tokenHasDynamicShellSyntax(token) {
+  const source = String(token?.raw ?? token?.value ?? '');
+  return (
+    source.includes('$') ||
+    source.includes('`') ||
+    /\$\(/u.test(source) ||
+    /\$\{/u.test(source) ||
+    /%[A-Za-z_][A-Za-z0-9_]*%/u.test(source)
+  );
+}
+
+function resolveProjectLocalCandidate(rootPath, candidatePath, label) {
+  const resolved = path.isAbsolute(candidatePath)
+    ? path.resolve(candidatePath)
+    : path.resolve(rootPath, candidatePath);
+  const relative = path.relative(rootPath, resolved);
+  if (relative.startsWith('..') || path.isAbsolute(relative)) {
+    throw new Error(`${label} must stay inside the sibling VRE root`);
+  }
+  return {
+    absolutePath: resolved,
+    relativePath: relative.replace(/\\/g, '/'),
+  };
+}
+
+async function loadSiblingAnalysisManifestModule(vreRoot) {
+  const modulePath = path.join(vreRoot, 'environment', 'orchestrator', 'analysis-manifest.js');
+  return import(pathToFileURL(modulePath).href);
+}
+
+async function evaluatePhase9SanctionedVreCommand(event, toolInput = {}) {
+  if (isDevModeEnabled()) return null;
+
+  const command = getBashCommand(toolInput);
+  if (!command.trim()) return null;
+
+  const parsed = tokenizeBashCommand(command);
+  const rawTokens = parsed.ok ? parsed.tokens : null;
+  const firstToken = parsed.ok ? rawTokens[0]?.value : null;
+  if (firstToken == null || !/^node(?:\.exe)?$/iu.test(firstToken)) {
+    return null;
+  }
+
+  if (!parsed.ok) {
+    return {
+      decision: 'deny',
+      reason: `the candidate VRE command could not be parsed safely (${parsed.reason})`,
+    };
+  }
+
+  const scriptToken = rawTokens[1];
+  if (!scriptToken || scriptToken.value.startsWith('-')) {
+    return null;
+  }
+
+  if (path.extname(scriptToken.value) !== '') {
+    return null;
+  }
+
+  if (tokenHasDynamicShellSyntax(scriptToken)) {
+    return {
+      decision: 'deny',
+      reason: 'the VRE executable path must be literal and non-variable',
+    };
+  }
+
+  const commandCwd = path.resolve(event?.cwd || process.cwd());
+  const pluginRepoRoot = resolvePluginRepoRoot(commandCwd);
+  const sibling = resolveSiblingVreRoot({ pluginRepoRoot });
+  const expectedVrePath = sibling.vreRoot
+    ? path.join(sibling.vreRoot, 'bin', 'vre')
+    : null;
+  const resolvedScriptPath = path.resolve(commandCwd, scriptToken.value);
+
+  if (!expectedVrePath || normalizeComparablePath(resolvedScriptPath) !== normalizeComparablePath(expectedVrePath)) {
+    return {
+      decision: 'deny',
+      reason: 'only the discovered sibling VRE bin/vre entrypoint may run in production mode',
+    };
+  }
+
+  if (!isPhase9HandshakeEnabled(process.env)) {
+    return {
+      decision: 'deny',
+      reason: 'the Phase 9 feature flag is not enabled for sanctioned VRE execution',
+    };
+  }
+
+  if (rawTokens.length !== 5 || rawTokens[2]?.value !== 'run-analysis' || rawTokens[3]?.value !== '--manifest') {
+    return {
+      decision: 'deny',
+      reason: 'only `run-analysis --manifest <literal-path>` is currently sanctioned',
+    };
+  }
+
+  const manifestToken = rawTokens[4];
+  if (!manifestToken || tokenHasDynamicShellSyntax(manifestToken)) {
+    return {
+      decision: 'deny',
+      reason: 'the manifest path must be visible in the command and must not use variables or shell expansion',
+    };
+  }
+
+  let manifestPath;
+  try {
+    manifestPath = resolveProjectLocalCandidate(sibling.vreRoot, path.resolve(commandCwd, manifestToken.value), 'manifestPath');
+  } catch (error) {
+    return {
+      decision: 'deny',
+      reason: error.message,
+    };
+  }
+
+  if (matchProtectedConfigPath(manifestPath.relativePath)) {
+    return {
+      decision: 'deny',
+      reason: 'the manifest path targets guardrail substrate instead of a reviewed analysis manifest',
+    };
+  }
+
+  if (!existsSync(manifestPath.absolutePath)) {
+    return {
+      decision: 'deny',
+      reason: `manifest file does not exist yet: ${manifestPath.relativePath}`,
+    };
+  }
+
+  try {
+    const analysisManifestMod = await loadSiblingAnalysisManifestModule(sibling.vreRoot);
+    await analysisManifestMod.readAndValidateAnalysisManifest(
+      sibling.vreRoot,
+      manifestPath.relativePath,
+    );
+  } catch (error) {
+    return {
+      decision: 'deny',
+      reason: `manifest validation failed: ${error.message}`,
+    };
+  }
+
+  return { decision: 'allow' };
 }
 
 function normalizePathRule(value) {
