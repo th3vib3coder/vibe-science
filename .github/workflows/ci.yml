@@ -76,3 +76,112 @@ jobs:
         # delivery-discipline violations on the plugin repo itself
         # (dogfood).
         run: npm test
+
+  wiki-lint:
+    name: WIKI_VRE Structural Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout vibe-science
+        uses: actions/checkout@v4
+        with:
+          path: vibe-science
+
+      - name: Detect private WIKI_VRE checkout
+        id: wiki
+        run: |
+          if [ -f vibe-science/blueprints/private/WIKI_VRE/tools/wiki-lint.mjs ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "WIKI_VRE is private/not checked out; skipping optional wiki lint job."
+          fi
+
+      - name: Checkout sibling VRE repo for wiki inventory
+        if: steps.wiki.outputs.present == 'true'
+        run: git clone --depth 1 "https://github.com/${{ github.repository_owner }}/vibe-research-environment" vibe-research-environment
+
+      - name: Set up Node.js
+        if: steps.wiki.outputs.present == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run WIKI_VRE read-only lint suite
+        if: steps.wiki.outputs.present == 'true'
+        run: |
+          node vibe-science/blueprints/private/WIKI_VRE/tools/wiki-lint.mjs --json
+          node vibe-science/blueprints/private/WIKI_VRE/tools/audit-entity-exports.mjs --json
+          node vibe-science/blueprints/private/WIKI_VRE/tools/audit-schema-fields.mjs --json
+          node vibe-science/blueprints/private/WIKI_VRE/tools/build-db-table-pages.mjs --check
+          node vibe-science/blueprints/private/WIKI_VRE/tools/audit-protocol-stubs.mjs --check --verified-date=2026-04-26
+          node vibe-science/blueprints/private/WIKI_VRE/tools/r2-audit-syntheses.mjs --check --verified-date=2026-04-26
+          node vibe-science/blueprints/private/WIKI_VRE/tools/refresh-verified-at.mjs --check --verified-date=2026-04-26
+          node vibe-science/blueprints/private/WIKI_VRE/tools/sync-mirror.mjs --check
+
+  coverage-check:
+    name: WIKI_VRE Coverage Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout vibe-science
+        uses: actions/checkout@v4
+        with:
+          path: vibe-science
+
+      - name: Detect private WIKI_VRE checkout
+        id: wiki
+        run: |
+          if [ -f vibe-science/blueprints/private/WIKI_VRE/tools/generate-vre-coverage.mjs ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "WIKI_VRE is private/not checked out; skipping optional coverage check job."
+          fi
+
+      - name: Checkout sibling VRE repo for wiki inventory
+        if: steps.wiki.outputs.present == 'true'
+        run: git clone --depth 1 "https://github.com/${{ github.repository_owner }}/vibe-research-environment" vibe-research-environment
+
+      - name: Set up Node.js
+        if: steps.wiki.outputs.present == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run WIKI_VRE coverage check
+        if: steps.wiki.outputs.present == 'true'
+        run: node vibe-science/blueprints/private/WIKI_VRE/tools/generate-vre-coverage.mjs --check
+
+  registry-refresh-test:
+    name: WIKI_VRE Registry Refresh Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout vibe-science
+        uses: actions/checkout@v4
+        with:
+          path: vibe-science
+
+      - name: Detect private WIKI_VRE checkout
+        id: wiki
+        run: |
+          if [ -f vibe-science/blueprints/private/WIKI_VRE/tools/build-registries.mjs ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "WIKI_VRE is private/not checked out; skipping optional registry refresh job."
+          fi
+
+      - name: Checkout sibling VRE repo for registry generation
+        if: steps.wiki.outputs.present == 'true'
+        run: git clone --depth 1 "https://github.com/${{ github.repository_owner }}/vibe-research-environment" vibe-research-environment
+
+      - name: Set up Node.js
+        if: steps.wiki.outputs.present == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run WIKI_VRE registry check
+        if: steps.wiki.outputs.present == 'true'
+        run: |
+          node vibe-science/blueprints/private/WIKI_VRE/tools/build-registries.mjs --check
+          node --test vibe-science/blueprints/private/WIKI_VRE/tools/build-registries.test.mjs
