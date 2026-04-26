@@ -3,7 +3,7 @@
 > **Codename**: IUDEX (Latin: _the judge_)
 > **Lineage**: v3.5 TERTIUM DATUR → v4.0 ARBOR VITAE → v4.5 ARBOR VITAE (Pruned) → **v5.0 IUDEX**
 > **Status**: BLUEPRINT — Architecture Document for Implementation
-> **Authors**: Carmine Russo, with Elisa Bertelli
+> **Authors**: redacted
 > **License**: MIT
 
 ---

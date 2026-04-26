@@ -1,7 +1,7 @@
 # Vibe Science v5.5 — Architectural Blueprint
 
 **Codename:** ORO (Observe-Recall-Operate)
-**Autori:** Carmine Russo + Claude Code (Opus 4.6)
+**Autori:** redacted
 **Data:** 19 febbraio 2026
 **Input:** Post-mortem CP+CRISPR run (12 errori, 7 RC), myBrAIn v1.1 reverse engineering, Vibe Science v5.0 IUDEX (1278 righe SKILL.md, 21 protocolli, 9 schema, 27 gate)
 **Status:** DESIGN DOCUMENT — da implementare

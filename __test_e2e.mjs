@@ -2,7 +2,7 @@
  * Vibe Science v7.0 TRACE — End-to-End Test Suite
  *
  * Comprehensive test coverage for the plugin infrastructure:
- *   B1. Syntax & Import Tests (30 JS files)
+ *   B1. Syntax & Import Tests (31 JS files)
  *   B2. Schema SQL Tests (16 tables, FK constraints, indices)
  *   B3. Library Unit Tests (18 libs, export verification)
  *   B4. Script Integration Tests (setup, session-start, prompt-submit)
@@ -67,6 +67,7 @@ describe('B1. Syntax & Import Tests', () => {
         'plugin/scripts/stop.js',
         'plugin/scripts/subagent-stop.js',
         'plugin/scripts/worker-embed.js',
+        'plugin/scripts/r2-bridge-writer.js',
         'evals/eval-runner.mjs',
         'evals/smoke-trace.mjs',
         'scripts/v7-readiness.mjs',
@@ -114,12 +115,12 @@ describe('B1. Syntax & Import Tests', () => {
         });
     }
 
-    it('all 30 JS files are present', () => {
-        assert.equal(allJsFiles.length, 30, 'Expected exactly 30 JS files (12 scripts + 18 libs)');
+    it('all 31 JS files are present', () => {
+        assert.equal(allJsFiles.length, 31, 'Expected exactly 31 JS files (13 scripts + 18 libs)');
         for (const file of allJsFiles) {
             assert.ok(fs.existsSync(rel(file)), `Missing: ${file}`);
         }
-        pass('all-30-present');
+        pass('all-31-present');
     });
 });
 
@@ -2760,13 +2761,64 @@ describe('B6. Content Integrity Tests', () => {
         return results;
     }
 
+    function scanGitVisibleFiles(dir, results = []) {
+        const EXCLUDE_EXTS = new Set(['.zip', '.svg', '.png', '.jpg', '.jpeg', '.gif', '.ico', '.woff', '.woff2', '.ttf', '.eot']);
+        const git = spawnSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '-z'], {
+            cwd: dir,
+            encoding: 'utf-8',
+        });
+        if (git.status !== 0) {
+            return scanFiles(dir, results);
+        }
+
+        for (const relativePath of git.stdout.split('\0').filter(Boolean)) {
+            const filePath = path.resolve(dir, relativePath);
+            try {
+                if (!fs.statSync(filePath).isFile()) continue;
+            } catch {
+                continue;
+            }
+            const ext = path.extname(filePath).toLowerCase();
+            if (!EXCLUDE_EXTS.has(ext)) {
+                results.push(filePath);
+            }
+        }
+        return results;
+    }
+
+    it('forbidden-name scanner ignores gitignored files but still scans tracked candidates', () => {
+        const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'vibe-forbidden-scan-'));
+        try {
+            fs.mkdirSync(path.join(tempRoot, 'tracked'), { recursive: true });
+            fs.mkdirSync(path.join(tempRoot, 'private'), { recursive: true });
+            fs.writeFileSync(path.join(tempRoot, '.gitignore'), 'private/\n', 'utf-8');
+            fs.writeFileSync(path.join(tempRoot, 'tracked', 'claim.md'), 'Carmine\n', 'utf-8');
+            fs.writeFileSync(path.join(tempRoot, 'private', 'draft.md'), 'Russo\n', 'utf-8');
+            const init = spawnSync('git', ['init'], { cwd: tempRoot, encoding: 'utf-8' });
+            assert.equal(init.status, 0, init.stderr || init.stdout);
+            const add = spawnSync('git', ['add', '.gitignore', 'tracked/claim.md'], {
+                cwd: tempRoot,
+                encoding: 'utf-8',
+            });
+            assert.equal(add.status, 0, add.stderr || add.stdout);
+
+            const relativeFiles = scanGitVisibleFiles(tempRoot)
+                .map((filePath) => path.relative(tempRoot, filePath).replace(/\\/g, '/'))
+                .sort();
+            assert.ok(relativeFiles.includes('tracked/claim.md'));
+            assert.ok(!relativeFiles.includes('private/draft.md'));
+        } finally {
+            fs.rmSync(tempRoot, { recursive: true, force: true });
+        }
+    });
+
     it('no forbidden personal names in project files', () => {
         const FORBIDDEN_NAMES = [
             'Carmine', 'Russo', 'Elisa', 'Bertelli',
             'Stefano', 'th3vib3coder', 'Coherent',
         ];
 
-        const files = scanFiles(ROOT);
+        const files = scanGitVisibleFiles(ROOT);
         const violations = [];
 
         // Exclude this test file itself (it contains the names as search patterns)
