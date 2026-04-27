@@ -43,8 +43,10 @@ describe('governance_events substrate', () => {
             dbMod.initDB(db);
             const migration = migrationMod.applyMigrations(db);
 
-            assert.equal(migration.currentVersion, 5);
-            assert.equal(migrationMod.getSchemaVersion(db), 5);
+            assert.equal(migration.currentVersion, 6);
+            assert.equal(migrationMod.getSchemaVersion(db), 6);
+            assert.equal(migrationMod.columnExists(db, 'governance_events', 'objective_id'), true);
+            assert.equal(migrationMod.columnExists(db, 'governance_events', 'source_component'), true);
             assert.ok(
                 db.prepare(`SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'governance_events'`).get(),
                 'governance_events table should exist after init'
@@ -84,7 +86,7 @@ describe('governance_events substrate', () => {
         }
     });
 
-    it('upgrades a v4 database in place by adding governance_events at schema version 5', () => {
+    it('upgrades a v4 database in place by adding governance_events through schema version 6', () => {
         const db = dbMod.openDB(makeTempDbPath('v4.db'));
         assert.ok(db, 'better-sqlite3 must be available for governance DB tests');
 
@@ -106,13 +108,15 @@ describe('governance_events substrate', () => {
 
             const migration = migrationMod.applyMigrations(db);
 
-            assert.deepEqual(migration.applied, [5]);
-            assert.equal(migration.currentVersion, 5);
-            assert.equal(migrationMod.getSchemaVersion(db), 5);
+            assert.deepEqual(migration.applied, [5, 6]);
+            assert.equal(migration.currentVersion, 6);
+            assert.equal(migrationMod.getSchemaVersion(db), 6);
             assert.ok(
                 db.prepare(`SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'governance_events'`).get(),
                 'governance_events should be created during migration'
             );
+            assert.equal(migrationMod.columnExists(db, 'governance_events', 'objective_id'), true);
+            assert.equal(migrationMod.columnExists(db, 'governance_events', 'source_component'), true);
 
             dbMod.logGovernanceEvent(db, {
                 id: 'GOV-TEST-001',
