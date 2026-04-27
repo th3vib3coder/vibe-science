@@ -471,6 +471,12 @@ export function logClaimEvent(db, event) {
 /**
  * Log an append-only governance event.
  *
+ * Phase 9 T5.1 (`vibe-science/blueprints/private/phase9-implementation-plan/06-wave-5-governance-audit.md`)
+ * extends the table schema with optional `objective_id` and
+ * `source_component` columns. Both fields are accepted by this writer for
+ * Phase 8 callers too — they default to `null` and never break the
+ * pre-Wave-5 contract.
+ *
  * @param {import('better-sqlite3').Database} db
  * @param {object} event
  * @param {string} [event.id]
@@ -480,6 +486,8 @@ export function logClaimEvent(db, event) {
  * @param {string} [event.severity] - info / warning / critical
  * @param {string|object} [event.details]
  * @param {number} [event.timestamp] - unix epoch milliseconds
+ * @param {string|null} [event.objective_id] - Phase 9: OBJ-... or null
+ * @param {string|null} [event.source_component] - Phase 9: who logged this
  * @returns {import('better-sqlite3').RunResult}
  */
 export function logGovernanceEvent(db, event) {
@@ -488,11 +496,18 @@ export function logGovernanceEvent(db, event) {
         : (event.details ?? null);
     const severity = event.severity ? String(event.severity).toLowerCase() : null;
     const timestamp = Number.isFinite(event.timestamp) ? Number(event.timestamp) : Date.now();
+    const objectiveId = typeof event.objective_id === 'string' && event.objective_id.trim() !== ''
+        ? event.objective_id.trim()
+        : null;
+    const sourceComponent = typeof event.source_component === 'string' && event.source_component.trim() !== ''
+        ? event.source_component.trim()
+        : null;
 
     return stmt(db,
         `INSERT INTO governance_events
-            (id, session_id, event_type, tool_name, severity, details, timestamp)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`
+            (id, session_id, event_type, tool_name, severity, details, timestamp,
+             objective_id, source_component)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).run(
         event.id ?? `GOV-${randomUUID()}`,
         event.session_id ?? null,
@@ -500,7 +515,9 @@ export function logGovernanceEvent(db, event) {
         event.tool_name ?? null,
         severity,
         details,
-        timestamp
+        timestamp,
+        objectiveId,
+        sourceComponent,
     );
 }
 

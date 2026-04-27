@@ -2991,7 +2991,7 @@ describe('B7. Dependency Import Tests', () => {
 
 describe('B8. TRACE Foundation Tests', () => {
 
-    it('applyMigrations upgrades a simulated v6/v7-pretrace DB to schema version 5', async () => {
+    it('applyMigrations upgrades a simulated v6/v7-pretrace DB to schema version 6', async () => {
         const Database = (await import('better-sqlite3')).default;
         const { applyMigrations, columnExists, getSchemaVersion, tableExists } =
             await import(relUrl('plugin', 'lib', 'migrations.js'));
@@ -3039,13 +3039,15 @@ describe('B8. TRACE Foundation Tests', () => {
         `);
 
         const result = applyMigrations(db);
-        assert.equal(result.currentVersion, 5, 'schema version should upgrade to 5');
-        assert.deepEqual(result.applied, [1, 2, 3, 4, 5], 'migration steps 1, 2, 3, 4, and 5 should be applied');
-        assert.equal(getSchemaVersion(db), 5, 'meta schema_version should be persisted');
+        assert.equal(result.currentVersion, 6, 'schema version should upgrade to 6');
+        assert.deepEqual(result.applied, [1, 2, 3, 4, 5, 6], 'migration steps 1, 2, 3, 4, 5, and 6 should be applied');
+        assert.equal(getSchemaVersion(db), 6, 'meta schema_version should be persisted');
         assert.equal(tableExists(db, 'meta'), true, 'meta table should exist');
         assert.equal(tableExists(db, 'citation_checks'), true, 'citation_checks table should exist');
         assert.equal(tableExists(db, 'memory_fts'), true, 'memory_fts should exist after migration');
         assert.equal(tableExists(db, 'governance_events'), true, 'governance_events should exist after migration');
+        assert.equal(columnExists(db, 'governance_events', 'objective_id'), true, 'objective_id should exist after Phase 9 T5.1 migration step 6');
+        assert.equal(columnExists(db, 'governance_events', 'source_component'), true, 'source_component should exist after Phase 9 T5.1 migration step 6');
         assert.equal(columnExists(db, 'serendipity_seeds', 'source_claim_id'), true, 'source_claim_id should exist after migration');
         assert.equal(columnExists(db, 'sessions', 'integrity_status'), true, 'integrity_status should exist after migration');
         assert.equal(columnExists(db, 'sessions', 'integrity_notes'), true, 'integrity_notes should exist after migration');
@@ -3084,8 +3086,8 @@ describe('B8. TRACE Foundation Tests', () => {
         const first = applyMigrations(db);
         const second = applyMigrations(db);
 
-        assert.equal(first.currentVersion, 5, 'first run should converge to schema version 5');
-        assert.equal(second.currentVersion, 5, 'second run should stay at schema version 5');
+        assert.equal(first.currentVersion, 6, 'first run should converge to schema version 6');
+        assert.equal(second.currentVersion, 6, 'second run should stay at schema version 6');
         assert.deepEqual(second.applied, [], 'second run should not apply any new migrations');
         assert.deepEqual(second.pending, [], 'second run should have no pending migrations');
 

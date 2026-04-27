@@ -8,7 +8,7 @@
  *         applyMigrations, columnExists, tableExists
  */
 
-export const CURRENT_SCHEMA_VERSION = 5;
+export const CURRENT_SCHEMA_VERSION = 6;
 
 /**
  * Ensure the meta table exists.
@@ -112,6 +112,10 @@ function setSchemaVersion(db, version) {
  * Step 5:
  *   - create governance_events append-only audit trail
  *
+ * Step 6 (Phase 9 T5.1):
+ *   - add objective_id + source_component columns to governance_events
+ *   - add idx_governance_objective index for objective-scoped audit queries
+ *
  * @param {import('better-sqlite3').Database} db
  * @returns {{ currentVersion: number, applied: number[], pending: number[] }}
  */
@@ -176,6 +180,12 @@ export function applyMigrations(db) {
             version: 5,
             run() {
                 ensureGovernanceEventsTable(db);
+            }
+        },
+        {
+            version: 6,
+            run() {
+                ensurePhase9GovernanceColumns(db);
             }
         }
     ];
@@ -324,6 +334,25 @@ function ensureMemoryFtsTable(db) {
             created_at UNINDEXED,
             tokenize = "porter unicode61 tokenchars '-_'"
         )
+    `);
+}
+
+function ensurePhase9GovernanceColumns(db) {
+    if (!tableExists(db, 'governance_events')) return;
+    const columnsToAdd = [
+        ['objective_id', 'TEXT'],
+        ['source_component', 'TEXT'],
+    ];
+    for (const [columnName, columnType] of columnsToAdd) {
+        if (!columnExists(db, 'governance_events', columnName)) {
+            db.exec(`ALTER TABLE governance_events ADD COLUMN ${columnName} ${columnType}`);
+        }
+    }
+    db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_governance_objective
+            ON governance_events(objective_id, timestamp);
+        CREATE INDEX IF NOT EXISTS idx_governance_source_component
+            ON governance_events(source_component, timestamp);
     `);
 }
 
