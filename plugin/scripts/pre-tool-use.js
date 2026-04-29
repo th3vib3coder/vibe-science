@@ -10,6 +10,7 @@
 // Output (stdout JSON): { hookSpecificOutput: { permissionDecision: "allow"|"deny" } }
 
 import path from 'node:path';
+import { createHash } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import { existsSync, readFileSync } from 'node:fs';
 // Fixup-10 P1 #1: need to share the deliverable-path matcher so Bash
@@ -21,6 +22,7 @@ import {
   resolvePluginRepoRoot,
   resolveSiblingVreRoot,
 } from './handshake-inject.js';
+import { logPhase9GovernanceEvent } from '../lib/phase9-governance-events.js';
 
 const PROTECTED_CONFIG_RULES = [
   'skills/vibe/assets/schemas/*.schema.json',
@@ -60,6 +62,14 @@ const PROTECTED_CONFIG_RULES = [
   'plugin/scripts/r2-bridge-writer.js',
   'vibe-research-environment/environment/orchestrator/autonomy-runtime.js',
 ];
+
+const PHASE9_PRE_TOOL_USE_SOURCE_COMPONENT = 'plugin/hooks/pre-tool-use';
+const PHASE9_VRE_ALLOWLIST_RULE = 'vre-run-analysis-literal-manifest';
+const NUCLEAR_BASH_COMMAND_CLASSES = new Set([
+  'external-script-invocation',
+  'build-dispatcher',
+  'delete-primitive',
+]);
 
 // Guardrail rules added by fixup-10 — used to route the deny message
 // through a guardrail-specific branch that explains the escape hatch.
@@ -191,6 +201,7 @@ async function main(event) {
       if (toolName === 'Bash') {
         const sanctionedPhase9Decision = await evaluatePhase9SanctionedVreCommand(event, toolInput);
         if (sanctionedPhase9Decision?.decision === 'allow') {
+          recordPhase9VreAllowlistPassed(db, sessionId);
           allow();
           return;
         }
@@ -208,6 +219,7 @@ async function main(event) {
         // below still fire as additional coverage.
         const nuclearHit = detectBashNuclearViolation(toolInput);
         if (nuclearHit) {
+          recordPhase9NuclearBashDenied(db, sessionId, nuclearHit);
           denyBashNuclear(nuclearHit);
           return;
         }
@@ -1489,6 +1501,67 @@ function extractCommandPathCandidates(command) {
   }
 
   return [...candidates];
+}
+
+function hashCommandSignature(command) {
+  const canonical = String(command || '')
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n')
+    .trim();
+  const digest = createHash('sha256').update(canonical, 'utf8').digest('hex').slice(0, 12);
+  return `SIG-${digest}`;
+}
+
+function normalizeNuclearCommandClass(value) {
+  const normalized = String(value || '');
+  if (!NUCLEAR_BASH_COMMAND_CLASSES.has(normalized)) {
+    throw new Error(`unknown nuclear bash command class: ${normalized || '<empty>'}`);
+  }
+  return normalized;
+}
+
+function recordPhase9NuclearBashDenied(db, sessionId, hit) {
+  try {
+    const commandClass = normalizeNuclearCommandClass(hit?.class);
+    logPhase9GovernanceEvent(db, {
+      session_id: sessionId ?? null,
+      event_type: 'nuclear_bash_denied_bash',
+      tool_name: 'Bash',
+      severity: 'warning',
+      objective_id: null,
+      source_component: PHASE9_PRE_TOOL_USE_SOURCE_COMPONENT,
+      details: {
+        command_signature: hashCommandSignature(hit?.command),
+        command_class: commandClass,
+        reason: commandClass,
+      },
+    });
+  } catch (error) {
+    process.stderr.write(
+      `[phase9-pre-tool-use] governance telemetry failed: ${error?.code || error?.message || 'unknown'}\n`,
+    );
+  }
+}
+
+function recordPhase9VreAllowlistPassed(db, sessionId) {
+  try {
+    logPhase9GovernanceEvent(db, {
+      session_id: sessionId ?? null,
+      event_type: 'nuclear_bash_denied_allowlist_passed',
+      tool_name: 'Bash',
+      severity: 'info',
+      objective_id: null,
+      source_component: PHASE9_PRE_TOOL_USE_SOURCE_COMPONENT,
+      details: {
+        path_pattern: PHASE9_VRE_ALLOWLIST_RULE,
+        allowlist_rule: PHASE9_VRE_ALLOWLIST_RULE,
+      },
+    });
+  } catch (error) {
+    process.stderr.write(
+      `[phase9-pre-tool-use] governance telemetry failed: ${error?.code || error?.message || 'unknown'}\n`,
+    );
+  }
 }
 
 function recordGovernanceEvent(db, event) {
