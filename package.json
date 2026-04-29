@@ -11,7 +11,7 @@
     "v7-readiness": "node scripts/v7-readiness.mjs",
     "test:e2e": "node --test __test_e2e.mjs",
     "test:phase8": "node --test tests/governance-events.test.mjs tests/governance-hooks.test.mjs tests/delivery-discipline-skill.test.mjs tests/delivery-discipline-hook.test.mjs tests/validate-delivery-honesty.test.mjs",
-    "test:phase9": "node --test tests/kernel-bridge-projection-count.test.mjs tests/phase9-handshake-injection.test.mjs tests/phase9-vre-command-gate.test.mjs tests/phase9-loop-wake.test.mjs tests/phase9-r2-bridge-writer.test.mjs",
+    "test:phase9": "node --test tests/kernel-bridge-projection-count.test.mjs tests/phase9-handshake-injection.test.mjs tests/phase9-vre-command-gate.test.mjs tests/phase9-loop-wake.test.mjs tests/phase9-r2-bridge-writer.test.mjs tests/phase9-governance-log-cli.test.mjs",
     "test": "npm run test:e2e && npm run test:phase8 && npm run test:phase9",
     "check": "npm test"
   },
