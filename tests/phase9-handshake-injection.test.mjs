@@ -13,6 +13,8 @@ const rel = (...segments) => path.join(ROOT, ...segments);
 
 const handshakeMod = await import(relUrl('plugin', 'scripts', 'handshake-inject.js'));
 const objectiveLoaderMod = await import(relUrl('plugin', 'scripts', 'objective-loader.js'));
+const dbMod = await import(relUrl('plugin', 'lib', 'db.js'));
+const migrationMod = await import(relUrl('plugin', 'lib', 'migrations.js'));
 
 const FULL_FIXTURE_PATH = path.join(
     VRE_ROOT,
@@ -279,7 +281,72 @@ function spawnHook(scriptRelativePath, event, envOverrides = {}) {
             },
         },
     );
-    return result;
+    return Object.assign(result, {
+        fakeHome,
+        dbPath: path.join(fakeHome, '.vibe-science', 'db', 'vibe-science.db'),
+    });
+}
+
+function createGovernanceHarness() {
+    const root = createTempRoot('vibe-phase9-governance-');
+    const fakeHome = path.join(root, 'home');
+    const projectDir = path.join(root, 'project');
+    const dbPath = path.join(fakeHome, '.vibe-science', 'db', 'vibe-science.db');
+
+    fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+    fs.mkdirSync(path.join(projectDir, '.vibe-science'), { recursive: true });
+    fs.writeFileSync(path.join(projectDir, '.vibe-science', 'STATE.md'), '# state\n', 'utf8');
+
+    const db = dbMod.openDB(dbPath);
+    dbMod.initDB(db);
+    migrationMod.applyMigrations(db);
+    dbMod.createSession(db, {
+        id: 'sess-001',
+        project_path: projectDir,
+        started_at: '2026-04-29T00:00:00.000Z',
+    });
+    dbMod.closeDB(db);
+
+    return { fakeHome, projectDir, dbPath };
+}
+
+function spawnHookWithHome(scriptRelativePath, event, { fakeHome, cwd, envOverrides = {} }) {
+    return spawnSync(
+        process.execPath,
+        [rel(scriptRelativePath)],
+        {
+            cwd,
+            encoding: 'utf-8',
+            timeout: 30000,
+            input: JSON.stringify(event),
+            env: {
+                ...process.env,
+                HOME: fakeHome,
+                USERPROFILE: fakeHome,
+                ...envOverrides,
+            },
+        },
+    );
+}
+
+function openGovernanceDb(dbPath) {
+    const db = dbMod.openDB(dbPath);
+    dbMod.initDB(db);
+    migrationMod.applyMigrations(db);
+    return db;
+}
+
+function readGovernanceEvents(dbPath, eventType) {
+    const db = openGovernanceDb(dbPath);
+    try {
+        return dbMod.getGovernanceEvents(db, { eventType, limit: 20 });
+    } finally {
+        dbMod.closeDB(db);
+    }
+}
+
+function assertNoSecretDetails(details, sentinel) {
+    assert.doesNotMatch(JSON.stringify(details), new RegExp(sentinel, 'u'));
 }
 
 function assertHookContextIncludes(result, pattern) {
@@ -530,6 +597,199 @@ test('session-start injects a visible Phase 9 handshake digest when handshake mo
 
     assert.match(text, /vrePresent: true/u);
     assert.match(text, /payloadArtifact:/u);
+});
+
+test('clean session-start handshake logs handshake_injected governance event without leaking secrets', () => {
+    const secretSentinel = 'xyz-phase9-handshake-secret-sentinel';
+    const sandbox = createFakePluginRepo();
+    pendingCleanup.push(sandbox.root);
+    const fakeVreRoot = path.join(sandbox.root, 'vibe-research-environment');
+    const payload = freshFixture(Date.now(), {
+        vrePath: fakeVreRoot,
+        degradedReasons: [],
+        kernel: {
+            ...structuredClone(fullFixture.kernel),
+            mode: 'full',
+            dbAvailable: true,
+            unreachableReason: null,
+        },
+    });
+    createFakeVreRepo(sandbox.root, {
+        cliSource: [
+            '#!/usr/bin/env node',
+            `process.stdout.write(${JSON.stringify(JSON.stringify(payload))});`,
+            'process.exit(0);',
+            '',
+        ].join('\n'),
+    });
+    const harness = createGovernanceHarness();
+    const db = openGovernanceDb(harness.dbPath);
+    try {
+        const injection = handshakeMod.buildPhase9HandshakeInjection({
+            mode: 'session-start',
+            pluginRepoRoot: sandbox.pluginRoot,
+            db,
+            env: {
+                ...process.env,
+                VIBE_PHASE9_HANDSHAKE_ONLY: '1',
+                SECRET_FOOBAR: secretSentinel,
+            },
+        });
+
+        assert.equal(injection.injected, true);
+        assert.equal(injection.source, 'cli');
+    } finally {
+        dbMod.closeDB(db);
+    }
+
+    const events = readGovernanceEvents(harness.dbPath, 'handshake_injected');
+
+    assert.equal(events.length, 1);
+    assert.equal(events[0].source_component, 'plugin/scripts/handshake-inject');
+    assert.equal(events[0].objective_id, null);
+    assert.match(events[0].details.handshake_id, /^HND-[a-f0-9]{12}$/u);
+    assert.equal(Number.isInteger(events[0].details.capabilities_count), true);
+    assert.ok(events[0].details.capabilities_count > 0);
+    assertNoSecretDetails(events[0].details, secretSentinel);
+});
+
+test('handshake fallback logs handshake_degraded governance event with enum reason', () => {
+    const sandbox = createFakePluginRepo();
+    pendingCleanup.push(sandbox.root);
+    createFakeVreRepo(sandbox.root);
+    const harness = createGovernanceHarness();
+    const db = openGovernanceDb(harness.dbPath);
+    try {
+        const injection = handshakeMod.buildPhase9HandshakeInjection({
+            mode: 'session-start',
+            pluginRepoRoot: sandbox.pluginRoot,
+            db,
+            env: {
+                ...process.env,
+                VIBE_PHASE9_HANDSHAKE_ONLY: '1',
+                SECRET_FOOBAR: 'xyz-phase9-degraded-secret-sentinel',
+            },
+        });
+
+        assert.equal(injection.injected, true);
+        assert.equal(injection.source, 'degraded');
+    } finally {
+        dbMod.closeDB(db);
+    }
+
+    const events = readGovernanceEvents(harness.dbPath, 'handshake_degraded');
+    assert.equal(events.length, 1);
+    assert.equal(events[0].source_component, 'plugin/scripts/handshake-inject');
+    assert.equal(events[0].objective_id, null);
+    assert.equal(events[0].details.reason, 'cli-fail');
+    assertNoSecretDetails(events[0].details, 'xyz-phase9-degraded-secret-sentinel');
+});
+
+test('claim_without_harness legacy governance event remains isolated from Phase 9 handshake events', () => {
+    const harness = createGovernanceHarness();
+    const result = spawnHookWithHome('plugin/scripts/pre-tool-use.js', {
+        tool_name: 'Write',
+        tool_input: {
+            file_path: path.join(harness.projectDir, 'CLAIM-LEDGER.md'),
+            content: [
+                'C-001',
+                'event_type: CREATED',
+                'confidence: 0.42',
+                'narrative: test claim without harness',
+            ].join('\n'),
+        },
+        session_id: 'sess-001',
+        cwd: harness.projectDir,
+    }, {
+        fakeHome: harness.fakeHome,
+        cwd: harness.projectDir,
+    });
+
+    assert.equal(result.status, 2, result.stderr || result.stdout);
+    const claimEvents = readGovernanceEvents(harness.dbPath, 'claim_without_harness');
+    const phase9HandshakeEvents = [
+        ...readGovernanceEvents(harness.dbPath, 'handshake_injected'),
+        ...readGovernanceEvents(harness.dbPath, 'handshake_degraded'),
+    ];
+
+    assert.equal(claimEvents.length, 1);
+    assert.equal(claimEvents[0].event_type, 'claim_without_harness');
+    assert.equal(claimEvents[0].source_component, null);
+    assert.equal(claimEvents[0].objective_id, null);
+    assert.equal(phase9HandshakeEvents.length, 0);
+});
+
+test('session-start threads its existing DB handle into handshake telemetry', () => {
+    const source = fs.readFileSync(rel('plugin', 'scripts', 'session-start.js'), 'utf8');
+
+    assert.match(
+        source,
+        /const phase9Injection = buildPhase9HandshakeInjection\(\{\s*mode: 'session-start',\s*db,\s*env: process\.env,/su,
+    );
+});
+
+test('handshake telemetry close path remains fail-soft when it owns the DB handle', () => {
+    const source = fs.readFileSync(rel('plugin', 'scripts', 'handshake-inject.js'), 'utf8');
+
+    assert.match(
+        source,
+        /finally\s*\{\s*if\s*\(ownedDb\)\s*\{\s*try\s*\{\s*closeDB\(ownedDb\);\s*\}\s*catch\s*\{/su,
+    );
+});
+
+test('prompt-submit threads its existing DB handle into handshake telemetry before closing it', () => {
+    const source = fs.readFileSync(rel('plugin', 'scripts', 'prompt-submit.js'), 'utf8');
+    const phase9CallIndex = source.indexOf('const phase9Injection = buildPhase9HandshakeInjection({');
+    const closeDbIndex = source.search(/\/\/ ---- \d+\. Close DB/u);
+
+    assert.ok(phase9CallIndex >= 0, 'expected prompt-submit to call buildPhase9HandshakeInjection');
+    assert.ok(closeDbIndex > phase9CallIndex, 'expected prompt-submit to close DB after Phase 9 injection');
+    assert.match(
+        source,
+        /const phase9Injection = buildPhase9HandshakeInjection\(\{\s*mode: 'prompt-submit',\s*prompt,\s*db,\s*env: process\.env,/su,
+    );
+});
+
+test('prompt-submit on a fresh database emits handshake_injected governance event with source component', () => {
+    const originalArtifact = fs.readFileSync(HANDSHAKE_ARTIFACT_PATH, 'utf8');
+    const payload = freshFixture(Date.now(), {
+        vrePath: VRE_ROOT,
+        degradedReasons: [],
+        kernel: {
+            ...structuredClone(fullFixture.kernel),
+            mode: 'full',
+            dbAvailable: true,
+            unreachableReason: null,
+        },
+        objective: {
+            activePointer: '.vibe-science-environment/objectives/OBJ-fresh-prompt/objective.json',
+            activeObjectiveId: 'OBJ-fresh-prompt',
+            status: 'active',
+        },
+    });
+
+    fs.writeFileSync(HANDSHAKE_ARTIFACT_PATH, JSON.stringify(payload, null, 2), 'utf8');
+    try {
+        const result = spawnHook(
+            'plugin/scripts/prompt-submit.js',
+            {
+                prompt: 'Rename this local helper and tighten the variable naming.',
+                cwd: ROOT,
+            },
+            { VIBE_PHASE9_HANDSHAKE_ONLY: '1' },
+        );
+
+        assertHookContextIncludes(result, /\[PHASE9 HANDSHAKE DIGEST\]/u);
+        const events = readGovernanceEvents(result.dbPath, 'handshake_injected');
+
+        assert.equal(events.length, 1);
+        assert.equal(events[0].source_component, 'plugin/scripts/handshake-inject');
+        assert.equal(events[0].objective_id, null);
+        assert.match(events[0].details.handshake_id, /^HND-[a-f0-9]{12}$/u);
+        assert.equal(Number.isInteger(events[0].details.capabilities_count), true);
+    } finally {
+        fs.writeFileSync(HANDSHAKE_ARTIFACT_PATH, originalArtifact, 'utf8');
+    }
 });
 
 test('prompt-submit injects handshake visibility for research-relevant prompts', () => {

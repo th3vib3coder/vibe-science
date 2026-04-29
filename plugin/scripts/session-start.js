@@ -517,6 +517,7 @@ async function main(event) {
     try {
         const phase9Injection = buildPhase9HandshakeInjection({
             mode: 'session-start',
+            db,
             env: process.env,
         });
         if (phase9Injection.injected && phase9Injection.context) {

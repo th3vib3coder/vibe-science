@@ -30,7 +30,7 @@ const __dirname = dirname(__filename);
 // Graceful lib imports -- if a module doesn't exist, provide fallbacks
 // ---------------------------------------------------------------------------
 
-let openDB, initDB, closeDB;
+let openDB, initDB, closeDB, applyMigrations;
 let identifyAgentRole;
 let vecSearch;
 
@@ -39,10 +39,13 @@ try {
     openDB = dbMod.openDB;
     initDB = dbMod.initDB;
     closeDB = dbMod.closeDB;
+    const migrationMod = await import('../lib/migrations.js');
+    applyMigrations = migrationMod.applyMigrations;
 } catch {
     openDB = null;
     initDB = null;
     closeDB = null;
+    applyMigrations = null;
 }
 
 try {
@@ -156,6 +159,13 @@ async function main(event) {
         try {
             db = openDB();
             if (db && initDB) initDB(db);
+            if (db && applyMigrations) {
+                try {
+                    applyMigrations(db);
+                } catch (err) {
+                    warnings.push(`Schema migration failed: ${err.message}`);
+                }
+            }
             dbAvailable = true;
         } catch (err) {
             warnings.push(`DB open failed: ${err.message}`);
@@ -192,17 +202,7 @@ async function main(event) {
         }
     }
 
-    // ---- 5. Close DB --------------------------------------------------------
-    if (db && dbAvailable) {
-        try {
-            if (closeDB) closeDB(db);
-            else if (db.open) db.close();
-        } catch {
-            // Ignore close errors
-        }
-    }
-
-    // ---- 6. Build result ----------------------------------------------------
+    // ---- 5. Build result ----------------------------------------------------
     const result = {
         agentRole: role,
     };
@@ -217,6 +217,7 @@ async function main(event) {
         const phase9Injection = buildPhase9HandshakeInjection({
             mode: 'prompt-submit',
             prompt,
+            db,
             env: process.env,
         });
         if (phase9Injection.injected && phase9Injection.context) {
@@ -235,6 +236,16 @@ async function main(event) {
 
     if (warnings.length > 0) {
         result.warnings = warnings;
+    }
+
+    // ---- 6. Close DB --------------------------------------------------------
+    if (db && dbAvailable) {
+        try {
+            if (closeDB) closeDB(db);
+            else if (db.open) db.close();
+        } catch {
+            // Ignore close errors
+        }
     }
 
     return result;

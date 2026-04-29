@@ -1,8 +1,12 @@
 #!/usr/bin/env node
+import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { openDB, closeDB } from '../lib/db.js';
+import { applyMigrations } from '../lib/migrations.js';
+import { logPhase9GovernanceEvent } from '../lib/phase9-governance-events.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -10,6 +14,7 @@ const __dirname = path.dirname(__filename);
 const DEFAULT_PLUGIN_REPO_ROOT = path.resolve(__dirname, '..', '..');
 const PLUGIN_PACKAGE_NAME = 'vibe-science-plugin';
 const VRE_PACKAGE_NAME = 'vibe-research-environment';
+const GOVERNANCE_SOURCE_COMPONENT = 'plugin/scripts/handshake-inject';
 const RESEARCH_PROMPT_PATTERN = /\b(research|resume|analysis|analyse|analy[sz]e|paper|literature|claim|promot|loop|tool|service|discover|discovery|connector|schema|automation|memory api|queueable|objective)\b/iu;
 
 export const HANDSHAKE_SCHEMA_VERSION = 'phase9.capability-handshake.v1';
@@ -507,6 +512,103 @@ function handshakeStatusLabel(state) {
     return 'full';
 }
 
+function countArrayValues(value) {
+    return Array.isArray(value) ? value.length : 0;
+}
+
+function countHandshakeCapabilities(handshake) {
+    const vre = handshake?.vre ?? {};
+    const operatorSurface = vre.operatorSurface ?? {};
+    return [
+        vre.executableCommands,
+        vre.markdownOnlyContracts,
+        vre.queueableTaskKinds,
+        vre.schemas,
+        vre.connectors,
+        vre.automations,
+        vre.domainPacks,
+        vre.memoryApis,
+        operatorSurface.commands,
+        operatorSurface.doctorCommands,
+        operatorSurface.artifactPaths,
+    ].reduce((total, value) => total + countArrayValues(value), 0);
+}
+
+function buildHandshakeId(state) {
+    const handshake = state.handshake ?? {};
+    const stableInput = JSON.stringify({
+        schemaVersion: handshake.schemaVersion ?? null,
+        generatedAt: handshake.generatedAt ?? null,
+        source: state.source ?? null,
+        capabilitiesCount: countHandshakeCapabilities(handshake),
+    });
+    return `HND-${createHash('sha256').update(stableInput).digest('hex').slice(0, 12)}`;
+}
+
+function classifyHandshakeDegradedReason(state) {
+    const reasons = Array.isArray(state.handshake?.degradedReasons)
+        ? state.handshake.degradedReasons
+        : [];
+
+    if (state.source === 'missing' || reasons.some((reason) => String(reason).startsWith('VRE_MISSING:'))) {
+        return 'vre-missing';
+    }
+    if (reasons.some((reason) => String(reason).startsWith('VRE_HANDSHAKE_CLI_'))) {
+        return 'cli-fail';
+    }
+    if (state.handshake?.kernel?.dbAvailable === false || reasons.some((reason) => /\bdb\b|database/iu.test(String(reason)))) {
+        return 'db-unavailable';
+    }
+    if (reasons.some((reason) => String(reason).startsWith('VRE_HANDSHAKE_ARTIFACT_'))) {
+        return 'artifact-unavailable';
+    }
+    return 'other';
+}
+
+function logHandshakeGovernanceTelemetry(state, { db = null } = {}) {
+    const status = handshakeStatusLabel(state);
+    const eventType = status === 'full' ? 'handshake_injected' : 'handshake_degraded';
+    let ownedDb = null;
+
+    try {
+        const targetDb = db ?? openDB?.();
+        if (!targetDb) {
+            throw new Error('database unavailable');
+        }
+        if (!db) {
+            ownedDb = targetDb;
+            applyMigrations(targetDb);
+        }
+
+        const details = eventType === 'handshake_injected'
+            ? {
+                handshake_id: buildHandshakeId(state),
+                capabilities_count: countHandshakeCapabilities(state.handshake),
+            }
+            : {
+                reason: classifyHandshakeDegradedReason(state),
+            };
+
+        logPhase9GovernanceEvent(targetDb, {
+            event_type: eventType,
+            source_component: GOVERNANCE_SOURCE_COMPONENT,
+            objective_id: null,
+            severity: eventType === 'handshake_injected' ? 'info' : 'warning',
+            details,
+        });
+    } catch (error) {
+        process.stderr.write(`[phase9-handshake] governance telemetry failed: ${error.message}\n`);
+    } finally {
+        if (ownedDb) {
+            try {
+                closeDB(ownedDb);
+            } catch {
+                // Governance telemetry is fail-soft; close failures cannot affect handshake injection.
+            }
+        }
+    }
+}
+
 function connectorSummary(connectors) {
     return formatList(
         connectors.map((connector) => `${connector.id}:${connector.status}`),
@@ -579,6 +681,7 @@ export function buildPhase9HandshakeInjection({
     prompt = '',
     env = process.env,
     pluginRepoRoot = DEFAULT_PLUGIN_REPO_ROOT,
+    db = null,
     nowMs = Date.now(),
     spawnSyncImpl = spawnSync,
     readFileSyncImpl = readFileSync,
@@ -623,6 +726,8 @@ export function buildPhase9HandshakeInjection({
             };
         }
 
+        logHandshakeGovernanceTelemetry(passiveState, { db });
+
         return {
             enabled: true,
             injected: true,
@@ -646,6 +751,8 @@ export function buildPhase9HandshakeInjection({
         readFileSyncImpl,
         existsSyncImpl,
     });
+
+    logHandshakeGovernanceTelemetry(state, { db });
 
     return {
         enabled: true,
