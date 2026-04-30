@@ -116,6 +116,30 @@ test('KNOWN_GOVERNANCE_SOURCE_COMPONENTS includes soft-probe control-plane sourc
   }
 });
 
+test('KNOWN_GOVERNANCE_SOURCE_COMPONENTS includes soft-probe flow-plane sources', () => {
+  for (const sourceComponent of [
+    'vre/flows/writing',
+    'vre/flows/writing-packs',
+    'vre/memory/sync',
+  ]) {
+    assert.equal(
+      KNOWN_GOVERNANCE_SOURCE_COMPONENTS.includes(sourceComponent),
+      true,
+      `expected ${sourceComponent} in governance source component allowlist`,
+    );
+    const validated = validatePhase9GovernanceEvent({
+      event_type: 'kernel_vre_truth_mismatch',
+      source_component: sourceComponent,
+      severity: 'critical',
+      details: {
+        projectionName: 'listClaimHeads',
+        errorClass: 'KernelBridgeContractMismatchError',
+      },
+    });
+    assert.equal(validated.source_component, sourceComponent);
+  }
+});
+
 test('ALL_GOVERNANCE_EVENT_TYPES is the merged union of Phase 8 + Phase 9', () => {
   assert.equal(
     ALL_GOVERNANCE_EVENT_TYPES.length,
