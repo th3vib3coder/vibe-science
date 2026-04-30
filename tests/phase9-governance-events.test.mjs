@@ -15,6 +15,7 @@ import { applyMigrations, columnExists } from '../plugin/lib/migrations.js';
 import {
   ALL_GOVERNANCE_EVENT_TYPES,
   GovernanceEventValidationError,
+  KNOWN_GOVERNANCE_SOURCE_COMPONENTS,
   PHASE8_LEGACY_GOVERNANCE_EVENT_TYPES,
   PHASE9_GOVERNANCE_EVENT_TYPES,
   isKnownGovernanceEventType,
@@ -89,6 +90,29 @@ test('PHASE8_LEGACY_GOVERNANCE_EVENT_TYPES preserves the existing Phase 8 types'
     assert.equal(isKnownGovernanceEventType(eventType), true);
     // Phase 8 events are NOT Phase 9 types
     assert.equal(isPhase9GovernanceEventType(eventType), false);
+  }
+});
+
+test('KNOWN_GOVERNANCE_SOURCE_COMPONENTS includes soft-probe control-plane sources', () => {
+  for (const sourceComponent of [
+    'vre/control/capabilities',
+    'vre/control/middleware',
+  ]) {
+    assert.equal(
+      KNOWN_GOVERNANCE_SOURCE_COMPONENTS.includes(sourceComponent),
+      true,
+      `expected ${sourceComponent} in governance source component allowlist`,
+    );
+    const validated = validatePhase9GovernanceEvent({
+      event_type: 'kernel_vre_truth_mismatch',
+      source_component: sourceComponent,
+      severity: 'critical',
+      details: {
+        projectionName: 'listUnresolvedClaims',
+        errorClass: 'KernelBridgeContractMismatchError',
+      },
+    });
+    assert.equal(validated.source_component, sourceComponent);
   }
 });
 

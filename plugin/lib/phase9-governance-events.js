@@ -81,6 +81,8 @@ const KNOWN_SOURCE_COMPONENTS = new Set([
     'vre/orchestrator/semantic-drift-checkpoint',
     'vre/orchestrator/windows-task-scheduler',
     'vre/control/capability-handshake',
+    'vre/control/capabilities',
+    'vre/control/middleware',
     'vre/objectives/cli',
     'vre/objectives/store',
     'vre/objectives/blocker-flag',
