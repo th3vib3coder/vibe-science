@@ -79,6 +79,16 @@ function normalizeTimestampBound(value, label) {
     throw new AuditQueryCliError(`${label} must be an ISO timestamp or finite number.`, { exitCode: 1 });
 }
 
+function normalizeObjectiveId(value) {
+    if (value == null || value === '') {
+        return null;
+    }
+    if (typeof value === 'string' && value.trim() !== '') {
+        return value.trim();
+    }
+    throw new AuditQueryCliError('objectiveId must be a non-empty string when provided.', { exitCode: 1 });
+}
+
 function assertDbReadable(dbPath) {
     try {
         if (!fs.existsSync(dbPath) || fs.statSync(dbPath).isDirectory()) {
@@ -96,9 +106,11 @@ export function queryGovernanceEventAggregates({
     dbPath = resolveDbPath(),
     from = null,
     to = null,
+    objectiveId = null,
 } = {}) {
     const fromTimestamp = normalizeTimestampBound(from, 'from');
     const toTimestamp = normalizeTimestampBound(to, 'to');
+    const normalizedObjectiveId = normalizeObjectiveId(objectiveId);
     assertDbReadable(dbPath);
 
     let db = null;
@@ -117,6 +129,10 @@ export function queryGovernanceEventAggregates({
         if (toTimestamp != null) {
             whereClauses.push('timestamp <= ?');
             params.push(toTimestamp);
+        }
+        if (normalizedObjectiveId != null) {
+            whereClauses.push('objective_id = ?');
+            params.push(normalizedObjectiveId);
         }
 
         const whereSql = whereClauses.length > 0
@@ -152,6 +168,7 @@ export async function runAuditQueryCli({ stdin = null, env = process.env } = {})
             dbPath: resolveDbPath({ env, pluginProjectRoot: payload.pluginProjectRoot }),
             from: payload.from,
             to: payload.to,
+            objectiveId: payload.objectiveId,
         });
         writeJson({ ok: true, rows });
         return 0;

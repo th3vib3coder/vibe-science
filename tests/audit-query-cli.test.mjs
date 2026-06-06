@@ -35,14 +35,14 @@ function createHarness({ seed = true } = {}) {
 
     if (seed) {
         const events = [
-            ['GOV-AQ-1', 'objective_started', 'vre/objectives/cli', 1_700_000_000_000],
-            ['GOV-AQ-2', 'objective_started', 'vre/objectives/cli', 1_700_000_001_000],
-            ['GOV-AQ-3', 'objective_started', 'vre/orchestrator/autonomy-runtime', 1_700_000_002_000],
-            ['GOV-AQ-4', 'law_violation', 'plugin/hooks/pre-tool-use', 1_700_000_003_000],
-            ['GOV-AQ-5', 'law_violation', 'plugin/hooks/pre-tool-use', 1_700_000_004_000],
-            ['GOV-AQ-6', 'law_violation', 'plugin/hooks/pre-tool-use', 1_700_000_005_000],
+            ['GOV-AQ-1', 'objective_started', 'vre/objectives/cli', 1_700_000_000_000, 'OBJ-AUDIT-A'],
+            ['GOV-AQ-2', 'objective_started', 'vre/objectives/cli', 1_700_000_001_000, 'OBJ-AUDIT-A'],
+            ['GOV-AQ-3', 'objective_started', 'vre/orchestrator/autonomy-runtime', 1_700_000_002_000, 'OBJ-AUDIT-A'],
+            ['GOV-AQ-4', 'law_violation', 'plugin/hooks/pre-tool-use', 1_700_000_003_000, 'OBJ-AUDIT-A'],
+            ['GOV-AQ-5', 'law_violation', 'plugin/hooks/pre-tool-use', 1_700_000_004_000, 'OBJ-AUDIT-A'],
+            ['GOV-AQ-6', 'law_violation', 'plugin/hooks/pre-tool-use', 1_700_000_005_000, 'OBJ-AUDIT-A'],
         ];
-        for (const [id, event_type, source_component, timestamp] of events) {
+        for (const [id, event_type, source_component, timestamp, objective_id] of events) {
             logGovernanceEvent(db, {
                 id,
                 event_type,
@@ -50,6 +50,7 @@ function createHarness({ seed = true } = {}) {
                 severity: 'info',
                 details: { sentinel: 'SECRET-seq130-audit-pin' },
                 timestamp,
+                objective_id,
             });
         }
     }
@@ -127,6 +128,127 @@ test('audit query CLI excludes events outside the requested time range', async (
         { event_type: 'law_violation', source_component: 'plugin/hooks/pre-tool-use', count: 1 },
         { event_type: 'objective_started', source_component: 'vre/objectives/cli', count: 1 },
         { event_type: 'objective_started', source_component: 'vre/orchestrator/autonomy-runtime', count: 1 },
+    ]);
+});
+
+test('audit query CLI filters aggregates by objectiveId', async () => {
+    const { dbPath } = createHarness();
+    const db = openDB(dbPath);
+    logGovernanceEvent(db, {
+        id: 'GOV-AQ-7',
+        event_type: 'objective_started',
+        source_component: 'vre/objectives/cli',
+        severity: 'info',
+        details: { sentinel: 'SECRET-seq130-audit-pin' },
+        timestamp: 1_700_000_006_000,
+        objective_id: 'OBJ-AUDIT-B',
+    });
+    logGovernanceEvent(db, {
+        id: 'GOV-AQ-8',
+        event_type: 'law_violation',
+        source_component: 'plugin/hooks/pre-tool-use',
+        severity: 'info',
+        details: { sentinel: 'SECRET-seq130-audit-pin' },
+        timestamp: 1_700_000_007_000,
+        objective_id: null,
+    });
+    closeDB(db);
+
+    const result = await runCli(
+        { objectiveId: 'OBJ-AUDIT-A' },
+        { env: { VIBE_SCIENCE_DB_PATH: dbPath } },
+    );
+
+    assert.equal(result.exitCode, 0, `stderr=${result.stderr}`);
+    const payload = parseStdoutJson(result);
+    assert.equal(payload.ok, true);
+    assert.deepEqual(payload.rows, [
+        { event_type: 'law_violation', source_component: 'plugin/hooks/pre-tool-use', count: 3 },
+        { event_type: 'objective_started', source_component: 'vre/objectives/cli', count: 2 },
+        { event_type: 'objective_started', source_component: 'vre/orchestrator/autonomy-runtime', count: 1 },
+    ]);
+});
+
+test('audit query CLI combines objectiveId and time-range filters', async () => {
+    const { dbPath } = createHarness();
+    const db = openDB(dbPath);
+    logGovernanceEvent(db, {
+        id: 'GOV-AQ-7',
+        event_type: 'law_violation',
+        source_component: 'plugin/hooks/pre-tool-use',
+        severity: 'info',
+        details: { sentinel: 'SECRET-seq130-audit-pin' },
+        timestamp: 1_700_000_004_000,
+        objective_id: 'OBJ-AUDIT-B',
+    });
+    logGovernanceEvent(db, {
+        id: 'GOV-AQ-8',
+        event_type: 'objective_started',
+        source_component: 'vre/objectives/cli',
+        severity: 'info',
+        details: { sentinel: 'SECRET-seq130-audit-pin' },
+        timestamp: 1_700_000_100_000,
+        objective_id: 'OBJ-AUDIT-A',
+    });
+    closeDB(db);
+
+    const result = await runCli(
+        {
+            from: 1_700_000_003_000,
+            to: 1_700_000_004_500,
+            objectiveId: 'OBJ-AUDIT-A',
+        },
+        { env: { VIBE_SCIENCE_DB_PATH: dbPath } },
+    );
+
+    assert.equal(result.exitCode, 0, `stderr=${result.stderr}`);
+    const payload = parseStdoutJson(result);
+    assert.equal(payload.ok, true);
+    assert.deepEqual(payload.rows, [
+        { event_type: 'law_violation', source_component: 'plugin/hooks/pre-tool-use', count: 2 },
+    ]);
+});
+
+test('audit query CLI resolves fixture DB from pluginProjectRoot', async () => {
+    tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'phase9-audit-query-plugin-root-'));
+    const pluginProjectRoot = path.join(tempRoot, 'plugin-root');
+    const dbPath = path.join(pluginProjectRoot, '.vibe-science', 'db', 'vibe-science.db');
+    const db = openDB(dbPath);
+    initDB(db);
+    applyMigrations(db);
+    logGovernanceEvent(db, {
+        id: 'GOV-AQ-PLUGIN-ROOT-1',
+        event_type: 'objective_started',
+        source_component: 'vre/objectives/cli',
+        severity: 'info',
+        details: { sentinel: 'SECRET-seq130-audit-pin' },
+        timestamp: 1_700_000_000_000,
+        objective_id: 'OBJ-AUDIT-PLUGIN-ROOT',
+    });
+    logGovernanceEvent(db, {
+        id: 'GOV-AQ-PLUGIN-ROOT-2',
+        event_type: 'objective_started',
+        source_component: 'vre/objectives/cli',
+        severity: 'info',
+        details: { sentinel: 'SECRET-seq130-audit-pin' },
+        timestamp: 1_700_000_000_001,
+        objective_id: 'OBJ-AUDIT-OTHER',
+    });
+    closeDB(db);
+
+    const result = await runCli(
+        {
+            pluginProjectRoot,
+            objectiveId: 'OBJ-AUDIT-PLUGIN-ROOT',
+        },
+        { env: { VIBE_SCIENCE_DB_PATH: '' } },
+    );
+
+    assert.equal(result.exitCode, 0, `stderr=${result.stderr}`);
+    const payload = parseStdoutJson(result);
+    assert.equal(payload.ok, true);
+    assert.deepEqual(payload.rows, [
+        { event_type: 'objective_started', source_component: 'vre/objectives/cli', count: 1 },
     ]);
 });
 
