@@ -1,0 +1,3837 @@
+[
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\CLAUDE.md",
+    "LastWriteTimeUtc": "2026-04-26T11:47:35.4459229Z",
+    "Length": 7197
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\index.md",
+    "LastWriteTimeUtc": "2026-04-26T11:47:57.0290442Z",
+    "Length": 24395
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\log.md",
+    "LastWriteTimeUtc": "2026-04-30T19:15:18.4099717Z",
+    "Length": 146503
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\PLAN-atomic-completion.md",
+    "LastWriteTimeUtc": "2026-04-26T11:53:43.9197899Z",
+    "Length": 16177
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\PROMPT-adversarial-review.md",
+    "LastWriteTimeUtc": "2026-04-26T12:15:04.8624757Z",
+    "Length": 3363
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\PROMPT-agent-session-preamble.md",
+    "LastWriteTimeUtc": "2026-04-26T12:14:25.1964381Z",
+    "Length": 17161
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\PROMPT-implementation-step.md",
+    "LastWriteTimeUtc": "2026-04-26T12:14:51.0780953Z",
+    "Length": 8910
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\PROTOCOL-wiki-integrated-implementation.md",
+    "LastWriteTimeUtc": "2026-04-26T12:04:19.1230232Z",
+    "Length": 28424
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\round-092-codex-adversarial-review-acceptance.md",
+    "LastWriteTimeUtc": "2026-04-27T08:50:48.4317354Z",
+    "Length": 2821
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\round-092-operator-actions.md",
+    "LastWriteTimeUtc": "2026-04-27T08:51:59.1109703Z",
+    "Length": 3574
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\round-093-plan15-typed-edge-gate-brief.md",
+    "LastWriteTimeUtc": "2026-04-27T09:14:41.3839708Z",
+    "Length": 2914
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\round-094-codex-wave-5-plan-adversarial-review.md",
+    "LastWriteTimeUtc": "2026-04-27T23:57:00.0577029Z",
+    "Length": 12990
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\round-094-wave-5-plan-adversarial-review.md",
+    "LastWriteTimeUtc": "2026-04-27T23:57:00.0587059Z",
+    "Length": 10140
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\round-095-claude-wave-5-plan-v2-1-fixes-review-round-2.md",
+    "LastWriteTimeUtc": "2026-04-28T02:00:55.1418368Z",
+    "Length": 14834
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\round-095-claude-wave-5-plan-v2-1-fixes-review.md",
+    "LastWriteTimeUtc": "2026-04-28T01:45:31.5526848Z",
+    "Length": 12003
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\round-095-codex-wave-5-plan-v2-1-split-review.md",
+    "LastWriteTimeUtc": "2026-04-28T01:18:24.0878844Z",
+    "Length": 8029
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\round-095-codex-wave-5-plan-v2-review.md",
+    "LastWriteTimeUtc": "2026-04-27T23:57:00.0597035Z",
+    "Length": 7891
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\round-095-wave-5-plan-v2-1-fixes-changelog.md",
+    "LastWriteTimeUtc": "2026-04-28T02:17:01.8795417Z",
+    "Length": 6970
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\scheduled-gate-health-2026-04-28.md",
+    "LastWriteTimeUtc": "2026-04-28T04:32:46.3850584Z",
+    "Length": 6526
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\scheduled-gate-health-2026-04-29.md",
+    "LastWriteTimeUtc": "2026-04-29T04:32:13.0010821Z",
+    "Length": 6270
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\scheduled-gate-health-2026-04-30.md",
+    "LastWriteTimeUtc": "2026-04-30T04:32:12.607474Z",
+    "Length": 5182
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\scheduled-gate-health-2026-05-01.md",
+    "LastWriteTimeUtc": "2026-05-01T11:04:38.5922449Z",
+    "Length": 5002
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\scheduled-gate-health-2026-05-02.md",
+    "LastWriteTimeUtc": "2026-05-02T04:32:19.7767775Z",
+    "Length": 5505
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\scheduled-gate-health-2026-05-03.md",
+    "LastWriteTimeUtc": "2026-05-03T04:34:39.7356618Z",
+    "Length": 5264
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\scheduled-gate-health-2026-05-04.md",
+    "LastWriteTimeUtc": "2026-05-04T04:33:18.9752332Z",
+    "Length": 5504
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\scheduled-gate-health-2026-05-05.md",
+    "LastWriteTimeUtc": "2026-05-05T04:33:08.1935239Z",
+    "Length": 4341
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\scheduled-gate-health-2026-05-06.md",
+    "LastWriteTimeUtc": "2026-05-06T04:33:09.104445Z",
+    "Length": 4838
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\scheduled-gate-health-2026-05-07.md",
+    "LastWriteTimeUtc": "2026-05-07T04:32:27.6933425Z",
+    "Length": 5246
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\scheduled-gate-health-2026-05-08.md",
+    "LastWriteTimeUtc": "2026-05-08T04:33:21.3650696Z",
+    "Length": 6106
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\scheduled-gate-health-2026-05-10.md",
+    "LastWriteTimeUtc": "2026-05-10T04:33:12.1856552Z",
+    "Length": 6504
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\scheduled-gate-health-2026-05-11.md",
+    "LastWriteTimeUtc": "2026-05-11T04:32:02.7020051Z",
+    "Length": 5421
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\scheduled-gate-health-2026-05-12.md",
+    "LastWriteTimeUtc": "2026-05-12T04:33:52.8228113Z",
+    "Length": 5168
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\scheduled-wiki-maintenance-2026-04-28.md",
+    "LastWriteTimeUtc": "2026-04-29T04:05:28.4274569Z",
+    "Length": 5125
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\scheduled-wiki-maintenance-2026-04-28.raw-checks.txt",
+    "LastWriteTimeUtc": "2026-04-28T04:03:01.8626683Z",
+    "Length": 3538
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\scheduled-wiki-maintenance-2026-04-28.raw-fixes.txt",
+    "LastWriteTimeUtc": "2026-04-28T04:03:17.8304255Z",
+    "Length": 4330
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\scheduled-wiki-maintenance-2026-04-29.md",
+    "LastWriteTimeUtc": "2026-04-30T04:09:34.1595415Z",
+    "Length": 9000
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\scheduled-wiki-maintenance-2026-04-30.md",
+    "LastWriteTimeUtc": "2026-05-01T04:13:44.6182755Z",
+    "Length": 5683
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\scheduled-wiki-maintenance-2026-05-01.md",
+    "LastWriteTimeUtc": "2026-05-02T04:06:05.7617274Z",
+    "Length": 7903
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\scheduled-wiki-maintenance-2026-05-02.md",
+    "LastWriteTimeUtc": "2026-05-03T04:06:42.5254931Z",
+    "Length": 4650
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\scheduled-wiki-maintenance-2026-05-03.md",
+    "LastWriteTimeUtc": "2026-05-04T04:07:12.246574Z",
+    "Length": 5737
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\scheduled-wiki-maintenance-2026-05-04.md",
+    "LastWriteTimeUtc": "2026-05-05T04:04:20.6404977Z",
+    "Length": 5051
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\scheduled-wiki-maintenance-2026-05-05.md",
+    "LastWriteTimeUtc": "2026-05-06T04:05:46.3910829Z",
+    "Length": 6146
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\scheduled-wiki-maintenance-2026-05-06.md",
+    "LastWriteTimeUtc": "2026-05-07T04:02:48.3541626Z",
+    "Length": 5771
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\scheduled-wiki-maintenance-2026-05-07.md",
+    "LastWriteTimeUtc": "2026-05-08T04:06:53.9133282Z",
+    "Length": 11055
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\scheduled-wiki-maintenance-2026-05-09.md",
+    "LastWriteTimeUtc": "2026-05-10T04:07:13.6206721Z",
+    "Length": 7320
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\scheduled-wiki-maintenance-2026-05-10.md",
+    "LastWriteTimeUtc": "2026-05-11T04:05:49.5294929Z",
+    "Length": 3870
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\closures\\scheduled-wiki-maintenance-2026-05-11.md",
+    "LastWriteTimeUtc": "2026-05-12T04:06:10.9152293Z",
+    "Length": 6742
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\concepts\\audit-query-surface.md",
+    "LastWriteTimeUtc": "2026-04-30T19:15:18.4084636Z",
+    "Length": 1986
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\concepts\\caller-side-kernel-truth-mismatch.md",
+    "LastWriteTimeUtc": "2026-04-30T01:57:52.3673285Z",
+    "Length": 5584
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\concepts\\capability-handshake.md",
+    "LastWriteTimeUtc": "2026-04-30T04:05:04.265554Z",
+    "Length": 3369
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\concepts\\cross-repo-governance-bridge.md",
+    "LastWriteTimeUtc": "2026-04-29T13:17:52.4083402Z",
+    "Length": 2021
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\concepts\\db-honest-envelope.md",
+    "LastWriteTimeUtc": "2026-04-26T03:24:44.3696801Z",
+    "Length": 3351
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\concepts\\domain-namespace-clash.md",
+    "LastWriteTimeUtc": "2026-04-25T21:23:12.6682345Z",
+    "Length": 2899
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\concepts\\dual-ledger-discipline.md",
+    "LastWriteTimeUtc": "2026-04-30T04:05:04.3251113Z",
+    "Length": 3496
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\concepts\\edge-store-idempotency.md",
+    "LastWriteTimeUtc": "2026-04-29T02:01:10.0846359Z",
+    "Length": 1252
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\concepts\\escalation-record.md",
+    "LastWriteTimeUtc": "2026-04-25T21:22:34.1038101Z",
+    "Length": 2683
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\concepts\\governance-events-immutability.md",
+    "LastWriteTimeUtc": "2026-04-25T21:48:18.4654031Z",
+    "Length": 3534
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\concepts\\immutable-laws.md",
+    "LastWriteTimeUtc": "2026-04-26T03:28:35.4326455Z",
+    "Length": 1369
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\concepts\\install-bundle-gap.md",
+    "LastWriteTimeUtc": "2026-04-25T21:22:55.5483244Z",
+    "Length": 3356
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\concepts\\knowledge-base-runtime.md",
+    "LastWriteTimeUtc": "2026-04-25T21:50:48.5480581Z",
+    "Length": 3021
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\concepts\\law-1-data-first.md",
+    "LastWriteTimeUtc": "2026-04-26T03:28:35.4336527Z",
+    "Length": 1073
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\concepts\\law-10-crystallize-or-lose.md",
+    "LastWriteTimeUtc": "2026-04-26T03:28:35.4388237Z",
+    "Length": 947
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\concepts\\law-11-listen-to-user.md",
+    "LastWriteTimeUtc": "2026-04-26T03:28:35.4398204Z",
+    "Length": 985
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\concepts\\law-12-instinct.md",
+    "LastWriteTimeUtc": "2026-04-26T03:28:35.4398204Z",
+    "Length": 941
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\concepts\\law-2-evidence-discipline.md",
+    "LastWriteTimeUtc": "2026-04-26T03:28:35.4336527Z",
+    "Length": 1031
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\concepts\\law-3-gates-block.md",
+    "LastWriteTimeUtc": "2026-04-26T03:29:01.0660246Z",
+    "Length": 987
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\concepts\\law-4-reviewer-2-co-pilot.md",
+    "LastWriteTimeUtc": "2026-04-26T03:28:35.4358249Z",
+    "Length": 970
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\concepts\\law-5-serendipity-mission.md",
+    "LastWriteTimeUtc": "2026-04-26T03:28:35.4368214Z",
+    "Length": 1020
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\concepts\\law-6-artifacts-over-prose.md",
+    "LastWriteTimeUtc": "2026-04-26T03:29:01.067023Z",
+    "Length": 994
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\concepts\\law-7-fresh-context.md",
+    "LastWriteTimeUtc": "2026-04-25T21:50:30.8594494Z",
+    "Length": 3123
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\concepts\\law-8-explore-before-exploit.md",
+    "LastWriteTimeUtc": "2026-04-26T03:28:35.4378233Z",
+    "Length": 995
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\concepts\\law-9-confounder-harness.md",
+    "LastWriteTimeUtc": "2026-04-26T03:28:35.4388237Z",
+    "Length": 1059
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\concepts\\objectiveid-immutable.md",
+    "LastWriteTimeUtc": "2026-04-26T03:24:44.3731915Z",
+    "Length": 3150
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\concepts\\phase10-claim-edge-design.md",
+    "LastWriteTimeUtc": "2026-04-26T03:24:44.3736949Z",
+    "Length": 2875
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\concepts\\r2-bridge-writer.md",
+    "LastWriteTimeUtc": "2026-04-26T14:07:32.7843754Z",
+    "Length": 3501
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\concepts\\r2-verdict-edge-binding.md",
+    "LastWriteTimeUtc": "2026-04-30T17:47:45.8046935Z",
+    "Length": 2706
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\concepts\\rate-limited-heartbeat.md",
+    "LastWriteTimeUtc": "2026-04-29T22:48:55.8971948Z",
+    "Length": 2383
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\concepts\\serendipity-seed.md",
+    "LastWriteTimeUtc": "2026-04-25T21:22:33.1748588Z",
+    "Length": 3791
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\concepts\\state-md-runtime.md",
+    "LastWriteTimeUtc": "2026-04-29T14:44:32.6908145Z",
+    "Length": 2976
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\concepts\\strategic-drift-checkpoint.md",
+    "LastWriteTimeUtc": "2026-04-30T04:05:04.3854929Z",
+    "Length": 3007
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\concepts\\transactional-event-precommit.md",
+    "LastWriteTimeUtc": "2026-04-30T13:50:01.098953Z",
+    "Length": 1855
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\concepts\\typed-edge-substrate.md",
+    "LastWriteTimeUtc": "2026-04-29T01:32:45.6848335Z",
+    "Length": 1769
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\concepts\\vibe-orch-namespace.md",
+    "LastWriteTimeUtc": "2026-04-29T01:31:45.3203718Z",
+    "Length": 3954
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\api-inventory.jsonl",
+    "LastWriteTimeUtc": "2026-05-13T04:03:54.5319746Z",
+    "Length": 200763
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\api-summary.json",
+    "LastWriteTimeUtc": "2026-05-13T04:03:54.5329732Z",
+    "Length": 187
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\api-surface-dashboard.md",
+    "LastWriteTimeUtc": "2026-04-26T03:21:13.6687071Z",
+    "Length": 1963
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\automation-checks.md",
+    "LastWriteTimeUtc": "2026-04-26T00:37:57.8013973Z",
+    "Length": 1470
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\behavior-map-dashboard.md",
+    "LastWriteTimeUtc": "2026-04-26T00:37:57.8013973Z",
+    "Length": 1651
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\behavior-map.jsonl",
+    "LastWriteTimeUtc": "2026-05-13T04:03:54.5357134Z",
+    "Length": 202981
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\behavior-summary.json",
+    "LastWriteTimeUtc": "2026-05-13T04:03:54.5357134Z",
+    "Length": 2325
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\bundle-ownership-inventory.jsonl",
+    "LastWriteTimeUtc": "2026-05-13T04:03:54.5357134Z",
+    "Length": 10916
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\bundle-ownership-summary.json",
+    "LastWriteTimeUtc": "2026-05-13T04:03:54.5357134Z",
+    "Length": 2789
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\callable-inventory.jsonl",
+    "LastWriteTimeUtc": "2026-05-13T04:03:54.5343196Z",
+    "Length": 238317
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\callable-summary.json",
+    "LastWriteTimeUtc": "2026-05-13T04:03:54.5343196Z",
+    "Length": 1351
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\callgraph-dashboard.md",
+    "LastWriteTimeUtc": "2026-04-26T00:37:57.8013973Z",
+    "Length": 2650
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\callgraph-inventory.jsonl",
+    "LastWriteTimeUtc": "2026-05-13T04:03:54.5357134Z",
+    "Length": 306031
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\callgraph-summary.json",
+    "LastWriteTimeUtc": "2026-05-13T04:03:54.5357134Z",
+    "Length": 6634
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\cli-contract-dashboard.md",
+    "LastWriteTimeUtc": "2026-04-26T00:37:57.8013973Z",
+    "Length": 1509
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\cli-contract-map.jsonl",
+    "LastWriteTimeUtc": "2026-05-13T04:03:54.5357134Z",
+    "Length": 6894
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\cli-contract-summary.json",
+    "LastWriteTimeUtc": "2026-05-13T04:03:54.5357134Z",
+    "Length": 381
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\command-and-bundle-dashboard.md",
+    "LastWriteTimeUtc": "2026-04-26T00:38:33.051388Z",
+    "Length": 2426
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\command-inventory.json",
+    "LastWriteTimeUtc": "2026-05-13T04:03:54.5357134Z",
+    "Length": 8726
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\coverage-summary.json",
+    "LastWriteTimeUtc": "2026-05-13T04:03:54.5309771Z",
+    "Length": 2251
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\db-table-audit-dashboard.md",
+    "LastWriteTimeUtc": "2026-04-26T10:30:07.2425825Z",
+    "Length": 2468
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\dependency-dashboard.md",
+    "LastWriteTimeUtc": "2026-04-26T00:08:21.1418243Z",
+    "Length": 1691
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\dependency-inventory.jsonl",
+    "LastWriteTimeUtc": "2026-05-13T04:03:54.5343196Z",
+    "Length": 213920
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\dependency-summary.json",
+    "LastWriteTimeUtc": "2026-05-13T04:03:54.5357134Z",
+    "Length": 3005
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\entity-export-audit-dashboard.md",
+    "LastWriteTimeUtc": "2026-04-26T10:19:45.2862655Z",
+    "Length": 2649
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\file-inventory.jsonl",
+    "LastWriteTimeUtc": "2026-05-13T04:03:54.5309771Z",
+    "Length": 1054591
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\filesystem-count-reconciliation.md",
+    "LastWriteTimeUtc": "2026-04-26T01:05:17.2157444Z",
+    "Length": 1832
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\high-risk-full-read-batch-01.md",
+    "LastWriteTimeUtc": "2026-04-30T02:07:52.1266655Z",
+    "Length": 16879
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\high-risk-full-read-batch-02.md",
+    "LastWriteTimeUtc": "2026-04-26T02:15:48.913466Z",
+    "Length": 17170
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\high-risk-full-read-batch-03.md",
+    "LastWriteTimeUtc": "2026-04-26T02:41:16.667652Z",
+    "Length": 16458
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\high-risk-full-read-batch-04.md",
+    "LastWriteTimeUtc": "2026-04-26T02:47:30.3676778Z",
+    "Length": 14068
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\high-risk-full-read-batch-05.md",
+    "LastWriteTimeUtc": "2026-04-26T02:58:39.6989683Z",
+    "Length": 11085
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\high-risk-read-depth-roadmap.md",
+    "LastWriteTimeUtc": "2026-04-26T02:58:39.7009684Z",
+    "Length": 3257
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\high-risk-semantic-dashboard.md",
+    "LastWriteTimeUtc": "2026-04-26T02:58:39.6999695Z",
+    "Length": 1843
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\high-risk-semantic-queue.jsonl",
+    "LastWriteTimeUtc": "2026-05-13T04:03:54.5357134Z",
+    "Length": 230560
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\high-risk-semantic-summary.json",
+    "LastWriteTimeUtc": "2026-05-13T04:03:54.5357134Z",
+    "Length": 1159
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\live-source-gaps.md",
+    "LastWriteTimeUtc": "2026-04-26T03:21:13.673721Z",
+    "Length": 2727
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\ownership-resolution-dashboard.md",
+    "LastWriteTimeUtc": "2026-04-26T00:37:57.8013973Z",
+    "Length": 2629
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\ownership-resolution-summary.json",
+    "LastWriteTimeUtc": "2026-05-13T04:03:54.5357134Z",
+    "Length": 318
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\ownership-resolution.jsonl",
+    "LastWriteTimeUtc": "2026-05-13T04:03:54.5357134Z",
+    "Length": 42560
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\protocol-stub-audit-dashboard.md",
+    "LastWriteTimeUtc": "2026-05-10T04:05:01.9478842Z",
+    "Length": 4615
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\README.md",
+    "LastWriteTimeUtc": "2026-04-26T10:30:13.1369968Z",
+    "Length": 6547
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\schema-field-audit-dashboard.md",
+    "LastWriteTimeUtc": "2026-04-26T10:25:34.7834235Z",
+    "Length": 2109
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\schema-inventory.jsonl",
+    "LastWriteTimeUtc": "2026-05-13T04:03:54.5357134Z",
+    "Length": 69086
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\schema-summary.json",
+    "LastWriteTimeUtc": "2026-05-13T04:03:54.5357134Z",
+    "Length": 1771
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\surface-map-dashboard.md",
+    "LastWriteTimeUtc": "2026-04-26T00:38:49.553537Z",
+    "Length": 4544
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\surface-map-summary.json",
+    "LastWriteTimeUtc": "2026-05-13T04:03:54.5357134Z",
+    "Length": 22687
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\synthesis-r2-audit-dashboard.md",
+    "LastWriteTimeUtc": "2026-05-10T04:04:54.2424931Z",
+    "Length": 4808
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\test-behavior-dashboard.md",
+    "LastWriteTimeUtc": "2026-04-26T00:38:33.051388Z",
+    "Length": 1583
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\test-inventory.jsonl",
+    "LastWriteTimeUtc": "2026-05-13T04:03:54.5357134Z",
+    "Length": 240733
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\test-summary.json",
+    "LastWriteTimeUtc": "2026-05-13T04:03:54.5357134Z",
+    "Length": 715
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\unknown-classification.md",
+    "LastWriteTimeUtc": "2026-04-26T03:21:13.6756791Z",
+    "Length": 2039
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\verified-at-refresh-dashboard.md",
+    "LastWriteTimeUtc": "2026-05-13T04:03:43.2523796Z",
+    "Length": 1294
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\wiki-content-gap-dashboard.md",
+    "LastWriteTimeUtc": "2026-04-26T11:28:41.6910647Z",
+    "Length": 2795
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\coverage\\wiki-lint-dashboard.md",
+    "LastWriteTimeUtc": "2026-04-26T09:52:41.224324Z",
+    "Length": 3902
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\agent-orchestration-js.md",
+    "LastWriteTimeUtc": "2026-05-04T04:05:03.1955554Z",
+    "Length": 11767
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\audit-query-js.md",
+    "LastWriteTimeUtc": "2026-05-04T04:05:03.1330474Z",
+    "Length": 3068
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\autonomy-runtime-js.md",
+    "LastWriteTimeUtc": "2026-04-29T23:45:55.3700277Z",
+    "Length": 6609
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\benchmark-reporter-js.md",
+    "LastWriteTimeUtc": "2026-04-26T10:10:17.9844124Z",
+    "Length": 1686
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\bin-vre-cli.md",
+    "LastWriteTimeUtc": "2026-04-26T02:58:39.7019681Z",
+    "Length": 3472
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\citation-engine-js.md",
+    "LastWriteTimeUtc": "2026-04-26T10:10:17.9864088Z",
+    "Length": 2024
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\citation-extractor-js.md",
+    "LastWriteTimeUtc": "2026-04-26T10:10:17.9874082Z",
+    "Length": 2394
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\claim-ingestion-js.md",
+    "LastWriteTimeUtc": "2026-04-26T10:10:17.9884092Z",
+    "Length": 2918
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\claims-edges-js.md",
+    "LastWriteTimeUtc": "2026-04-29T02:01:23.8159952Z",
+    "Length": 3163
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\claude-rules-enforcement-md.md",
+    "LastWriteTimeUtc": "2026-04-25T22:14:38.8878038Z",
+    "Length": 799
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\claude-rules-roles-md.md",
+    "LastWriteTimeUtc": "2026-04-25T22:14:38.8878038Z",
+    "Length": 853
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\claude-settings-json.md",
+    "LastWriteTimeUtc": "2026-04-25T22:14:38.8878038Z",
+    "Length": 1012
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\cold-child-validator-js.md",
+    "LastWriteTimeUtc": "2026-04-29T21:33:26.4773304Z",
+    "Length": 4653
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\context-builder-js.md",
+    "LastWriteTimeUtc": "2026-04-26T10:10:17.9894087Z",
+    "Length": 2073
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\core-reader-cli-js.md",
+    "LastWriteTimeUtc": "2026-04-25T22:14:38.8797653Z",
+    "Length": 902
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\core-reader-js.md",
+    "LastWriteTimeUtc": "2026-04-26T10:10:17.9919201Z",
+    "Length": 3265
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\db-js.md",
+    "LastWriteTimeUtc": "2026-04-27T02:17:36.4515905Z",
+    "Length": 4417
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\db-schema-full.md",
+    "LastWriteTimeUtc": "2026-04-27T02:17:36.5820832Z",
+    "Length": 5185
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\db-schema-serendipity.md",
+    "LastWriteTimeUtc": "2026-04-25T21:24:49.4265154Z",
+    "Length": 3613
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\db-schema.md",
+    "LastWriteTimeUtc": "2026-04-26T10:30:27.6571028Z",
+    "Length": 1640
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\db-table-benchmark-runs.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:18.9461921Z",
+    "Length": 2371
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\db-table-calibration-log.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:18.9472063Z",
+    "Length": 2389
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\db-table-citation-checks.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:18.9481982Z",
+    "Length": 4095
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\db-table-claim-events.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:18.9481982Z",
+    "Length": 2646
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\db-table-embed-queue.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:18.9492113Z",
+    "Length": 1886
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\db-table-gate-checks.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:18.9501918Z",
+    "Length": 2769
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\db-table-governance-events.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:18.9512314Z",
+    "Length": 2609
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\db-table-literature-searches.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:18.9522237Z",
+    "Length": 2628
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\db-table-memory-embeddings.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:18.9522237Z",
+    "Length": 2011
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\db-table-memory-fts.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:18.9531911Z",
+    "Length": 2121
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\db-table-meta.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:18.95419Z",
+    "Length": 1669
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\db-table-observer-alerts.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:18.9551933Z",
+    "Length": 2110
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\db-table-prompt-log.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:18.9561923Z",
+    "Length": 2060
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\db-table-r2-reviews.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:18.9561923Z",
+    "Length": 3040
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\db-table-research-patterns.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:18.9571903Z",
+    "Length": 2505
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\db-table-serendipity-seeds.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:18.9581907Z",
+    "Length": 2859
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\db-table-sessions.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:18.9581907Z",
+    "Length": 2427
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\db-table-spine-entries.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:18.9591932Z",
+    "Length": 2602
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\domain-config-schema.md",
+    "LastWriteTimeUtc": "2026-04-26T10:24:59.1689569Z",
+    "Length": 2676
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\domain-pack-omics.md",
+    "LastWriteTimeUtc": "2026-04-25T21:57:56.728897Z",
+    "Length": 1141
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\escalation-record-schema.md",
+    "LastWriteTimeUtc": "2026-04-26T10:24:59.1699571Z",
+    "Length": 2873
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\execution-lane-js.md",
+    "LastWriteTimeUtc": "2026-04-29T21:01:02.6672662Z",
+    "Length": 3339
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\feature-ledger.md",
+    "LastWriteTimeUtc": "2026-04-30T04:05:04.4444696Z",
+    "Length": 4643
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\gate-engine-js.md",
+    "LastWriteTimeUtc": "2026-04-26T10:10:17.9964279Z",
+    "Length": 3135
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\governance-events-table.md",
+    "LastWriteTimeUtc": "2026-04-27T02:17:36.7042765Z",
+    "Length": 1799
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\governance-log-cli-js.md",
+    "LastWriteTimeUtc": "2026-04-29T13:18:28.4091039Z",
+    "Length": 2272
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\governance-logger-js.md",
+    "LastWriteTimeUtc": "2026-04-29T13:18:28.3786177Z",
+    "Length": 2832
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\handshake-inject-js.md",
+    "LastWriteTimeUtc": "2026-04-29T14:43:53.9747564Z",
+    "Length": 4205
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\harness-hints-js.md",
+    "LastWriteTimeUtc": "2026-04-26T10:10:17.9974316Z",
+    "Length": 2138
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\hook-post-tool-use.md",
+    "LastWriteTimeUtc": "2026-04-26T10:33:52.5295129Z",
+    "Length": 1725
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\hook-pre-compact.md",
+    "LastWriteTimeUtc": "2026-04-26T10:33:52.5295129Z",
+    "Length": 1383
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\hook-pre-tool-use.md",
+    "LastWriteTimeUtc": "2026-04-29T16:39:38.6640133Z",
+    "Length": 2373
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\hook-prompt-submit.md",
+    "LastWriteTimeUtc": "2026-04-29T15:55:57.6555285Z",
+    "Length": 1518
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\hook-session-start.md",
+    "LastWriteTimeUtc": "2026-04-29T14:44:32.689811Z",
+    "Length": 1853
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\hook-stop.md",
+    "LastWriteTimeUtc": "2026-04-26T10:33:52.5310207Z",
+    "Length": 1587
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\hook-subagent-stop.md",
+    "LastWriteTimeUtc": "2026-04-26T10:33:52.5310207Z",
+    "Length": 1465
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\hooks-json.md",
+    "LastWriteTimeUtc": "2026-04-26T10:34:12.1621478Z",
+    "Length": 1311
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\loop-wake-js.md",
+    "LastWriteTimeUtc": "2026-04-26T10:10:18.0130393Z",
+    "Length": 2154
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\migrations-js.md",
+    "LastWriteTimeUtc": "2026-04-27T07:16:26.3712279Z",
+    "Length": 2135
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\narrative-engine-js.md",
+    "LastWriteTimeUtc": "2026-04-26T10:10:18.0009609Z",
+    "Length": 1918
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\objective-cli-js.md",
+    "LastWriteTimeUtc": "2026-04-29T23:45:55.34409Z",
+    "Length": 3966
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\objective-loader-js.md",
+    "LastWriteTimeUtc": "2026-04-26T10:10:18.0150447Z",
+    "Length": 2218
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\path-utils-js.md",
+    "LastWriteTimeUtc": "2026-04-26T10:10:18.0019709Z",
+    "Length": 1401
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\pattern-extractor-js.md",
+    "LastWriteTimeUtc": "2026-04-26T10:10:18.0030103Z",
+    "Length": 1390
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\permission-engine-js.md",
+    "LastWriteTimeUtc": "2026-04-26T10:10:18.0040188Z",
+    "Length": 2002
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\phase9-claim-edge-schema.md",
+    "LastWriteTimeUtc": "2026-04-29T01:32:55.8240988Z",
+    "Length": 3219
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\phase9-governance-events-js.md",
+    "LastWriteTimeUtc": "2026-04-30T02:02:32.7811714Z",
+    "Length": 3356
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\plugin-audit-query-cli.md",
+    "LastWriteTimeUtc": "2026-05-04T04:05:03.2275531Z",
+    "Length": 2478
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\plugin-claim-resolver-cli.md",
+    "LastWriteTimeUtc": "2026-05-04T04:05:03.2285533Z",
+    "Length": 2818
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\post-tool-use-js.md",
+    "LastWriteTimeUtc": "2026-04-25T22:14:38.8827742Z",
+    "Length": 1685
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\pre-compact-js.md",
+    "LastWriteTimeUtc": "2026-04-25T22:14:38.8847754Z",
+    "Length": 903
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\pre-delivery-discipline-js.md",
+    "LastWriteTimeUtc": "2026-04-26T10:10:18.0180399Z",
+    "Length": 3804
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\pre-tool-use-js.md",
+    "LastWriteTimeUtc": "2026-04-29T16:39:25.5458868Z",
+    "Length": 3335
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\prompt-submit-js.md",
+    "LastWriteTimeUtc": "2026-04-29T15:55:51.995134Z",
+    "Length": 1762
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\r2-bridge-writer-js.md",
+    "LastWriteTimeUtc": "2026-04-26T14:08:36.5428179Z",
+    "Length": 3117
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\r2-calibration-js.md",
+    "LastWriteTimeUtc": "2026-04-26T10:10:18.0050199Z",
+    "Length": 2062
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\r2-ingestion-js.md",
+    "LastWriteTimeUtc": "2026-04-26T10:10:18.0060184Z",
+    "Length": 2159
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\registry-cli-verbs.md",
+    "LastWriteTimeUtc": "2026-05-13T04:03:40.1061977Z",
+    "Length": 3728
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\registry-db-writers.md",
+    "LastWriteTimeUtc": "2026-05-13T04:03:40.0992352Z",
+    "Length": 11798
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\registry-exported-symbols.md",
+    "LastWriteTimeUtc": "2026-05-13T04:03:40.1012029Z",
+    "Length": 132178
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\registry-gate-triggers.md",
+    "LastWriteTimeUtc": "2026-05-13T04:03:40.1041956Z",
+    "Length": 14485
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\registry-protocol-invariants.md",
+    "LastWriteTimeUtc": "2026-05-13T04:03:40.1051973Z",
+    "Length": 14671
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\registry-schema-graph.md",
+    "LastWriteTimeUtc": "2026-05-13T04:03:40.1021974Z",
+    "Length": 23308
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\resume-snapshot-js.md",
+    "LastWriteTimeUtc": "2026-04-30T13:50:25.6266023Z",
+    "Length": 3768
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\reviewed-io-js.md",
+    "LastWriteTimeUtc": "2026-04-27T08:19:39.3670895Z",
+    "Length": 4223
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\reviewed-role-runner-js.md",
+    "LastWriteTimeUtc": "2026-04-29T21:57:23.2483588Z",
+    "Length": 6268
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\seed-ingestion-js.md",
+    "LastWriteTimeUtc": "2026-04-26T10:10:18.007019Z",
+    "Length": 2568
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\serendipity-seed-schema.md",
+    "LastWriteTimeUtc": "2026-04-26T10:24:59.1961548Z",
+    "Length": 4766
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\session-start-js.md",
+    "LastWriteTimeUtc": "2026-04-29T14:44:32.6888075Z",
+    "Length": 1490
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\setup-js.md",
+    "LastWriteTimeUtc": "2026-04-25T22:14:38.8857731Z",
+    "Length": 964
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\stop-js.md",
+    "LastWriteTimeUtc": "2026-04-25T22:14:38.8857731Z",
+    "Length": 1079
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\structured-block-parser-js.md",
+    "LastWriteTimeUtc": "2026-04-26T10:10:18.0080177Z",
+    "Length": 2705
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\subagent-stop-js.md",
+    "LastWriteTimeUtc": "2026-04-25T22:14:38.8857731Z",
+    "Length": 846
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\test-contracts-ci-validation.md",
+    "LastWriteTimeUtc": "2026-04-30T19:15:37.1789761Z",
+    "Length": 5523
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\test-contracts-control-plane.md",
+    "LastWriteTimeUtc": "2026-04-27T00:12:47.1102396Z",
+    "Length": 4662
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\test-contracts-evals-benchmarks.md",
+    "LastWriteTimeUtc": "2026-04-26T11:30:02.2584358Z",
+    "Length": 9514
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\test-contracts-install-compatibility.md",
+    "LastWriteTimeUtc": "2026-04-26T11:30:02.3096333Z",
+    "Length": 3774
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\test-contracts-orchestrator-flows.md",
+    "LastWriteTimeUtc": "2026-04-26T11:30:02.3116331Z",
+    "Length": 3766
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\test-contracts-schemas-fixtures.md",
+    "LastWriteTimeUtc": "2026-04-26T18:45:19.16757Z",
+    "Length": 4062
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\test-contracts-vibe-science-governance.md",
+    "LastWriteTimeUtc": "2026-04-26T11:17:41.4803319Z",
+    "Length": 2421
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vec-search-js.md",
+    "LastWriteTimeUtc": "2026-04-26T10:10:18.0100176Z",
+    "Length": 2701
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vibe-science-archive-lineage.md",
+    "LastWriteTimeUtc": "2026-04-26T03:21:13.6951559Z",
+    "Length": 1231
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vibe-science-archive-schemas.md",
+    "LastWriteTimeUtc": "2026-04-26T10:24:59.1910349Z",
+    "Length": 119308
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vibe-science-e2e-test-suite-mjs.md",
+    "LastWriteTimeUtc": "2026-04-27T02:18:06.4360671Z",
+    "Length": 1627
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vibe-science-evals-suite.md",
+    "LastWriteTimeUtc": "2026-04-26T03:21:13.6981666Z",
+    "Length": 1117
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vibe-science-hero-generator-py.md",
+    "LastWriteTimeUtc": "2026-04-25T23:26:00.4899405Z",
+    "Length": 1080
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vibe-science-root-surfaces.md",
+    "LastWriteTimeUtc": "2026-04-30T19:16:03.005381Z",
+    "Length": 2393
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vibe-science-skill-assets-schemas.md",
+    "LastWriteTimeUtc": "2026-04-26T10:24:59.1961548Z",
+    "Length": 22159
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vibe-science-tests-suite.md",
+    "LastWriteTimeUtc": "2026-04-26T10:19:16.5666195Z",
+    "Length": 1453
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vibe-science-v7-readiness-mjs.md",
+    "LastWriteTimeUtc": "2026-04-25T23:26:00.4899405Z",
+    "Length": 1215
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vibe-skill-dq-gate-py.md",
+    "LastWriteTimeUtc": "2026-04-25T23:26:00.4914481Z",
+    "Length": 1334
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vibe-skill-gate-check-py.md",
+    "LastWriteTimeUtc": "2026-04-25T23:26:00.4914481Z",
+    "Length": 1079
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vibe-skill-observer-py.md",
+    "LastWriteTimeUtc": "2026-04-25T23:26:00.49246Z",
+    "Length": 1003
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vibe-skill-spine-entry-py.md",
+    "LastWriteTimeUtc": "2026-04-25T23:26:00.49246Z",
+    "Length": 951
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vibe-skill-sync-check-py.md",
+    "LastWriteTimeUtc": "2026-04-25T23:26:00.49246Z",
+    "Length": 984
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vibe-skill-tree-health-py.md",
+    "LastWriteTimeUtc": "2026-04-25T23:26:00.4935002Z",
+    "Length": 903
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-control-approved-memory-apis-json.md",
+    "LastWriteTimeUtc": "2026-04-25T23:32:59.7703515Z",
+    "Length": 1194
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-control-attempts-js.md",
+    "LastWriteTimeUtc": "2026-04-26T10:10:17.950972Z",
+    "Length": 1648
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-control-capabilities-js.md",
+    "LastWriteTimeUtc": "2026-04-30T01:19:20.1380152Z",
+    "Length": 2482
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-control-capability-handshake-js.md",
+    "LastWriteTimeUtc": "2026-04-30T00:27:09.1168797Z",
+    "Length": 3031
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-control-decisions-js.md",
+    "LastWriteTimeUtc": "2026-04-26T10:10:17.956102Z",
+    "Length": 1396
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-control-events-js.md",
+    "LastWriteTimeUtc": "2026-04-26T10:10:17.9571012Z",
+    "Length": 1357
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-control-io-js.md",
+    "LastWriteTimeUtc": "2026-04-26T10:10:17.9494615Z",
+    "Length": 2452
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-control-middleware-js.md",
+    "LastWriteTimeUtc": "2026-04-30T01:19:20.1411201Z",
+    "Length": 2391
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-control-query-js.md",
+    "LastWriteTimeUtc": "2026-04-26T10:10:17.9590996Z",
+    "Length": 2622
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-control-session-snapshot-js.md",
+    "LastWriteTimeUtc": "2026-04-26T10:10:17.9601012Z",
+    "Length": 1677
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-control-time-provider-js.md",
+    "LastWriteTimeUtc": "2026-04-26T10:10:17.9611006Z",
+    "Length": 1823
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-environment-automation.md",
+    "LastWriteTimeUtc": "2026-04-26T10:19:16.4663889Z",
+    "Length": 6309
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-environment-connectors.md",
+    "LastWriteTimeUtc": "2026-04-26T10:19:16.4694187Z",
+    "Length": 6097
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-environment-control-plane.md",
+    "LastWriteTimeUtc": "2026-04-26T03:21:13.7102094Z",
+    "Length": 1608
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-environment-domain-packs.md",
+    "LastWriteTimeUtc": "2026-04-26T10:19:16.4792005Z",
+    "Length": 4322
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-environment-flows.md",
+    "LastWriteTimeUtc": "2026-04-30T02:02:32.7811714Z",
+    "Length": 8424
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-environment-install-bundles.md",
+    "LastWriteTimeUtc": "2026-04-26T03:21:13.7155742Z",
+    "Length": 1825
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-environment-lib.md",
+    "LastWriteTimeUtc": "2026-04-26T03:21:13.7185927Z",
+    "Length": 1066
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-environment-memory.md",
+    "LastWriteTimeUtc": "2026-04-30T02:02:32.7956819Z",
+    "Length": 3045
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-environment-objectives.md",
+    "LastWriteTimeUtc": "2026-04-29T19:45:20.9228958Z",
+    "Length": 8437
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-environment-orchestrator.md",
+    "LastWriteTimeUtc": "2026-04-29T21:01:02.6617333Z",
+    "Length": 23844
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-environment-schemas.md",
+    "LastWriteTimeUtc": "2026-04-30T04:07:03.8343421Z",
+    "Length": 72734
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-environment-task-registry.md",
+    "LastWriteTimeUtc": "2026-04-26T10:10:17.9834026Z",
+    "Length": 2747
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-environment-tests-and-fixtures.md",
+    "LastWriteTimeUtc": "2026-04-26T11:30:02.3076093Z",
+    "Length": 9323
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-flows-writing-js.md",
+    "LastWriteTimeUtc": "2026-04-30T02:00:27.9310504Z",
+    "Length": 2182
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-flows-writing-packs-js.md",
+    "LastWriteTimeUtc": "2026-04-30T02:00:27.9290515Z",
+    "Length": 1857
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-lib-bundle-manifest-js.md",
+    "LastWriteTimeUtc": "2026-04-26T10:10:17.9625744Z",
+    "Length": 1922
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-lib-export-eligibility-js.md",
+    "LastWriteTimeUtc": "2026-04-26T10:10:17.9636103Z",
+    "Length": 1885
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-lib-export-records-js.md",
+    "LastWriteTimeUtc": "2026-04-26T10:10:17.9656103Z",
+    "Length": 2415
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-lib-export-snapshot-js.md",
+    "LastWriteTimeUtc": "2026-04-26T10:10:17.9676162Z",
+    "Length": 2213
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-lib-flow-state-js.md",
+    "LastWriteTimeUtc": "2026-04-26T10:10:17.9686105Z",
+    "Length": 1632
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-lib-kernel-bridge-js.md",
+    "LastWriteTimeUtc": "2026-04-26T10:10:17.9711155Z",
+    "Length": 2807
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-lib-manifest-js.md",
+    "LastWriteTimeUtc": "2026-04-26T10:10:17.9726371Z",
+    "Length": 2113
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-lib-session-metrics-js.md",
+    "LastWriteTimeUtc": "2026-04-26T10:10:17.9736381Z",
+    "Length": 1466
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-lib-token-counter-js.md",
+    "LastWriteTimeUtc": "2026-04-26T10:10:17.9736381Z",
+    "Length": 1354
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-memory-sync-js.md",
+    "LastWriteTimeUtc": "2026-04-30T02:00:27.9395918Z",
+    "Length": 2253
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-phase9-ledgers-and-blueprints.md",
+    "LastWriteTimeUtc": "2026-04-30T04:05:04.5044578Z",
+    "Length": 1630
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-root-surfaces.md",
+    "LastWriteTimeUtc": "2026-04-30T01:20:13.3428633Z",
+    "Length": 2179
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\vre-runtime-state-artifacts.md",
+    "LastWriteTimeUtc": "2026-04-26T03:21:13.7417745Z",
+    "Length": 1081
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\entities\\worker-embed-js.md",
+    "LastWriteTimeUtc": "2026-04-25T22:14:38.8857731Z",
+    "Length": 1235
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\proposals\\round-092-compaction-resilience-and-wiki-batching.md",
+    "LastWriteTimeUtc": "2026-04-27T08:51:37.0737513Z",
+    "Length": 6599
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\proposals\\round-093-wiki-scheduler-operating-rules.md",
+    "LastWriteTimeUtc": "2026-04-27T09:14:41.3849682Z",
+    "Length": 3084
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\agent-teams-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T03:21:13.7469828Z",
+    "Length": 1607
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\analysis-orchestrator-protocol.md",
+    "LastWriteTimeUtc": "2026-04-25T21:57:56.728897Z",
+    "Length": 1329
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\audit-reproducibility-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T03:21:13.7484935Z",
+    "Length": 1923
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\auto-experiment-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T03:21:13.7495054Z",
+    "Length": 1552
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\blind-first-pass-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T03:21:13.7505018Z",
+    "Length": 1486
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\brainstorm-engine-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:14:40.7630012Z",
+    "Length": 3135
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\circuit-breaker-protocol.md",
+    "LastWriteTimeUtc": "2026-04-25T21:57:56.7344638Z",
+    "Length": 1305
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\context-resilience-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:05:28.7626293Z",
+    "Length": 1292
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\data-dictionary-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:05:28.7636303Z",
+    "Length": 1114
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\data-extraction-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T03:21:13.753554Z",
+    "Length": 1588
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\design-compliance-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:05:28.7636303Z",
+    "Length": 1079
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\dq-gates-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:05:28.7646265Z",
+    "Length": 1031
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\evidence-engine-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T03:21:13.7545055Z",
+    "Length": 1561
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\experiment-manager-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T03:21:13.7545055Z",
+    "Length": 1406
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\gates-complete-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:05:28.7646265Z",
+    "Length": 1188
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\handoff-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:05:28.7646265Z",
+    "Length": 1130
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\hook-system-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:05:28.7656299Z",
+    "Length": 1400
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\instinct-model-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:05:28.7656299Z",
+    "Length": 1142
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\judge-agent-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T03:21:13.7555617Z",
+    "Length": 1220
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\knowledge-base-protocol.md",
+    "LastWriteTimeUtc": "2026-04-25T21:52:12.2112308Z",
+    "Length": 3162
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\literature-precheck-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:05:28.7666295Z",
+    "Length": 1101
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\llm-wiki-video-transcript.md",
+    "LastWriteTimeUtc": "2026-05-11T04:04:56.1353992Z",
+    "Length": 1385
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\loop-otae-protocol.md",
+    "LastWriteTimeUtc": "2026-04-25T21:57:56.728897Z",
+    "Length": 1423
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\multi-agent-config-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:05:28.7690197Z",
+    "Length": 1157
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\pattern-extraction-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:05:28.7736777Z",
+    "Length": 1091
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\phase10-brainstorming-decisions-log.md",
+    "LastWriteTimeUtc": "2026-04-26T03:34:45.0111997Z",
+    "Length": 1137
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\phase10-existing-state-audit.md",
+    "LastWriteTimeUtc": "2026-04-26T03:34:45.0142704Z",
+    "Length": 1174
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\phase10-formal-design-spec.md",
+    "LastWriteTimeUtc": "2026-04-26T03:34:45.0132588Z",
+    "Length": 1396
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\plan-15-post-wave-6.md",
+    "LastWriteTimeUtc": "2026-04-27T08:26:36.0740657Z",
+    "Length": 5907
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\r2-calibration-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:05:28.7736777Z",
+    "Length": 1113
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\research-spine-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:05:28.7736777Z",
+    "Length": 1077
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\reviewer2-ensemble-protocol.md",
+    "LastWriteTimeUtc": "2026-04-25T21:57:56.728897Z",
+    "Length": 1381
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\schema-validation-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T03:21:13.7575606Z",
+    "Length": 1154
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\search-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T03:21:13.7585621Z",
+    "Length": 1205
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\seeded-fault-injection-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T03:21:13.7585621Z",
+    "Length": 1235
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\serendipity-engine-protocol.md",
+    "LastWriteTimeUtc": "2026-04-25T21:24:26.0899572Z",
+    "Length": 4922
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\silent-observer-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:05:28.7736777Z",
+    "Length": 1043
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\ssot-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:05:28.7736777Z",
+    "Length": 1051
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\tree-search-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T03:21:13.7605681Z",
+    "Length": 1326
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\vibe-science-constitution-reference.md",
+    "LastWriteTimeUtc": "2026-04-26T11:05:28.7626293Z",
+    "Length": 1548
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\vibe-science-protocol-catalog.md",
+    "LastWriteTimeUtc": "2026-04-26T03:21:13.7625749Z",
+    "Length": 1995
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\vlm-gate-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T03:21:13.7649679Z",
+    "Length": 1028
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\vre-root-constitution.md",
+    "LastWriteTimeUtc": "2026-04-26T03:35:11.4774436Z",
+    "Length": 1460
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\sources\\writeup-engine-protocol.md",
+    "LastWriteTimeUtc": "2026-04-25T21:57:56.7332667Z",
+    "Length": 1342
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\state\\decision-gates.json",
+    "LastWriteTimeUtc": "2026-04-29T01:14:44.3766093Z",
+    "Length": 9333
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\state\\ledger-mantra-preservation-rule.md",
+    "LastWriteTimeUtc": "2026-04-27T09:20:58.1867311Z",
+    "Length": 6033
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\syntheses\\audit-completeness-and-limits.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:41.5830737Z",
+    "Length": 3515
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\syntheses\\claim-citation-r2-ingestion-chain.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:41.5851065Z",
+    "Length": 3515
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\syntheses\\complete-coverage-matrix.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:41.5870736Z",
+    "Length": 3430
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\syntheses\\current-vre-feature-map.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:41.5880735Z",
+    "Length": 2977
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\syntheses\\dead-code-and-bundle-risk-register.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:41.5890731Z",
+    "Length": 2791
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\syntheses\\dead-code-current-findings.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:41.5900735Z",
+    "Length": 3761
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\syntheses\\delivery-discipline-and-governance-guardrails.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:41.5910798Z",
+    "Length": 2505
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\syntheses\\governance-gate-permission-chain.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:41.5920852Z",
+    "Length": 3113
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\syntheses\\hook-lifecycle-chain.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:41.5930811Z",
+    "Length": 3232
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\syntheses\\knowledge-base-migration-path.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:41.594079Z",
+    "Length": 3284
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\syntheses\\operator-steering-reuse-decision.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:41.5950797Z",
+    "Length": 2604
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\syntheses\\phase10-realignments.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:41.5960779Z",
+    "Length": 9776
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\syntheses\\phase10-vs-plan15-coordination.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:41.5970789Z",
+    "Length": 2895
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\syntheses\\phase9-eval-and-bundle-gaps.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:41.598079Z",
+    "Length": 2826
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\syntheses\\phase9-handshake-and-objective-injection.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:41.5990786Z",
+    "Length": 2601
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\syntheses\\runtime-memory-context-chain.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:41.5990786Z",
+    "Length": 3230
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\syntheses\\serendipity-reuse-decision.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:41.6000778Z",
+    "Length": 3074
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\syntheses\\vibe-skill-validation-scripts.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:41.6010787Z",
+    "Length": 3064
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\syntheses\\vre-complete-current-state-map.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:41.6020796Z",
+    "Length": 5352
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\syntheses\\vre-control-plane-file-map.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:41.6020796Z",
+    "Length": 3903
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\syntheses\\vre-control-to-orchestrator-runtime.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:41.6030782Z",
+    "Length": 2629
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\syntheses\\vre-environment-operating-system.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:41.6040776Z",
+    "Length": 2558
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\syntheses\\vre-feature-availability-map.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:41.6040776Z",
+    "Length": 2333
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\syntheses\\vre-flows-api-surface.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:41.6050795Z",
+    "Length": 3455
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\syntheses\\vre-lib-export-and-manifest-map.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:41.606274Z",
+    "Length": 2871
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\syntheses\\vre-objectives-api-surface.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:41.606274Z",
+    "Length": 2922
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\syntheses\\vre-orchestrator-api-surface.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:41.6072755Z",
+    "Length": 4708
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\syntheses\\vre-resume-overnight-autonomy-map.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:41.6082733Z",
+    "Length": 2573
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\syntheses\\vre-reuse-and-extension-playbook.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:41.6082733Z",
+    "Length": 4380
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\syntheses\\vre-traceability-maintenance-rules.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:41.6092747Z",
+    "Length": 4397
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\syntheses\\vre-ui-and-feature-hook-map.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:41.6102738Z",
+    "Length": 3378
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\syntheses\\vre-validation-and-test-coverage-map.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:41.6112757Z",
+    "Length": 2522
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\tools\\audit-entity-exports.mjs",
+    "LastWriteTimeUtc": "2026-04-26T10:18:50.6844592Z",
+    "Length": 14472
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\tools\\audit-entity-exports.test.mjs",
+    "LastWriteTimeUtc": "2026-04-26T10:19:05.828834Z",
+    "Length": 5341
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\tools\\audit-protocol-stubs.mjs",
+    "LastWriteTimeUtc": "2026-04-26T11:14:03.6729236Z",
+    "Length": 11054
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\tools\\audit-protocol-stubs.test.mjs",
+    "LastWriteTimeUtc": "2026-04-26T11:13:26.7729746Z",
+    "Length": 4054
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\tools\\audit-schema-fields.mjs",
+    "LastWriteTimeUtc": "2026-04-26T10:24:44.9777569Z",
+    "Length": 17222
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\tools\\audit-schema-fields.test.mjs",
+    "LastWriteTimeUtc": "2026-04-26T10:24:15.2108492Z",
+    "Length": 5597
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\tools\\build-db-table-pages.mjs",
+    "LastWriteTimeUtc": "2026-04-26T10:28:47.1549616Z",
+    "Length": 13999
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\tools\\build-db-table-pages.test.mjs",
+    "LastWriteTimeUtc": "2026-04-26T10:29:04.2717092Z",
+    "Length": 2242
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\tools\\build-registries.mjs",
+    "LastWriteTimeUtc": "2026-04-26T14:30:47.0241933Z",
+    "Length": 39230
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\tools\\build-registries.test.mjs",
+    "LastWriteTimeUtc": "2026-04-26T09:47:29.4560227Z",
+    "Length": 2585
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\tools\\extract-exports.mjs",
+    "LastWriteTimeUtc": "2026-04-26T09:47:29.4550385Z",
+    "Length": 6812
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\tools\\generate-vre-coverage.mjs",
+    "LastWriteTimeUtc": "2026-05-03T04:03:22.61164Z",
+    "Length": 50126
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\tools\\r2-audit-syntheses.mjs",
+    "LastWriteTimeUtc": "2026-04-26T11:23:15.7107052Z",
+    "Length": 11710
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\tools\\refresh-verified-at.mjs",
+    "LastWriteTimeUtc": "2026-04-28T04:04:32.7153256Z",
+    "Length": 11144
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\tools\\sync-mirror.mjs",
+    "LastWriteTimeUtc": "2026-04-26T11:43:21.6134904Z",
+    "Length": 6280
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\tools\\sync-mirror.test.mjs",
+    "LastWriteTimeUtc": "2026-04-26T11:43:40.5086285Z",
+    "Length": 2869
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\tools\\wiki-lint.mjs",
+    "LastWriteTimeUtc": "2026-04-26T09:36:21.7973994Z",
+    "Length": 12468
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\tools\\wiki-lint.test.mjs",
+    "LastWriteTimeUtc": "2026-04-26T03:18:59.2987264Z",
+    "Length": 5083
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\CLAUDE.md",
+    "LastWriteTimeUtc": "2026-04-26T11:52:40.3359432Z",
+    "Length": 7197
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\index.md",
+    "LastWriteTimeUtc": "2026-04-26T11:52:40.4441576Z",
+    "Length": 24395
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\log.md",
+    "LastWriteTimeUtc": "2026-04-30T19:15:43.5511786Z",
+    "Length": 146503
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\PLAN-atomic-completion.md",
+    "LastWriteTimeUtc": "2026-04-26T11:53:49.4100868Z",
+    "Length": 16177
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\PROMPT-adversarial-review.md",
+    "LastWriteTimeUtc": "2026-04-26T12:15:35.6067173Z",
+    "Length": 3363
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\PROMPT-agent-session-preamble.md",
+    "LastWriteTimeUtc": "2026-04-26T12:15:35.6084405Z",
+    "Length": 17161
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\PROMPT-implementation-step.md",
+    "LastWriteTimeUtc": "2026-04-26T12:15:35.6094362Z",
+    "Length": 8910
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\PROTOCOL-wiki-integrated-implementation.md",
+    "LastWriteTimeUtc": "2026-04-26T12:15:35.6114364Z",
+    "Length": 28424
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\.obsidian\\app.json",
+    "LastWriteTimeUtc": "2026-05-08T17:35:57.2679075Z",
+    "Length": 27
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\.obsidian\\appearance.json",
+    "LastWriteTimeUtc": "2026-05-08T17:35:57.2769074Z",
+    "Length": 2
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\.obsidian\\community-plugins.json",
+    "LastWriteTimeUtc": "2026-05-08T17:36:02.0349303Z",
+    "Length": 151
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\.obsidian\\core-plugins.json",
+    "LastWriteTimeUtc": "2026-05-08T17:35:57.2669071Z",
+    "Length": 693
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\.obsidian\\graph.json",
+    "LastWriteTimeUtc": "2026-05-08T17:36:03.222Z",
+    "Length": 512
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\.obsidian\\workspace.json",
+    "LastWriteTimeUtc": "2026-05-08T17:36:44.3546028Z",
+    "Length": 6642
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\.obsidian\\plugins\\advanced-canvas\\main.js",
+    "LastWriteTimeUtc": "2026-04-25T22:58:18.5911212Z",
+    "Length": 368463
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\.obsidian\\plugins\\advanced-canvas\\manifest.json",
+    "LastWriteTimeUtc": "2026-04-25T22:58:18.0450187Z",
+    "Length": 363
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\.obsidian\\plugins\\advanced-canvas\\styles.css",
+    "LastWriteTimeUtc": "2026-04-25T22:58:18.9170114Z",
+    "Length": 18992
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\.obsidian\\plugins\\obsidian-git\\main.js",
+    "LastWriteTimeUtc": "2026-04-25T22:57:33.8012923Z",
+    "Length": 736503
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\.obsidian\\plugins\\obsidian-git\\manifest.json",
+    "LastWriteTimeUtc": "2026-04-25T22:57:33.3001044Z",
+    "Length": 325
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\.obsidian\\plugins\\obsidian-git\\obsidian_askpass.sh",
+    "LastWriteTimeUtc": "2026-05-08T17:36:02.095663Z",
+    "Length": 402
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\.obsidian\\plugins\\obsidian-git\\styles.css",
+    "LastWriteTimeUtc": "2026-04-25T22:57:34.1436122Z",
+    "Length": 18357
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\.obsidian\\plugins\\obsidian-importer\\main.js",
+    "LastWriteTimeUtc": "2026-04-25T22:58:29.7986151Z",
+    "Length": 668463
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\.obsidian\\plugins\\obsidian-importer\\manifest.json",
+    "LastWriteTimeUtc": "2026-04-25T22:58:28.9003713Z",
+    "Length": 330
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\.obsidian\\plugins\\obsidian-importer\\styles.css",
+    "LastWriteTimeUtc": "2026-04-25T22:58:30.3678954Z",
+    "Length": 3441
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\.obsidian\\plugins\\obsidian-linter\\data.json",
+    "LastWriteTimeUtc": "2026-05-08T17:36:01.421Z",
+    "Length": 10149
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\.obsidian\\plugins\\obsidian-linter\\main.js",
+    "LastWriteTimeUtc": "2026-04-25T22:57:59.9417826Z",
+    "Length": 898653
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\.obsidian\\plugins\\obsidian-linter\\manifest.json",
+    "LastWriteTimeUtc": "2026-04-25T22:57:59.3007713Z",
+    "Length": 536
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\.obsidian\\plugins\\obsidian-linter\\styles.css",
+    "LastWriteTimeUtc": "2026-04-25T22:58:00.4278662Z",
+    "Length": 4244
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\.obsidian\\plugins\\obsidian-mind-map\\main.js",
+    "LastWriteTimeUtc": "2026-04-25T22:57:01.7829955Z",
+    "Length": 1020812
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\.obsidian\\plugins\\obsidian-mind-map\\manifest.json",
+    "LastWriteTimeUtc": "2026-04-25T22:57:00.3514032Z",
+    "Length": 194
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\.obsidian\\plugins\\omnisearch\\data.json",
+    "LastWriteTimeUtc": "2026-05-08T17:36:04.39Z",
+    "Length": 1064
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\.obsidian\\plugins\\omnisearch\\main.js",
+    "LastWriteTimeUtc": "2026-04-25T22:57:44.0986191Z",
+    "Length": 616541
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\.obsidian\\plugins\\omnisearch\\manifest.json",
+    "LastWriteTimeUtc": "2026-04-25T22:57:43.5632331Z",
+    "Length": 392
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\.obsidian\\plugins\\omnisearch\\styles.css",
+    "LastWriteTimeUtc": "2026-04-25T22:57:44.5440818Z",
+    "Length": 2328
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\.obsidian\\plugins\\recent-files-obsidian\\data.json",
+    "LastWriteTimeUtc": "2026-04-29T22:15:20.893Z",
+    "Length": 1423
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\.obsidian\\plugins\\recent-files-obsidian\\main.js",
+    "LastWriteTimeUtc": "2026-04-25T22:57:51.1523872Z",
+    "Length": 54513
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\.obsidian\\plugins\\recent-files-obsidian\\manifest.json",
+    "LastWriteTimeUtc": "2026-04-25T22:57:50.811165Z",
+    "Length": 510
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\.obsidian\\plugins\\recent-files-obsidian\\styles.css",
+    "LastWriteTimeUtc": "2026-04-25T22:57:51.4833046Z",
+    "Length": 523
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\closures\\round-092-codex-adversarial-review-acceptance.md",
+    "LastWriteTimeUtc": "2026-04-27T09:15:02.2920907Z",
+    "Length": 2821
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\closures\\round-092-operator-actions.md",
+    "LastWriteTimeUtc": "2026-04-27T09:15:02.2930927Z",
+    "Length": 3574
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\closures\\round-093-plan15-typed-edge-gate-brief.md",
+    "LastWriteTimeUtc": "2026-04-27T09:15:02.2949291Z",
+    "Length": 2914
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\closures\\round-094-codex-wave-5-plan-adversarial-review.md",
+    "LastWriteTimeUtc": "2026-04-28T02:17:11.1637281Z",
+    "Length": 12990
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\closures\\round-094-wave-5-plan-adversarial-review.md",
+    "LastWriteTimeUtc": "2026-04-28T02:17:11.1637281Z",
+    "Length": 10140
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\closures\\round-095-claude-wave-5-plan-v2-1-fixes-review-round-2.md",
+    "LastWriteTimeUtc": "2026-04-28T02:17:11.1784422Z",
+    "Length": 14834
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\closures\\round-095-claude-wave-5-plan-v2-1-fixes-review.md",
+    "LastWriteTimeUtc": "2026-04-28T02:17:11.1803838Z",
+    "Length": 12003
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\closures\\round-095-codex-wave-5-plan-v2-1-split-review.md",
+    "LastWriteTimeUtc": "2026-04-28T02:17:11.1813828Z",
+    "Length": 8029
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\closures\\round-095-codex-wave-5-plan-v2-review.md",
+    "LastWriteTimeUtc": "2026-04-28T02:17:11.182386Z",
+    "Length": 7891
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\closures\\round-095-wave-5-plan-v2-1-fixes-changelog.md",
+    "LastWriteTimeUtc": "2026-04-28T02:17:11.1833882Z",
+    "Length": 6970
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\closures\\scheduled-gate-health-2026-04-28.md",
+    "LastWriteTimeUtc": "2026-04-29T01:14:52.8002338Z",
+    "Length": 6526
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\closures\\scheduled-gate-health-2026-04-29.md",
+    "LastWriteTimeUtc": "2026-04-29T13:18:48.5761431Z",
+    "Length": 6270
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\closures\\scheduled-gate-health-2026-04-30.md",
+    "LastWriteTimeUtc": "2026-04-30T13:50:07.7369587Z",
+    "Length": 5182
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\closures\\scheduled-gate-health-2026-05-01.md",
+    "LastWriteTimeUtc": "2026-05-02T04:04:14.840166Z",
+    "Length": 5002
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\closures\\scheduled-gate-health-2026-05-02.md",
+    "LastWriteTimeUtc": "2026-05-03T04:04:42.5609218Z",
+    "Length": 5505
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\closures\\scheduled-gate-health-2026-05-03.md",
+    "LastWriteTimeUtc": "2026-05-04T04:05:06.4073912Z",
+    "Length": 5264
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\closures\\scheduled-gate-health-2026-05-04.md",
+    "LastWriteTimeUtc": "2026-05-05T04:03:04.6254773Z",
+    "Length": 5504
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\closures\\scheduled-gate-health-2026-05-05.md",
+    "LastWriteTimeUtc": "2026-05-06T04:03:51.7589036Z",
+    "Length": 4341
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\closures\\scheduled-gate-health-2026-05-06.md",
+    "LastWriteTimeUtc": "2026-05-07T04:01:44.0538502Z",
+    "Length": 4838
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\closures\\scheduled-gate-health-2026-05-07.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:43.5073193Z",
+    "Length": 5246
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\closures\\scheduled-gate-health-2026-05-08.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:57.8525215Z",
+    "Length": 6106
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\closures\\scheduled-gate-health-2026-05-10.md",
+    "LastWriteTimeUtc": "2026-05-11T04:05:16.9646447Z",
+    "Length": 6504
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\closures\\scheduled-gate-health-2026-05-11.md",
+    "LastWriteTimeUtc": "2026-05-12T04:04:35.5260172Z",
+    "Length": 5421
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\closures\\scheduled-gate-health-2026-05-12.md",
+    "LastWriteTimeUtc": "2026-05-13T04:03:53.4852222Z",
+    "Length": 5168
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\closures\\scheduled-wiki-maintenance-2026-04-28.md",
+    "LastWriteTimeUtc": "2026-04-29T13:18:48.5794436Z",
+    "Length": 5125
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\closures\\scheduled-wiki-maintenance-2026-04-29.md",
+    "LastWriteTimeUtc": "2026-04-30T13:50:07.7389618Z",
+    "Length": 9000
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\closures\\scheduled-wiki-maintenance-2026-04-30.md",
+    "LastWriteTimeUtc": "2026-05-02T04:04:14.8421674Z",
+    "Length": 5683
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\closures\\scheduled-wiki-maintenance-2026-05-01.md",
+    "LastWriteTimeUtc": "2026-05-03T04:04:42.5639214Z",
+    "Length": 7903
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\closures\\scheduled-wiki-maintenance-2026-05-02.md",
+    "LastWriteTimeUtc": "2026-05-04T04:05:06.4103905Z",
+    "Length": 4650
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\closures\\scheduled-wiki-maintenance-2026-05-03.md",
+    "LastWriteTimeUtc": "2026-05-05T04:03:04.635493Z",
+    "Length": 5737
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\closures\\scheduled-wiki-maintenance-2026-05-04.md",
+    "LastWriteTimeUtc": "2026-05-06T04:03:51.7629066Z",
+    "Length": 5051
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\closures\\scheduled-wiki-maintenance-2026-05-05.md",
+    "LastWriteTimeUtc": "2026-05-07T04:01:44.0588487Z",
+    "Length": 6146
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\closures\\scheduled-wiki-maintenance-2026-05-06.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:43.5123236Z",
+    "Length": 5771
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\closures\\scheduled-wiki-maintenance-2026-05-07.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:57.8575229Z",
+    "Length": 11055
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\closures\\scheduled-wiki-maintenance-2026-05-09.md",
+    "LastWriteTimeUtc": "2026-05-11T04:05:16.9696424Z",
+    "Length": 7320
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\closures\\scheduled-wiki-maintenance-2026-05-10.md",
+    "LastWriteTimeUtc": "2026-05-11T04:05:55.2290933Z",
+    "Length": 3870
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\closures\\scheduled-wiki-maintenance-2026-05-11.md",
+    "LastWriteTimeUtc": "2026-05-13T04:03:53.4852222Z",
+    "Length": 6742
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\concepts\\audit-query-surface.md",
+    "LastWriteTimeUtc": "2026-04-30T19:15:43.4441Z",
+    "Length": 1986
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\concepts\\caller-side-kernel-truth-mismatch.md",
+    "LastWriteTimeUtc": "2026-04-30T02:00:27.830073Z",
+    "Length": 5584
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\concepts\\capability-handshake.md",
+    "LastWriteTimeUtc": "2026-04-30T04:05:21.3967787Z",
+    "Length": 3369
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\concepts\\cross-repo-governance-bridge.md",
+    "LastWriteTimeUtc": "2026-04-29T13:18:48.5828555Z",
+    "Length": 2021
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\concepts\\db-honest-envelope.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.4780078Z",
+    "Length": 3351
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\concepts\\domain-namespace-clash.md",
+    "LastWriteTimeUtc": "2026-04-25T21:23:12.6682345Z",
+    "Length": 2899
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\concepts\\dual-ledger-discipline.md",
+    "LastWriteTimeUtc": "2026-04-30T04:05:21.3997779Z",
+    "Length": 3496
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\concepts\\edge-store-idempotency.md",
+    "LastWriteTimeUtc": "2026-04-29T02:01:25.8682962Z",
+    "Length": 1252
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\concepts\\escalation-record.md",
+    "LastWriteTimeUtc": "2026-04-25T21:22:34.1038101Z",
+    "Length": 2683
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\concepts\\governance-events-immutability.md",
+    "LastWriteTimeUtc": "2026-04-25T21:48:18.4654031Z",
+    "Length": 3534
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\concepts\\immutable-laws.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.4820049Z",
+    "Length": 1369
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\concepts\\install-bundle-gap.md",
+    "LastWriteTimeUtc": "2026-04-25T21:22:55.5483244Z",
+    "Length": 3356
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\concepts\\knowledge-base-runtime.md",
+    "LastWriteTimeUtc": "2026-04-25T21:50:48.5480581Z",
+    "Length": 3021
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\concepts\\law-1-data-first.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.4890229Z",
+    "Length": 1073
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\concepts\\law-10-crystallize-or-lose.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.4910227Z",
+    "Length": 947
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\concepts\\law-11-listen-to-user.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.4920278Z",
+    "Length": 985
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\concepts\\law-12-instinct.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.4930284Z",
+    "Length": 941
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\concepts\\law-2-evidence-discipline.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.4940345Z",
+    "Length": 1031
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\concepts\\law-3-gates-block.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.496552Z",
+    "Length": 987
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\concepts\\law-4-reviewer-2-co-pilot.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.4975594Z",
+    "Length": 970
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\concepts\\law-5-serendipity-mission.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.4985578Z",
+    "Length": 1020
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\concepts\\law-6-artifacts-over-prose.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.4996909Z",
+    "Length": 994
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\concepts\\law-7-fresh-context.md",
+    "LastWriteTimeUtc": "2026-04-25T21:50:30.8594494Z",
+    "Length": 3123
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\concepts\\law-8-explore-before-exploit.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5016929Z",
+    "Length": 995
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\concepts\\law-9-confounder-harness.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5026933Z",
+    "Length": 1059
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\concepts\\objectiveid-immutable.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5036927Z",
+    "Length": 3150
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\concepts\\phase10-claim-edge-design.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5052011Z",
+    "Length": 2875
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\concepts\\r2-bridge-writer.md",
+    "LastWriteTimeUtc": "2026-04-26T14:09:29.1399283Z",
+    "Length": 3501
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\concepts\\r2-verdict-edge-binding.md",
+    "LastWriteTimeUtc": "2026-04-30T19:15:43.4596179Z",
+    "Length": 2706
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\concepts\\rate-limited-heartbeat.md",
+    "LastWriteTimeUtc": "2026-04-29T22:49:24.7712222Z",
+    "Length": 2383
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\concepts\\serendipity-seed.md",
+    "LastWriteTimeUtc": "2026-04-25T21:22:33.1748588Z",
+    "Length": 3791
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\concepts\\state-md-runtime.md",
+    "LastWriteTimeUtc": "2026-04-29T14:44:43.5345681Z",
+    "Length": 2976
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\concepts\\strategic-drift-checkpoint.md",
+    "LastWriteTimeUtc": "2026-04-30T04:05:21.409778Z",
+    "Length": 3007
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\concepts\\transactional-event-precommit.md",
+    "LastWriteTimeUtc": "2026-04-30T13:50:07.7539642Z",
+    "Length": 1855
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\concepts\\typed-edge-substrate.md",
+    "LastWriteTimeUtc": "2026-04-29T01:33:03.211945Z",
+    "Length": 1769
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\concepts\\vibe-orch-namespace.md",
+    "LastWriteTimeUtc": "2026-04-29T01:31:52.9150673Z",
+    "Length": 3954
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\coverage\\api-surface-dashboard.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5112226Z",
+    "Length": 1963
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\coverage\\automation-checks.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5122244Z",
+    "Length": 1470
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\coverage\\behavior-map-dashboard.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5132245Z",
+    "Length": 1651
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\coverage\\callgraph-dashboard.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.514222Z",
+    "Length": 2650
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\coverage\\cli-contract-dashboard.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5157249Z",
+    "Length": 1509
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\coverage\\command-and-bundle-dashboard.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5167348Z",
+    "Length": 2426
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\coverage\\db-table-audit-dashboard.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5177344Z",
+    "Length": 2468
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\coverage\\dependency-dashboard.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5187337Z",
+    "Length": 1691
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\coverage\\entity-export-audit-dashboard.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5197363Z",
+    "Length": 2649
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\coverage\\filesystem-count-reconciliation.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5207329Z",
+    "Length": 1832
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\coverage\\high-risk-full-read-batch-01.md",
+    "LastWriteTimeUtc": "2026-04-30T02:08:01.6392687Z",
+    "Length": 16879
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\coverage\\high-risk-full-read-batch-02.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5227367Z",
+    "Length": 17170
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\coverage\\high-risk-full-read-batch-03.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5237366Z",
+    "Length": 16458
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\coverage\\high-risk-full-read-batch-04.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5252453Z",
+    "Length": 14068
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\coverage\\high-risk-full-read-batch-05.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5262585Z",
+    "Length": 11085
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\coverage\\high-risk-read-depth-roadmap.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5272525Z",
+    "Length": 3257
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\coverage\\high-risk-semantic-dashboard.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.530253Z",
+    "Length": 1843
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\coverage\\live-source-gaps.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5312509Z",
+    "Length": 2727
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\coverage\\ownership-resolution-dashboard.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5322511Z",
+    "Length": 2629
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\coverage\\protocol-stub-audit-dashboard.md",
+    "LastWriteTimeUtc": "2026-05-10T04:05:21.1356017Z",
+    "Length": 4615
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\coverage\\README.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5342509Z",
+    "Length": 6547
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\coverage\\schema-field-audit-dashboard.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5352509Z",
+    "Length": 2109
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\coverage\\surface-map-dashboard.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5357556Z",
+    "Length": 4544
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\coverage\\synthesis-r2-audit-dashboard.md",
+    "LastWriteTimeUtc": "2026-05-10T04:05:21.1391704Z",
+    "Length": 4808
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\coverage\\test-behavior-dashboard.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5382665Z",
+    "Length": 1583
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\coverage\\unknown-classification.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5392768Z",
+    "Length": 2039
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\coverage\\verified-at-refresh-dashboard.md",
+    "LastWriteTimeUtc": "2026-05-13T04:03:53.5185318Z",
+    "Length": 1294
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\coverage\\wiki-content-gap-dashboard.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5412765Z",
+    "Length": 2795
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\coverage\\wiki-lint-dashboard.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5432791Z",
+    "Length": 3902
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\agent-orchestration-js.md",
+    "LastWriteTimeUtc": "2026-05-04T04:05:06.4433944Z",
+    "Length": 11767
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\audit-query-js.md",
+    "LastWriteTimeUtc": "2026-05-04T04:05:06.4443935Z",
+    "Length": 3068
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\autonomy-runtime-js.md",
+    "LastWriteTimeUtc": "2026-04-29T23:45:57.3293251Z",
+    "Length": 6609
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\benchmark-reporter-js.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5476357Z",
+    "Length": 1686
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\bin-vre-cli.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5486364Z",
+    "Length": 3472
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\citation-engine-js.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5497759Z",
+    "Length": 2024
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\citation-extractor-js.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5507788Z",
+    "Length": 2394
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\claim-ingestion-js.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5517765Z",
+    "Length": 2918
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\claims-edges-js.md",
+    "LastWriteTimeUtc": "2026-04-29T02:01:25.8943088Z",
+    "Length": 3163
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\claude-rules-enforcement-md.md",
+    "LastWriteTimeUtc": "2026-04-25T22:14:38.8878038Z",
+    "Length": 799
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\claude-rules-roles-md.md",
+    "LastWriteTimeUtc": "2026-04-25T22:14:38.8878038Z",
+    "Length": 853
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\claude-settings-json.md",
+    "LastWriteTimeUtc": "2026-04-25T22:14:38.8878038Z",
+    "Length": 1012
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\cold-child-validator-js.md",
+    "LastWriteTimeUtc": "2026-04-29T21:33:37.1650816Z",
+    "Length": 4653
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\context-builder-js.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5537751Z",
+    "Length": 2073
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\core-reader-cli-js.md",
+    "LastWriteTimeUtc": "2026-04-25T22:14:38.8797653Z",
+    "Length": 902
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\core-reader-js.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5562932Z",
+    "Length": 3265
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\db-js.md",
+    "LastWriteTimeUtc": "2026-04-27T02:18:06.597398Z",
+    "Length": 4417
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\db-schema-full.md",
+    "LastWriteTimeUtc": "2026-04-27T02:18:06.5994299Z",
+    "Length": 5185
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\db-schema-serendipity.md",
+    "LastWriteTimeUtc": "2026-04-25T21:24:49.4265154Z",
+    "Length": 3613
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\db-schema.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5612929Z",
+    "Length": 1640
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\db-table-benchmark-runs.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:57.8915266Z",
+    "Length": 2371
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\db-table-calibration-log.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:57.8925268Z",
+    "Length": 2389
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\db-table-citation-checks.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:57.8936652Z",
+    "Length": 4095
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\db-table-claim-events.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:57.8936652Z",
+    "Length": 2646
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\db-table-embed-queue.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:57.8946767Z",
+    "Length": 1886
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\db-table-gate-checks.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:57.8956817Z",
+    "Length": 2769
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\db-table-governance-events.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:57.8976667Z",
+    "Length": 2609
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\db-table-literature-searches.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:57.8986666Z",
+    "Length": 2628
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\db-table-memory-embeddings.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:57.8996643Z",
+    "Length": 2011
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\db-table-memory-fts.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:57.9006653Z",
+    "Length": 2121
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\db-table-meta.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:57.9016647Z",
+    "Length": 1669
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\db-table-observer-alerts.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:57.9026652Z",
+    "Length": 2110
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\db-table-prompt-log.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:57.9036645Z",
+    "Length": 2060
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\db-table-r2-reviews.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:57.9046644Z",
+    "Length": 3040
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\db-table-research-patterns.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:57.9056647Z",
+    "Length": 2505
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\db-table-serendipity-seeds.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:57.9066645Z",
+    "Length": 2859
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\db-table-sessions.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:57.9076645Z",
+    "Length": 2427
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\db-table-spine-entries.md",
+    "LastWriteTimeUtc": "2026-05-10T04:03:57.9086642Z",
+    "Length": 2602
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\domain-config-schema.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5813851Z",
+    "Length": 2676
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\domain-pack-omics.md",
+    "LastWriteTimeUtc": "2026-04-25T21:57:56.728897Z",
+    "Length": 1141
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\escalation-record-schema.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.583384Z",
+    "Length": 2873
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\execution-lane-js.md",
+    "LastWriteTimeUtc": "2026-04-29T21:01:24.9963357Z",
+    "Length": 3339
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\feature-ledger.md",
+    "LastWriteTimeUtc": "2026-04-30T04:05:21.4401618Z",
+    "Length": 4643
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\gate-engine-js.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5843841Z",
+    "Length": 3135
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\governance-events-table.md",
+    "LastWriteTimeUtc": "2026-04-27T02:18:06.6178818Z",
+    "Length": 1799
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\governance-log-cli-js.md",
+    "LastWriteTimeUtc": "2026-04-29T13:18:48.6479809Z",
+    "Length": 2272
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\governance-logger-js.md",
+    "LastWriteTimeUtc": "2026-04-29T13:18:48.6489844Z",
+    "Length": 2832
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\handshake-inject-js.md",
+    "LastWriteTimeUtc": "2026-04-29T14:44:43.5684867Z",
+    "Length": 4205
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\harness-hints-js.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5876279Z",
+    "Length": 2138
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\hook-post-tool-use.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5876279Z",
+    "Length": 1725
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\hook-pre-compact.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5896351Z",
+    "Length": 1383
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\hook-pre-tool-use.md",
+    "LastWriteTimeUtc": "2026-04-29T16:41:29.1406068Z",
+    "Length": 2373
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\hook-prompt-submit.md",
+    "LastWriteTimeUtc": "2026-04-29T15:57:11.6350679Z",
+    "Length": 1518
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\hook-session-start.md",
+    "LastWriteTimeUtc": "2026-04-29T14:44:43.5725193Z",
+    "Length": 1853
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\hook-stop.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5936319Z",
+    "Length": 1587
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\hook-subagent-stop.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5951383Z",
+    "Length": 1465
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\hooks-json.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5971458Z",
+    "Length": 1311
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\loop-wake-js.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.5981437Z",
+    "Length": 2154
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\migrations-js.md",
+    "LastWriteTimeUtc": "2026-04-27T08:20:44.7659475Z",
+    "Length": 2135
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\narrative-engine-js.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6003634Z",
+    "Length": 1918
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\objective-cli-js.md",
+    "LastWriteTimeUtc": "2026-04-29T23:45:57.3608038Z",
+    "Length": 3966
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\objective-loader-js.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.601365Z",
+    "Length": 2218
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\path-utils-js.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6033627Z",
+    "Length": 1401
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\pattern-extractor-js.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6043697Z",
+    "Length": 1390
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\permission-engine-js.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6068847Z",
+    "Length": 2002
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\phase9-claim-edge-schema.md",
+    "LastWriteTimeUtc": "2026-04-29T01:33:03.2730658Z",
+    "Length": 3219
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\phase9-governance-events-js.md",
+    "LastWriteTimeUtc": "2026-04-30T02:08:01.6778451Z",
+    "Length": 3356
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\plugin-audit-query-cli.md",
+    "LastWriteTimeUtc": "2026-05-04T04:05:06.4814328Z",
+    "Length": 2478
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\plugin-claim-resolver-cli.md",
+    "LastWriteTimeUtc": "2026-05-04T04:05:06.4824336Z",
+    "Length": 2818
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\post-tool-use-js.md",
+    "LastWriteTimeUtc": "2026-04-25T22:14:38.8827742Z",
+    "Length": 1685
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\pre-compact-js.md",
+    "LastWriteTimeUtc": "2026-04-25T22:14:38.8847754Z",
+    "Length": 903
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\pre-delivery-discipline-js.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6099055Z",
+    "Length": 3804
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\pre-tool-use-js.md",
+    "LastWriteTimeUtc": "2026-04-29T16:41:29.1506096Z",
+    "Length": 3335
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\prompt-submit-js.md",
+    "LastWriteTimeUtc": "2026-04-29T15:57:11.6430684Z",
+    "Length": 1762
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\r2-bridge-writer-js.md",
+    "LastWriteTimeUtc": "2026-04-26T14:09:29.1808133Z",
+    "Length": 3117
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\r2-calibration-js.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6118911Z",
+    "Length": 2062
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\r2-ingestion-js.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6128904Z",
+    "Length": 2159
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\registry-cli-verbs.md",
+    "LastWriteTimeUtc": "2026-05-13T04:03:53.5515709Z",
+    "Length": 3728
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\registry-db-writers.md",
+    "LastWriteTimeUtc": "2026-05-13T04:03:53.5525718Z",
+    "Length": 11798
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\registry-exported-symbols.md",
+    "LastWriteTimeUtc": "2026-05-13T04:03:53.5545708Z",
+    "Length": 132178
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\registry-gate-triggers.md",
+    "LastWriteTimeUtc": "2026-05-13T04:03:53.5555713Z",
+    "Length": 14485
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\registry-protocol-invariants.md",
+    "LastWriteTimeUtc": "2026-05-13T04:03:53.5565703Z",
+    "Length": 14671
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\registry-schema-graph.md",
+    "LastWriteTimeUtc": "2026-05-13T04:03:53.5585842Z",
+    "Length": 23308
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\resume-snapshot-js.md",
+    "LastWriteTimeUtc": "2026-04-30T13:50:31.43966Z",
+    "Length": 3768
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\reviewed-io-js.md",
+    "LastWriteTimeUtc": "2026-04-27T08:20:44.7816168Z",
+    "Length": 4223
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\reviewed-role-runner-js.md",
+    "LastWriteTimeUtc": "2026-04-29T21:57:32.4321677Z",
+    "Length": 6268
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\seed-ingestion-js.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6273237Z",
+    "Length": 2568
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\serendipity-seed-schema.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6273237Z",
+    "Length": 4766
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\session-start-js.md",
+    "LastWriteTimeUtc": "2026-04-29T14:44:43.5875893Z",
+    "Length": 1490
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\setup-js.md",
+    "LastWriteTimeUtc": "2026-04-25T22:14:38.8857731Z",
+    "Length": 964
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\stop-js.md",
+    "LastWriteTimeUtc": "2026-04-25T22:14:38.8857731Z",
+    "Length": 1079
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\structured-block-parser-js.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6323372Z",
+    "Length": 2705
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\subagent-stop-js.md",
+    "LastWriteTimeUtc": "2026-04-25T22:14:38.8857731Z",
+    "Length": 846
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\test-contracts-ci-validation.md",
+    "LastWriteTimeUtc": "2026-04-30T19:15:43.5228896Z",
+    "Length": 5523
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\test-contracts-control-plane.md",
+    "LastWriteTimeUtc": "2026-04-27T00:14:32.340391Z",
+    "Length": 4662
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\test-contracts-evals-benchmarks.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6377465Z",
+    "Length": 9514
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\test-contracts-install-compatibility.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6397542Z",
+    "Length": 3774
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\test-contracts-orchestrator-flows.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6407554Z",
+    "Length": 3766
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\test-contracts-schemas-fixtures.md",
+    "LastWriteTimeUtc": "2026-04-26T21:15:55.3482131Z",
+    "Length": 4062
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\test-contracts-vibe-science-governance.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6427511Z",
+    "Length": 2421
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vec-search-js.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6437509Z",
+    "Length": 2701
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vibe-science-archive-lineage.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6452546Z",
+    "Length": 1231
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vibe-science-archive-schemas.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6462605Z",
+    "Length": 119308
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vibe-science-e2e-test-suite-mjs.md",
+    "LastWriteTimeUtc": "2026-04-27T02:18:06.6680528Z",
+    "Length": 1627
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vibe-science-evals-suite.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6482637Z",
+    "Length": 1117
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vibe-science-hero-generator-py.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6492639Z",
+    "Length": 1080
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vibe-science-root-surfaces.md",
+    "LastWriteTimeUtc": "2026-04-30T19:16:11.9022484Z",
+    "Length": 2393
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vibe-science-skill-assets-schemas.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6513632Z",
+    "Length": 22159
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vibe-science-tests-suite.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6523632Z",
+    "Length": 1453
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vibe-science-v7-readiness-mjs.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6533627Z",
+    "Length": 1215
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vibe-skill-dq-gate-py.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6543635Z",
+    "Length": 1334
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vibe-skill-gate-check-py.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6553647Z",
+    "Length": 1079
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vibe-skill-observer-py.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6565009Z",
+    "Length": 1003
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vibe-skill-spine-entry-py.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.657501Z",
+    "Length": 951
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vibe-skill-sync-check-py.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6595002Z",
+    "Length": 984
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vibe-skill-tree-health-py.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6605007Z",
+    "Length": 903
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-control-approved-memory-apis-json.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6605007Z",
+    "Length": 1194
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-control-attempts-js.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6614998Z",
+    "Length": 1648
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-control-capabilities-js.md",
+    "LastWriteTimeUtc": "2026-04-30T01:20:46.0683718Z",
+    "Length": 2482
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-control-capability-handshake-js.md",
+    "LastWriteTimeUtc": "2026-04-30T00:27:16.6062952Z",
+    "Length": 3031
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-control-decisions-js.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6649562Z",
+    "Length": 1396
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-control-events-js.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6654607Z",
+    "Length": 1357
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-control-io-js.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.666467Z",
+    "Length": 2452
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-control-middleware-js.md",
+    "LastWriteTimeUtc": "2026-04-30T01:20:46.0713747Z",
+    "Length": 2391
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-control-query-js.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6684652Z",
+    "Length": 2622
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-control-session-snapshot-js.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6684652Z",
+    "Length": 1677
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-control-time-provider-js.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6694683Z",
+    "Length": 1823
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-environment-automation.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6704664Z",
+    "Length": 6309
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-environment-connectors.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6714676Z",
+    "Length": 6097
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-environment-control-plane.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6734675Z",
+    "Length": 1608
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-environment-domain-packs.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6744666Z",
+    "Length": 4322
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-environment-flows.md",
+    "LastWriteTimeUtc": "2026-04-30T02:08:01.7085809Z",
+    "Length": 8424
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-environment-install-bundles.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6766889Z",
+    "Length": 1825
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-environment-lib.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6776872Z",
+    "Length": 1066
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-environment-memory.md",
+    "LastWriteTimeUtc": "2026-04-30T02:08:01.7095808Z",
+    "Length": 3045
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-environment-objectives.md",
+    "LastWriteTimeUtc": "2026-04-29T19:46:11.8276708Z",
+    "Length": 8437
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-environment-orchestrator.md",
+    "LastWriteTimeUtc": "2026-04-29T21:01:25.039697Z",
+    "Length": 23844
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-environment-schemas.md",
+    "LastWriteTimeUtc": "2026-04-30T04:07:06.039653Z",
+    "Length": 72734
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-environment-task-registry.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6826878Z",
+    "Length": 2747
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-environment-tests-and-fixtures.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6836887Z",
+    "Length": 9323
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-flows-writing-js.md",
+    "LastWriteTimeUtc": "2026-04-30T02:00:27.9430119Z",
+    "Length": 2182
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-flows-writing-packs-js.md",
+    "LastWriteTimeUtc": "2026-04-30T02:00:27.9468899Z",
+    "Length": 1857
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-lib-bundle-manifest-js.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6851924Z",
+    "Length": 1922
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-lib-export-eligibility-js.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6851924Z",
+    "Length": 1885
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-lib-export-records-js.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6861978Z",
+    "Length": 2415
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-lib-export-snapshot-js.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6871991Z",
+    "Length": 2213
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-lib-flow-state-js.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6881989Z",
+    "Length": 1632
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-lib-kernel-bridge-js.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6902013Z",
+    "Length": 2807
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-lib-manifest-js.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6912033Z",
+    "Length": 2113
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-lib-session-metrics-js.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6922076Z",
+    "Length": 1466
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-lib-token-counter-js.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6931987Z",
+    "Length": 1354
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-memory-sync-js.md",
+    "LastWriteTimeUtc": "2026-04-30T02:00:27.9551777Z",
+    "Length": 2253
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-phase9-ledgers-and-blueprints.md",
+    "LastWriteTimeUtc": "2026-04-30T04:05:21.4906811Z",
+    "Length": 1630
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-root-surfaces.md",
+    "LastWriteTimeUtc": "2026-04-30T01:20:46.0842894Z",
+    "Length": 2179
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\vre-runtime-state-artifacts.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.6967104Z",
+    "Length": 1081
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\entities\\worker-embed-js.md",
+    "LastWriteTimeUtc": "2026-04-25T22:14:38.8857731Z",
+    "Length": 1235
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\proposals\\round-092-compaction-resilience-and-wiki-batching.md",
+    "LastWriteTimeUtc": "2026-04-27T09:15:02.4250791Z",
+    "Length": 6599
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\proposals\\round-093-wiki-scheduler-operating-rules.md",
+    "LastWriteTimeUtc": "2026-04-27T09:15:02.4260802Z",
+    "Length": 3084
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\agent-teams-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.7053225Z",
+    "Length": 1607
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\analysis-orchestrator-protocol.md",
+    "LastWriteTimeUtc": "2026-04-25T21:57:56.728897Z",
+    "Length": 1329
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\audit-reproducibility-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.7073288Z",
+    "Length": 1923
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\auto-experiment-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.7083457Z",
+    "Length": 1552
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\blind-first-pass-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.7093307Z",
+    "Length": 1486
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\brainstorm-engine-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.7103285Z",
+    "Length": 3135
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\circuit-breaker-protocol.md",
+    "LastWriteTimeUtc": "2026-04-25T21:57:56.7344638Z",
+    "Length": 1305
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\context-resilience-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.7123289Z",
+    "Length": 1292
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\data-dictionary-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.7133282Z",
+    "Length": 1114
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\data-extraction-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.7143289Z",
+    "Length": 1588
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\design-compliance-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.7143289Z",
+    "Length": 1079
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\dq-gates-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.7153293Z",
+    "Length": 1031
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\evidence-engine-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.7173497Z",
+    "Length": 1561
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\experiment-manager-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.7187766Z",
+    "Length": 1406
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\gates-complete-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.7187766Z",
+    "Length": 1188
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\handoff-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.7197819Z",
+    "Length": 1130
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\hook-system-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.721789Z",
+    "Length": 1400
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\instinct-model-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.7227882Z",
+    "Length": 1142
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\judge-agent-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.7237843Z",
+    "Length": 1220
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\knowledge-base-protocol.md",
+    "LastWriteTimeUtc": "2026-04-25T21:52:12.2112308Z",
+    "Length": 3162
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\literature-precheck-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.7262554Z",
+    "Length": 1101
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\llm-wiki-video-transcript.md",
+    "LastWriteTimeUtc": "2026-05-11T04:05:17.0848056Z",
+    "Length": 1385
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\loop-otae-protocol.md",
+    "LastWriteTimeUtc": "2026-04-25T21:57:56.728897Z",
+    "Length": 1423
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\multi-agent-config-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.7282191Z",
+    "Length": 1157
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\pattern-extraction-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.7292209Z",
+    "Length": 1091
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\phase10-brainstorming-decisions-log.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.7302152Z",
+    "Length": 1137
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\phase10-existing-state-audit.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.7312171Z",
+    "Length": 1174
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\phase10-formal-design-spec.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.7322151Z",
+    "Length": 1396
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\plan-15-post-wave-6.md",
+    "LastWriteTimeUtc": "2026-04-27T08:27:47.7472267Z",
+    "Length": 5907
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\r2-calibration-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.7332164Z",
+    "Length": 1113
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\research-spine-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.7347765Z",
+    "Length": 1077
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\reviewer2-ensemble-protocol.md",
+    "LastWriteTimeUtc": "2026-04-25T21:57:56.728897Z",
+    "Length": 1381
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\schema-validation-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.736713Z",
+    "Length": 1154
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\search-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.7376768Z",
+    "Length": 1205
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\seeded-fault-injection-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.7389053Z",
+    "Length": 1235
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\serendipity-engine-protocol.md",
+    "LastWriteTimeUtc": "2026-04-25T21:24:26.0899572Z",
+    "Length": 4922
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\silent-observer-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.7409059Z",
+    "Length": 1043
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\ssot-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.7421231Z",
+    "Length": 1051
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\tree-search-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.744113Z",
+    "Length": 1326
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\vibe-science-constitution-reference.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.744113Z",
+    "Length": 1548
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\vibe-science-protocol-catalog.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.7460231Z",
+    "Length": 1995
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\vlm-gate-protocol.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.7475254Z",
+    "Length": 1028
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\vre-root-constitution.md",
+    "LastWriteTimeUtc": "2026-04-26T11:43:55.7484855Z",
+    "Length": 1460
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\sources\\writeup-engine-protocol.md",
+    "LastWriteTimeUtc": "2026-04-25T21:57:56.7332667Z",
+    "Length": 1342
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\state\\ledger-mantra-preservation-rule.md",
+    "LastWriteTimeUtc": "2026-04-27T13:11:01.2519157Z",
+    "Length": 6033
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\syntheses\\audit-completeness-and-limits.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:43.63943Z",
+    "Length": 3515
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\syntheses\\claim-citation-r2-ingestion-chain.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:43.6413954Z",
+    "Length": 3515
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\syntheses\\complete-coverage-matrix.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:43.6424302Z",
+    "Length": 3430
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\syntheses\\current-vre-feature-map.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:43.6433965Z",
+    "Length": 2977
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\syntheses\\dead-code-and-bundle-risk-register.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:43.6443959Z",
+    "Length": 2791
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\syntheses\\dead-code-current-findings.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:43.6453962Z",
+    "Length": 3761
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\syntheses\\delivery-discipline-and-governance-guardrails.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:43.6463954Z",
+    "Length": 2505
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\syntheses\\governance-gate-permission-chain.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:43.6473958Z",
+    "Length": 3113
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\syntheses\\hook-lifecycle-chain.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:43.6483957Z",
+    "Length": 3232
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\syntheses\\knowledge-base-migration-path.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:43.6503958Z",
+    "Length": 3284
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\syntheses\\operator-steering-reuse-decision.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:43.6513962Z",
+    "Length": 2604
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\syntheses\\phase10-realignments.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:43.6523954Z",
+    "Length": 9776
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\syntheses\\phase10-vs-plan15-coordination.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:43.6533954Z",
+    "Length": 2895
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\syntheses\\phase9-eval-and-bundle-gaps.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:43.6543946Z",
+    "Length": 2826
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\syntheses\\phase9-handshake-and-objective-injection.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:43.6553962Z",
+    "Length": 2601
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\syntheses\\runtime-memory-context-chain.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:43.6563953Z",
+    "Length": 3230
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\syntheses\\serendipity-reuse-decision.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:43.6583993Z",
+    "Length": 3074
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\syntheses\\vibe-skill-validation-scripts.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:43.6593966Z",
+    "Length": 3064
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\syntheses\\vre-complete-current-state-map.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:43.6603961Z",
+    "Length": 5352
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\syntheses\\vre-control-plane-file-map.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:43.6613967Z",
+    "Length": 3903
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\syntheses\\vre-control-to-orchestrator-runtime.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:43.6622301Z",
+    "Length": 2629
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\syntheses\\vre-environment-operating-system.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:43.6642348Z",
+    "Length": 2558
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\syntheses\\vre-feature-availability-map.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:43.6652368Z",
+    "Length": 2333
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\syntheses\\vre-flows-api-surface.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:43.6662356Z",
+    "Length": 3455
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\syntheses\\vre-lib-export-and-manifest-map.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:43.6672568Z",
+    "Length": 2871
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\syntheses\\vre-objectives-api-surface.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:43.6682353Z",
+    "Length": 2922
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\syntheses\\vre-orchestrator-api-surface.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:43.6692355Z",
+    "Length": 4708
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\syntheses\\vre-resume-overnight-autonomy-map.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:43.6702355Z",
+    "Length": 2573
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\syntheses\\vre-reuse-and-extension-playbook.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:43.671235Z",
+    "Length": 4380
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\syntheses\\vre-traceability-maintenance-rules.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:43.6722348Z",
+    "Length": 4397
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\syntheses\\vre-ui-and-feature-hook-map.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:43.6732357Z",
+    "Length": 3378
+  },
+  {
+    "FullName": "C:\\Users\\Test-User\\Desktop\\Tesi_Python_scRNA\\nuove_skill\\vibe-science\\blueprints\\private\\WIKI_VRE\\vre_wiki\\syntheses\\vre-validation-and-test-coverage-map.md",
+    "LastWriteTimeUtc": "2026-05-08T04:04:43.6742353Z",
+    "Length": 2522
+  }
+]
