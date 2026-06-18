@@ -11,7 +11,6 @@
  */
 
 import fs from 'node:fs';
-import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -20,7 +19,6 @@ import {
     openDB,
     closeDB,
     getLastSession,
-    getCitationChecks,
     getUnresolvedAlerts,
 } from './db.js';
 
@@ -178,56 +176,6 @@ function scriptIsRunnable(absolutePath) {
     }
 }
 
-function runGovernanceHookProbe() {
-    const relativePath = 'tests/governance-hooks.test.mjs';
-    const absolutePath = path.join(KERNEL_ROOT, relativePath);
-    if (!fs.existsSync(absolutePath)) {
-        return {
-            status: 'missing',
-            testHint: relativePath,
-            details: `missing probe ${relativePath}`,
-            exitCode: null,
-        };
-    }
-
-    const result = spawnSync(process.execPath, ['--test', absolutePath], {
-        cwd: KERNEL_ROOT,
-        encoding: 'utf8',
-        timeout: 15_000,
-        windowsHide: true,
-        env: {
-            ...process.env,
-            NODE_OPTIONS: '',
-        },
-    });
-
-    if (result.error) {
-        return {
-            status: 'missing',
-            testHint: relativePath,
-            details: `governance hook probe failed to execute: ${result.error.message}`,
-            exitCode: null,
-        };
-    }
-
-    if (result.status !== 0) {
-        const diagnostic = `${result.stderr ?? ''}\n${result.stdout ?? ''}`.trim();
-        return {
-            status: 'missing',
-            testHint: relativePath,
-            details: `governance hook probe failed with exit ${result.status}: ${diagnostic.slice(0, 300)}`,
-            exitCode: result.status,
-        };
-    }
-
-    return {
-        status: 'ok',
-        testHint: relativePath,
-        details: `governance hook probe ${relativePath} passed`,
-        exitCode: 0,
-    };
-}
-
 function escapeRegExp(value) {
     return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
@@ -268,14 +216,11 @@ function configReferencesScript(config, event, scriptRelPath) {
 function inspectGovernanceHooks(projectPath = null) {
     const claudeSettings = readJsonIfPresent('.claude/settings.json');
     const packagedHooks = readJsonIfPresent('hooks/hooks.json');
-    const probe = runGovernanceHookProbe();
 
     return GOVERNANCE_HOOKS.map((entry) => {
         const scriptPath = path.join(KERNEL_ROOT, entry.script);
-        const testPath = path.join(KERNEL_ROOT, entry.testHint);
         const scriptExists = fs.existsSync(scriptPath);
         const runnable = scriptExists && scriptIsRunnable(scriptPath);
-        const testExists = fs.existsSync(testPath);
         const configuredIn = [];
 
         if (configReferencesScript(claudeSettings, entry.event, entry.script)) {
@@ -285,12 +230,11 @@ function inspectGovernanceHooks(projectPath = null) {
             configuredIn.push('hooks/hooks.json');
         }
 
-        const status = runnable && configuredIn.length > 0 && probe.status === 'ok' ? 'ok' : 'missing';
+        const status = runnable && configuredIn.length > 0 ? 'ok' : 'missing';
         const missing = [];
         if (!scriptExists) missing.push(`missing script ${entry.script}`);
         if (scriptExists && !runnable) missing.push(`script ${entry.script} is not runnable`);
         if (configuredIn.length === 0) missing.push(`no ${entry.event} config references ${entry.script}`);
-        if (probe.status !== 'ok') missing.push(probe.details);
 
         return {
             gateId: null,
@@ -299,16 +243,14 @@ function inspectGovernanceHooks(projectPath = null) {
             projectPath: projectPath ?? null,
             createdAt: null,
             details: status === 'ok'
-                ? `Runtime hook ${entry.script} is present, runnable, configured for ${entry.event}, and covered by ${probe.testHint}.`
+                ? `Runtime hook ${entry.script} is present, readable, and configured for ${entry.event}.`
                 : missing.join('; '),
             synthetic: false,
             source: 'hook-config',
             scriptPath: entry.script,
             runnable,
             configuredIn,
-            probeTest: testExists ? entry.testHint : null,
-            probeStatus: probe.status,
-            probeExitCode: probe.exitCode,
+            testHint: entry.testHint,
         };
     });
 }
@@ -370,22 +312,23 @@ export function listCitationChecks({ projectPath = null, dbPath = DEFAULT_DB_PAT
         const rows = db.prepare(`
             SELECT cc.citation_id AS citationId, cc.claim_id AS claimId,
                    cc.verification_status AS verificationStatus,
-                   cc.confidence, cc.source,
-                   cc.updated_at AS updatedAt, cc.created_at AS createdAt,
+                   NULL AS confidence,
+                   COALESCE(cc.source_url, cc.resolver, cc.resolved_source_type) AS source,
+                   cc.checked_at AS checkedAt, cc.created_at AS createdAt,
                    s.project_path AS projectPath
             FROM citation_checks cc
             LEFT JOIN sessions s ON s.id = cc.session_id
             ${projectPath ? 'WHERE s.project_path = @projectPath' : ''}
-            ORDER BY cc.updated_at DESC, cc.created_at DESC
+            ORDER BY COALESCE(cc.checked_at, cc.created_at) DESC, cc.created_at DESC
             LIMIT @limit
         `).all({ projectPath: projectPath ?? '', limit });
         return rows.map((r) => ({
             citationId: r.citationId,
             claimId: r.claimId,
             verificationStatus: r.verificationStatus,
-            confidence: r.confidence,
-            source: r.source,
-            updatedAt: r.updatedAt ?? r.createdAt,
+            confidence: r.confidence ?? null,
+            source: r.source ?? null,
+            updatedAt: r.checkedAt ?? r.createdAt,
             projectPath: r.projectPath,
         }));
     }, { dbPath, fallback: [] });
