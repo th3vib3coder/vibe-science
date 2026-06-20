@@ -21,8 +21,8 @@ test('fixture count stays aligned with sibling kernel exports and VRE typed-duck
     assert.equal(vreBridgeMod.WP150_TYPED_DUCK_PROJECTION_COUNT, fixture.declaredCount);
 });
 
-test('VRE bridge source text pins the contract to eight projections', () => {
+test('VRE bridge source text pins the contract to nine projections', () => {
     const source = fs.readFileSync(VRE_KERNEL_BRIDGE_PATH, 'utf8');
     assert.match(source, new RegExp(fixture.vreBridgeComment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'u'));
-    assert.doesNotMatch(source, /The nine projections frozen in WP-150's typed-duck contract\./u);
+    assert.doesNotMatch(source, /The eight projections frozen in WP-150's typed-duck contract\./u);
 });

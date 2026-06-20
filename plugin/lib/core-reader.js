@@ -1,7 +1,7 @@
 /**
  * Vibe Science Core Reader — read-only projections for the VRE kernel bridge.
  *
- * Ships the 8 projections the VRE `environment/lib/kernel-bridge.js` helper
+ * Ships the 9 projections the VRE `environment/lib/kernel-bridge.js` helper
  * expects (per Phase 6 WP-150 contract).
  *
  * Design principle: thin wrappers over existing `plugin/lib/db.js` helpers,
@@ -256,7 +256,7 @@ function inspectGovernanceHooks(projectPath = null) {
 }
 
 // ----------------------------------------------------------------------------
-// The 8 projections (WP-150 contract)
+// The 9 projections (WP-150 contract)
 // ----------------------------------------------------------------------------
 
 /** Projection 1 — list claim heads. Uses claim_events latest new_status. */
@@ -301,8 +301,50 @@ export function listUnresolvedClaims({ projectPath = null, dbPath = DEFAULT_DB_P
     }, { dbPath, fallback: [] });
 }
 
+/** Projection 3 — dedicated R2 review records. */
+export function listR2Reviews({ projectPath = null, dbPath = DEFAULT_DB_PATH, limit = 100 } = {}) {
+    const fallback = () => ({
+        schemaVersion: 'phase9.r2-projection.v1',
+        records: [],
+    });
+
+    return withDb((db) => {
+        const rows = db.prepare(`
+            SELECT ce.id AS eventSeq, ce.claim_id AS claimId,
+                   ce.r2_verdict AS r2Verdict, ce.timestamp AS reviewedAt,
+                   s.project_path AS projectPath
+            FROM claim_events ce
+            LEFT JOIN sessions s ON s.id = ce.session_id
+            WHERE ce.new_status = 'R2_REVIEWED'
+            ${projectPath ? 'AND s.project_path = @projectPath' : ''}
+            ORDER BY ce.timestamp DESC, ce.id DESC
+            LIMIT @limit
+        `).all({ projectPath: projectPath ?? '', limit });
+
+        return {
+            schemaVersion: 'phase9.r2-projection.v1',
+            records: rows.map((r, index) => {
+                const verdict = String(r.r2Verdict ?? '').toUpperCase();
+                const rejected = verdict === 'REJECT';
+                const accepted = verdict === 'ACCEPT';
+                const eventId = Number.isSafeInteger(r.eventSeq) && r.eventSeq > 0 && r.eventSeq < 10000
+                    ? r.eventSeq
+                    : index + 1;
+                return {
+                    claimId: r.claimId,
+                    r2VerdictEventId: `EV-${String(eventId).padStart(4, '0')}`,
+                    status: accepted ? 'resolved' : rejected ? 'veto' : 'open',
+                    resolved: accepted,
+                    severity: rejected ? 'high' : accepted ? 'low' : 'medium',
+                    reviewedAt: r.reviewedAt,
+                };
+            }),
+        };
+    }, { dbPath, fallback });
+}
+
 /**
- * Projection 3 — citation checks. Filters by claim_id via `citation_checks`
+ * Projection 4 — citation checks. Filters by claim_id via `citation_checks`
  * table directly (getCitationChecks() in db.js accepts {sessionId, claimId}
  * only, no projectPath/limit — we query raw to support the VRE bridge
  * contract's {projectPath, limit} shape).
@@ -334,7 +376,7 @@ export function listCitationChecks({ projectPath = null, dbPath = DEFAULT_DB_PAT
     }, { dbPath, fallback: [] });
 }
 
-/** Projection 4 — project overview. */
+/** Projection 5 — project overview. */
 export function getProjectOverview({ projectPath = null, dbPath = DEFAULT_DB_PATH } = {}) {
     const fallback = () => ({
         projectId: projectPath ?? null,
@@ -391,7 +433,7 @@ function readGovernanceProfile(db) {
     }
 }
 
-/** Projection 5 — literature searches. */
+/** Projection 6 — literature searches. */
 export function listLiteratureSearches({ projectPath = null, dbPath = DEFAULT_DB_PATH, limit = 50 } = {}) {
     return withDb((db) => {
         const rows = db.prepare(`
@@ -410,7 +452,7 @@ export function listLiteratureSearches({ projectPath = null, dbPath = DEFAULT_DB
     }, { dbPath, fallback: [] });
 }
 
-/** Projection 6 — observer alerts (unresolved). Schema columns: id, level
+/** Projection 7 — observer alerts (unresolved). Schema columns: id, level
  *  (INFO/WARN/HALT), message, created_at, resolved, resolved_at. */
 export function listObserverAlerts({ projectPath = null, dbPath = DEFAULT_DB_PATH } = {}) {
     return withDb((db) => {
@@ -429,7 +471,7 @@ export function listObserverAlerts({ projectPath = null, dbPath = DEFAULT_DB_PAT
 }
 
 /**
- * Projection 7 — gate checks merged with runtime hook configuration.
+ * Projection 8 — gate checks merged with runtime hook configuration.
  * The kernel's `gate_checks` table tracks data-quality gates (DQ1/G0-G6).
  * Governance non-negotiable hooks are checked against committed hook config
  * and scripts; no hook is reported `ok` just because it appears in a static
@@ -482,7 +524,7 @@ export function listGateChecks({ projectPath = null, dbPath = DEFAULT_DB_PATH, l
     );
 }
 
-/** Projection 8 — state snapshot. Profile + valid sequences. */
+/** Projection 9 — state snapshot. Profile + valid sequences. */
 export function getStateSnapshot({ projectPath = null, dbPath = DEFAULT_DB_PATH } = {}) {
     const fallback = () => ({
         profile: DEFAULT_PROFILE,
@@ -514,6 +556,7 @@ export function getStateSnapshot({ projectPath = null, dbPath = DEFAULT_DB_PATH 
 export const PROJECTIONS = Object.freeze({
     listClaimHeads,
     listUnresolvedClaims,
+    listR2Reviews,
     listCitationChecks,
     getProjectOverview,
     listLiteratureSearches,

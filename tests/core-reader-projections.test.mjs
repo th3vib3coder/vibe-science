@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import {
     closeDB,
     initDB,
+    logClaimEvent,
     openDB,
 } from '../plugin/lib/db.js';
 import {
@@ -18,6 +19,7 @@ import {
 import {
     getProjectionMeta,
     listCitationChecks,
+    listR2Reviews,
 } from '../plugin/lib/core-reader.js';
 
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
@@ -123,6 +125,52 @@ test('listCitationChecks uses migration-backed citation columns', (t) => {
         assert.equal(rows[0].updatedAt, '2026-06-18T10:15:00.000Z');
         assert.equal(rows[0].source, 'https://doi.org/10.0000/example');
         assert.equal(rows[0].confidence, null);
+    } finally {
+        rmSync(harness.tempDir, { recursive: true, force: true });
+    }
+});
+
+test('listR2Reviews projects R2_REVIEWED claim events as schema-shaped rows', (t) => {
+    const harness = createTempKernelDb();
+    if (harness.skipped) {
+        t.skip(harness.reason);
+        return;
+    }
+
+    const db = openDB(harness.dbPath);
+    try {
+        logClaimEvent(db, {
+            claim_id: 'CLAIM-CORE-READER-R2',
+            session_id: 'SESSION-CORE-READER',
+            event_type: 'R2_VERDICT',
+            old_status: 'CREATED',
+            new_status: 'R2_REVIEWED',
+            r2_verdict: 'ACCEPT',
+            timestamp: '2026-06-18T10:30:00.000Z',
+        });
+    } finally {
+        closeDB(db);
+    }
+
+    try {
+        const projection = listR2Reviews({
+            dbPath: harness.dbPath,
+            projectPath: ROOT,
+            limit: 10,
+        });
+        const meta = getProjectionMeta(projection);
+
+        assert.equal(meta.sourceMode, 'kernel-backed', meta.degradedReason ?? '');
+        assert.equal(projection.schemaVersion, 'phase9.r2-projection.v1');
+        assert.equal(projection.records.length, 1);
+        assert.deepEqual(projection.records[0], {
+            claimId: 'CLAIM-CORE-READER-R2',
+            r2VerdictEventId: 'EV-0001',
+            status: 'resolved',
+            resolved: true,
+            severity: 'low',
+            reviewedAt: '2026-06-18T10:30:00.000Z',
+        });
     } finally {
         rmSync(harness.tempDir, { recursive: true, force: true });
     }
