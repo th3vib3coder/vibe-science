@@ -22,7 +22,7 @@
 </div>
 
 <p align="center">
-  <a href="https://doi.org/10.5281/zenodo.18665031"><img src="https://zenodo.org/badge/1148022920.svg" alt="DOI"></a>
+  <a href="https://doi.org/10.5281/zenodo.18665031"><img src="https://img.shields.io/badge/Software_DOI-10.5281%2Fzenodo.18665031-1682D4?style=flat&logo=doi&logoColor=white" alt="Software DOI 10.5281/zenodo.18665031"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="License"></a>
   <img src="https://img.shields.io/badge/version-7.0.0-purple.svg" alt="Version">
   <img src="https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg" alt="Node">
