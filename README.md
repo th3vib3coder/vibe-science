@@ -2,6 +2,25 @@
   <img src="logos/hero-v7.0-trace-adapt.png" alt="Vibe Science v7.0 TRACE + TRACE+ADAPT V0" width="980">
 </p>
 
+<div align="center">
+  <h2>🏛️ ACM EASE '26 · Full Paper 🏛️</h2>
+  <p>
+    <a href="https://doi.org/10.1145/3816483.3816631"><img src="https://img.shields.io/badge/ACM-EASE_%2726-0085CA?style=for-the-badge&logo=acm&logoColor=white" alt="ACM EASE '26"></a>
+    <a href="https://doi.org/10.1145/3816483.3816631"><img src="https://img.shields.io/badge/DOI-10.1145%2F3816483.3816631-B31B1B?style=for-the-badge&logo=doi&logoColor=white" alt="ACM paper DOI 10.1145/3816483.3816631"></a>
+    <a href="https://conf.researchr.org/home/ease-2026/vibex-2026"><img src="https://img.shields.io/badge/VibeX_2026-Full_Paper-6f42c1?style=for-the-badge" alt="VibeX 2026 Full Paper"></a>
+  </p>
+  <p>
+    <strong>Vibe Science: How Adversarial Agent Loops Turn Vibe Researching into Verifiable Science</strong><br>
+    Elisa Bertelli · Carmine Russo<br>
+    Accepted at VibeX 2026, the 1st International Workshop on Vibe Coding and Vibe Researching,<br>
+    co-located with the ACM International Conference on Evaluation and Assessment in Software Engineering (EASE '26).
+  </p>
+  <p>
+    <a href="https://creativecommons.org/licenses/by/4.0/"><img src="https://licensebuttons.net/l/by/4.0/88x31.png" alt="Creative Commons Attribution 4.0 International"></a>
+  </p>
+  <p><sub>The ACM paper is licensed under CC BY 4.0. The software in this repository remains licensed under Apache 2.0.</sub></p>
+</div>
+
 <p align="center">
   <a href="https://doi.org/10.5281/zenodo.18665031"><img src="https://zenodo.org/badge/1148022920.svg" alt="DOI"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="License"></a>
